@@ -1,0 +1,45 @@
+{
+  "type": "service_account",
+  "project_id": "ytempire-production",
+  "private_key_id": "PLACEHOLDER_PRIVATE_KEY_ID",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nPLACEHOLDER_PRIVATE_KEY\n-----END PRIVATE KEY-----\n",
+  "client_email": "ytempire-tts@ytempire-production.iam.gserviceaccount.com",
+  "client_id": "PLACEHOLDER_CLIENT_ID",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/ytempire-tts%40ytempire-production.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com",
+  "apis_enabled": [
+    "texttospeech.googleapis.com",
+    "translate.googleapis.com",
+    "vision.googleapis.com",
+    "storage.googleapis.com"
+  ],
+  "billing_account": "PLACEHOLDER_BILLING_ACCOUNT",
+  "billing_alerts": {
+    "enabled": true,
+    "thresholds": [
+      {
+        "amount": 50,
+        "currency": "USD",
+        "notification": "email"
+      },
+      {
+        "amount": 100,
+        "currency": "USD",
+        "notification": "email,slack"
+      },
+      {
+        "amount": 200,
+        "currency": "USD",
+        "notification": "email,slack,emergency"
+      }
+    ]
+  },
+  "quota_config": {
+    "tts_monthly_characters": 1000000,
+    "translate_monthly_characters": 500000,
+    "vision_monthly_requests": 1000
+  }
+}

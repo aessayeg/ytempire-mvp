@@ -1,0 +1,196 @@
+```mermaid
+%% YTEmpire Data Flow Diagrams
+
+%% Main Data Flow
+graph TB
+    subgraph "Data Sources"
+        YT[YouTube API]
+        AI[AI Services]
+        UI[User Interface]
+        WH[Webhooks]
+        LOG[System Logs]
+    end
+    
+    subgraph "Ingestion Layer"
+        API[API Gateway]
+        QUEUE[Message Queue]
+        STREAM[Event Stream]
+    end
+    
+    subgraph "Data Lake Zones"
+        LAND[Landing Zone]
+        RAW[Raw Zone]
+        BRONZE[Bronze Zone]
+        SILVER[Silver Zone]
+        GOLD[Gold Zone]
+    end
+    
+    subgraph "Processing Layer"
+        ETL[ETL Pipeline]
+        ML[ML Pipeline]
+        RT[Real-time Processing]
+    end
+    
+    subgraph "Serving Layer"
+        OLAP[Analytics DB]
+        CACHE[Redis Cache]
+        FS[Feature Store]
+    end
+    
+    subgraph "Consumption"
+        DASH[Dashboard]
+        REPORT[Reports]
+        API_OUT[API Endpoints]
+    end
+    
+    YT --> API
+    AI --> API
+    UI --> API
+    WH --> STREAM
+    LOG --> STREAM
+    
+    API --> QUEUE
+    QUEUE --> LAND
+    STREAM --> LAND
+    
+    LAND --> ETL
+    ETL --> RAW
+    RAW --> BRONZE
+    BRONZE --> SILVER
+    SILVER --> GOLD
+    
+    SILVER --> ML
+    ML --> FS
+    
+    GOLD --> OLAP
+    GOLD --> CACHE
+    
+    OLAP --> DASH
+    OLAP --> REPORT
+    CACHE --> API_OUT
+
+%% Video Generation Pipeline
+graph LR
+    subgraph "Video Generation Flow"
+        REQ[User Request]
+        VAL[Validation]
+        SCRIPT[Script Generation]
+        VOICE[Voice Synthesis]
+        THUMB[Thumbnail Generation]
+        META[Metadata Creation]
+        UPLOAD[YouTube Upload]
+        TRACK[Tracking]
+    end
+    
+    REQ --> VAL
+    VAL --> SCRIPT
+    SCRIPT --> VOICE
+    SCRIPT --> THUMB
+    SCRIPT --> META
+    VOICE --> UPLOAD
+    THUMB --> UPLOAD
+    META --> UPLOAD
+    UPLOAD --> TRACK
+
+%% Analytics Processing Flow
+graph TD
+    subgraph "Analytics Pipeline"
+        FETCH[Fetch YouTube Analytics]
+        PARSE[Parse Metrics]
+        ENRICH[Enrich Data]
+        AGG[Aggregate]
+        CALC[Calculate KPIs]
+        STORE[Store Results]
+    end
+    
+    FETCH --> PARSE
+    PARSE --> ENRICH
+    ENRICH --> AGG
+    AGG --> CALC
+    CALC --> STORE
+
+%% Real-time Event Flow
+graph LR
+    subgraph "Real-time Processing"
+        EVENT[Event Source]
+        KAFKA[Kafka Topic]
+        SPARK[Spark Streaming]
+        REDIS_S[Redis Streams]
+        WS[WebSocket]
+        CLIENT[Client Dashboard]
+    end
+    
+    EVENT --> KAFKA
+    KAFKA --> SPARK
+    SPARK --> REDIS_S
+    REDIS_S --> WS
+    WS --> CLIENT
+
+%% Cost Tracking Flow
+graph TD
+    subgraph "Cost Tracking"
+        API_CALL[API Call]
+        METER[Usage Meter]
+        COST_CALC[Cost Calculator]
+        THRESHOLD[Threshold Check]
+        ALERT[Alert Service]
+        BILLING[Billing Aggregator]
+    end
+    
+    API_CALL --> METER
+    METER --> COST_CALC
+    COST_CALC --> THRESHOLD
+    THRESHOLD -->|Exceeded| ALERT
+    COST_CALC --> BILLING
+
+%% ML Feature Pipeline
+graph LR
+    subgraph "Feature Engineering"
+        RAW_FEAT[Raw Features]
+        TRANS[Transformations]
+        VALID[Validation]
+        FEAT_STORE[Feature Store]
+        MODEL[ML Model]
+        PREDICT[Predictions]
+    end
+    
+    RAW_FEAT --> TRANS
+    TRANS --> VALID
+    VALID --> FEAT_STORE
+    FEAT_STORE --> MODEL
+    MODEL --> PREDICT
+
+%% Data Quality Flow
+graph TD
+    subgraph "Data Quality Pipeline"
+        INPUT[Input Data]
+        PROFILE[Data Profiling]
+        RULES[Quality Rules]
+        CHECK[Quality Checks]
+        REPORT_Q[Quality Report]
+        ACTION[Action]
+    end
+    
+    INPUT --> PROFILE
+    PROFILE --> CHECK
+    RULES --> CHECK
+    CHECK --> REPORT_Q
+    REPORT_Q -->|Pass| ACTION
+    REPORT_Q -->|Fail| ALERT2[Alert]
+
+%% Backup and Recovery Flow
+graph LR
+    subgraph "Backup Strategy"
+        PROD[Production Data]
+        SNAP[Snapshot]
+        INCR[Incremental Backup]
+        ARCHIVE[Archive Storage]
+        RESTORE[Restore Process]
+    end
+    
+    PROD --> SNAP
+    SNAP --> INCR
+    INCR --> ARCHIVE
+    ARCHIVE --> RESTORE
+    RESTORE --> PROD
+```
