@@ -1,0 +1,110 @@
+# Prometheus Alert Rules
+# Owner: Platform Ops Lead
+
+groups:
+  - name: ytempire.backend
+    rules:
+      # High error rate alert
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{job="backend-api", code!~"2.."}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: backend-api
+        annotations:
+          summary: "High error rate detected"
+          description: "Backend API error rate is {{ $value }} requests per second"
+
+      # High response time alert
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="backend-api"}[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: backend-api
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }} seconds"
+
+      # Service down alert
+      - alert: ServiceDown
+        expr: up{job="backend-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: backend-api
+        annotations:
+          summary: "Backend API service is down"
+          description: "Backend API has been down for more than 1 minute"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes{job="backend-api"} / 1024 / 1024) > 1000
+        for: 10m
+        labels:
+          severity: warning
+          service: backend-api
+        annotations:
+          summary: "High memory usage detected"
+          description: "Backend API memory usage is {{ $value }}MB"
+
+  - name: ytempire.database
+    rules:
+      # Database connection issues
+      - alert: DatabaseDown
+        expr: up{job="postgresql"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: postgresql
+        annotations:
+          summary: "Database is down"
+          description: "PostgreSQL database has been down for more than 1 minute"
+
+      # Redis connection issues
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis server has been down for more than 1 minute"
+
+  - name: ytempire.celery
+    rules:
+      # No active Celery workers
+      - alert: NoActiveWorkers
+        expr: celery_workers_active == 0
+        for: 5m
+        labels:
+          severity: warning
+          service: celery
+        annotations:
+          summary: "No active Celery workers"
+          description: "No Celery workers are currently active"
+
+      # High task queue length
+      - alert: HighTaskQueueLength
+        expr: celery_tasks_pending > 100
+        for: 10m
+        labels:
+          severity: warning
+          service: celery
+        annotations:
+          summary: "High task queue length"
+          description: "Celery task queue has {{ $value }} pending tasks"
+
+  - name: ytempire.n8n
+    rules:
+      # N8N service down
+      - alert: N8NDown
+        expr: up{job="n8n"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: n8n
+        annotations:
+          summary: "N8N workflow engine is down"
+          description: "N8N has been down for more than 2 minutes"

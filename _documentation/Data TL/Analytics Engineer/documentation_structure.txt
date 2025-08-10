@@ -1,0 +1,91 @@
+YTEMPIRE Analytics Engineer Documentation
+│
+├── 1. OVERVIEW & CONTEXT
+│   ├── 1.1 Project Overview
+│   │   ├── Business Model & Vision
+│   │   ├── Scale Targets & Roadmap
+│   │   └── Revenue Goals
+│   ├── 1.2 Team Organization
+│   │   ├── Complete Team Structure
+│   │   ├── Data Team Composition
+│   │   └── Reporting Lines
+│   └── 1.3 Analytics Engineer Role
+│       ├── Position Overview
+│       ├── Primary Responsibilities
+│       └── Success Criteria
+│
+├── 2. TECHNICAL ARCHITECTURE
+│   ├── 2.1 Technology Stack
+│   │   ├── Core Technologies
+│   │   ├── Development Environment
+│   │   └── Infrastructure Allocation
+│   ├── 2.2 Data Architecture
+│   │   ├── Database Schemas
+│   │   ├── Data Models (Fact/Dimension)
+│   │   └── TimescaleDB Configuration
+│   └── 2.3 Analytics Layer
+│       ├── DBT Project Structure
+│       ├── Semantic Layer
+│       └── Caching Strategy
+│
+├── 3. IMPLEMENTATION GUIDES
+│   ├── 3.1 SQL Development
+│   │   ├── Query Patterns Library
+│   │   ├── Performance Optimization
+│   │   └── Best Practices
+│   ├── 3.2 Dashboard Development
+│   │   ├── Grafana Setup
+│   │   ├── Dashboard Templates
+│   │   └── Visualization Standards
+│   └── 3.3 Data Quality
+│       ├── Validation Frameworks
+│       ├── Testing Strategies
+│       └── Monitoring Setup
+│
+├── 4. METRICS & ANALYTICS
+│   ├── 4.1 Business Metrics
+│   │   ├── KPI Definitions
+│   │   ├── Revenue Metrics
+│   │   └── Cost Tracking
+│   ├── 4.2 Operational Metrics
+│   │   ├── Performance Indicators
+│   │   ├── System Health
+│   │   └── API Usage
+│   └── 4.3 Advanced Analytics
+│       ├── Predictive Models
+│       ├── A/B Testing Framework
+│       └── Cohort Analysis
+│
+├── 5. OPERATIONAL PLAYBOOKS
+│   ├── 5.1 Daily Operations
+│   │   ├── Morning Checklist
+│   │   ├── Monitoring Routine
+│   │   └── End-of-Day Tasks
+│   ├── 5.2 Maintenance Procedures
+│   │   ├── Weekly Maintenance
+│   │   ├── Monthly Tasks
+│   │   └── Performance Tuning
+│   └── 5.3 Incident Response
+│       ├── Alert Handling
+│       ├── Troubleshooting Guide
+│       └── Escalation Procedures
+│
+├── 6. ONBOARDING & DEVELOPMENT
+│   ├── 6.1 Getting Started
+│   │   ├── First Day Setup
+│   │   ├── Week 1 Priorities
+│   │   └── Month 1 Goals
+│   ├── 6.2 Training Resources
+│   │   ├── Required Skills
+│   │   ├── Learning Path
+│   │   └── Documentation
+│   └── 6.3 Career Development
+│       ├── Growth Roadmap
+│       ├── Skill Progression
+│       └── Performance Reviews
+│
+└── 7. REFERENCE
+    ├── 7.1 API Documentation
+    ├── 7.2 Query Library
+    ├── 7.3 Configuration Files
+    └── 7.4 Troubleshooting FAQ

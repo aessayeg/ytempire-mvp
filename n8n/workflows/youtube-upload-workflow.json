@@ -1,0 +1,143 @@
+{
+  "name": "YTEmpire YouTube Upload",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "webhook-youtube-upload",
+      "name": "YouTube Upload Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "youtube-upload"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Process YouTube upload request\nconst payload = $json;\n\nif (!payload.video_id || !payload.channel_id) {\n  throw new Error('Missing required fields: video_id and channel_id');\n}\n\nreturn [{\n  json: {\n    video_id: payload.video_id,\n    channel_id: payload.channel_id,\n    user_id: payload.user_id,\n    video_data: payload.video_data,\n    channel_data: payload.channel_data,\n    upload_config: payload.upload_config,\n    callback_url: payload.callback_url,\n    timestamp: payload.timestamp\n  }\n}];"
+      },
+      "id": "process-upload-request",
+      "name": "Process Upload Request",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/upload/youtube/v3/videos?part=snippet,status",
+        "authentication": "oAuth2Api",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "snippet",
+              "value": "{\n  \"title\": \"{{$json.video_data.title}}\",\n  \"description\": \"{{$json.video_data.description}}\",\n  \"tags\": {{JSON.stringify($json.video_data.tags)}},\n  \"categoryId\": \"{{$json.video_data.category_id}}\"\n}"
+            },
+            {
+              "name": "status",
+              "value": "{\n  \"privacyStatus\": \"{{$json.video_data.privacy_status}}\"\n}"
+            }
+          ]
+        }
+      },
+      "id": "upload-to-youtube",
+      "name": "Upload Video to YouTube",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Process YouTube upload response\nconst uploadResponse = $json;\nconst requestData = $('Process Upload Request').first().json;\n\nif (uploadResponse.error) {\n  return [{\n    json: {\n      video_id: requestData.video_id,\n      status: 'upload_failed',\n      event_type: 'upload_failed',\n      error_details: uploadResponse.error,\n      callback_url: requestData.callback_url\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    video_id: requestData.video_id,\n    youtube_video_id: uploadResponse.id,\n    status: 'upload_complete',\n    event_type: 'upload_complete',\n    youtube_url: `https://youtube.com/watch?v=${uploadResponse.id}`,\n    upload_timestamp: new Date().toISOString(),\n    callback_url: requestData.callback_url\n  }\n}];"
+      },
+      "id": "process-upload-response",
+      "name": "Process Upload Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.callback_url}}",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "video_id",
+              "value": "={{$json.video_id}}"
+            },
+            {
+              "name": "event_type",
+              "value": "={{$json.event_type}}"
+            },
+            {
+              "name": "youtube_video_id",
+              "value": "={{$json.youtube_video_id || ''}}"
+            },
+            {
+              "name": "error_details",
+              "value": "={{$json.error_details || ''}}"
+            },
+            {
+              "name": "youtube_url",
+              "value": "={{$json.youtube_url || ''}}"
+            }
+          ]
+        }
+      },
+      "id": "send-callback",
+      "name": "Send Callback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "YouTube Upload Request": {
+      "main": [
+        [
+          {
+            "node": "Process Upload Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Upload Request": {
+      "main": [
+        [
+          {
+            "node": "Upload Video to YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Video to YouTube": {
+      "main": [
+        [
+          {
+            "node": "Process Upload Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Upload Response": {
+      "main": [
+        [
+          {
+            "node": "Send Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "tags": ["ytempire", "youtube", "upload"],
+  "triggerCount": 1
+}

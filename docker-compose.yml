@@ -1,0 +1,196 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database (Backend Team Lead)
+  postgres:
+    image: postgres:16-alpine
+    container_name: ytempire-postgres
+    environment:
+      POSTGRES_USER: ytempire
+      POSTGRES_PASSWORD: ytempire_pass
+      POSTGRES_DB: ytempire_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ytempire-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ytempire"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (Data Pipeline Engineer #1)
+  redis:
+    image: redis:7-alpine
+    container_name: ytempire-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ytempire-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (API Developer)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ytempire-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ytempire:ytempire_pass@postgres/ytempire_db
+      - REDIS_HOST=redis
+      - DEBUG=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    networks:
+      - ytempire-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Frontend (Frontend Team Lead)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ytempire-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - ytempire-network
+    command: npm run dev
+
+  # Celery Worker (Data Pipeline Engineer #1)
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ytempire-celery-worker
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ytempire:ytempire_pass@postgres/ytempire_db
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+    networks:
+      - ytempire-network
+    command: celery -A app.core.celery_app worker --loglevel=info
+
+  # Celery Beat Scheduler (Data Pipeline Engineer #2)
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ytempire-celery-beat
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ytempire:ytempire_pass@postgres/ytempire_db
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+    networks:
+      - ytempire-network
+    command: celery -A app.core.celery_app beat --loglevel=info
+
+  # Flower - Celery Monitoring (Data Pipeline Engineer #1)
+  flower:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ytempire-flower
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    depends_on:
+      - redis
+    networks:
+      - ytempire-network
+    command: celery -A app.core.celery_app flower --port=5555
+
+  # N8N Workflow Engine (Integration Specialist)
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: ytempire-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=ytempire_n8n
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - ytempire-network
+
+  # Prometheus (Platform Ops Lead)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ytempire-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - ytempire-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  # Grafana (Platform Ops Lead)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ytempire-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=ytempire_grafana
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./infrastructure/grafana/dashboards/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    networks:
+      - ytempire-network
+    depends_on:
+      - prometheus
+
+networks:
+  ytempire-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  n8n_data:
+  prometheus_data:
+  grafana_data:
