@@ -323,3 +323,6 @@ export const DashboardCharts: React.FC<{ metrics: any }> = ({ metrics }) => {
     </Box>
   );
 };
+
+// Export the new Channel Performance Charts component
+export { default as ChannelPerformanceCharts } from './ChannelPerformanceCharts';

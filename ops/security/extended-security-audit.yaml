@@ -1,0 +1,628 @@
+# Extended Security Audit Configuration for YTEmpire
+# P2 Enhancement - Comprehensive security scanning and compliance checking
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-audit-config
+  namespace: ytempire
+data:
+  # Security Scanning Configuration
+  trivy-config: |
+    scanner:
+      oci:
+        registries:
+          - name: "docker.io"
+            username: ""
+            password: ""
+        mirrors: []
+      list-all-pkgs: true
+      offline-scan: false
+    db:
+      repository: "ghcr.io/aquasecurity/trivy-db"
+      cache-dir: "/tmp/trivy"
+      skip-update: false
+    vulnerability:
+      type: ["os", "library"]
+      scanners: ["vuln", "secret", "config"]
+      ignore-unfixed: false
+      exit-code: 1
+      severity: ["HIGH", "CRITICAL"]
+    misconfiguration:
+      scanners: ["dockerfile", "kubernetes", "terraform"]
+      policy: []
+      trace: false
+    secret:
+      scanners: ["secret"]
+      config: "/etc/trivy/secret.yaml"
+
+  # OWASP ZAP Configuration
+  zap-config: |
+    env:
+      contexts:
+        - name: "YTEmpire-API"
+          urls: ["http://localhost:8000"]
+          authentication:
+            method: "scriptBasedAuthentication"
+            script: "auth-script.js"
+        - name: "YTEmpire-Frontend" 
+          urls: ["http://localhost:3000"]
+          authentication:
+            method: "formBasedAuthentication"
+            loginUrl: "http://localhost:3000/login"
+            usernameParameter: "email"
+            passwordParameter: "password"
+      
+      spiders:
+        - name: "api-spider"
+          context: "YTEmpire-API"
+          url: "http://localhost:8000/api/v1/"
+          maxChildren: 10
+          recurse: true
+          subtreeOnly: true
+          
+      ascanRules:
+        - id: 10019  # External Redirect
+          name: "External Redirect"
+          risk: "High"
+          confidence: "Medium"
+          enabled: true
+          
+        - id: 40009  # Server Side Include
+          name: "Server Side Include"
+          risk: "High" 
+          confidence: "Medium"
+          enabled: true
+          
+        - id: 90001  # Insecure JSF ViewState
+          name: "Insecure JSF ViewState"
+          risk: "Medium"
+          confidence: "High"
+          enabled: true
+
+  # Nuclei Templates Configuration
+  nuclei-config: |
+    templates:
+      - "cves/"
+      - "vulnerabilities/"
+      - "misconfiguration/"
+      - "exposures/"
+      - "technologies/"
+      - "default-logins/"
+      - "file/"
+      - "dns/"
+    
+    severity: ["critical", "high", "medium"]
+    
+    workflows:
+      - "security-misconfiguration-workflow"
+      - "credential-stuffing-workflow"
+      - "subdomain-enumeration-workflow"
+    
+    rate-limit: 150
+    bulk-size: 25
+    timeout: 5
+    retries: 1
+
+  # Container Security Scanning
+  clair-config: |
+    clair:
+      database:
+        type: pgsql
+        options:
+          source: "postgresql://clair:password@postgres:5432/clair?sslmode=disable"
+          cachesize: 16384
+      api:
+        port: 6060
+        healthport: 6061
+        timeout: 900s
+        paginationkey: "XxoPtCUzrUv4JV5dS+yQ+MdW7yLEJnRMwigVY/bpgtQ="
+        cafile: ""
+        keyfile: ""
+        certfile: ""
+      worker:
+        namespace_detectors:
+          - os-release
+          - lsb-release
+          - apt-sources
+          - alpine-release
+          - redhat-release
+        feature_detectors:
+          - apk
+          - apt
+          - dpkg
+          - rpm
+        feature_listers:
+          - apk
+          - dpkg
+          - rpm
+      updater:
+        interval: 2h0m0s
+        enabledvolumes:
+          - "debian"
+          - "ubuntu"
+          - "rhel"
+          - "centos"
+          - "oracle"
+          - "alpine"
+          - "amazon"
+      notifier:
+        attempts: 3
+        renotifyinterval: 24h
+        http:
+          endpoint: "http://localhost:8080/webhook"
+          proxy: ""
+          servername: ""
+          cafile: ""
+          keyfile: ""
+          certfile: ""
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: security-audit-scan
+  namespace: ytempire
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: security-scanner
+            image: aquasec/trivy:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Starting comprehensive security audit..."
+              
+              # Scan container images
+              trivy image --exit-code 1 --severity HIGH,CRITICAL ytempire/backend:latest
+              trivy image --exit-code 1 --severity HIGH,CRITICAL ytempire/frontend:latest  
+              trivy image --exit-code 1 --severity HIGH,CRITICAL ytempire/ml:latest
+              
+              # Scan filesystem for secrets
+              trivy fs --security-checks secret,vuln,config /workspace
+              
+              # Scan Kubernetes manifests
+              trivy config /manifests
+              
+              # Generate compliance report
+              trivy image --format template --template "@contrib/sarif.tpl" \
+                -o /reports/trivy-report.sarif ytempire/backend:latest
+              
+              echo "Security scan completed"
+            volumeMounts:
+            - name: workspace
+              mountPath: /workspace
+            - name: reports
+              mountPath: /reports
+            - name: manifests
+              mountPath: /manifests
+          
+          - name: zap-scanner
+            image: owasp/zap2docker-stable:latest
+            command:
+            - /bin/sh
+            - -c 
+            - |
+              echo "Starting OWASP ZAP scan..."
+              
+              # API Security Scan
+              zap-api-scan.py -t http://backend:8000/api/v1/openapi.json \
+                -f openapi -r /reports/api-scan-report.html \
+                -x /reports/api-scan-report.xml
+              
+              # Frontend Security Scan  
+              zap-full-scan.py -t http://frontend:3000 \
+                -r /reports/frontend-scan-report.html \
+                -x /reports/frontend-scan-report.xml \
+                -I "Only report potential issues of this level or higher"
+              
+              echo "OWASP ZAP scan completed"
+            volumeMounts:
+            - name: reports
+              mountPath: /reports
+          
+          - name: nuclei-scanner
+            image: projectdiscovery/nuclei:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Starting Nuclei vulnerability scan..."
+              
+              # Update nuclei templates
+              nuclei -update-templates
+              
+              # Scan for vulnerabilities
+              echo "backend:8000" | nuclei -t cves/ -t vulnerabilities/ \
+                -severity critical,high,medium \
+                -o /reports/nuclei-backend-report.txt
+              
+              echo "frontend:3000" | nuclei -t exposures/ -t misconfiguration/ \
+                -severity critical,high,medium \
+                -o /reports/nuclei-frontend-report.txt
+              
+              echo "Nuclei scan completed"
+            volumeMounts:
+            - name: reports
+              mountPath: /reports
+          
+          volumes:
+          - name: workspace
+            hostPath:
+              path: /workspace
+          - name: reports
+            persistentVolumeClaim:
+              claimName: security-reports-pvc
+          - name: manifests
+            configMap:
+              name: k8s-manifests
+          
+          restartPolicy: OnFailure
+
+---
+# Security Monitoring and Alerting
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-monitoring-config
+  namespace: ytempire
+data:
+  falco-rules: |
+    # Custom Falco rules for YTEmpire
+    - rule: Suspicious Network Activity
+      desc: Detect suspicious outbound connections
+      condition: >
+        (outbound and
+         (fd.sip.name in (suspicious_domains) or
+          fd.dip.name in (suspicious_domains)))
+      output: >
+        Suspicious network connection
+        (user=%user.name command=%proc.cmdline 
+         connection=%fd.name proto=%fd.l4proto)
+      priority: WARNING
+      tags: [network, suspicious]
+    
+    - rule: Privilege Escalation Attempt
+      desc: Detect potential privilege escalation
+      condition: >
+        spawned_process and
+        (proc.name in (sudo, su, doas) or
+         proc.cmdline contains "chmod +s" or
+         proc.cmdline contains "setuid")
+      output: >
+        Privilege escalation attempt detected
+        (user=%user.name command=%proc.cmdline 
+         parent=%proc.pname)
+      priority: ERROR
+      tags: [privilege_escalation, security]
+    
+    - rule: Crypto Mining Activity
+      desc: Detect cryptocurrency mining
+      condition: >
+        spawned_process and
+        (proc.name in (xmrig, minerd, cpuminer) or
+         proc.cmdline contains "stratum+tcp" or
+         proc.cmdline contains "mining.pool")
+      output: >
+        Cryptocurrency mining detected
+        (user=%user.name command=%proc.cmdline)
+      priority: CRITICAL
+      tags: [crypto, mining, security]
+
+  # Security metrics collection
+  prometheus-security-rules: |
+    groups:
+    - name: security.rules
+      interval: 30s
+      rules:
+      - alert: HighSecurityVulnerabilities
+        expr: trivy_vulnerabilities{severity="CRITICAL"} > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical security vulnerabilities detected"
+          description: "{{ $value }} critical vulnerabilities found in {{ $labels.image }}"
+      
+      - alert: UnauthorizedAccess
+        expr: increase(nginx_http_requests_total{status=~"401|403"}[5m]) > 50
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of unauthorized access attempts"
+          description: "{{ $value }} unauthorized access attempts in the last 5 minutes"
+      
+      - alert: SuspiciousFileAccess
+        expr: increase(falco_events_total{rule="Read sensitive file trusted after startup"}[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Suspicious file access detected"
+          description: "Falco detected suspicious file access activity"
+
+---
+# Compliance Scanning Configuration
+apiVersion: v1
+kind: ConfigMap  
+metadata:
+  name: compliance-config
+  namespace: ytempire
+data:
+  # GDPR Compliance Scanning
+  gdpr-scanner: |
+    #!/bin/bash
+    set -e
+    
+    echo "Running GDPR compliance scan..."
+    
+    # Check for personal data handling
+    grep -r -i "email\|phone\|address\|ssn\|credit.*card" /app/src --include="*.py" --include="*.js" --include="*.ts" | \
+      grep -v "test\|example" > /reports/gdpr-personal-data.txt
+    
+    # Check for data encryption
+    grep -r "encrypt\|hash\|bcrypt\|scrypt" /app/src --include="*.py" --include="*.js" --include="*.ts" | \
+      grep -i "password\|personal\|sensitive" > /reports/gdpr-encryption.txt
+    
+    # Check for data retention policies  
+    grep -r -i "delete\|expire\|retention\|purge" /app/src --include="*.py" --include="*.js" --include="*.ts" | \
+      head -20 > /reports/gdpr-retention.txt
+    
+    # Check for consent management
+    grep -r -i "consent\|opt.*in\|opt.*out\|cookie.*policy" /app/src --include="*.py" --include="*.js" --include="*.ts" | \
+      head -20 > /reports/gdpr-consent.txt
+    
+    echo "GDPR compliance scan completed"
+
+  # SOC2 Compliance Scanning  
+  soc2-scanner: |
+    #!/bin/bash
+    set -e
+    
+    echo "Running SOC2 compliance scan..."
+    
+    # Check access controls
+    find /app -name "*.py" -o -name "*.js" -o -name "*.ts" | \
+      xargs grep -l "auth\|permission\|role\|access" | \
+      head -20 > /reports/soc2-access-controls.txt
+    
+    # Check logging and monitoring
+    find /app -name "*.py" -o -name "*.js" -o -name "*.ts" | \
+      xargs grep -l "log\|audit\|track\|monitor" | \
+      head -20 > /reports/soc2-logging.txt
+    
+    # Check encryption in transit
+    grep -r -i "https\|tls\|ssl\|cert" /app/config /app/src | \
+      head -20 > /reports/soc2-encryption-transit.txt
+    
+    # Check data backup procedures
+    find /app -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.yaml" | \
+      xargs grep -l "backup\|restore\|recovery" | \
+      head -10 > /reports/soc2-backup.txt
+    
+    echo "SOC2 compliance scan completed"
+
+  # YouTube ToS Compliance  
+  youtube-tos-scanner: |
+    #!/bin/bash
+    set -e
+    
+    echo "Running YouTube ToS compliance scan..."
+    
+    # Check for content policy compliance
+    grep -r -i "content.*policy\|community.*guideline\|copyright" /app/src | \
+      head -20 > /reports/youtube-content-policy.txt
+    
+    # Check API usage compliance
+    grep -r "youtube.*api\|quota\|rate.*limit" /app/src | \
+      head -20 > /reports/youtube-api-usage.txt
+    
+    # Check for automated behavior disclosure
+    grep -r -i "automat\|bot\|artificial.*intelligence\|ai.*generat" /app/src | \
+      head -20 > /reports/youtube-automation.txt
+    
+    # Check monetization compliance
+    grep -r -i "monetiz\|revenue\|advertis" /app/src | \
+      head -20 > /reports/youtube-monetization.txt
+    
+    echo "YouTube ToS compliance scan completed"
+
+---
+# Capacity Planning Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: capacity-planning-config
+  namespace: ytempire
+data:
+  # Resource monitoring and capacity planning
+  capacity-metrics: |
+    # Prometheus queries for capacity planning
+    queries:
+      # CPU utilization trends
+      - name: "cpu_utilization_trend"
+        query: "rate(container_cpu_usage_seconds_total[5m]) * 100"
+        threshold: 80
+        forecast_period: "7d"
+        
+      # Memory utilization trends  
+      - name: "memory_utilization_trend"
+        query: "(container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100"
+        threshold: 85
+        forecast_period: "7d"
+        
+      # Disk utilization trends
+      - name: "disk_utilization_trend" 
+        query: "(1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100"
+        threshold: 90
+        forecast_period: "7d"
+        
+      # Network throughput
+      - name: "network_throughput"
+        query: "rate(container_network_transmit_bytes_total[5m]) + rate(container_network_receive_bytes_total[5m])"
+        threshold: 800000000  # 800MB/s
+        forecast_period: "7d"
+        
+      # Video generation capacity
+      - name: "video_generation_capacity"
+        query: "rate(ytempire_videos_generated_total[1h])"
+        threshold: 50  # 50 videos per hour
+        forecast_period: "30d"
+        
+      # API request capacity
+      - name: "api_request_capacity"
+        query: "rate(http_requests_total[5m])"
+        threshold: 1000  # 1000 requests per 5min
+        forecast_period: "7d"
+
+  # Auto-scaling configuration
+  autoscaling-config: |
+    # Horizontal Pod Autoscaler configurations
+    hpa_configs:
+      - name: "backend-hpa"
+        target: "ytempire-backend"
+        min_replicas: 2
+        max_replicas: 10
+        metrics:
+          - type: "Resource"
+            resource:
+              name: "cpu"
+              target:
+                type: "Utilization"
+                averageUtilization: 70
+          - type: "Resource"
+            resource:
+              name: "memory" 
+              target:
+                type: "Utilization"
+                averageUtilization: 80
+                
+      - name: "ml-pipeline-hpa"
+        target: "ytempire-ml"
+        min_replicas: 1
+        max_replicas: 5
+        metrics:
+          - type: "Resource"
+            resource:
+              name: "cpu"
+              target:
+                type: "Utilization"
+                averageUtilization: 60
+          - type: "Custom"
+            custom:
+              name: "video_generation_queue_length"
+              target:
+                type: "AverageValue"
+                averageValue: "10"
+
+  # Capacity forecasting
+  forecasting-config: |
+    # Machine learning models for capacity forecasting  
+    models:
+      - name: "linear_regression"
+        type: "sklearn.linear_model.LinearRegression"
+        features: ["cpu_usage", "memory_usage", "request_count"]
+        target: "resource_utilization"
+        training_window: "30d"
+        
+      - name: "time_series_forecast"
+        type: "statsmodels.tsa.arima.ARIMA"
+        order: [1, 1, 1]
+        features: ["timestamp", "metric_value"]
+        forecast_horizon: "7d"
+        
+    forecasting_schedule: "0 1 * * *"  # Daily at 1 AM
+    alert_thresholds:
+      cpu: 85
+      memory: 90
+      disk: 95
+      network: 80
+
+---
+# Security Audit Results Dashboard
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-dashboard-config
+  namespace: ytempire
+data:
+  grafana-dashboard: |
+    {
+      "dashboard": {
+        "title": "YTEmpire Security Audit Dashboard",
+        "tags": ["security", "compliance", "audit"],
+        "timezone": "UTC",
+        "panels": [
+          {
+            "title": "Security Vulnerabilities by Severity",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "trivy_vulnerabilities{severity='CRITICAL'}",
+                "legendFormat": "Critical"
+              },
+              {
+                "expr": "trivy_vulnerabilities{severity='HIGH'}", 
+                "legendFormat": "High"
+              },
+              {
+                "expr": "trivy_vulnerabilities{severity='MEDIUM'}",
+                "legendFormat": "Medium"
+              }
+            ]
+          },
+          {
+            "title": "Failed Authentication Attempts",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(nginx_http_requests_total{status='401'}[5m])",
+                "legendFormat": "401 Unauthorized"
+              },
+              {
+                "expr": "rate(nginx_http_requests_total{status='403'}[5m])", 
+                "legendFormat": "403 Forbidden"
+              }
+            ]
+          },
+          {
+            "title": "Compliance Score",
+            "type": "gauge",
+            "targets": [
+              {
+                "expr": "compliance_score_gdpr",
+                "legendFormat": "GDPR Compliance"
+              },
+              {
+                "expr": "compliance_score_soc2",
+                "legendFormat": "SOC2 Compliance"  
+              },
+              {
+                "expr": "compliance_score_youtube",
+                "legendFormat": "YouTube ToS Compliance"
+              }
+            ]
+          },
+          {
+            "title": "Resource Utilization Forecast",
+            "type": "graph", 
+            "targets": [
+              {
+                "expr": "predict_linear(cpu_utilization[7d:1h], 7*24*3600)",
+                "legendFormat": "CPU Forecast"
+              },
+              {
+                "expr": "predict_linear(memory_utilization[7d:1h], 7*24*3600)",
+                "legendFormat": "Memory Forecast"
+              }
+            ]
+          }
+        ]
+      }
+    }
