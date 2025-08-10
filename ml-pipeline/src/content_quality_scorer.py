@@ -62,48 +62,141 @@ class ContentQualityScorer:
         )
     
     def _score_script(self, script: str) -> float:
-        """Score script quality"""
+        """Score script quality with comprehensive metrics"""
         if not script:
             return 0.0
         
         score = 0.0
+        words = script.split()
+        word_count = len(words)
+        sentences = script.split('.')
         
-        # Length check (optimal 1500-2500 words)
-        word_count = len(script.split())
+        # Length optimization (15% weight)
         if 1500 <= word_count <= 2500:
-            score += 0.3
+            score += 0.15
         elif 1000 <= word_count < 1500 or 2500 < word_count <= 3000:
-            score += 0.2
+            score += 0.10
+        elif 500 <= word_count < 1000 or 3000 < word_count <= 4000:
+            score += 0.05
+        
+        # Hook quality analysis (20% weight)
+        hook = ' '.join(words[:50]) if len(words) >= 50 else script
+        hook_keywords = ['discover', 'learn', 'secret', 'amazing', 'how to', 'revealed', 
+                        'ultimate', 'proven', 'exclusive', 'breakthrough', 'transform']
+        hook_score = sum(1 for word in hook_keywords if word in hook.lower()) / len(hook_keywords)
+        score += min(0.20, hook_score * 0.20)
+        
+        # Engagement elements (15% weight)
+        engagement_phrases = ['subscribe', 'like', 'comment', 'share', 'notification bell',
+                            'join', 'follow', 'let me know', 'what do you think']
+        engagement_count = sum(1 for phrase in engagement_phrases if phrase in script.lower())
+        score += min(0.15, (engagement_count / 5) * 0.15)
+        
+        # Structure analysis (20% weight)
+        paragraphs = script.split('\n\n')
+        if len(paragraphs) >= 5:  # Well-structured
+            score += 0.20
+        elif len(paragraphs) >= 3:
+            score += 0.15
+        elif len(paragraphs) >= 2:
+            score += 0.10
+        
+        # Readability score (15% weight)
+        avg_sentence_length = word_count / max(len(sentences), 1)
+        if 15 <= avg_sentence_length <= 20:  # Optimal readability
+            score += 0.15
+        elif 10 <= avg_sentence_length < 15 or 20 < avg_sentence_length <= 25:
+            score += 0.10
         else:
-            score += 0.1
+            score += 0.05
         
-        # Hook quality (first 15 seconds)
-        hook = ' '.join(script.split()[:30])
-        if any(word in hook.lower() for word in ['discover', 'learn', 'secret', 'amazing', 'how to']):
-            score += 0.2
+        # Keyword density (10% weight)
+        # Check for relevant keywords without stuffing
+        common_words = set(words)
+        unique_ratio = len(common_words) / max(word_count, 1)
+        if 0.4 <= unique_ratio <= 0.6:  # Good vocabulary diversity
+            score += 0.10
+        elif 0.3 <= unique_ratio < 0.4 or 0.6 < unique_ratio <= 0.7:
+            score += 0.07
+        else:
+            score += 0.03
         
-        # Call-to-action presence
-        if any(phrase in script.lower() for phrase in ['subscribe', 'like', 'comment', 'share']):
-            score += 0.2
-        
-        # Structure (intro, body, conclusion)
-        if len(script.split('\n\n')) >= 3:
-            score += 0.3
+        # Emotional appeal (5% weight)
+        emotion_words = ['amazing', 'incredible', 'shocking', 'surprising', 'exciting',
+                        'fascinating', 'unbelievable', 'mind-blowing', 'revolutionary']
+        emotion_count = sum(1 for word in emotion_words if word in script.lower())
+        score += min(0.05, (emotion_count / 10) * 0.05)
         
         return min(score, 1.0)
     
     def _score_voice(self, voice_params: Dict[str, Any]) -> float:
-        """Score voice quality parameters"""
-        score = 0.5  # Base score
+        """Score voice quality parameters with detailed analysis"""
+        if not voice_params:
+            return 0.3  # Minimal score if no params
         
-        if voice_params.get('clarity', 0) > 0.8:
-            score += 0.2
+        score = 0.0
         
-        if 0.8 <= voice_params.get('pace', 1.0) <= 1.2:
+        # Voice clarity (25% weight)
+        clarity = voice_params.get('clarity', 0.5)
+        if clarity > 0.9:
+            score += 0.25
+        elif clarity > 0.8:
+            score += 0.20
+        elif clarity > 0.7:
             score += 0.15
+        elif clarity > 0.6:
+            score += 0.10
+        else:
+            score += 0.05
         
-        if voice_params.get('emotion_variance', 0) > 0.3:
+        # Speaking pace (20% weight)
+        pace = voice_params.get('pace', 1.0)
+        if 0.9 <= pace <= 1.1:  # Optimal pace
+            score += 0.20
+        elif 0.8 <= pace < 0.9 or 1.1 < pace <= 1.2:
             score += 0.15
+        elif 0.7 <= pace < 0.8 or 1.2 < pace <= 1.3:
+            score += 0.10
+        else:
+            score += 0.05
+        
+        # Emotion variance (20% weight)
+        emotion_variance = voice_params.get('emotion_variance', 0)
+        if emotion_variance > 0.4:
+            score += 0.20
+        elif emotion_variance > 0.3:
+            score += 0.15
+        elif emotion_variance > 0.2:
+            score += 0.10
+        else:
+            score += 0.05
+        
+        # Volume consistency (15% weight)
+        volume_consistency = voice_params.get('volume_consistency', 0.5)
+        if volume_consistency > 0.8:
+            score += 0.15
+        elif volume_consistency > 0.6:
+            score += 0.10
+        else:
+            score += 0.05
+        
+        # Pronunciation accuracy (10% weight)
+        pronunciation = voice_params.get('pronunciation_score', 0.5)
+        if pronunciation > 0.9:
+            score += 0.10
+        elif pronunciation > 0.7:
+            score += 0.07
+        else:
+            score += 0.03
+        
+        # Background noise level (10% weight)
+        noise_level = voice_params.get('background_noise', 1.0)
+        if noise_level < 0.1:  # Very quiet background
+            score += 0.10
+        elif noise_level < 0.3:
+            score += 0.07
+        elif noise_level < 0.5:
+            score += 0.04
         
         return min(score, 1.0)
     
@@ -177,25 +270,69 @@ class ContentQualityScorer:
         return min(score, 1.0)
     
     def _score_engagement_potential(self, content: Dict[str, Any]) -> float:
-        """Score potential for audience engagement"""
+        """Score potential for audience engagement with comprehensive metrics"""
         score = 0.0
         
-        # Trending topic
+        # Trending topic analysis (20% weight)
         if content.get('is_trending', False):
-            score += 0.3
+            trend_score = content.get('trend_score', 0.5)
+            score += min(0.20, trend_score * 0.20)
+        else:
+            # Check for evergreen content value
+            if content.get('is_evergreen', False):
+                score += 0.10
         
-        # Emotional appeal
-        if content.get('emotion_score', 0) > 0.6:
-            score += 0.2
+        # Emotional appeal (15% weight)
+        emotion_score = content.get('emotion_score', 0)
+        if emotion_score > 0.8:
+            score += 0.15
+        elif emotion_score > 0.6:
+            score += 0.12
+        elif emotion_score > 0.4:
+            score += 0.08
+        else:
+            score += 0.04
         
-        # Interactive elements
-        if content.get('has_poll', False) or content.get('has_quiz', False):
-            score += 0.2
+        # Interactive elements (20% weight)
+        interaction_score = 0
+        if content.get('has_poll', False):
+            interaction_score += 0.07
+        if content.get('has_quiz', False):
+            interaction_score += 0.07
+        if content.get('has_challenge', False):
+            interaction_score += 0.06
+        if content.get('has_call_to_action', False):
+            interaction_score += 0.05
+        score += min(0.20, interaction_score)
         
-        # Optimal duration (8-12 minutes)
+        # Optimal duration (15% weight)
         duration = content.get('duration_seconds', 0)
-        if 480 <= duration <= 720:
-            score += 0.3
+        if 480 <= duration <= 720:  # 8-12 minutes
+            score += 0.15
+        elif 300 <= duration < 480 or 720 < duration <= 900:  # 5-8 or 12-15 minutes
+            score += 0.12
+        elif 180 <= duration < 300 or 900 < duration <= 1200:  # 3-5 or 15-20 minutes
+            score += 0.08
+        else:
+            score += 0.04
+        
+        # Release timing (10% weight)
+        release_time = content.get('release_time_score', 0.5)
+        score += release_time * 0.10
+        
+        # Target audience match (10% weight)
+        audience_match = content.get('audience_match_score', 0.5)
+        score += audience_match * 0.10
+        
+        # Shareability factors (10% weight)
+        shareability = 0
+        if content.get('has_surprising_fact', False):
+            shareability += 0.04
+        if content.get('has_useful_tips', False):
+            shareability += 0.03
+        if content.get('has_entertainment_value', False):
+            shareability += 0.03
+        score += shareability
         
         return min(score, 1.0)
     

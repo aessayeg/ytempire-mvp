@@ -1,0 +1,168 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.wheel
+.Python
+env/
+venv/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+*.log
+
+# FastAPI
+instance/
+.webassets-cache
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node.js / Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+dist/
+dist-ssr/
+*.local
+.eslintcache
+
+# Docker
+*.pid
+*.seed
+*.pid.lock
+
+# Monitoring
+grafana/data/
+prometheus/data/
+
+# ML/AI Models
+models/
+*.h5
+*.pkl
+*.pth
+*.onnx
+checkpoints/
+
+# Data
+data/raw/
+data/processed/
+data/cache/
+*.csv
+*.parquet
+*.feather
+
+# Logs
+logs/
+*.log
+*.out
+*.err
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.p12
+credentials.json
+token.json
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Production builds
+build/
+dist/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Reports
+reports/generated/
+security_reports/
+
+# Cache
+.cache/
+*.cache
+redis_data/
+postgres_data/
+
+# N8N
+n8n_data/
+
+# Video files (large)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# Audio files (large)
+*.wav
+*.mp3
+*.flac
+
+# Image processing
+*.psd
+*.ai
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Documentation builds
+docs/_build/
+site/
+
+# Package managers
+.pnpm-store/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Monitoring data
+influxdb_data/
+victoria_metrics_data/
