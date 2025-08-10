@@ -1,0 +1,71 @@
+# ML/AI Core Dependencies
+torch==2.1.2
+torchvision==0.16.2
+transformers==4.36.2
+accelerate==0.25.0
+
+# Video Processing
+opencv-python==4.9.0.80
+moviepy==1.0.3
+Pillow==10.1.0
+imageio==2.33.1
+imageio-ffmpeg==0.4.9
+
+# Audio Processing
+librosa==0.10.1
+soundfile==0.12.1
+pydub==0.25.1
+scipy==1.11.4
+
+# AI Services
+openai==1.6.1
+anthropic==0.8.1
+elevenlabs==0.2.27
+google-cloud-texttospeech==2.15.0
+google-cloud-translate==3.13.0
+
+# ML Operations
+mlflow==2.9.2
+wandb==0.16.1
+optuna==3.5.0
+ray[tune]==2.9.0
+
+# Data Processing
+pandas==2.1.4
+numpy==1.24.3
+scikit-learn==1.3.2
+xgboost==2.0.3
+
+# NLP
+spacy==3.7.2
+nltk==3.8.1
+textblob==0.17.1
+langchain==0.0.350
+sentence-transformers==2.2.2
+
+# Vector Database
+chromadb==0.4.22
+pinecone-client==3.0.0
+faiss-cpu==1.7.4
+
+# YouTube Data
+google-api-python-client==2.111.0
+pytube==15.0.0
+youtube-transcript-api==0.6.1
+
+# Trend Analysis
+prophet==1.1.5
+statsmodels==0.14.1
+pytrends==4.9.2
+
+# Utils
+tqdm==4.66.1
+python-dotenv==1.0.0
+pyyaml==6.0.1
+joblib==1.3.2
+numba==0.58.1
+
+# GPU Optimization
+nvidia-ml-py==12.535.133
+gpustat==1.1.1
+pynvml==11.5.0

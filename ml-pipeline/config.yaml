@@ -1,0 +1,90 @@
+# YTEmpire ML Pipeline Configuration
+
+# Model Settings
+models:
+  script_generation:
+    primary: "gpt-4-turbo-preview"
+    fallback: "claude-3-opus"
+    temperature: 0.7
+    max_tokens: 2000
+    
+  voice_synthesis:
+    primary: "elevenlabs"
+    fallback: "google-tts"
+    voice_id: "21m00Tcm4TlvDq8ikWAM"  # Default voice
+    stability: 0.5
+    similarity_boost: 0.75
+    
+  thumbnail_generation:
+    model: "dall-e-3"
+    size: "1792x1024"
+    quality: "hd"
+    
+  video_assembly:
+    resolution: "1920x1080"
+    fps: 30
+    codec: "h264"
+    bitrate: "5000k"
+
+# Cost Optimization
+cost_limits:
+  max_per_video: 3.00  # $3 target
+  daily_budget: 100.00
+  monthly_budget: 10000.00
+  
+  # Per-service limits
+  openai_daily: 50.00
+  elevenlabs_daily: 20.00
+  google_daily: 10.00
+  
+# Performance Targets
+performance:
+  script_generation_timeout: 30  # seconds
+  voice_synthesis_timeout: 60
+  thumbnail_generation_timeout: 20
+  video_assembly_timeout: 300
+  total_pipeline_timeout: 600  # 10 minutes
+  
+# Quality Thresholds
+quality:
+  min_script_score: 0.7
+  min_voice_quality: 0.8
+  min_thumbnail_score: 0.75
+  min_video_score: 0.8
+  
+# Trend Analysis
+trends:
+  data_sources:
+    - youtube_trending
+    - google_trends
+    - reddit
+    - twitter
+  update_frequency: 3600  # seconds
+  min_trend_score: 0.6
+  
+# Content Guidelines
+content:
+  max_title_length: 100
+  max_description_length: 5000
+  max_tags: 500
+  min_duration: 60  # seconds
+  max_duration: 600  # 10 minutes for shorts
+  
+# GPU Settings
+gpu:
+  device: "cuda:0"
+  memory_fraction: 0.8
+  allow_growth: true
+  
+# Caching
+cache:
+  enabled: true
+  ttl: 86400  # 24 hours
+  max_size: 10000  # entries
+  
+# Monitoring
+monitoring:
+  log_level: "INFO"
+  metrics_enabled: true
+  track_costs: true
+  alert_on_failure: true
