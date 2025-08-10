@@ -3,12 +3,29 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
   pull_request:
     branches: [ main ]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
 
 env:
   PYTHON_VERSION: '3.11'
   NODE_VERSION: '20'
+  DOCKER_REGISTRY: ghcr.io
+  DOCKER_IMAGE_PREFIX: ${{ github.repository_owner }}/ytempire
 
 jobs:
   backend-tests:
@@ -66,17 +83,25 @@ jobs:
     - name: Run linting
       run: |
         cd backend
+        pip install flake8 black mypy
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         black --check .
+        mypy app/ --ignore-missing-imports
     
     - name: Run tests
       env:
         DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
         REDIS_URL: redis://localhost:6379/0
         SECRET_KEY: test-secret-key
+        ENVIRONMENT: test
       run: |
         cd backend
-        pytest tests/ -v --cov=app --cov-report=xml
+        pytest tests/ -v --cov=app --cov-report=xml --cov-report=html --cov-report=term-missing
+    
+    - name: Check test coverage
+      run: |
+        cd backend
+        coverage report --fail-under=80
     
     - name: Upload coverage
       uses: codecov/codecov-action@v3
@@ -108,10 +133,15 @@ jobs:
         cd frontend
         npm run lint
     
+    - name: Run type checking
+      run: |
+        cd frontend
+        npm run type-check
+    
     - name: Run tests
       run: |
         cd frontend
-        npm run test -- --coverage
+        npm run test -- --coverage --watchAll=false
     
     - name: Build
       run: |
@@ -168,16 +198,124 @@ jobs:
       with:
         sarif_file: 'trivy-results.sarif'
 
-  deploy:
-    name: Deploy
+  ml-pipeline-tests:
+    name: ML Pipeline Tests
     runs-on: ubuntu-latest
-    needs: [docker-build, security-scan]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
     - uses: actions/checkout@v4
     
-    - name: Deploy to Production
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install ML dependencies
       run: |
-        echo "Deployment step would go here"
-        # Add your deployment script here
+        cd ml-pipeline
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest
+    
+    - name: Run ML pipeline tests
+      run: |
+        cd ml-pipeline
+        pytest tests/ -v
+    
+    - name: Run benchmark tests
+      run: |
+        cd ml-pipeline
+        python benchmarks/performance_benchmarks.py
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests, ml-pipeline-tests]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Start services with Docker Compose
+      run: |
+        docker-compose -f docker-compose.test.yml up -d
+        sleep 10
+    
+    - name: Run integration tests
+      run: |
+        docker-compose -f docker-compose.test.yml exec -T backend pytest tests/integration/ -v
+    
+    - name: Stop services
+      if: always()
+      run: |
+        docker-compose -f docker-compose.test.yml down -v
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [docker-build, security-scan, integration-tests]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment:
+      name: staging
+      url: https://staging.ytempire.com
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Deploy to ECS Staging
+      run: |
+        echo "Deploying to staging environment"
+        # aws ecs update-service --cluster ytempire-staging --service ytempire-api --force-new-deployment
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [docker-build, security-scan, integration-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://ytempire.com
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Deploy to ECS Production
+      run: |
+        echo "Deploying to production environment"
+        # aws ecs update-service --cluster ytempire-prod --service ytempire-api --force-new-deployment
+    
+    - name: Notify deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: 'Production deployment completed'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+      if: always()

@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  postgres-test:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass
+      POSTGRES_DB: test_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis-test:
+    image: redis:7
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://test_user:test_pass@postgres-test:5432/test_db
+      REDIS_URL: redis://redis-test:6379/0
+      SECRET_KEY: test-secret-key-do-not-use-in-production
+      ENVIRONMENT: test
+      CELERY_BROKER_URL: redis://redis-test:6379/1
+      CELERY_RESULT_BACKEND: redis://redis-test:6379/2
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "
+        alembic upgrade head &&
+        pytest tests/ -v --cov=app --cov-report=xml
+      "
+
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: test
+    environment:
+      VITE_API_URL: http://backend-test:8000
+      NODE_ENV: test
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run test -- --coverage --watchAll=false
+
+  n8n-test:
+    image: n8nio/n8n:latest
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: "false"
+      N8N_HOST: n8n-test
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      WEBHOOK_URL: http://n8n-test:5678/
+      N8N_ENCRYPTION_KEY: test-encryption-key
+    ports:
+      - "5679:5678"
+    volumes:
+      - n8n-test-data:/home/node/.n8n
+
+volumes:
+  postgres-test-data:
+  n8n-test-data:

@@ -1,0 +1,121 @@
+version: '3.9'
+
+# GPU-enabled Docker Compose configuration for YTEmpire
+# Requires NVIDIA Container Toolkit
+
+services:
+  # ML Pipeline with GPU support
+  ml-pipeline:
+    build:
+      context: ./ml-pipeline
+      dockerfile: Dockerfile.gpu
+    container_name: ytempire_ml_gpu
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+      - CUDA_VISIBLE_DEVICES=0
+      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+      - CUDA_LAUNCH_BLOCKING=0
+      - TRANSFORMERS_CACHE=/app/cache/transformers
+      - HF_HOME=/app/cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - ./ml-pipeline:/app
+      - ml_models:/app/models
+      - ml_cache:/app/cache
+      - gpu_logs:/app/logs
+    networks:
+      - ytempire_network
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "python", "-c", "import torch; assert torch.cuda.is_available()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Video Processing with GPU acceleration
+  video-processor:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.gpu
+    container_name: ytempire_video_gpu
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+      - OPENCV_CUDA_ENABLE=1
+      - FFMPEG_HWACCEL=cuda
+      - VIDEO_ENCODER=h264_nvenc
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, video]
+    volumes:
+      - ./backend:/app
+      - video_data:/app/videos
+      - video_cache:/app/cache
+    networks:
+      - ytempire_network
+    depends_on:
+      - ml-pipeline
+
+  # Monitoring for GPU metrics
+  gpu-monitor:
+    image: nvidia/dcgm-exporter:3.1.7-3.1.4-ubuntu20.04
+    container_name: ytempire_gpu_monitor
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "9400:9400"
+    networks:
+      - ytempire_network
+
+  # Prometheus with GPU metrics
+  prometheus-gpu:
+    image: prom/prometheus:latest
+    container_name: ytempire_prometheus_gpu
+    volumes:
+      - ./infrastructure/monitoring/prometheus-gpu.yml:/etc/prometheus/prometheus.yml
+      - prometheus_gpu_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9091:9090"
+    networks:
+      - ytempire_network
+    depends_on:
+      - gpu-monitor
+
+volumes:
+  ml_models:
+  ml_cache:
+  gpu_logs:
+  video_data:
+  video_cache:
+  prometheus_gpu_data:
+
+networks:
+  ytempire_network:
+    external: true

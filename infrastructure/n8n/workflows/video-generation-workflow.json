@@ -1,0 +1,320 @@
+{
+  "name": "YTEmpire Video Generation Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "video-generation",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Video Generation Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/videos/generate",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "channel_id",
+              "value": "={{$json[\"channel_id\"]}}"
+            },
+            {
+              "name": "topic",
+              "value": "={{$json[\"topic\"]}}"
+            },
+            {
+              "name": "style",
+              "value": "={{$json[\"style\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "trigger-video-generation",
+      "name": "Trigger Video Generation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{$json[\"status\"]}}",
+              "rightValue": "processing",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-status",
+      "name": "Check Generation Status",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "wait-for-processing",
+      "name": "Wait for Processing",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/videos/{{$json[\"video_id\"]}}/status",
+        "method": "GET",
+        "options": {}
+      },
+      "id": "poll-status",
+      "name": "Poll Video Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{$json[\"status\"]}}",
+              "rightValue": "completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-completion",
+      "name": "Check if Completed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/videos/{{$json[\"video_id\"]}}/publish",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "schedule_time",
+              "value": "={{$json[\"schedule_time\"]}}"
+            },
+            {
+              "name": "auto_publish",
+              "value": "={{$json[\"auto_publish\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "publish-video",
+      "name": "Publish to YouTube",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "url": "{{$json[\"webhook_callback_url\"]}}",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "video_id",
+              "value": "={{$json[\"video_id\"]}}"
+            },
+            {
+              "name": "status",
+              "value": "success"
+            },
+            {
+              "name": "youtube_url",
+              "value": "={{$json[\"youtube_url\"]}}"
+            },
+            {
+              "name": "total_cost",
+              "value": "={{$json[\"total_cost\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-success-callback",
+      "name": "Send Success Callback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1650, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "failed"
+            },
+            {
+              "name": "error",
+              "value": "={{$json[\"error\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "handle-error",
+      "name": "Handle Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [1450, 500]
+    },
+    {
+      "parameters": {
+        "content": "## YTEmpire Video Generation Workflow\n\nThis workflow orchestrates the entire video generation pipeline:\n\n1. **Webhook Trigger**: Receives video generation request\n2. **Trigger Generation**: Calls backend API to start generation\n3. **Status Polling**: Monitors generation progress\n4. **Auto-publish**: Publishes to YouTube when ready\n5. **Callback**: Notifies caller of completion\n\n### Error Handling\n- Retries on temporary failures\n- Sends error callbacks on permanent failures\n- Logs all operations for debugging",
+        "height": 280,
+        "width": 400
+      },
+      "id": "workflow-documentation",
+      "name": "Workflow Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [200, 50]
+    }
+  ],
+  "connections": {
+    "webhook-trigger": {
+      "main": [
+        [
+          {
+            "node": "trigger-video-generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "trigger-video-generation": {
+      "main": [
+        [
+          {
+            "node": "check-status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check-status": {
+      "main": [
+        [
+          {
+            "node": "wait-for-processing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "handle-error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "wait-for-processing": {
+      "main": [
+        [
+          {
+            "node": "poll-status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "poll-status": {
+      "main": [
+        [
+          {
+            "node": "check-completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check-completion": {
+      "main": [
+        [
+          {
+            "node": "publish-video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "wait-for-processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "publish-video": {
+      "main": [
+        [
+          {
+            "node": "send-success-callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "ytempire-video-generation"
+  },
+  "pinData": {},
+  "versionId": "1.0.0",
+  "triggerCount": 1
+}
