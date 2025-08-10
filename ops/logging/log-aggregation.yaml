@@ -1,0 +1,443 @@
+# Log Aggregation Setup - ELK Stack
+# Elasticsearch, Logstash, Kibana, and Fluentd configuration
+
+---
+# Elasticsearch StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  namespace: logging
+spec:
+  serviceName: elasticsearch
+  replicas: 3
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+      - name: increase-vm-max-map
+        image: busybox
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
+      containers:
+      - name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0
+        ports:
+        - containerPort: 9200
+          name: http
+        - containerPort: 9300
+          name: transport
+        env:
+        - name: cluster.name
+          value: ytempire-logs
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: discovery.seed_hosts
+          value: "elasticsearch-0.elasticsearch,elasticsearch-1.elasticsearch,elasticsearch-2.elasticsearch"
+        - name: cluster.initial_master_nodes
+          value: "elasticsearch-0,elasticsearch-1,elasticsearch-2"
+        - name: ES_JAVA_OPTS
+          value: "-Xms512m -Xmx512m"
+        - name: xpack.security.enabled
+          value: "false"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 20Gi
+
+---
+# Logstash Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: logging
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+      - name: logstash
+        image: docker.elastic.co/logstash/logstash:8.6.0
+        ports:
+        - containerPort: 5044
+          name: beats
+        - containerPort: 9600
+          name: http
+        volumeMounts:
+        - name: config
+          mountPath: /usr/share/logstash/pipeline
+        - name: settings
+          mountPath: /usr/share/logstash/config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+      volumes:
+      - name: config
+        configMap:
+          name: logstash-pipeline
+      - name: settings
+        configMap:
+          name: logstash-settings
+
+---
+# Logstash Pipeline Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-pipeline
+  namespace: logging
+data:
+  logstash.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+      
+      tcp {
+        port => 5000
+        codec => json
+      }
+      
+      http {
+        port => 8080
+        codec => json
+      }
+    }
+    
+    filter {
+      # Parse JSON logs
+      if [message] =~ /^\{.*\}$/ {
+        json {
+          source => "message"
+        }
+      }
+      
+      # Parse Python logs
+      if [kubernetes][container][name] == "backend" {
+        grok {
+          match => {
+            "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:msg}"
+          }
+        }
+        
+        date {
+          match => ["timestamp", "ISO8601"]
+        }
+      }
+      
+      # Parse Node.js logs
+      if [kubernetes][container][name] == "frontend" {
+        grok {
+          match => {
+            "message" => "\[%{TIMESTAMP_ISO8601:timestamp}\] %{LOGLEVEL:level}: %{GREEDYDATA:msg}"
+          }
+        }
+      }
+      
+      # Add GeoIP information for IPs
+      if [client_ip] {
+        geoip {
+          source => "client_ip"
+          target => "geoip"
+        }
+      }
+      
+      # Calculate response time
+      if [response_time] {
+        ruby {
+          code => "event.set('response_time_ms', event.get('response_time').to_f * 1000)"
+        }
+      }
+      
+      # Extract error details
+      if [level] == "ERROR" {
+        mutate {
+          add_tag => ["error"]
+        }
+        
+        # Extract stack trace
+        if [stack_trace] {
+          mutate {
+            add_field => {
+              "error_file" => "%{[stack_trace][0][file]}"
+              "error_line" => "%{[stack_trace][0][line]}"
+            }
+          }
+        }
+      }
+      
+      # Enrich with environment data
+      mutate {
+        add_field => {
+          "environment" => "${ENVIRONMENT:production}"
+          "cluster" => "ytempire-${CLUSTER_NAME:main}"
+        }
+      }
+    }
+    
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch:9200"]
+        index => "ytempire-%{[@metadata][beat]}-%{+YYYY.MM.dd}"
+      }
+      
+      # Send errors to separate index
+      if "error" in [tags] {
+        elasticsearch {
+          hosts => ["elasticsearch:9200"]
+          index => "ytempire-errors-%{+YYYY.MM.dd}"
+        }
+      }
+      
+      # Send metrics to metrics index
+      if [type] == "metric" {
+        elasticsearch {
+          hosts => ["elasticsearch:9200"]
+          index => "ytempire-metrics-%{+YYYY.MM.dd}"
+        }
+      }
+    }
+
+---
+# Fluentd DaemonSet
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd
+  namespace: logging
+spec:
+  selector:
+    matchLabels:
+      app: fluentd
+  template:
+    metadata:
+      labels:
+        app: fluentd
+    spec:
+      serviceAccountName: fluentd
+      containers:
+      - name: fluentd
+        image: fluent/fluentd-kubernetes-daemonset:v1-debian-elasticsearch
+        env:
+        - name: FLUENT_ELASTICSEARCH_HOST
+          value: "elasticsearch"
+        - name: FLUENT_ELASTICSEARCH_PORT
+          value: "9200"
+        - name: FLUENT_ELASTICSEARCH_SCHEME
+          value: "http"
+        - name: FLUENT_ELASTICSEARCH_LOGSTASH_FORMAT
+          value: "true"
+        - name: FLUENT_ELASTICSEARCH_LOGSTASH_PREFIX
+          value: "ytempire"
+        volumeMounts:
+        - name: config
+          mountPath: /fluentd/etc
+        - name: varlog
+          mountPath: /var/log
+        - name: dockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+      volumes:
+      - name: config
+        configMap:
+          name: fluentd-config
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: dockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+
+---
+# Fluentd Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+  namespace: logging
+data:
+  fluent.conf: |
+    <source>
+      @type tail
+      path /var/log/containers/*.log
+      pos_file /var/log/fluentd-containers.log.pos
+      tag kubernetes.*
+      read_from_head true
+      <parse>
+        @type json
+        time_format %Y-%m-%dT%H:%M:%S.%NZ
+      </parse>
+    </source>
+    
+    <filter kubernetes.**>
+      @type kubernetes_metadata
+      @id filter_kube_metadata
+      kubernetes_url "#{ENV['KUBERNETES_URL']}"
+      verify_ssl "#{ENV['KUBERNETES_VERIFY_SSL']}"
+    </filter>
+    
+    <filter kubernetes.var.log.containers.backend-**>
+      @type parser
+      key_name log
+      <parse>
+        @type json
+      </parse>
+    </filter>
+    
+    <filter kubernetes.**>
+      @type record_transformer
+      <record>
+        hostname ${hostname}
+        environment "#{ENV['ENVIRONMENT']}"
+        cluster_name "#{ENV['CLUSTER_NAME']}"
+      </record>
+    </filter>
+    
+    <match kubernetes.**>
+      @type elasticsearch
+      host elasticsearch
+      port 9200
+      logstash_format true
+      logstash_prefix ytempire
+      logstash_dateformat %Y.%m.%d
+      include_tag_key true
+      type_name _doc
+      tag_key @log_name
+      flush_interval 10s
+      <buffer>
+        flush_interval 10s
+        chunk_limit_size 2M
+        queue_limit_length 32
+        retry_max_interval 30
+        retry_forever false
+      </buffer>
+    </match>
+
+---
+# Kibana Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:8.6.0
+        ports:
+        - containerPort: 5601
+        env:
+        - name: ELASTICSEARCH_HOSTS
+          value: "http://elasticsearch:9200"
+        - name: SERVER_NAME
+          value: "kibana.ytempire.com"
+        - name: SERVER_HOST
+          value: "0.0.0.0"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+
+---
+# Log Retention Policy
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: log-retention-policy
+  namespace: logging
+data:
+  retention.sh: |
+    #!/bin/bash
+    # Delete indices older than 30 days
+    curator --host elasticsearch delete indices --older-than 30 --time-unit days --timestring '%Y.%m.%d'
+    
+    # Delete error indices older than 90 days
+    curator --host elasticsearch delete indices --older-than 90 --time-unit days --timestring '%Y.%m.%d' --prefix ytempire-errors-
+    
+    # Optimize indices
+    curator --host elasticsearch forcemerge --max_num_segments 1 indices --older-than 2 --time-unit days --timestring '%Y.%m.%d'
+
+---
+# Log Retention CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: log-retention
+  namespace: logging
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: curator
+            image: untergeek/curator:8.0.2
+            command: ["/bin/sh", "/scripts/retention.sh"]
+            volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+          volumes:
+          - name: scripts
+            configMap:
+              name: log-retention-policy
+          restartPolicy: OnFailure
