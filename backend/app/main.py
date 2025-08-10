@@ -13,10 +13,14 @@ from app.api.v1.api import api_router
 from app.core.logging import setup_logging
 from app.db.session import engine
 from app.db.base import Base
+from app.services.websocket_manager import WebSocketManager
 
 # Setup logging
 setup_logging()
 logger = logging.getLogger(__name__)
+
+# Initialize WebSocket manager
+ws_manager = WebSocketManager()
 
 
 @asynccontextmanager
@@ -98,3 +102,35 @@ async def root():
         "description": "YTEmpire API - Automating YouTube Success",
         "documentation": "/docs"
     }
+
+# WebSocket endpoints
+from fastapi import WebSocket, WebSocketDisconnect
+from typing import Optional
+
+@app.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: str):
+    """
+    WebSocket endpoint for real-time updates
+    """
+    await ws_manager.connect(websocket, client_id)
+    try:
+        while True:
+            # Wait for messages from client
+            data = await websocket.receive_text()
+            # Echo back to sender
+            await ws_manager.send_personal_message(f"Echo: {data}", client_id)
+    except WebSocketDisconnect:
+        ws_manager.disconnect(client_id)
+        await ws_manager.broadcast(f"Client {client_id} left")
+
+@app.websocket("/ws/video-updates/{channel_id}")
+async def video_updates_websocket(websocket: WebSocket, channel_id: str):
+    """
+    WebSocket endpoint for video generation updates
+    """
+    await ws_manager.connect(websocket, f"channel_{channel_id}")
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        ws_manager.disconnect(f"channel_{channel_id}")
