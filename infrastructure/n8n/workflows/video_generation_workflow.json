@@ -1,0 +1,299 @@
+{
+  "name": "Video Generation Pipeline",
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [250, 300],
+      "parameters": {
+        "path": "video-generation",
+        "method": "POST",
+        "responseMode": "responseNode",
+        "responseData": "allEntries"
+      }
+    },
+    {
+      "id": "2",
+      "name": "Validate Request",
+      "type": "n8n-nodes-base.function",
+      "position": [450, 300],
+      "parameters": {
+        "functionCode": "const { channel_id, topic } = items[0].json;\n\nif (!channel_id) {\n  throw new Error('channel_id is required');\n}\n\nitems[0].json.validated = true;\nitems[0].json.timestamp = new Date().toISOString();\n\nreturn items;"
+      }
+    },
+    {
+      "id": "3",
+      "name": "Call Trend Detection",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [650, 200],
+      "parameters": {
+        "url": "http://backend:8000/api/v1/scripts/detect-trends",
+        "method": "POST",
+        "bodyParametersJson": "{\"category\": \"technology\", \"limit\": 5}",
+        "headerParametersJson": "{\"Authorization\": \"Bearer {{$credentials.apiToken}}\"}",
+        "responseFormat": "json"
+      }
+    },
+    {
+      "id": "4",
+      "name": "Generate Script",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [850, 200],
+      "parameters": {
+        "url": "http://backend:8000/api/v1/scripts/generate",
+        "method": "POST",
+        "bodyParametersJson": "{\"topic\": \"{{$node['Call Trend Detection'].json.topics[0]}}\", \"duration_minutes\": 8}",
+        "headerParametersJson": "{\"Authorization\": \"Bearer {{$credentials.apiToken}}\"}",
+        "responseFormat": "json"
+      }
+    },
+    {
+      "id": "5",
+      "name": "Voice Synthesis",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1050, 200],
+      "parameters": {
+        "url": "http://backend:8000/api/v1/scripts/synthesize-voice",
+        "method": "POST",
+        "bodyParametersJson": "{\"text\": \"{{$node['Generate Script'].json.script}}\", \"voice_id\": \"adam\"}",
+        "headerParametersJson": "{\"Authorization\": \"Bearer {{$credentials.apiToken}}\"}",
+        "responseFormat": "json"
+      }
+    },
+    {
+      "id": "6",
+      "name": "Generate Thumbnail",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1250, 200],
+      "parameters": {
+        "url": "http://backend:8000/api/v1/scripts/generate-thumbnail",
+        "method": "POST",
+        "bodyParametersJson": "{\"title\": \"{{$node['Generate Script'].json.title}}\", \"style\": \"youtube_optimized\"}",
+        "headerParametersJson": "{\"Authorization\": \"Bearer {{$credentials.apiToken}}\"}",
+        "responseFormat": "json"
+      }
+    },
+    {
+      "id": "7",
+      "name": "Assemble Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1450, 200],
+      "parameters": {
+        "url": "http://backend:8000/api/v1/videos/assemble",
+        "method": "POST",
+        "bodyParametersJson": "{\"audio_url\": \"{{$node['Voice Synthesis'].json.audio_url}}\", \"thumbnail_url\": \"{{$node['Generate Thumbnail'].json.thumbnail_url}}\", \"script_data\": \"{{$node['Generate Script'].json}}\"}",
+        "headerParametersJson": "{\"Authorization\": \"Bearer {{$credentials.apiToken}}\"}",
+        "responseFormat": "json"
+      }
+    },
+    {
+      "id": "8",
+      "name": "Quality Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1650, 200],
+      "parameters": {
+        "url": "http://backend:8000/api/v1/videos/quality-check",
+        "method": "POST",
+        "bodyParametersJson": "{\"video_id\": \"{{$node['Assemble Video'].json.video_id}}\"}",
+        "headerParametersJson": "{\"Authorization\": \"Bearer {{$credentials.apiToken}}\"}",
+        "responseFormat": "json"
+      }
+    },
+    {
+      "id": "9",
+      "name": "Upload to YouTube",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1850, 200],
+      "parameters": {
+        "url": "http://backend:8000/api/v1/youtube/upload",
+        "method": "POST",
+        "bodyParametersJson": "{\"video_id\": \"{{$node['Assemble Video'].json.video_id}}\", \"channel_id\": \"{{$node['Trigger'].json.channel_id}}\"}",
+        "headerParametersJson": "{\"Authorization\": \"Bearer {{$credentials.apiToken}}\"}",
+        "responseFormat": "json"
+      }
+    },
+    {
+      "id": "10",
+      "name": "Track Costs",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1050, 400],
+      "parameters": {
+        "url": "http://backend:8000/api/v1/costs/track",
+        "method": "POST",
+        "bodyParametersJson": "{\"video_id\": \"{{$node['Assemble Video'].json.video_id}}\", \"costs\": {\"script\": \"{{$node['Generate Script'].json.cost}}\", \"voice\": \"{{$node['Voice Synthesis'].json.cost}}\", \"thumbnail\": \"{{$node['Generate Thumbnail'].json.cost}}\"}}",
+        "headerParametersJson": "{\"Authorization\": \"Bearer {{$credentials.apiToken}}\"}",
+        "responseFormat": "json"
+      }
+    },
+    {
+      "id": "11",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.function",
+      "position": [850, 500],
+      "parameters": {
+        "functionCode": "const error = items[0].json.error || 'Unknown error';\nconst stage = items[0].json.stage || 'Unknown stage';\n\n// Log error\nconsole.error(`Pipeline error at ${stage}: ${error}`);\n\n// Send notification\nitems[0].json = {\n  success: false,\n  error: error,\n  stage: stage,\n  timestamp: new Date().toISOString()\n};\n\nreturn items;"
+      }
+    },
+    {
+      "id": "12",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [2050, 200],
+      "parameters": {
+        "responseCode": 200,
+        "responseHeaders": {
+          "Content-Type": "application/json"
+        },
+        "responseData": "={\"success\": true, \"video_id\": \"{{$node['Assemble Video'].json.video_id}}\", \"youtube_url\": \"{{$node['Upload to YouTube'].json.url}}\", \"total_cost\": \"{{$node['Track Costs'].json.total_cost}}\", \"quality_score\": \"{{$node['Quality Check'].json.score}}\"}"
+      }
+    },
+    {
+      "id": "13",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1050, 500],
+      "parameters": {
+        "responseCode": 500,
+        "responseHeaders": {
+          "Content-Type": "application/json"
+        },
+        "responseData": "={{$node['Error Handler'].json}}"
+      }
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Request": {
+      "main": [
+        [
+          {
+            "node": "Call Trend Detection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Trend Detection": {
+      "main": [
+        [
+          {
+            "node": "Generate Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Script": {
+      "main": [
+        [
+          {
+            "node": "Voice Synthesis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Voice Synthesis": {
+      "main": [
+        [
+          {
+            "node": "Generate Thumbnail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Thumbnail": {
+      "main": [
+        [
+          {
+            "node": "Assemble Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemble Video": {
+      "main": [
+        [
+          {
+            "node": "Quality Check",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Track Costs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quality Check": {
+      "main": [
+        [
+          {
+            "node": "Upload to YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to YouTube": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Handler": {
+      "main": [
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "errorWorkflow": "error-notification-workflow"
+  },
+  "tags": [
+    {
+      "id": "1",
+      "name": "production"
+    },
+    {
+      "id": "2",
+      "name": "video-generation"
+    }
+  ]
+}

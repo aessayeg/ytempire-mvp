@@ -6,7 +6,8 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     auth, channels, youtube_accounts, script_generation,
-    payment, dashboard, video_queue, webhooks, analytics, notifications, batch, api_optimization, data_quality
+    payment, dashboard, video_queue, webhooks, analytics, notifications, batch, api_optimization, data_quality,
+    videos, users, test_generation
 )
 from app.api.v1 import cost_tracking
 
@@ -95,6 +96,24 @@ api_router.include_router(
     data_quality.router,
     prefix="/data-quality",
     tags=["data-quality"]
+)
+
+api_router.include_router(
+    videos.router,
+    prefix="/videos",
+    tags=["videos"]
+)
+
+api_router.include_router(
+    users.router,
+    prefix="/users",
+    tags=["users"]
+)
+
+api_router.include_router(
+    test_generation.router,
+    prefix="/test",
+    tags=["test-generation"]
 )
 
 # Health check endpoint

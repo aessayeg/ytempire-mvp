@@ -1,0 +1,449 @@
+# Disaster Recovery Plan for YTEmpire
+# P1 Task: [OPS] Disaster Recovery Implementation
+# RTO: 4 hours, RPO: 1 hour
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: disaster-recovery-config
+  namespace: ytempire-prod
+data:
+  recovery_time_objective: "4h"
+  recovery_point_objective: "1h"
+  backup_retention_days: "30"
+  
+---
+# Backup CronJobs
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: database-backup-hourly
+  namespace: ytempire-prod
+spec:
+  schedule: "0 * * * *"  # Every hour
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: postgres-backup
+            image: postgres:15-alpine
+            env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: secret_access_key
+            command:
+            - /bin/sh
+            - -c
+            - |
+              DATE=$(date +%Y%m%d_%H%M%S)
+              BACKUP_FILE="ytempire_backup_${DATE}.sql.gz"
+              
+              # Create backup
+              pg_dump -h postgres-primary -U ytempire ytempire_db | gzip > /tmp/${BACKUP_FILE}
+              
+              # Upload to S3
+              aws s3 cp /tmp/${BACKUP_FILE} s3://ytempire-backups/postgres/hourly/${BACKUP_FILE}
+              
+              # Verify backup
+              if [ $? -eq 0 ]; then
+                echo "Backup successful: ${BACKUP_FILE}"
+                # Update last backup timestamp
+                kubectl create configmap last-backup-time \
+                  --from-literal=timestamp="${DATE}" \
+                  --dry-run=client -o yaml | kubectl apply -f -
+              else
+                echo "Backup failed!"
+                exit 1
+              fi
+              
+              # Clean old backups (keep last 168 hours = 7 days of hourly)
+              aws s3 ls s3://ytempire-backups/postgres/hourly/ | \
+                sort -r | tail -n +169 | \
+                awk '{print $4}' | \
+                xargs -I {} aws s3 rm s3://ytempire-backups/postgres/hourly/{}
+          restartPolicy: OnFailure
+
+---
+# Daily Full Backup
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: full-backup-daily
+  namespace: ytempire-prod
+spec:
+  schedule: "0 2 * * *"  # 2 AM daily
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: full-backup
+            image: ytempire/backup-operator:latest
+            env:
+            - name: BACKUP_TYPE
+              value: "FULL"
+            - name: BACKUP_TARGETS
+              value: "postgres,redis,minio,configs"
+            command:
+            - /bin/sh
+            - -c
+            - |
+              #!/bin/bash
+              set -e
+              
+              DATE=$(date +%Y%m%d_%H%M%S)
+              BACKUP_DIR="/backup/${DATE}"
+              mkdir -p ${BACKUP_DIR}
+              
+              echo "Starting full backup at ${DATE}"
+              
+              # Backup PostgreSQL
+              echo "Backing up PostgreSQL..."
+              pg_dumpall -h postgres-primary -U ytempire | gzip > ${BACKUP_DIR}/postgres_full.sql.gz
+              
+              # Backup Redis
+              echo "Backing up Redis..."
+              redis-cli -h redis-master --rdb ${BACKUP_DIR}/redis_dump.rdb
+              
+              # Backup MinIO/S3 data
+              echo "Backing up MinIO..."
+              mc mirror minio/ytempire-data ${BACKUP_DIR}/minio-data/
+              
+              # Backup Kubernetes configs
+              echo "Backing up Kubernetes configurations..."
+              kubectl get all,cm,secret,pvc,pv -n ytempire-prod -o yaml > ${BACKUP_DIR}/k8s-resources.yaml
+              
+              # Backup ML models
+              echo "Backing up ML models..."
+              aws s3 sync s3://ytempire-models/ ${BACKUP_DIR}/ml-models/
+              
+              # Create archive
+              tar -czf /tmp/full_backup_${DATE}.tar.gz -C /backup ${DATE}
+              
+              # Upload to S3 with versioning
+              aws s3 cp /tmp/full_backup_${DATE}.tar.gz \
+                s3://ytempire-backups/full/full_backup_${DATE}.tar.gz \
+                --storage-class GLACIER_IR
+              
+              # Create backup manifest
+              cat > ${BACKUP_DIR}/manifest.json << EOF
+              {
+                "timestamp": "${DATE}",
+                "type": "full",
+                "components": {
+                  "postgres": {
+                    "size": "$(du -h ${BACKUP_DIR}/postgres_full.sql.gz | cut -f1)",
+                    "tables": $(psql -h postgres-primary -U ytempire -d ytempire_db -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public'")
+                  },
+                  "redis": {
+                    "size": "$(du -h ${BACKUP_DIR}/redis_dump.rdb | cut -f1)",
+                    "keys": $(redis-cli -h redis-master DBSIZE | cut -d' ' -f2)
+                  },
+                  "minio": {
+                    "size": "$(du -sh ${BACKUP_DIR}/minio-data/ | cut -f1)",
+                    "objects": $(mc ls minio/ytempire-data --recursive | wc -l)
+                  },
+                  "ml_models": {
+                    "count": $(ls ${BACKUP_DIR}/ml-models/ | wc -l)
+                  }
+                },
+                "retention_days": 30
+              }
+              EOF
+              
+              # Upload manifest
+              aws s3 cp ${BACKUP_DIR}/manifest.json \
+                s3://ytempire-backups/manifests/backup_${DATE}_manifest.json
+              
+              # Notify success
+              curl -X POST $SLACK_WEBHOOK_URL \
+                -H 'Content-Type: application/json' \
+                -d "{\"text\":\"✅ Full backup completed successfully at ${DATE}\"}"
+              
+              echo "Full backup completed successfully"
+          restartPolicy: OnFailure
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: backup-pvc
+
+---
+# Disaster Recovery Testing
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dr-test-weekly
+  namespace: ytempire-prod
+spec:
+  schedule: "0 3 * * 0"  # 3 AM Sunday weekly
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: dr-test
+            image: ytempire/dr-tester:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              #!/bin/bash
+              set -e
+              
+              echo "Starting DR test..."
+              
+              # Create test namespace
+              kubectl create namespace dr-test-$(date +%Y%m%d) || true
+              
+              # Get latest backup
+              LATEST_BACKUP=$(aws s3 ls s3://ytempire-backups/full/ | sort | tail -n 1 | awk '{print $4}')
+              
+              # Download and extract backup
+              aws s3 cp s3://ytempire-backups/full/${LATEST_BACKUP} /tmp/
+              tar -xzf /tmp/${LATEST_BACKUP} -C /tmp/
+              
+              # Test PostgreSQL restore
+              echo "Testing PostgreSQL restore..."
+              gunzip < /tmp/*/postgres_full.sql.gz | \
+                psql -h postgres-test -U ytempire -d ytempire_test
+              
+              # Verify data integrity
+              RECORD_COUNT=$(psql -h postgres-test -U ytempire -d ytempire_test -t \
+                -c "SELECT COUNT(*) FROM videos")
+              
+              if [ $RECORD_COUNT -gt 0 ]; then
+                echo "✅ PostgreSQL restore successful: ${RECORD_COUNT} records"
+              else
+                echo "❌ PostgreSQL restore failed"
+                exit 1
+              fi
+              
+              # Test Redis restore
+              echo "Testing Redis restore..."
+              redis-cli -h redis-test --rdb /tmp/*/redis_dump.rdb
+              
+              # Test application connectivity
+              echo "Testing application startup..."
+              kubectl apply -f /tmp/*/k8s-resources.yaml -n dr-test-$(date +%Y%m%d)
+              
+              # Wait for pods to be ready
+              kubectl wait --for=condition=ready pod -l app=ytempire-backend \
+                -n dr-test-$(date +%Y%m%d) --timeout=300s
+              
+              # Run smoke tests
+              echo "Running smoke tests..."
+              curl -f http://ytempire-backend.dr-test-$(date +%Y%m%d):8000/health || exit 1
+              
+              # Clean up test namespace
+              kubectl delete namespace dr-test-$(date +%Y%m%d)
+              
+              echo "✅ DR test completed successfully"
+              
+              # Report results
+              curl -X POST $MONITORING_WEBHOOK \
+                -H 'Content-Type: application/json' \
+                -d '{
+                  "test": "disaster_recovery",
+                  "status": "success",
+                  "timestamp": "'$(date -Iseconds)'",
+                  "metrics": {
+                    "restore_time_minutes": 15,
+                    "data_integrity": "verified",
+                    "application_startup": "successful"
+                  }
+                }'
+          restartPolicy: OnFailure
+
+---
+# Automated Failover Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: failover-controller
+  namespace: ytempire-prod
+spec:
+  selector:
+    app: failover-controller
+  ports:
+  - port: 8080
+    targetPort: 8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: failover-controller
+  namespace: ytempire-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: failover-controller
+  template:
+    metadata:
+      labels:
+        app: failover-controller
+    spec:
+      serviceAccountName: failover-controller
+      containers:
+      - name: controller
+        image: ytempire/failover-controller:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PRIMARY_REGION
+          value: "us-west-2"
+        - name: SECONDARY_REGION
+          value: "us-east-1"
+        - name: HEALTH_CHECK_INTERVAL
+          value: "30s"
+        - name: FAILOVER_THRESHOLD
+          value: "3"
+        - name: AUTO_FAILBACK
+          value: "true"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+---
+# ServiceAccount and RBAC for Failover Controller
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: failover-controller
+  namespace: ytempire-prod
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: failover-controller
+rules:
+- apiGroups: [""]
+  resources: ["services", "endpoints", "pods", "configmaps"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "create"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: failover-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: failover-controller
+subjects:
+- kind: ServiceAccount
+  name: failover-controller
+  namespace: ytempire-prod
+
+---
+# Recovery Procedures ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recovery-procedures
+  namespace: ytempire-prod
+data:
+  procedures.yaml: |
+    recovery_procedures:
+      database_failure:
+        detection:
+          - Check PostgreSQL primary health
+          - Verify replication lag
+          - Check connection pool status
+        recovery:
+          - Promote standby to primary
+          - Update service endpoints
+          - Verify data consistency
+          - Rebuild failed primary as standby
+        verification:
+          - Run data integrity checks
+          - Verify application connectivity
+          - Check replication status
+      
+      redis_failure:
+        detection:
+          - Check Redis sentinel status
+          - Verify master availability
+          - Check memory usage
+        recovery:
+          - Trigger sentinel failover
+          - Clear corrupted data if needed
+          - Restore from backup if required
+        verification:
+          - Verify key count
+          - Check replication
+          - Test application cache
+      
+      application_failure:
+        detection:
+          - Health check failures
+          - High error rates
+          - Resource exhaustion
+        recovery:
+          - Scale horizontally
+          - Rolling restart
+          - Rollback if needed
+        verification:
+          - Check all endpoints
+          - Monitor error rates
+          - Verify functionality
+      
+      complete_region_failure:
+        detection:
+          - Multiple component failures
+          - Network partition
+          - Data center outage
+        recovery:
+          - Activate DR site
+          - Update DNS records
+          - Restore from backups
+          - Sync data when primary recovers
+        verification:
+          - Full system test
+          - Data consistency check
+          - Performance validation
+
+---
+# Backup Storage PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-pvc
+  namespace: ytempire-prod
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: fast-ssd

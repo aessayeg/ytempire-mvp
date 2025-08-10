@@ -72,6 +72,7 @@ pytest tests/ -m integration  # Integration tests only
 cd frontend
 npm test
 npm run test:coverage  # With coverage
+npm run test -- --watch  # Watch mode for development
 ```
 
 ### Database Operations
@@ -98,6 +99,7 @@ pre-commit run --all-files  # Run all pre-commit hooks
 cd frontend
 npm run lint
 npm run lint:fix  # Auto-fix issues
+npm run typecheck  # TypeScript type checking
 ```
 
 ### N8N Workflow Management
@@ -195,3 +197,46 @@ Primary services configured with fallbacks:
 - **RAM**: 128GB DDR5 (PostgreSQL: 16GB, Redis: 8GB, Video processing: 48GB)
 - **GPU**: NVIDIA RTX 5090 (32GB VRAM for AI model inference)
 - **Storage**: 2TB NVMe system + 4TB NVMe data + 8TB HDD backup
+
+## Common Debugging Commands
+
+### Check Service Health
+```bash
+# Backend health check
+curl http://localhost:8000/health
+
+# Check running containers
+docker ps
+
+# View container logs
+docker logs ytempire_backend -f
+docker logs ytempire_celery_worker -f
+
+# Check Celery task status
+celery -A app.core.celery_app inspect active
+celery -A app.core.celery_app inspect stats
+```
+
+### Running Individual Tests
+```bash
+# Backend: Run a specific test file
+cd backend
+pytest tests/test_video_service.py -v
+
+# Backend: Run a specific test function
+pytest tests/test_video_service.py::test_generate_video -v
+
+# Frontend: Run tests matching a pattern
+cd frontend
+npm test -- --testNamePattern="VideoCard"
+```
+
+### Environment Variables
+```bash
+# Backend requires these environment variables (see .env.example):
+# DATABASE_URL, REDIS_URL, JWT_SECRET_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, 
+# ELEVENLABS_API_KEY, YOUTUBE_API_KEY, GOOGLE_CLOUD_PROJECT_ID
+
+# Frontend requires:
+# VITE_API_URL (defaults to http://localhost:8000)
+```
