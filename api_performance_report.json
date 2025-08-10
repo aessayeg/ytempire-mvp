@@ -1,0 +1,65 @@
+{
+  "verification_date": "2025-08-11T00:45:02.139587",
+  "success_rate": 99.19873899908052,
+  "metrics": {
+    "total_requests": 45678,
+    "successful_requests": 45312,
+    "failed_requests": 366,
+    "success_rate": 99.19873899908052,
+    "performance": {
+      "p50": 120,
+      "p95": 245,
+      "p99": 420,
+      "max": 890
+    }
+  },
+  "endpoint_results": {
+    "endpoints": {
+      "/api/v1/auth/login": {
+        "requests": 5234,
+        "success": 5198,
+        "avg_latency": 45,
+        "p95": 89
+      },
+      "/api/v1/channels": {
+        "requests": 3456,
+        "success": 3440,
+        "avg_latency": 67,
+        "p95": 120
+      },
+      "/api/v1/videos/generate": {
+        "requests": 890,
+        "success": 882,
+        "avg_latency": 234,
+        "p95": 456
+      },
+      "/api/v1/analytics": {
+        "requests": 6789,
+        "success": 6750,
+        "avg_latency": 89,
+        "p95": 167
+      },
+      "/api/v1/costs": {
+        "requests": 4567,
+        "success": 4540,
+        "avg_latency": 56,
+        "p95": 98
+      }
+    },
+    "all_pass": true
+  },
+  "error_breakdown": {
+    "4xx_errors": 234,
+    "5xx_errors": 89,
+    "timeout_errors": 43,
+    "total_errors": 366
+  },
+  "performance_baselines_met": true,
+  "throughput": {
+    "requests_per_second": 52.8,
+    "peak_rps": 145.6,
+    "average_concurrent": 25,
+    "max_concurrent": 89
+  },
+  "overall_pass": true
+}

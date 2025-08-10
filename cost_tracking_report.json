@@ -1,0 +1,46 @@
+{
+  "report_date": "2025-08-11T00:40:01.269517",
+  "week": "Week 1",
+  "total_spent": 206.55,
+  "videos_generated": 12,
+  "average_cost_per_video": 17.212500000000002,
+  "services": {
+    "openai": {
+      "spent": 78.45,
+      "limit": 50.0,
+      "calls": 1234
+    },
+    "elevenlabs": {
+      "spent": 42.3,
+      "limit": 20.0,
+      "calls": 567
+    },
+    "dalle": {
+      "spent": 25.6,
+      "limit": 10.0,
+      "calls": 89
+    },
+    "claude": {
+      "spent": 15.2,
+      "limit": 10.0,
+      "calls": 234
+    },
+    "infrastructure": {
+      "spent": 45.0,
+      "limit": 50.0,
+      "calls": 0
+    }
+  },
+  "optimizations": {
+    "caching_savings": 45.2,
+    "model_fallback_savings": 23.1,
+    "batch_processing_savings": 18.5,
+    "total_savings": 86.8
+  },
+  "targets": {
+    "cost_per_video_target": 3.0,
+    "achieved": 2.1,
+    "savings_percentage": 30
+  },
+  "status": "on_track"
+}

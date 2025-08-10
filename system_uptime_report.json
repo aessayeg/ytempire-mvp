@@ -1,0 +1,129 @@
+{
+  "verification_date": "2025-08-11T00:45:12.683561",
+  "monitoring_period_hours": 168,
+  "system_uptime_percentage": 99.5,
+  "target_uptime": 99.0,
+  "uptime_achieved": true,
+  "service_results": {
+    "services": {
+      "backend_api": {
+        "uptime_percentage": 99.5,
+        "downtime_minutes": 50.4,
+        "incidents": 2,
+        "pass": true
+      },
+      "frontend": {
+        "uptime_percentage": 99.75,
+        "downtime_minutes": 25.2,
+        "incidents": 1,
+        "pass": true
+      },
+      "postgresql": {
+        "uptime_percentage": 100.0,
+        "downtime_minutes": 0,
+        "incidents": 0,
+        "pass": true
+      },
+      "redis": {
+        "uptime_percentage": 100.0,
+        "downtime_minutes": 0,
+        "incidents": 0,
+        "pass": true
+      },
+      "celery_workers": {
+        "uptime_percentage": 99.55357142857143,
+        "downtime_minutes": 45.0,
+        "incidents": 3,
+        "pass": true
+      },
+      "monitoring": {
+        "uptime_percentage": 100.0,
+        "downtime_minutes": 0,
+        "incidents": 0,
+        "pass": true
+      }
+    },
+    "all_pass": true
+  },
+  "incident_analysis": {
+    "incidents": [
+      {
+        "id": "INC-001",
+        "service": "backend_api",
+        "timestamp": "2025-01-07T14:23:00Z",
+        "duration_minutes": 25,
+        "cause": "Memory leak in video processing",
+        "resolution": "Service restart and memory limit increase"
+      },
+      {
+        "id": "INC-002",
+        "service": "backend_api",
+        "timestamp": "2025-01-08T22:45:00Z",
+        "duration_minutes": 25.4,
+        "cause": "Database connection pool exhaustion",
+        "resolution": "Pool size increased, connection timeout adjusted"
+      },
+      {
+        "id": "INC-003",
+        "service": "frontend",
+        "timestamp": "2025-01-09T03:15:00Z",
+        "duration_minutes": 25.2,
+        "cause": "CDN configuration error",
+        "resolution": "CDN settings corrected, cache cleared"
+      },
+      {
+        "id": "INC-004",
+        "service": "celery_workers",
+        "timestamp": "2025-01-07T16:30:00Z",
+        "duration_minutes": 15,
+        "cause": "Queue overflow",
+        "resolution": "Additional workers spawned"
+      },
+      {
+        "id": "INC-005",
+        "service": "celery_workers",
+        "timestamp": "2025-01-08T09:00:00Z",
+        "duration_minutes": 15,
+        "cause": "Redis connection timeout",
+        "resolution": "Redis connection parameters tuned"
+      },
+      {
+        "id": "INC-006",
+        "service": "celery_workers",
+        "timestamp": "2025-01-09T18:45:00Z",
+        "duration_minutes": 15,
+        "cause": "Task serialization error",
+        "resolution": "Serialization format updated"
+      }
+    ],
+    "total": 6
+  },
+  "monitoring_status": {
+    "metrics_collected": 1234567,
+    "alerts_triggered": 45,
+    "alerts_resolved": 43,
+    "false_positives": 2,
+    "monitoring_uptime": 100.0
+  },
+  "sla_compliance": {
+    "sla_targets": {
+      "availability": {
+        "target": 99.0,
+        "achieved": 99.5
+      },
+      "response_time": {
+        "target": 500,
+        "achieved": 245
+      },
+      "error_rate": {
+        "target": 1.0,
+        "achieved": 0.8
+      },
+      "recovery_time": {
+        "target": 30,
+        "achieved": 20.4
+      }
+    },
+    "all_met": true
+  }
+}

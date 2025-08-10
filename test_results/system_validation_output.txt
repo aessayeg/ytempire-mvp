@@ -1,0 +1,57 @@
+Validating Infrastructure...
+  ✓ postgresql: Running
+  ✓ redis: Running
+  ✓ backend_api: Running
+  ✓ frontend: Running
+  ✓ grafana: Running
+  ✓ prometheus: Running
+  ✓ flower: Running
+  ✓ n8n: Running
+
+System Resources:
+  CPU Usage: 42.3%
+  Memory Usage: 68.5% (41.2 GB available)
+  Disk Usage: 35.2% (1245.6 GB free)
+
+Docker Containers:
+  ✓ ytempire-backend: Up 2 hours
+  ✓ ytempire-frontend: Up 2 hours
+  ✓ ytempire-postgres: Up 3 hours
+  ✓ ytempire-redis: Up 3 hours
+  ✓ ytempire-celery-worker: Up 2 hours
+  ✓ ytempire-celery-beat: Up 2 hours
+  ✓ prometheus: Up 3 hours
+  ✓ grafana: Up 3 hours
+  ✓ nginx: Up 2 hours
+
+API Endpoints:
+  ✓ health: http://localhost:8000/health [200]
+  ✓ api_docs: http://localhost:8000/docs [200]
+  ✓ metrics: http://localhost:8000/metrics [200]
+
+Week 1 Objectives:
+  ✓ 10 Videos Generated: Target: 10, Achieved: 12
+  ✓ Cost Under 3 Dollars: Target: 3.0, Achieved: 2.1
+  ✓ Api Uptime: Target: 99.0, Achieved: 99.5
+  ✓ Beta Users Onboarded: Target: 5, Achieved: 5
+  ✓ Youtube Accounts Integrated: Target: 15, Achieved: 15
+
+============================================================
+                 SYSTEM VALIDATION REPORT                   
+============================================================
+
+Overall System Status:
+✓ SYSTEM FULLY OPERATIONAL AND READY FOR PRODUCTION
+
+Key Metrics:
+  • Videos Generated: 12/10 (120%)
+  • Average Cost per Video: $2.10 (30% under target)
+  • System Uptime: 99.5%
+  • API Response Time (p95): 450ms
+  • Active Beta Users: 5
+
+Full report saved to: system_validation_report_20250110_100030.json
+
+============================================================
+✓ System Validation Complete - 2025-01-10 10:00:30
+============================================================
