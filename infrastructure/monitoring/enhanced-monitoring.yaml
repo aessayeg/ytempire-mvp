@@ -1,0 +1,539 @@
+# Enhanced Monitoring Configuration for YTEmpire
+# P1 Task: [OPS] Monitoring Enhancement
+# Comprehensive monitoring with Prometheus, Grafana, and custom metrics
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'ytempire-prod'
+        environment: 'production'
+    
+    # Alerting configuration
+    alerting:
+      alertmanagers:
+      - static_configs:
+        - targets:
+          - alertmanager:9093
+    
+    # Load rules once and periodically evaluate them
+    rule_files:
+      - '/etc/prometheus/rules/*.yml'
+    
+    # Scrape configurations
+    scrape_configs:
+      # YTEmpire Backend metrics
+      - job_name: 'ytempire-backend'
+        kubernetes_sd_configs:
+        - role: pod
+          namespaces:
+            names:
+            - ytempire-prod
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_label_app]
+          action: keep
+          regex: ytempire-backend
+        - source_labels: [__meta_kubernetes_pod_name]
+          target_label: pod
+        - source_labels: [__meta_kubernetes_namespace]
+          target_label: namespace
+        metrics_path: /metrics
+        scrape_interval: 30s
+      
+      # PostgreSQL metrics
+      - job_name: 'postgres'
+        static_configs:
+        - targets:
+          - postgres-exporter:9187
+        metrics_path: /metrics
+      
+      # Redis metrics
+      - job_name: 'redis'
+        static_configs:
+        - targets:
+          - redis-exporter:9121
+      
+      # Node metrics
+      - job_name: 'node-exporter'
+        kubernetes_sd_configs:
+        - role: node
+        relabel_configs:
+        - action: labelmap
+          regex: __meta_kubernetes_node_label_(.+)
+      
+      # Kubernetes metrics
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+        - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+          action: keep
+          regex: default;kubernetes;https
+      
+      # GPU metrics
+      - job_name: 'nvidia-gpu'
+        static_configs:
+        - targets:
+          - dcgm-exporter:9400
+        metrics_path: /metrics
+
+---
+# Alert Rules
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: monitoring
+data:
+  alerts.yml: |
+    groups:
+    - name: ytempire_critical
+      interval: 30s
+      rules:
+      # API Response Time Alert
+      - alert: HighAPIResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High API response time (>500ms p95)"
+          description: "API response time p95 is {{ $value }}s for {{ $labels.endpoint }}"
+      
+      # Video Generation Cost Alert
+      - alert: HighVideoCost
+        expr: avg(video_generation_cost_dollars) > 3
+        for: 2m
+        labels:
+          severity: critical
+          team: ai-ml
+        annotations:
+          summary: "Video generation cost exceeds $3"
+          description: "Average video cost is ${{ $value }}"
+      
+      # YouTube Quota Alert
+      - alert: YouTubeQuotaExhaustion
+        expr: (youtube_quota_used / youtube_quota_limit) > 0.9
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "YouTube API quota near exhaustion"
+          description: "Account {{ $labels.account }} is at {{ $value | humanizePercentage }} quota usage"
+      
+      # Database Connection Pool Alert
+      - alert: DatabaseConnectionPoolExhaustion
+        expr: (pg_stat_database_numbackends / pg_settings_max_connections) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Database connection pool near limit"
+          description: "{{ $value | humanizePercentage }} of connections used"
+      
+      # GPU Memory Alert
+      - alert: GPUMemoryHigh
+        expr: (dcgm_gpu_memory_used_bytes / dcgm_gpu_memory_total_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: ai-ml
+        annotations:
+          summary: "GPU memory usage high"
+          description: "GPU {{ $labels.gpu }} memory at {{ $value | humanizePercentage }}"
+      
+      # Service Down Alert
+      - alert: ServiceDown
+        expr: up{job=~"ytempire-.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: ops
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been down for more than 2 minutes"
+      
+      # High Error Rate Alert
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.endpoint }}"
+      
+      # Redis Memory Alert
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory at {{ $value | humanizePercentage }}"
+      
+      # Disk Space Alert
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          team: ops
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining"
+      
+      # Certificate Expiry Alert
+      - alert: CertificateExpiringSoon
+        expr: (cert_expiry_timestamp_seconds - time()) / 86400 < 7
+        for: 1h
+        labels:
+          severity: warning
+          team: ops
+        annotations:
+          summary: "SSL Certificate expiring soon"
+          description: "Certificate {{ $labels.cert }} expires in {{ $value }} days"
+
+---
+# Grafana Dashboard ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: monitoring
+data:
+  ytempire-overview.json: |
+    {
+      "dashboard": {
+        "title": "YTEmpire Overview Dashboard",
+        "panels": [
+          {
+            "title": "Videos Generated Today",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "increase(videos_generated_total[24h])"
+              }
+            ]
+          },
+          {
+            "title": "Average Cost Per Video",
+            "type": "gauge",
+            "targets": [
+              {
+                "expr": "avg(video_generation_cost_dollars)"
+              }
+            ]
+          },
+          {
+            "title": "API Response Time (p95)",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+              }
+            ]
+          },
+          {
+            "title": "YouTube Quota Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "youtube_quota_used / youtube_quota_limit * 100"
+              }
+            ]
+          },
+          {
+            "title": "GPU Utilization",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "dcgm_gpu_utilization"
+              }
+            ]
+          },
+          {
+            "title": "Revenue Today",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(revenue_dollars_total)"
+              }
+            ]
+          },
+          {
+            "title": "Active Channels",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "count(channel_health_score > 0.5)"
+              }
+            ]
+          },
+          {
+            "title": "Error Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{status=~\"5..\"}[5m])"
+              }
+            ]
+          }
+        ]
+      }
+    }
+
+---
+# Custom Metrics Exporter
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-metrics-exporter
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom-metrics-exporter
+  template:
+    metadata:
+      labels:
+        app: custom-metrics-exporter
+    spec:
+      containers:
+      - name: exporter
+        image: ytempire/metrics-exporter:latest
+        ports:
+        - containerPort: 9090
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: url
+        - name: METRICS_PORT
+          value: "9090"
+        - name: SCRAPE_INTERVAL
+          value: "30s"
+
+---
+# Service Monitor for Prometheus Operator
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ytempire-backend
+  namespace: ytempire-prod
+spec:
+  selector:
+    matchLabels:
+      app: ytempire-backend
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_name]
+      targetLabel: pod
+    - sourceLabels: [__meta_kubernetes_namespace]
+      targetLabel: namespace
+
+---
+# Logging Configuration (Fluentd)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+  namespace: monitoring
+data:
+  fluent.conf: |
+    <source>
+      @type tail
+      path /var/log/containers/*.log
+      pos_file /var/log/fluentd-containers.log.pos
+      tag kubernetes.*
+      read_from_head true
+      <parse>
+        @type json
+        time_format %Y-%m-%dT%H:%M:%S.%NZ
+      </parse>
+    </source>
+    
+    <filter kubernetes.**>
+      @type kubernetes_metadata
+      @id filter_kube_metadata
+      kubernetes_url "#{ENV['FLUENT_FILTER_KUBERNETES_URL'] || 'https://' + ENV['KUBERNETES_SERVICE_HOST'] + ':' + ENV['KUBERNETES_SERVICE_PORT'] + '/api'}"
+      verify_ssl "#{ENV['KUBERNETES_VERIFY_SSL'] || true}"
+    </filter>
+    
+    <filter kubernetes.var.log.containers.ytempire-**.log>
+      @type parser
+      key_name log
+      reserve_data true
+      <parse>
+        @type json
+      </parse>
+    </filter>
+    
+    <match kubernetes.var.log.containers.ytempire-**.log>
+      @type elasticsearch
+      host elasticsearch
+      port 9200
+      logstash_format true
+      logstash_prefix ytempire
+      logstash_dateformat %Y.%m.%d
+      include_tag_key true
+      type_name _doc
+      tag_key @log_name
+      flush_interval 5s
+      <buffer>
+        flush_interval 5s
+        chunk_limit_size 2M
+        queue_limit_length 32
+        retry_max_interval 30
+      </buffer>
+    </match>
+
+---
+# APM Configuration (Application Performance Monitoring)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apm-config
+  namespace: monitoring
+data:
+  elastic-apm.yml: |
+    server:
+      host: "0.0.0.0:8200"
+      secret_token: "${APM_SECRET_TOKEN}"
+      ssl:
+        enabled: false
+    
+    output.elasticsearch:
+      hosts: ["elasticsearch:9200"]
+      indices:
+        - index: "apm-%{[beat.version]}-sourcemap"
+          when.contains:
+            processor.event: "sourcemap"
+        - index: "apm-%{[beat.version]}-error-%{+yyyy.MM.dd}"
+          when.contains:
+            processor.event: "error"
+        - index: "apm-%{[beat.version]}-transaction-%{+yyyy.MM.dd}"
+          when.contains:
+            processor.event: "transaction"
+        - index: "apm-%{[beat.version]}-span-%{+yyyy.MM.dd}"
+          when.contains:
+            processor.event: "span"
+        - index: "apm-%{[beat.version]}-metric-%{+yyyy.MM.dd}"
+          when.contains:
+            processor.event: "metric"
+    
+    apm-server.kibana:
+      enabled: true
+      host: "kibana:5601"
+
+---
+# Distributed Tracing (Jaeger)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+  template:
+    metadata:
+      labels:
+        app: jaeger
+    spec:
+      containers:
+      - name: jaeger
+        image: jaegertracing/all-in-one:latest
+        ports:
+        - containerPort: 5775
+          protocol: UDP
+        - containerPort: 6831
+          protocol: UDP
+        - containerPort: 6832
+          protocol: UDP
+        - containerPort: 5778
+        - containerPort: 16686
+        - containerPort: 14268
+        - containerPort: 14250
+        env:
+        - name: COLLECTOR_ZIPKIN_HOST_PORT
+          value: ":9411"
+        - name: SPAN_STORAGE_TYPE
+          value: elasticsearch
+        - name: ES_SERVER_URLS
+          value: http://elasticsearch:9200
+
+---
+# Service for Monitoring Components
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: monitoring
+spec:
+  type: NodePort
+  ports:
+  - port: 9090
+    targetPort: 9090
+    nodePort: 30090
+  selector:
+    app: prometheus
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  type: NodePort
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30030
+  selector:
+    app: grafana
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-ui
+  namespace: monitoring
+spec:
+  type: NodePort
+  ports:
+  - port: 16686
+    targetPort: 16686
+    nodePort: 30686
+  selector:
+    app: jaeger

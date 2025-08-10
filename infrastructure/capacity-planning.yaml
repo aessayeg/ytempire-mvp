@@ -1,0 +1,258 @@
+# Capacity Planning for YTEmpire
+# P2 Task: [OPS] Capacity Planning
+# Resource planning and scaling projections
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: capacity-planning
+  namespace: ytempire-prod
+data:
+  planning.yaml: |
+    # Current Capacity (MVP Phase)
+    current_capacity:
+      compute:
+        cpu_cores: 16
+        memory_gb: 128
+        gpu_vram_gb: 32
+      storage:
+        ssd_tb: 2
+        hdd_tb: 8
+        s3_tb: 10
+      network:
+        bandwidth_gbps: 1
+        monthly_transfer_tb: 5
+      
+      # Current Usage Metrics
+      usage:
+        videos_per_day: 10
+        users_active: 5
+        channels_managed: 15
+        api_requests_per_day: 10000
+        storage_used_gb: 500
+        
+    # Growth Projections
+    growth_projections:
+      month_1:
+        videos_per_day: 50
+        users: 10
+        channels: 30
+        required_resources:
+          cpu_cores: 32
+          memory_gb: 256
+          storage_tb: 5
+          
+      month_3:
+        videos_per_day: 200
+        users: 50
+        channels: 150
+        required_resources:
+          cpu_cores: 64
+          memory_gb: 512
+          gpu_count: 2
+          storage_tb: 20
+          
+      month_6:
+        videos_per_day: 1000
+        users: 500
+        channels: 1500
+        required_resources:
+          cpu_cores: 256
+          memory_gb: 2048
+          gpu_count: 8
+          storage_tb: 100
+          
+      month_12:
+        videos_per_day: 5000
+        users: 5000
+        channels: 15000
+        required_resources:
+          cpu_cores: 1024
+          memory_gb: 8192
+          gpu_count: 32
+          storage_tb: 500
+    
+    # Scaling Triggers
+    scaling_triggers:
+      horizontal:
+        cpu_utilization: 70
+        memory_utilization: 80
+        request_rate: 1000
+        queue_depth: 100
+        
+      vertical:
+        cpu_sustained_high: 85
+        memory_pressure: 90
+        disk_io_wait: 20
+        
+    # Resource Allocation by Service
+    service_allocation:
+      backend_api:
+        cpu_request: 2
+        cpu_limit: 4
+        memory_request: 4Gi
+        memory_limit: 8Gi
+        replicas_min: 2
+        replicas_max: 10
+        
+      video_processor:
+        cpu_request: 4
+        cpu_limit: 8
+        memory_request: 8Gi
+        memory_limit: 16Gi
+        gpu_request: 1
+        replicas_min: 1
+        replicas_max: 5
+        
+      ml_inference:
+        cpu_request: 2
+        cpu_limit: 4
+        memory_request: 8Gi
+        memory_limit: 16Gi
+        gpu_request: 1
+        replicas_min: 1
+        replicas_max: 3
+        
+      postgres:
+        cpu_request: 4
+        cpu_limit: 8
+        memory_request: 16Gi
+        memory_limit: 32Gi
+        storage: 1Ti
+        
+      redis:
+        cpu_request: 2
+        cpu_limit: 4
+        memory_request: 8Gi
+        memory_limit: 16Gi
+        
+    # Cost Projections
+    cost_projections:
+      current_monthly: 1500
+      month_1: 3000
+      month_3: 8000
+      month_6: 25000
+      month_12: 100000
+      
+      breakdown:
+        compute: 0.40
+        storage: 0.20
+        network: 0.15
+        gpu: 0.20
+        licenses: 0.05
+        
+    # Disaster Recovery Capacity
+    dr_capacity:
+      hot_standby:
+        capacity_percentage: 100
+        location: us-east-1
+        auto_failover: true
+        
+      warm_standby:
+        capacity_percentage: 50
+        location: eu-west-1
+        activation_time: 1h
+        
+      cold_standby:
+        capacity_percentage: 0
+        location: ap-southeast-1
+        activation_time: 4h
+        
+    # Performance Targets
+    performance_targets:
+      api_response_p95: 500ms
+      video_generation_time: 10min
+      concurrent_videos: 50
+      throughput_rps: 10000
+      availability: 99.9%
+      
+    # Capacity Buffer
+    capacity_buffer:
+      cpu: 0.20
+      memory: 0.25
+      storage: 0.30
+      network: 0.15
+
+---
+# Resource Quota per Namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: ytempire-quota
+  namespace: ytempire-prod
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: 200Gi
+    requests.storage: 10Ti
+    persistentvolumeclaims: "20"
+    services.loadbalancers: "5"
+    services.nodeports: "10"
+
+---
+# Capacity Monitoring Job
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: capacity-monitor
+  namespace: ytempire-prod
+spec:
+  schedule: "0 * * * *"  # Every hour
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: monitor
+            image: ytempire/capacity-monitor:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              #!/bin/bash
+              
+              # Get current resource usage
+              CPU_USAGE=$(kubectl top nodes | awk '{sum+=$3} END {print sum/NR}')
+              MEM_USAGE=$(kubectl top nodes | awk '{sum+=$5} END {print sum/NR}')
+              
+              # Get pod counts
+              POD_COUNT=$(kubectl get pods -n ytempire-prod --no-headers | wc -l)
+              
+              # Check storage usage
+              STORAGE_USAGE=$(df -h | grep '/data' | awk '{print $5}' | sed 's/%//')
+              
+              # Calculate capacity remaining
+              CPU_REMAINING=$((100 - ${CPU_USAGE%\%}))
+              MEM_REMAINING=$((100 - ${MEM_USAGE%\%}))
+              
+              # Alert if capacity is low
+              if [ $CPU_REMAINING -lt 30 ]; then
+                echo "WARNING: CPU capacity low: ${CPU_REMAINING}% remaining"
+                # Send alert
+              fi
+              
+              if [ $MEM_REMAINING -lt 25 ]; then
+                echo "WARNING: Memory capacity low: ${MEM_REMAINING}% remaining"
+                # Send alert
+              fi
+              
+              # Generate capacity report
+              cat > /tmp/capacity_report.json << EOF
+              {
+                "timestamp": "$(date -Iseconds)",
+                "cpu_usage_percent": ${CPU_USAGE%\%},
+                "memory_usage_percent": ${MEM_USAGE%\%},
+                "storage_usage_percent": $STORAGE_USAGE,
+                "pod_count": $POD_COUNT,
+                "recommendations": {
+                  "scale_up": $([ $CPU_REMAINING -lt 30 ] && echo "true" || echo "false"),
+                  "add_nodes": $([ $MEM_REMAINING -lt 25 ] && echo "true" || echo "false")
+                }
+              }
+              EOF
+              
+              # Store report
+              kubectl create configmap capacity-report-$(date +%Y%m%d-%H) \
+                --from-file=/tmp/capacity_report.json \
+                -n ytempire-prod
+          restartPolicy: OnFailure
