@@ -1,0 +1,308 @@
+# Auto-Scaling Implementation for YTEmpire
+# Horizontal Pod Autoscaler and Cluster Autoscaler configurations
+
+---
+# HPA for Backend Service
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: ytempire
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "1000"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 4
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+# HPA for Video Processing Workers
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: video-worker-hpa
+  namespace: ytempire
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: video-worker
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: External
+    external:
+      metric:
+        name: video_queue_length
+        selector:
+          matchLabels:
+            queue: pending
+      target:
+        type: Value
+        value: "5"
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+
+---
+# Vertical Pod Autoscaler for Database
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: postgres-vpa
+  namespace: ytempire
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: postgres
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: postgres
+      minAllowed:
+        cpu: 250m
+        memory: 512Mi
+      maxAllowed:
+        cpu: 2
+        memory: 4Gi
+
+---
+# Cluster Autoscaler Configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cluster-autoscaler
+  template:
+    metadata:
+      labels:
+        app: cluster-autoscaler
+    spec:
+      serviceAccountName: cluster-autoscaler
+      containers:
+      - image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.24.0
+        name: cluster-autoscaler
+        resources:
+          limits:
+            cpu: 100m
+            memory: 300Mi
+          requests:
+            cpu: 100m
+            memory: 300Mi
+        command:
+        - ./cluster-autoscaler
+        - --v=4
+        - --stderrthreshold=info
+        - --cloud-provider=aws
+        - --skip-nodes-with-local-storage=false
+        - --expander=least-waste
+        - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/ytempire
+        - --balance-similar-node-groups
+        - --skip-nodes-with-system-pods=false
+        env:
+        - name: AWS_REGION
+          value: us-east-1
+
+---
+# KEDA ScaledObject for Event-Driven Scaling
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: redis-queue-scaler
+  namespace: ytempire
+spec:
+  scaleTargetRef:
+    name: video-worker
+  minReplicaCount: 1
+  maxReplicaCount: 20
+  triggers:
+  - type: redis
+    metadata:
+      address: redis-service:6379
+      listName: video:queue:pending
+      listLength: "10"
+  - type: redis
+    metadata:
+      address: redis-service:6379
+      listName: video:queue:priority
+      listLength: "5"
+  - type: cron
+    metadata:
+      timezone: UTC
+      start: 0 8 * * *
+      end: 0 22 * * *
+      desiredReplicas: "5"
+
+---
+# Custom Metrics API for HPA
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-metrics-config
+  namespace: monitoring
+data:
+  adapter-config.yaml: |
+    rules:
+    - seriesQuery: 'http_requests_total{namespace="ytempire"}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "^http_requests_total"
+        as: "http_requests_per_second"
+      metricsQuery: 'rate(http_requests_total{<<.LabelMatchers>>}[1m])'
+    
+    - seriesQuery: 'video_queue_pending'
+      resources:
+        template: <<.Resource>>
+      name:
+        matches: "^video_queue_pending"
+        as: "video_queue_length"
+      metricsQuery: 'video_queue_pending'
+    
+    - seriesQuery: 'redis_list_length{list="video:queue:*"}'
+      resources:
+        template: <<.Resource>>
+      name:
+        matches: "^redis_list_length"
+        as: "queue_depth"
+      metricsQuery: 'redis_list_length{<<.LabelMatchers>>}'
+
+---
+# Predictive Scaling Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: predictive-scaling
+  namespace: ytempire
+data:
+  predict.py: |
+    import numpy as np
+    from sklearn.linear_model import LinearRegression
+    from datetime import datetime, timedelta
+    import redis
+    import json
+    
+    class PredictiveScaler:
+        def __init__(self):
+            self.redis_client = redis.Redis(host='redis-service', port=6379)
+            self.model = LinearRegression()
+            
+        def collect_historical_data(self, hours=24):
+            """Collect historical metrics"""
+            data = []
+            for i in range(hours * 60):  # Minute-level data
+                timestamp = datetime.now() - timedelta(minutes=i)
+                key = f"metrics:{timestamp.strftime('%Y%m%d%H%M')}"
+                metrics = self.redis_client.get(key)
+                if metrics:
+                    data.append(json.loads(metrics))
+            return data
+        
+        def predict_load(self, horizon_minutes=30):
+            """Predict future load"""
+            historical = self.collect_historical_data()
+            if len(historical) < 100:
+                return None
+            
+            # Prepare features
+            X = np.array([[
+                d['hour'],
+                d['day_of_week'],
+                d['request_rate'],
+                d['queue_length']
+            ] for d in historical])
+            
+            # Target is request rate
+            y = np.array([d['request_rate'] for d in historical])
+            
+            # Train model
+            self.model.fit(X[:-horizon_minutes], y[:-horizon_minutes])
+            
+            # Predict future
+            future_features = self._generate_future_features(horizon_minutes)
+            predictions = self.model.predict(future_features)
+            
+            return predictions
+        
+        def calculate_required_replicas(self, predicted_load):
+            """Calculate required replicas based on predicted load"""
+            # Assume each replica can handle 1000 requests/min
+            capacity_per_replica = 1000
+            
+            # Add 20% buffer
+            required = int(np.ceil(predicted_load * 1.2 / capacity_per_replica))
+            
+            # Apply min/max constraints
+            return max(2, min(20, required))
+        
+        def apply_scaling_decision(self, deployment, replicas):
+            """Apply scaling decision to deployment"""
+            # This would use Kubernetes API to scale
+            print(f"Scaling {deployment} to {replicas} replicas")
+    
+    if __name__ == "__main__":
+        scaler = PredictiveScaler()
+        
+        # Run predictions every 5 minutes
+        while True:
+            predictions = scaler.predict_load()
+            if predictions:
+                max_predicted = np.max(predictions)
+                required_replicas = scaler.calculate_required_replicas(max_predicted)
+                scaler.apply_scaling_decision("backend", required_replicas)
+            
+            time.sleep(300)

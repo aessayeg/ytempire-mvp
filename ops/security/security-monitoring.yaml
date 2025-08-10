@@ -1,0 +1,405 @@
+# Security Monitoring Implementation
+# Comprehensive security monitoring with Falco, OPA, and SIEM integration
+
+---
+# Falco DaemonSet for Runtime Security
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: falco
+  namespace: security
+spec:
+  selector:
+    matchLabels:
+      app: falco
+  template:
+    metadata:
+      labels:
+        app: falco
+    spec:
+      serviceAccountName: falco
+      hostNetwork: true
+      hostPID: true
+      containers:
+      - name: falco
+        image: falcosecurity/falco:latest
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: docker-socket
+          mountPath: /host/var/run/docker.sock
+        - name: proc
+          mountPath: /host/proc
+        - name: boot
+          mountPath: /host/boot
+        - name: lib-modules
+          mountPath: /host/lib/modules
+        - name: usr
+          mountPath: /host/usr
+        - name: config
+          mountPath: /etc/falco
+        env:
+        - name: FALCO_GRPC_ENABLED
+          value: "true"
+        - name: FALCO_GRPC_BIND_ADDRESS
+          value: "0.0.0.0:5060"
+      volumes:
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: boot
+        hostPath:
+          path: /boot
+      - name: lib-modules
+        hostPath:
+          path: /lib/modules
+      - name: usr
+        hostPath:
+          path: /usr
+      - name: config
+        configMap:
+          name: falco-config
+
+---
+# Falco Rules Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: falco-config
+  namespace: security
+data:
+  falco_rules.yaml: |
+    - rule: Unauthorized Process in Container
+      desc: Detect unauthorized process execution in containers
+      condition: >
+        spawned_process and container and
+        not proc.name in (allowed_processes)
+      output: >
+        Unauthorized process started in container
+        (user=%user.name command=%proc.cmdline container=%container.name)
+      priority: WARNING
+      tags: [container, process]
+    
+    - rule: Sensitive File Access
+      desc: Detect access to sensitive files
+      condition: >
+        open_read and
+        fd.name in (/etc/shadow, /etc/passwd, /root/.ssh/*)
+      output: >
+        Sensitive file accessed (user=%user.name file=%fd.name container=%container.name)
+      priority: ERROR
+      tags: [filesystem, sensitive]
+    
+    - rule: Cryptomining Detection
+      desc: Detect potential cryptomining activity
+      condition: >
+        spawned_process and
+        proc.name in (xmrig, minerd, minergate)
+      output: >
+        Cryptominer detected (user=%user.name command=%proc.cmdline)
+      priority: CRITICAL
+      tags: [cryptomining, malware]
+    
+    - list: allowed_processes
+      items: [python, node, nginx, postgres, redis]
+
+---
+# Open Policy Agent for Policy Enforcement
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa
+  namespace: security
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: opa
+  template:
+    metadata:
+      labels:
+        app: opa
+    spec:
+      containers:
+      - name: opa
+        image: openpolicyagent/opa:latest-envoy
+        ports:
+        - containerPort: 8181
+        args:
+        - "run"
+        - "--server"
+        - "--config-file=/config/config.yaml"
+        - "/policies"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: policies
+          mountPath: /policies
+      volumes:
+      - name: config
+        configMap:
+          name: opa-config
+      - name: policies
+        configMap:
+          name: opa-policies
+
+---
+# OPA Policies
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-policies
+  namespace: security
+data:
+  admission.rego: |
+    package kubernetes.admission
+    
+    deny[msg] {
+      input.request.kind.kind == "Pod"
+      input.request.object.spec.containers[_].image
+      not starts_with(input.request.object.spec.containers[_].image, "ytempire/")
+      msg := "Only ytempire images are allowed"
+    }
+    
+    deny[msg] {
+      input.request.kind.kind == "Pod"
+      input.request.object.spec.containers[_].securityContext.privileged == true
+      msg := "Privileged containers are not allowed"
+    }
+    
+    deny[msg] {
+      input.request.kind.kind == "Service"
+      input.request.object.spec.type == "NodePort"
+      msg := "NodePort services are not allowed"
+    }
+  
+  rbac.rego: |
+    package rbac
+    
+    default allow = false
+    
+    allow {
+      input.method == "GET"
+      input.path[0] == "api"
+      input.path[1] == "v1"
+      input.user.role == "viewer"
+    }
+    
+    allow {
+      input.user.role == "admin"
+    }
+    
+    allow {
+      input.method in ["GET", "POST", "PUT"]
+      input.path[0] == "api"
+      input.user.role == "editor"
+    }
+
+---
+# Security Event Aggregator
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-aggregator
+  namespace: security
+data:
+  aggregator.py: |
+    import json
+    import asyncio
+    import aiohttp
+    from datetime import datetime
+    from elasticsearch import AsyncElasticsearch
+    import redis.asyncio as redis
+    
+    class SecurityEventAggregator:
+        def __init__(self):
+            self.es = AsyncElasticsearch(['http://elasticsearch:9200'])
+            self.redis = redis.Redis(host='redis-service', port=6379)
+            self.alert_thresholds = {
+                'failed_logins': 5,
+                'privilege_escalation': 1,
+                'data_exfiltration': 1,
+                'malware_detection': 1
+            }
+            
+        async def process_falco_event(self, event):
+            """Process Falco security event"""
+            parsed = {
+                'timestamp': datetime.utcnow().isoformat(),
+                'source': 'falco',
+                'priority': event.get('priority'),
+                'rule': event.get('rule'),
+                'output': event.get('output'),
+                'container': event.get('container', {}).get('name'),
+                'user': event.get('user', {}).get('name')
+            }
+            
+            # Index in Elasticsearch
+            await self.es.index(
+                index='security-events',
+                body=parsed
+            )
+            
+            # Check for patterns
+            await self.check_security_patterns(parsed)
+            
+        async def check_security_patterns(self, event):
+            """Check for security attack patterns"""
+            # Check for brute force
+            if 'failed_login' in event.get('rule', '').lower():
+                count = await self.redis.incr(f"failed_login:{event['user']}")
+                await self.redis.expire(f"failed_login:{event['user']}", 300)
+                
+                if count >= self.alert_thresholds['failed_logins']:
+                    await self.send_alert('brute_force', event)
+            
+            # Check for privilege escalation
+            if 'privilege' in event.get('rule', '').lower():
+                await self.send_alert('privilege_escalation', event)
+            
+            # Check for data exfiltration
+            if await self.detect_exfiltration(event):
+                await self.send_alert('data_exfiltration', event)
+        
+        async def detect_exfiltration(self, event):
+            """Detect potential data exfiltration"""
+            # Check for large data transfers
+            query = {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {"term": {"user": event.get('user')}},
+                            {"range": {"bytes_sent": {"gte": 100000000}}}  # 100MB
+                        ],
+                        "filter": {
+                            "range": {
+                                "timestamp": {"gte": "now-1h"}
+                            }
+                        }
+                    }
+                }
+            }
+            
+            result = await self.es.search(index='network-logs', body=query)
+            return result['hits']['total']['value'] > 0
+        
+        async def send_alert(self, alert_type, event):
+            """Send security alert"""
+            alert = {
+                'type': alert_type,
+                'severity': 'HIGH',
+                'timestamp': datetime.utcnow().isoformat(),
+                'event': event,
+                'message': f"Security alert: {alert_type} detected"
+            }
+            
+            # Send to SIEM
+            async with aiohttp.ClientSession() as session:
+                await session.post(
+                    'http://siem-collector:8080/alert',
+                    json=alert
+                )
+            
+            # Store in Redis for dashboard
+            await self.redis.rpush('security:alerts', json.dumps(alert))
+            await self.redis.ltrim('security:alerts', -1000, -1)  # Keep last 1000
+
+---
+# Network Policy for Security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: ytempire
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-internal
+  namespace: ytempire
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ytempire
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: ytempire
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+
+---
+# Security Scanner CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: security-scanner
+  namespace: security
+spec:
+  schedule: "0 */6 * * *"  # Every 6 hours
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: scanner
+            image: aquasec/trivy:latest
+            command:
+            - sh
+            - -c
+            - |
+              # Scan all running images
+              for image in $(kubectl get pods --all-namespaces -o jsonpath="{..image}" | tr -s '[[:space:]]' '\n' | sort | uniq); do
+                echo "Scanning $image"
+                trivy image --severity HIGH,CRITICAL $image
+              done
+              
+              # Scan Kubernetes manifests
+              kubectl get all --all-namespaces -o yaml | trivy config -
+          restartPolicy: OnFailure
+
+---
+# Admission Webhook for Security Policies
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: security-webhook
+webhooks:
+- name: validate.ytempire.com
+  clientConfig:
+    service:
+      name: security-webhook
+      namespace: security
+      path: "/validate"
+    caBundle: ${CA_BUNDLE}
+  rules:
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: ["*"]
+    apiVersions: ["*"]
+    resources: ["pods", "services", "deployments"]
+  admissionReviewVersions: ["v1", "v1beta1"]
+  sideEffects: None
+  failurePolicy: Fail

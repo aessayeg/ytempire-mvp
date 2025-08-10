@@ -1,0 +1,372 @@
+# Disaster Recovery Implementation
+# Comprehensive backup and recovery strategy for YTEmpire
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: disaster-recovery-config
+  namespace: ytempire
+data:
+  backup_schedule: "0 2 * * *"  # Daily at 2 AM
+  retention_days: "30"
+  backup_regions: "us-east-1,us-west-2,eu-west-1"
+  rpo_minutes: "15"  # Recovery Point Objective
+  rto_minutes: "60"  # Recovery Time Objective
+
+---
+# Database Backup CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: database-backup
+  namespace: ytempire
+spec:
+  schedule: "0 */6 * * *"  # Every 6 hours
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: postgres:14-alpine
+            env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+            command:
+            - /bin/sh
+            - -c
+            - |
+              DATE=$(date +%Y%m%d_%H%M%S)
+              pg_dump -h postgres-service -U ytempire ytempire_db > /backup/ytempire_${DATE}.sql
+              gzip /backup/ytempire_${DATE}.sql
+              aws s3 cp /backup/ytempire_${DATE}.sql.gz s3://ytempire-backups/database/
+              
+              # Clean old backups
+              find /backup -name "*.sql.gz" -mtime +7 -delete
+              
+              # Verify backup
+              if [ -f /backup/ytempire_${DATE}.sql.gz ]; then
+                echo "Backup successful: ytempire_${DATE}.sql.gz"
+                
+                # Send notification
+                curl -X POST $WEBHOOK_URL \
+                  -H "Content-Type: application/json" \
+                  -d "{\"status\":\"success\",\"backup\":\"ytempire_${DATE}.sql.gz\"}"
+              else
+                echo "Backup failed!"
+                exit 1
+              fi
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: backup-pvc
+
+---
+# Redis Backup CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: redis-backup
+  namespace: ytempire
+spec:
+  schedule: "0 */4 * * *"  # Every 4 hours
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: redis-backup
+            image: redis:7-alpine
+            command:
+            - /bin/sh
+            - -c
+            - |
+              DATE=$(date +%Y%m%d_%H%M%S)
+              redis-cli -h redis-service --rdb /backup/redis_${DATE}.rdb
+              gzip /backup/redis_${DATE}.rdb
+              aws s3 cp /backup/redis_${DATE}.rdb.gz s3://ytempire-backups/redis/
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: backup-pvc
+
+---
+# Application State Backup
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: app-state-backup
+  namespace: ytempire
+spec:
+  schedule: "0 */12 * * *"  # Every 12 hours
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: app-backup
+            image: ytempire/backup-tool:latest
+            env:
+            - name: BACKUP_BUCKET
+              value: "ytempire-backups"
+            command:
+            - /bin/sh
+            - -c
+            - |
+              # Backup application state
+              python3 /scripts/backup_app_state.py
+              
+              # Backup uploaded files
+              tar -czf /backup/uploads_$(date +%Y%m%d).tar.gz /app/uploads/
+              aws s3 sync /backup/ s3://ytempire-backups/application/
+              
+              # Backup configurations
+              kubectl get configmaps -n ytempire -o yaml > /backup/configmaps.yaml
+              kubectl get secrets -n ytempire -o yaml > /backup/secrets.yaml
+              
+              # Encrypt sensitive data
+              gpg --encrypt --recipient backup@ytempire.com /backup/secrets.yaml
+              aws s3 cp /backup/secrets.yaml.gpg s3://ytempire-backups/configs/
+            volumeMounts:
+            - name: app-data
+              mountPath: /app
+            - name: backup-storage
+              mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+          - name: app-data
+            persistentVolumeClaim:
+              claimName: app-data-pvc
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: backup-pvc
+
+---
+# Disaster Recovery Test Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dr-test
+  namespace: ytempire
+spec:
+  template:
+    spec:
+      containers:
+      - name: dr-test
+        image: ytempire/dr-test:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Starting Disaster Recovery Test..."
+          
+          # Test database restore
+          LATEST_BACKUP=$(aws s3 ls s3://ytempire-backups/database/ | tail -1 | awk '{print $4}')
+          aws s3 cp s3://ytempire-backups/database/${LATEST_BACKUP} /tmp/
+          gunzip /tmp/${LATEST_BACKUP}
+          
+          # Create test database
+          PGPASSWORD=$DB_PASSWORD psql -h postgres-service -U ytempire -c "CREATE DATABASE dr_test;"
+          PGPASSWORD=$DB_PASSWORD psql -h postgres-service -U ytempire dr_test < /tmp/${LATEST_BACKUP%.gz}
+          
+          # Verify restore
+          TABLES=$(PGPASSWORD=$DB_PASSWORD psql -h postgres-service -U ytempire dr_test -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public';")
+          
+          if [ $TABLES -gt 0 ]; then
+            echo "Database restore successful: $TABLES tables restored"
+          else
+            echo "Database restore failed!"
+            exit 1
+          fi
+          
+          # Test Redis restore
+          LATEST_REDIS=$(aws s3 ls s3://ytempire-backups/redis/ | tail -1 | awk '{print $4}')
+          aws s3 cp s3://ytempire-backups/redis/${LATEST_REDIS} /tmp/
+          gunzip /tmp/${LATEST_REDIS}
+          
+          # Clean up test database
+          PGPASSWORD=$DB_PASSWORD psql -h postgres-service -U ytempire -c "DROP DATABASE dr_test;"
+          
+          echo "Disaster Recovery Test Completed Successfully"
+      restartPolicy: Never
+
+---
+# Backup Storage PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-pvc
+  namespace: ytempire
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: fast-ssd
+
+---
+# Recovery Script ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recovery-scripts
+  namespace: ytempire
+data:
+  recover.sh: |
+    #!/bin/bash
+    # Disaster Recovery Script
+    
+    set -e
+    
+    echo "Starting Disaster Recovery Process..."
+    
+    # Function to restore database
+    restore_database() {
+      echo "Restoring database..."
+      BACKUP_FILE=$1
+      
+      # Download backup
+      aws s3 cp s3://ytempire-backups/database/${BACKUP_FILE} /tmp/
+      gunzip /tmp/${BACKUP_FILE}
+      
+      # Drop existing database
+      PGPASSWORD=$DB_PASSWORD psql -h postgres-service -U ytempire -c "DROP DATABASE IF EXISTS ytempire_db;"
+      PGPASSWORD=$DB_PASSWORD psql -h postgres-service -U ytempire -c "CREATE DATABASE ytempire_db;"
+      
+      # Restore
+      PGPASSWORD=$DB_PASSWORD psql -h postgres-service -U ytempire ytempire_db < /tmp/${BACKUP_FILE%.gz}
+      
+      echo "Database restored successfully"
+    }
+    
+    # Function to restore Redis
+    restore_redis() {
+      echo "Restoring Redis..."
+      BACKUP_FILE=$1
+      
+      # Download backup
+      aws s3 cp s3://ytempire-backups/redis/${BACKUP_FILE} /tmp/
+      gunzip /tmp/${BACKUP_FILE}
+      
+      # Stop Redis
+      kubectl scale deployment redis --replicas=0 -n ytempire
+      sleep 10
+      
+      # Copy backup to Redis pod
+      kubectl cp /tmp/${BACKUP_FILE%.gz} ytempire/redis-0:/data/dump.rdb
+      
+      # Start Redis
+      kubectl scale deployment redis --replicas=1 -n ytempire
+      
+      echo "Redis restored successfully"
+    }
+    
+    # Function to restore application state
+    restore_application() {
+      echo "Restoring application state..."
+      
+      # Download latest application backup
+      aws s3 sync s3://ytempire-backups/application/ /tmp/app-backup/
+      
+      # Extract uploads
+      tar -xzf /tmp/app-backup/uploads_*.tar.gz -C /
+      
+      # Restore ConfigMaps
+      kubectl apply -f /tmp/app-backup/configmaps.yaml
+      
+      echo "Application state restored successfully"
+    }
+    
+    # Main recovery process
+    case "$1" in
+      database)
+        restore_database "$2"
+        ;;
+      redis)
+        restore_redis "$2"
+        ;;
+      application)
+        restore_application
+        ;;
+      full)
+        # Full system recovery
+        echo "Performing full system recovery..."
+        
+        # Get latest backups
+        DB_BACKUP=$(aws s3 ls s3://ytempire-backups/database/ | tail -1 | awk '{print $4}')
+        REDIS_BACKUP=$(aws s3 ls s3://ytempire-backups/redis/ | tail -1 | awk '{print $4}')
+        
+        restore_database "$DB_BACKUP"
+        restore_redis "$REDIS_BACKUP"
+        restore_application
+        
+        # Restart all services
+        kubectl rollout restart deployment -n ytempire
+        
+        echo "Full system recovery completed"
+        ;;
+      *)
+        echo "Usage: $0 {database|redis|application|full} [backup_file]"
+        exit 1
+        ;;
+    esac
+    
+    # Send notification
+    curl -X POST $WEBHOOK_URL \
+      -H "Content-Type: application/json" \
+      -d "{\"event\":\"recovery_complete\",\"type\":\"$1\",\"status\":\"success\"}"
+
+---
+# Monitoring for Backup Health
+apiVersion: v1
+kind: Service
+metadata:
+  name: backup-monitor
+  namespace: ytempire
+spec:
+  selector:
+    app: backup-monitor
+  ports:
+    - port: 9090
+      targetPort: 9090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backup-monitor
+  namespace: ytempire
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backup-monitor
+  template:
+    metadata:
+      labels:
+        app: backup-monitor
+    spec:
+      containers:
+      - name: monitor
+        image: ytempire/backup-monitor:latest
+        ports:
+        - containerPort: 9090
+        env:
+        - name: CHECK_INTERVAL
+          value: "3600"  # Check every hour
+        - name: ALERT_WEBHOOK
+          valueFrom:
+            secretKeyRef:
+              name: monitoring-secret
+              key: webhook_url

@@ -1,0 +1,433 @@
+# Performance Testing Implementation
+# Load testing with k6, Locust, and JMeter
+
+---
+# K6 Performance Test ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k6-test-scripts
+  namespace: testing
+data:
+  load-test.js: |
+    import http from 'k6/http';
+    import { check, sleep } from 'k6';
+    import { Rate } from 'k6/metrics';
+    
+    // Custom metrics
+    const errorRate = new Rate('errors');
+    const successRate = new Rate('success');
+    
+    // Test configuration
+    export const options = {
+      stages: [
+        { duration: '2m', target: 100 },   // Ramp up to 100 users
+        { duration: '5m', target: 100 },   // Stay at 100 users
+        { duration: '2m', target: 200 },   // Ramp up to 200 users
+        { duration: '5m', target: 200 },   // Stay at 200 users
+        { duration: '2m', target: 0 },     // Ramp down to 0 users
+      ],
+      thresholds: {
+        http_req_duration: ['p(95)<500'],  // 95% of requests must complete below 500ms
+        http_req_failed: ['rate<0.1'],     // Error rate must be below 10%
+        errors: ['rate<0.1'],               // Custom error rate below 10%
+      },
+    };
+    
+    const BASE_URL = __ENV.BASE_URL || 'http://ytempire.com';
+    
+    export default function () {
+      // Test authentication
+      let authRes = http.post(`${BASE_URL}/api/v1/auth/login`, JSON.stringify({
+        email: 'test@example.com',
+        password: 'testpass123'
+      }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      check(authRes, {
+        'login successful': (r) => r.status === 200,
+        'token received': (r) => r.json('token') !== '',
+      });
+      
+      errorRate.add(authRes.status !== 200);
+      successRate.add(authRes.status === 200);
+      
+      if (authRes.status === 200) {
+        const token = authRes.json('token');
+        const headers = {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        };
+        
+        // Test channel listing
+        let channelsRes = http.get(`${BASE_URL}/api/v1/channels`, { headers });
+        check(channelsRes, {
+          'channels fetched': (r) => r.status === 200,
+          'response time OK': (r) => r.timings.duration < 500,
+        });
+        
+        // Test video queue
+        let queueRes = http.post(`${BASE_URL}/api/v1/queue/add`, JSON.stringify({
+          channel_id: 'test-channel',
+          title: 'Test Video',
+          topic: 'Testing',
+          duration: 5
+        }), { headers });
+        
+        check(queueRes, {
+          'video queued': (r) => r.status === 201,
+        });
+        
+        // Test analytics
+        let analyticsRes = http.get(`${BASE_URL}/api/v1/analytics/realtime`, { headers });
+        check(analyticsRes, {
+          'analytics fetched': (r) => r.status === 200,
+        });
+      }
+      
+      sleep(1);
+    }
+    
+    export function handleSummary(data) {
+      return {
+        'summary.json': JSON.stringify(data),
+        stdout: textSummary(data, { indent: ' ', enableColors: true }),
+      };
+    }
+
+  stress-test.js: |
+    import http from 'k6/http';
+    import { check } from 'k6';
+    
+    export const options = {
+      stages: [
+        { duration: '2m', target: 500 },   // Ramp up to 500 users
+        { duration: '5m', target: 500 },   // Stay at 500 users
+        { duration: '2m', target: 1000 },  // Ramp up to 1000 users
+        { duration: '5m', target: 1000 },  // Stay at 1000 users
+        { duration: '2m', target: 1500 },  // Ramp up to 1500 users
+        { duration: '5m', target: 1500 },  // Stay at 1500 users
+        { duration: '5m', target: 0 },     // Ramp down
+      ],
+      thresholds: {
+        http_req_duration: ['p(99)<2000'], // 99% of requests under 2s
+        http_req_failed: ['rate<0.5'],     // Error rate below 50%
+      },
+    };
+    
+    export default function () {
+      const response = http.get(__ENV.BASE_URL || 'http://ytempire.com/api/v1/health');
+      check(response, {
+        'status is 200': (r) => r.status === 200,
+      });
+    }
+
+---
+# Locust Performance Test
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: locust-scripts
+  namespace: testing
+data:
+  locustfile.py: |
+    from locust import HttpUser, task, between
+    import json
+    import random
+    
+    class YTEmpireUser(HttpUser):
+        wait_time = between(1, 3)
+        
+        def on_start(self):
+            """Login and get token"""
+            response = self.client.post("/api/v1/auth/login", json={
+                "email": f"user{random.randint(1, 1000)}@test.com",
+                "password": "testpass123"
+            })
+            if response.status_code == 200:
+                self.token = response.json()["token"]
+                self.headers = {"Authorization": f"Bearer {self.token}"}
+            else:
+                self.headers = {}
+        
+        @task(3)
+        def view_channels(self):
+            """Test channel listing"""
+            self.client.get("/api/v1/channels", headers=self.headers)
+        
+        @task(2)
+        def view_dashboard(self):
+            """Test dashboard API"""
+            self.client.get("/api/v1/dashboard/overview", headers=self.headers)
+        
+        @task(1)
+        def create_video(self):
+            """Test video creation"""
+            self.client.post("/api/v1/queue/add", 
+                headers=self.headers,
+                json={
+                    "channel_id": f"channel-{random.randint(1, 10)}",
+                    "title": f"Test Video {random.randint(1, 1000)}",
+                    "topic": "Performance Testing",
+                    "duration": random.randint(3, 10)
+                }
+            )
+        
+        @task(2)
+        def view_analytics(self):
+            """Test analytics endpoints"""
+            endpoints = [
+                "/api/v1/analytics/realtime",
+                "/api/v1/analytics/channels/test-channel",
+                "/api/v1/costs/summary"
+            ]
+            self.client.get(random.choice(endpoints), headers=self.headers)
+        
+        @task(1)
+        def websocket_test(self):
+            """Test WebSocket connection"""
+            # Locust doesn't natively support WebSocket, this is a placeholder
+            pass
+
+---
+# Performance Test Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: performance-test
+  namespace: testing
+spec:
+  template:
+    spec:
+      containers:
+      - name: k6
+        image: grafana/k6:latest
+        command: ['k6', 'run', '/scripts/load-test.js']
+        env:
+        - name: BASE_URL
+          value: "http://backend-service.ytempire:8000"
+        - name: K6_OUT
+          value: "influxdb=http://influxdb:8086/k6"
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      volumes:
+      - name: scripts
+        configMap:
+          name: k6-test-scripts
+      restartPolicy: Never
+
+---
+# Locust Master Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-master
+  namespace: testing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: locust-master
+  template:
+    metadata:
+      labels:
+        app: locust-master
+    spec:
+      containers:
+      - name: locust
+        image: locustio/locust:latest
+        command: ["locust", "-f", "/scripts/locustfile.py", "--master"]
+        ports:
+        - containerPort: 8089
+          name: web
+        - containerPort: 5557
+          name: master
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "500m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+      volumes:
+      - name: scripts
+        configMap:
+          name: locust-scripts
+
+---
+# Locust Worker Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-worker
+  namespace: testing
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: locust-worker
+  template:
+    metadata:
+      labels:
+        app: locust-worker
+    spec:
+      containers:
+      - name: locust
+        image: locustio/locust:latest
+        command: ["locust", "-f", "/scripts/locustfile.py", "--worker", "--master-host", "locust-master"]
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+      volumes:
+      - name: scripts
+        configMap:
+          name: locust-scripts
+
+---
+# Performance Monitoring Script
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: performance-monitor
+  namespace: testing
+data:
+  monitor.py: |
+    import asyncio
+    import aiohttp
+    import time
+    import statistics
+    from prometheus_client import Histogram, Counter, Gauge, start_http_server
+    
+    # Metrics
+    response_time = Histogram('api_response_time', 'API response time', ['endpoint', 'method'])
+    error_count = Counter('api_errors', 'API error count', ['endpoint', 'status_code'])
+    concurrent_users = Gauge('concurrent_users', 'Number of concurrent users')
+    throughput = Gauge('api_throughput', 'API throughput (req/s)')
+    
+    class PerformanceMonitor:
+        def __init__(self, base_url):
+            self.base_url = base_url
+            self.results = []
+            
+        async def measure_endpoint(self, session, endpoint, method='GET', data=None):
+            """Measure single endpoint performance"""
+            url = f"{self.base_url}{endpoint}"
+            start = time.time()
+            
+            try:
+                async with session.request(method, url, json=data) as response:
+                    duration = time.time() - start
+                    
+                    response_time.labels(endpoint=endpoint, method=method).observe(duration)
+                    
+                    if response.status >= 400:
+                        error_count.labels(endpoint=endpoint, status_code=response.status).inc()
+                    
+                    return {
+                        'endpoint': endpoint,
+                        'duration': duration,
+                        'status': response.status,
+                        'timestamp': time.time()
+                    }
+            except Exception as e:
+                error_count.labels(endpoint=endpoint, status_code=0).inc()
+                return {
+                    'endpoint': endpoint,
+                    'error': str(e),
+                    'timestamp': time.time()
+                }
+        
+        async def run_performance_test(self, endpoints, duration=300, concurrency=50):
+            """Run performance test for specified duration"""
+            start_time = time.time()
+            tasks = []
+            
+            async with aiohttp.ClientSession() as session:
+                while time.time() - start_time < duration:
+                    concurrent_users.set(concurrency)
+                    
+                    # Create concurrent requests
+                    for _ in range(concurrency):
+                        endpoint = endpoints[len(tasks) % len(endpoints)]
+                        task = asyncio.create_task(
+                            self.measure_endpoint(session, endpoint)
+                        )
+                        tasks.append(task)
+                    
+                    # Wait for batch to complete
+                    batch_results = await asyncio.gather(*tasks[-concurrency:])
+                    self.results.extend(batch_results)
+                    
+                    # Calculate throughput
+                    elapsed = time.time() - start_time
+                    throughput.set(len(self.results) / elapsed)
+                    
+                    await asyncio.sleep(1)
+            
+            return self.analyze_results()
+        
+        def analyze_results(self):
+            """Analyze performance test results"""
+            if not self.results:
+                return {}
+            
+            # Filter successful requests
+            successful = [r for r in self.results if 'duration' in r and r.get('status') == 200]
+            
+            if not successful:
+                return {'error': 'No successful requests'}
+            
+            durations = [r['duration'] for r in successful]
+            
+            return {
+                'total_requests': len(self.results),
+                'successful_requests': len(successful),
+                'error_rate': (len(self.results) - len(successful)) / len(self.results),
+                'avg_response_time': statistics.mean(durations),
+                'median_response_time': statistics.median(durations),
+                'p95_response_time': statistics.quantiles(durations, n=20)[18],  # 95th percentile
+                'p99_response_time': statistics.quantiles(durations, n=100)[98],  # 99th percentile
+                'min_response_time': min(durations),
+                'max_response_time': max(durations),
+                'throughput': len(self.results) / (self.results[-1]['timestamp'] - self.results[0]['timestamp'])
+            }
+    
+    async def main():
+        # Start Prometheus metrics server
+        start_http_server(8000)
+        
+        monitor = PerformanceMonitor('http://backend-service:8000')
+        
+        endpoints = [
+            '/api/v1/health',
+            '/api/v1/channels',
+            '/api/v1/dashboard/overview',
+            '/api/v1/analytics/realtime',
+            '/api/v1/queue/list'
+        ]
+        
+        # Run performance test
+        results = await monitor.run_performance_test(endpoints, duration=600, concurrency=100)
+        print(f"Performance Test Results: {results}")
+        
+        # Check thresholds
+        if results.get('p95_response_time', float('inf')) > 0.5:
+            print("WARNING: P95 response time exceeds 500ms threshold")
+        
+        if results.get('error_rate', 1) > 0.01:
+            print("WARNING: Error rate exceeds 1% threshold")
+    
+    if __name__ == "__main__":
+        asyncio.run(main())

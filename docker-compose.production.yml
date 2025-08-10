@@ -1,0 +1,410 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database with Replication
+  postgres:
+    image: postgres:15-alpine
+    container_name: ytempire_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ytempire}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-ytempire_db}
+      POSTGRES_MAX_CONNECTIONS: 200
+      POSTGRES_SHARED_BUFFERS: 256MB
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ytempire_network
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ytempire}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Redis Cache & Queue with Persistence
+  redis:
+    image: redis:7-alpine
+    container_name: ytempire_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./infrastructure/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - ytempire_network
+    restart: always
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: ytempire_backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:ytempire_secure_pwd_2024@postgres:5432/ytempire_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      ENVIRONMENT: production
+      SECRET_KEY: ${SECRET_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      YOUTUBE_API_KEY_01: ${YOUTUBE_API_KEY_01}
+      YOUTUBE_API_KEY_02: ${YOUTUBE_API_KEY_02}
+      YOUTUBE_API_KEY_03: ${YOUTUBE_API_KEY_03}
+      YOUTUBE_API_KEY_04: ${YOUTUBE_API_KEY_04}
+      YOUTUBE_API_KEY_05: ${YOUTUBE_API_KEY_05}
+      YOUTUBE_API_KEY_06: ${YOUTUBE_API_KEY_06}
+      YOUTUBE_API_KEY_07: ${YOUTUBE_API_KEY_07}
+      YOUTUBE_API_KEY_08: ${YOUTUBE_API_KEY_08}
+      YOUTUBE_API_KEY_09: ${YOUTUBE_API_KEY_09}
+      YOUTUBE_API_KEY_10: ${YOUTUBE_API_KEY_10}
+      YOUTUBE_API_KEY_11: ${YOUTUBE_API_KEY_11}
+      YOUTUBE_API_KEY_12: ${YOUTUBE_API_KEY_12}
+      YOUTUBE_API_KEY_13: ${YOUTUBE_API_KEY_13}
+      YOUTUBE_API_KEY_14: ${YOUTUBE_API_KEY_14}
+      YOUTUBE_API_KEY_15: ${YOUTUBE_API_KEY_15}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      GOOGLE_TTS_API_KEY: ${GOOGLE_TTS_API_KEY}
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    networks:
+      - ytempire_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    command: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: ytempire_frontend
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://backend:8000}
+      NODE_ENV: production
+    ports:
+      - "3000:80"
+    networks:
+      - ytempire_network
+    depends_on:
+      - backend
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Celery Worker
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: ytempire_celery_worker
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:ytempire_secure_pwd_2024@postgres:5432/ytempire_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - ytempire_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    command: celery -A app.core.celery_app worker --loglevel=info --concurrency=4
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Celery Beat Scheduler
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: ytempire_celery_beat
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:ytempire_secure_pwd_2024@postgres:5432/ytempire_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - ytempire_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    command: celery -A app.core.celery_app beat --loglevel=info
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # Flower - Celery Monitoring
+  flower:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: ytempire_flower
+    environment:
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      FLOWER_BASIC_AUTH: ${FLOWER_USER:-admin}:${FLOWER_PASSWORD:-admin}
+    ports:
+      - "5555:5555"
+    networks:
+      - ytempire_network
+    depends_on:
+      - redis
+    restart: always
+    command: celery -A app.core.celery_app flower --port=5555
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # N8N Workflow Automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: ytempire_n8n
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: ${N8N_USER:-admin}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_PASSWORD}
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://n8n:5678}
+      GENERIC_TIMEZONE: ${TIMEZONE:-America/Los_Angeles}
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./infrastructure/n8n/workflows:/home/node/workflows
+    networks:
+      - ytempire_network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: ytempire_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/ssl:/etc/nginx/ssl:ro
+      - nginx_cache:/var/cache/nginx
+    networks:
+      - ytempire_network
+    depends_on:
+      - backend
+      - frontend
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ytempire_prometheus
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    networks:
+      - ytempire_network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ytempire_grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infrastructure/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3001:3000"
+    networks:
+      - ytempire_network
+    depends_on:
+      - prometheus
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ML Pipeline Service (GPU-enabled)
+  ml_pipeline:
+    build:
+      context: ./ml-pipeline
+      dockerfile: Dockerfile
+    container_name: ytempire_ml_pipeline
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:ytempire_secure_pwd_2024@postgres:5432/ytempire_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-0}
+    volumes:
+      - ./ml-pipeline:/app
+      - ./data:/app/data
+      - ./models:/app/models
+    networks:
+      - ytempire_network
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+networks:
+  ytempire_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  n8n_data:
+    driver: local
+  nginx_cache:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

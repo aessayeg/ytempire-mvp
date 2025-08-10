@@ -1,0 +1,580 @@
+# Monitoring Enhancement with Prometheus & Grafana
+# Complete observability stack for YTEmpire
+
+---
+# Prometheus Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'ytempire-prod'
+        environment: 'production'
+    
+    # Alerting configuration
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+              - alertmanager:9093
+    
+    # Rule files
+    rule_files:
+      - '/etc/prometheus/rules/*.yml'
+    
+    # Scrape configurations
+    scrape_configs:
+      # Kubernetes API server
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+      
+      # Kubernetes nodes
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+      
+      # Kubernetes pods
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+      
+      # YTEmpire Backend
+      - job_name: 'ytempire-backend'
+        static_configs:
+          - targets: ['backend-service:8000']
+        metrics_path: '/metrics'
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: instance
+            replacement: 'backend'
+      
+      # PostgreSQL Exporter
+      - job_name: 'postgresql'
+        static_configs:
+          - targets: ['postgres-exporter:9187']
+      
+      # Redis Exporter
+      - job_name: 'redis'
+        static_configs:
+          - targets: ['redis-exporter:9121']
+      
+      # Node Exporter
+      - job_name: 'node-exporter'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: node-exporter
+      
+      # GPU Metrics
+      - job_name: 'nvidia-gpu'
+        static_configs:
+          - targets: ['nvidia-exporter:9445']
+
+---
+# Alert Rules
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: monitoring
+data:
+  alerts.yml: |
+    groups:
+      - name: ytempire_alerts
+        interval: 30s
+        rules:
+          # High Error Rate
+          - alert: HighErrorRate
+            expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+            for: 5m
+            labels:
+              severity: critical
+              service: backend
+            annotations:
+              summary: "High error rate detected"
+              description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.instance }}"
+          
+          # High Memory Usage
+          - alert: HighMemoryUsage
+            expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.9
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High memory usage on {{ $labels.instance }}"
+              description: "Memory usage is above 90% (current: {{ $value | humanizePercentage }})"
+          
+          # Database Connection Pool Exhaustion
+          - alert: DatabaseConnectionPoolExhausted
+            expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+            for: 5m
+            labels:
+              severity: warning
+              service: postgresql
+            annotations:
+              summary: "Database connection pool nearly exhausted"
+              description: "{{ $value | humanizePercentage }} of connections are in use"
+          
+          # Redis Memory Usage
+          - alert: RedisMemoryHigh
+            expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+            for: 5m
+            labels:
+              severity: warning
+              service: redis
+            annotations:
+              summary: "Redis memory usage high"
+              description: "Redis is using {{ $value | humanizePercentage }} of max memory"
+          
+          # GPU Utilization
+          - alert: GPUUtilizationHigh
+            expr: nvidia_gpu_utilization > 95
+            for: 10m
+            labels:
+              severity: info
+            annotations:
+              summary: "GPU {{ $labels.gpu }} utilization high"
+              description: "GPU utilization at {{ $value }}%"
+          
+          # API Response Time
+          - alert: SlowAPIResponse
+            expr: histogram_quantile(0.95, http_request_duration_seconds_bucket) > 0.5
+            for: 5m
+            labels:
+              severity: warning
+              service: api
+            annotations:
+              summary: "API response time degraded"
+              description: "95th percentile response time is {{ $value }}s"
+          
+          # Video Generation Queue Backup
+          - alert: VideoQueueBackup
+            expr: video_queue_pending > 100
+            for: 15m
+            labels:
+              severity: warning
+              service: video-generation
+            annotations:
+              summary: "Video generation queue backing up"
+              description: "{{ $value }} videos pending in queue"
+          
+          # Cost Threshold Alert
+          - alert: DailyCostThreshold
+            expr: daily_cost_total > 500
+            for: 1m
+            labels:
+              severity: critical
+              service: billing
+            annotations:
+              summary: "Daily cost threshold exceeded"
+              description: "Daily cost is ${{ $value }}"
+
+---
+# Grafana Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: monitoring
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+        editable: false
+      
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki:3100
+        editable: false
+      
+      - name: PostgreSQL
+        type: postgres
+        url: postgres-service:5432
+        database: ytempire_metrics
+        user: metrics_user
+        secureJsonData:
+          password: ${POSTGRES_PASSWORD}
+        jsonData:
+          sslmode: require
+          postgresVersion: 1400
+          timescaledb: false
+
+---
+# Grafana Dashboards
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: monitoring
+data:
+  ytempire-overview.json: |
+    {
+      "dashboard": {
+        "title": "YTEmpire Overview",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Request Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total[5m])",
+                "legendFormat": "{{ method }} {{ status }}"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "Error Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{status=~\"5..\"}[5m])",
+                "legendFormat": "5xx Errors"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "Response Time (p95)",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, http_request_duration_seconds_bucket)",
+                "legendFormat": "95th percentile"
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "title": "Active Users",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "active_users_total"
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "title": "Video Generation Queue",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "video_queue_pending",
+                "legendFormat": "Pending"
+              },
+              {
+                "expr": "video_queue_processing",
+                "legendFormat": "Processing"
+              }
+            ]
+          },
+          {
+            "id": 6,
+            "title": "Daily Cost",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "daily_cost_total"
+              }
+            ]
+          },
+          {
+            "id": 7,
+            "title": "GPU Utilization",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "nvidia_gpu_utilization",
+                "legendFormat": "GPU {{ gpu }}"
+              }
+            ]
+          },
+          {
+            "id": 8,
+            "title": "Database Connections",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "pg_stat_database_numbackends",
+                "legendFormat": "Active Connections"
+              }
+            ]
+          }
+        ]
+      }
+    }
+
+---
+# Prometheus Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      serviceAccountName: prometheus
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.40.0
+        args:
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--storage.tsdb.path=/prometheus'
+          - '--storage.tsdb.retention.time=30d'
+          - '--web.enable-lifecycle'
+          - '--web.enable-admin-api'
+        ports:
+        - containerPort: 9090
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: config
+          mountPath: /etc/prometheus
+        - name: rules
+          mountPath: /etc/prometheus/rules
+        - name: storage
+          mountPath: /prometheus
+      volumes:
+      - name: config
+        configMap:
+          name: prometheus-config
+      - name: rules
+        configMap:
+          name: prometheus-rules
+      - name: storage
+        persistentVolumeClaim:
+          claimName: prometheus-pvc
+
+---
+# Grafana Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:9.3.0
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: grafana-secret
+              key: admin-password
+        - name: GF_INSTALL_PLUGINS
+          value: "redis-datasource,redis-app,cloudwatch-datasource"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: datasources
+          mountPath: /etc/grafana/provisioning/datasources
+        - name: dashboards
+          mountPath: /etc/grafana/provisioning/dashboards
+        - name: storage
+          mountPath: /var/lib/grafana
+      volumes:
+      - name: datasources
+        configMap:
+          name: grafana-datasources
+      - name: dashboards
+        configMap:
+          name: grafana-dashboards
+      - name: storage
+        persistentVolumeClaim:
+          claimName: grafana-pvc
+
+---
+# Alertmanager Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+      slack_api_url: '${SLACK_WEBHOOK_URL}'
+    
+    route:
+      group_by: ['alertname', 'cluster', 'service']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 12h
+      receiver: 'default'
+      routes:
+      - match:
+          severity: critical
+        receiver: 'critical'
+        continue: true
+      - match:
+          severity: warning
+        receiver: 'warning'
+    
+    receivers:
+    - name: 'default'
+      slack_configs:
+      - channel: '#alerts'
+        title: 'YTEmpire Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+    
+    - name: 'critical'
+      slack_configs:
+      - channel: '#critical-alerts'
+        title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+      pagerduty_configs:
+      - service_key: '${PAGERDUTY_KEY}'
+    
+    - name: 'warning'
+      slack_configs:
+      - channel: '#alerts'
+        title: '⚠️ Warning: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+---
+# Custom Metrics Exporter
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-exporter
+  namespace: monitoring
+data:
+  exporter.py: |
+    from prometheus_client import start_http_server, Gauge, Counter, Histogram
+    import time
+    import redis
+    import psycopg2
+    import requests
+    
+    # Define metrics
+    video_queue_pending = Gauge('video_queue_pending', 'Number of pending videos')
+    video_queue_processing = Gauge('video_queue_processing', 'Number of processing videos')
+    daily_cost_total = Gauge('daily_cost_total', 'Total daily cost in USD')
+    active_users_total = Gauge('active_users_total', 'Number of active users')
+    api_calls_total = Counter('api_calls_total', 'Total API calls', ['service', 'endpoint'])
+    request_duration = Histogram('request_duration_seconds', 'Request duration', ['method', 'endpoint'])
+    
+    def collect_metrics():
+        """Collect custom metrics from various sources"""
+        
+        # Connect to Redis
+        r = redis.Redis(host='redis-service', port=6379)
+        
+        # Get queue metrics
+        pending = r.llen('video:queue:pending')
+        processing = r.llen('video:queue:processing')
+        video_queue_pending.set(pending)
+        video_queue_processing.set(processing)
+        
+        # Get cost metrics
+        daily_cost = r.get('metrics:daily_cost') or 0
+        daily_cost_total.set(float(daily_cost))
+        
+        # Get active users
+        active_users = r.scard('users:active')
+        active_users_total.set(active_users)
+        
+        # Connect to PostgreSQL for additional metrics
+        try:
+            conn = psycopg2.connect(
+                host='postgres-service',
+                database='ytempire',
+                user='metrics_user',
+                password='metrics_password'
+            )
+            cur = conn.cursor()
+            
+            # Get API metrics
+            cur.execute("SELECT COUNT(*) FROM api_logs WHERE timestamp > NOW() - INTERVAL '1 hour'")
+            api_count = cur.fetchone()[0]
+            api_calls_total.labels(service='backend', endpoint='all').inc(api_count)
+            
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"Database connection error: {e}")
+    
+    if __name__ == '__main__':
+        # Start Prometheus metrics server
+        start_http_server(8080)
+        
+        # Collect metrics every 30 seconds
+        while True:
+            collect_metrics()
+            time.sleep(30)

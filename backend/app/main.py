@@ -14,6 +14,9 @@ from app.core.logging import setup_logging
 from app.db.session import engine
 from app.db.base import Base
 from app.services.websocket_manager import WebSocketManager
+from app.core.performance import (
+    cache_manager, connection_pool, PerformanceMiddleware
+)
 
 # Setup logging
 setup_logging()
@@ -31,6 +34,11 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting YTEmpire API...")
     
+    # Initialize performance components
+    await cache_manager.initialize()
+    await connection_pool.initialize()
+    logger.info("Performance optimization initialized")
+    
     # Create database tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -42,6 +50,7 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("Shutting down YTEmpire API...")
+    await connection_pool.cleanup()
     await engine.dispose()
 
 
@@ -70,6 +79,9 @@ app.add_middleware(
     TrustedHostMiddleware,
     allowed_hosts=settings.ALLOWED_HOSTS
 )
+
+# Performance middleware
+app.add_middleware(PerformanceMiddleware, cache_manager=cache_manager)
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)

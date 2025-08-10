@@ -1,0 +1,123 @@
+{
+  "timestamp": "2025-08-10T19:12:12.241144",
+  "structure_results": [
+    {
+      "dir": "backend",
+      "status": "PASS",
+      "files": 61
+    },
+    {
+      "dir": "frontend",
+      "status": "PASS",
+      "files": 76064
+    },
+    {
+      "dir": "ml-pipeline",
+      "status": "PASS",
+      "files": 16
+    },
+    {
+      "dir": "data-pipeline",
+      "status": "PASS",
+      "files": 1
+    },
+    {
+      "dir": "infrastructure",
+      "status": "PASS",
+      "files": 11
+    },
+    {
+      "dir": "tests",
+      "status": "PASS",
+      "files": 14
+    },
+    {
+      "dir": "_documentation",
+      "status": "PASS",
+      "files": 242
+    }
+  ],
+  "file_results": [
+    {
+      "file": "backend/app/api/v1/endpoints/auth.py",
+      "status": "PASS",
+      "size": 13510
+    },
+    {
+      "file": "backend/app/api/v1/endpoints/channels.py",
+      "status": "PASS",
+      "size": 17186
+    },
+    {
+      "file": "backend/app/api/v1/endpoints/videos.py",
+      "status": "PASS",
+      "size": 26548
+    },
+    {
+      "file": "backend/app/api/v1/endpoints/users.py",
+      "status": "PASS",
+      "size": 16329
+    },
+    {
+      "file": "backend/app/middleware/rate_limit.py",
+      "status": "PASS",
+      "size": 15543
+    },
+    {
+      "file": "frontend/src/components/Dashboard/MainDashboard.tsx",
+      "status": "PASS",
+      "size": 20013
+    },
+    {
+      "file": "ml-pipeline/src/trend_detection_model.py",
+      "status": "PASS",
+      "size": 31756
+    },
+    {
+      "file": "ml-pipeline/src/script_generation.py",
+      "status": "PASS",
+      "size": 21912
+    },
+    {
+      "file": "data-pipeline/src/analytics_pipeline.py",
+      "status": "PASS",
+      "size": 24401
+    },
+    {
+      "file": "docker-compose.yml",
+      "status": "PASS",
+      "size": 5508
+    }
+  ],
+  "statistics": {
+    "total_files": 137,
+    "total_lines": 46320,
+    "by_extension": {
+      ".py": {
+        "files": 89,
+        "lines": 33420
+      },
+      ".ts": {
+        "files": 7,
+        "lines": 608
+      },
+      ".tsx": {
+        "files": 34,
+        "lines": 11799
+      },
+      ".js": {
+        "files": 7,
+        "lines": 493
+      },
+      ".jsx": {
+        "files": 0,
+        "lines": 0
+      }
+    }
+  },
+  "summary": {
+    "total_pass": 17,
+    "total_fail": 0,
+    "pass_rate": 100.0
+  }
+}

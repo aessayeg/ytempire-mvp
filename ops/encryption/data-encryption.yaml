@@ -1,0 +1,429 @@
+# Data Encryption Implementation
+# Comprehensive encryption strategy for data at rest and in transit
+
+---
+# Sealed Secrets Controller
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sealed-secrets
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sealed-secrets-controller
+  namespace: sealed-secrets
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sealed-secrets-controller
+  template:
+    metadata:
+      labels:
+        app: sealed-secrets-controller
+    spec:
+      serviceAccountName: sealed-secrets-controller
+      containers:
+      - name: controller
+        image: bitnami/sealed-secrets-controller:latest
+        command:
+        - controller
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SEALED_SECRETS_NAMESPACE
+          value: sealed-secrets
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+
+---
+# Encryption Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: encryption-config
+  namespace: ytempire
+data:
+  encryption-config.yaml: |
+    apiVersion: apiserver.config.k8s.io/v1
+    kind: EncryptionConfiguration
+    resources:
+      - resources:
+        - secrets
+        - configmaps
+        providers:
+        - aescbc:
+            keys:
+            - name: key1
+              secret: ${ENCRYPTION_KEY}
+        - identity: {}
+  
+  vault-config.hcl: |
+    storage "file" {
+      path = "/vault/data"
+    }
+    
+    listener "tcp" {
+      address     = "0.0.0.0:8200"
+      tls_cert_file = "/vault/certs/tls.crt"
+      tls_key_file  = "/vault/certs/tls.key"
+    }
+    
+    api_addr = "https://vault.ytempire.local:8200"
+    cluster_addr = "https://vault.ytempire.local:8201"
+    ui = true
+    
+    seal "awskms" {
+      region = "us-east-1"
+      kms_key_id = "${KMS_KEY_ID}"
+    }
+
+---
+# HashiCorp Vault for Secrets Management
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vault
+  namespace: ytempire
+spec:
+  serviceName: vault
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault
+  template:
+    metadata:
+      labels:
+        app: vault
+    spec:
+      containers:
+      - name: vault
+        image: vault:1.12.0
+        ports:
+        - containerPort: 8200
+          name: vault
+        - containerPort: 8201
+          name: cluster
+        env:
+        - name: VAULT_DEV_ROOT_TOKEN_ID
+          valueFrom:
+            secretKeyRef:
+              name: vault-secret
+              key: root-token
+        - name: VAULT_ADDR
+          value: "http://127.0.0.1:8200"
+        volumeMounts:
+        - name: vault-data
+          mountPath: /vault/data
+        - name: config
+          mountPath: /vault/config
+        - name: certs
+          mountPath: /vault/certs
+        command:
+        - vault
+        - server
+        - -config=/vault/config/vault-config.hcl
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: config
+        configMap:
+          name: encryption-config
+      - name: certs
+        secret:
+          secretName: vault-tls
+  volumeClaimTemplates:
+  - metadata:
+      name: vault-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+
+---
+# Database Encryption with Transparent Data Encryption (TDE)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-encryption
+  namespace: ytempire
+data:
+  init-encryption.sql: |
+    -- Enable pgcrypto extension
+    CREATE EXTENSION IF NOT EXISTS pgcrypto;
+    
+    -- Create encrypted columns
+    ALTER TABLE users ADD COLUMN email_encrypted BYTEA;
+    ALTER TABLE users ADD COLUMN phone_encrypted BYTEA;
+    ALTER TABLE payment_methods ADD COLUMN card_number_encrypted BYTEA;
+    ALTER TABLE api_keys ADD COLUMN key_encrypted BYTEA;
+    
+    -- Encryption functions
+    CREATE OR REPLACE FUNCTION encrypt_sensitive_data(data TEXT, key TEXT)
+    RETURNS BYTEA AS $$
+    BEGIN
+      RETURN pgp_sym_encrypt(data, key);
+    END;
+    $$ LANGUAGE plpgsql;
+    
+    CREATE OR REPLACE FUNCTION decrypt_sensitive_data(data BYTEA, key TEXT)
+    RETURNS TEXT AS $$
+    BEGIN
+      RETURN pgp_sym_decrypt(data, key);
+    END;
+    $$ LANGUAGE plpgsql;
+    
+    -- Migrate existing data
+    UPDATE users SET email_encrypted = encrypt_sensitive_data(email, '${DB_ENCRYPTION_KEY}');
+    UPDATE payment_methods SET card_number_encrypted = encrypt_sensitive_data(card_number, '${DB_ENCRYPTION_KEY}');
+    
+    -- Create views for transparent access
+    CREATE VIEW users_decrypted AS
+    SELECT 
+      id,
+      decrypt_sensitive_data(email_encrypted, '${DB_ENCRYPTION_KEY}') as email,
+      created_at,
+      updated_at
+    FROM users;
+
+---
+# Application-Level Encryption Service
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: encryption-service
+  namespace: ytempire
+data:
+  encryption_service.py: |
+    """
+    Encryption Service for YTEmpire
+    Handles all encryption/decryption operations
+    """
+    import os
+    import base64
+    from cryptography.fernet import Fernet
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    import boto3
+    from hashicorp_vault_client import VaultClient
+    
+    class EncryptionService:
+        def __init__(self):
+            self.kms_client = boto3.client('kms', region_name='us-east-1')
+            self.vault_client = VaultClient(url=os.getenv('VAULT_ADDR'))
+            self.data_key_cache = {}
+            
+        def encrypt_field(self, plaintext: str, context: dict = None) -> str:
+            """Encrypt a field using envelope encryption"""
+            # Generate data encryption key
+            data_key = self.generate_data_key()
+            
+            # Encrypt the data
+            aesgcm = AESGCM(data_key['Plaintext'])
+            nonce = os.urandom(12)
+            
+            # Add authentication data if context provided
+            aad = str(context).encode() if context else None
+            
+            ciphertext = aesgcm.encrypt(nonce, plaintext.encode(), aad)
+            
+            # Return base64 encoded result
+            result = {
+                'ciphertext': base64.b64encode(ciphertext).decode(),
+                'nonce': base64.b64encode(nonce).decode(),
+                'encrypted_key': base64.b64encode(data_key['CiphertextBlob']).decode()
+            }
+            
+            return base64.b64encode(str(result).encode()).decode()
+        
+        def decrypt_field(self, encrypted_data: str, context: dict = None) -> str:
+            """Decrypt a field"""
+            import ast
+            
+            # Decode the data
+            data = ast.literal_eval(base64.b64decode(encrypted_data).decode())
+            
+            # Decrypt the data key
+            plaintext_key = self.kms_client.decrypt(
+                CiphertextBlob=base64.b64decode(data['encrypted_key'])
+            )['Plaintext']
+            
+            # Decrypt the data
+            aesgcm = AESGCM(plaintext_key)
+            aad = str(context).encode() if context else None
+            
+            plaintext = aesgcm.decrypt(
+                base64.b64decode(data['nonce']),
+                base64.b64decode(data['ciphertext']),
+                aad
+            )
+            
+            return plaintext.decode()
+        
+        def generate_data_key(self):
+            """Generate a data encryption key using KMS"""
+            key_id = os.getenv('KMS_KEY_ID')
+            
+            response = self.kms_client.generate_data_key(
+                KeyId=key_id,
+                KeySpec='AES_256'
+            )
+            
+            return response
+        
+        def encrypt_file(self, file_path: str, output_path: str):
+            """Encrypt a file"""
+            # Generate a new data key for the file
+            data_key = self.generate_data_key()
+            
+            # Create cipher
+            fernet = Fernet(base64.urlsafe_b64encode(data_key['Plaintext'][:32]))
+            
+            # Read and encrypt file
+            with open(file_path, 'rb') as f:
+                file_data = f.read()
+            
+            encrypted_data = fernet.encrypt(file_data)
+            
+            # Save encrypted file with metadata
+            with open(output_path, 'wb') as f:
+                # Write encrypted key
+                f.write(len(data_key['CiphertextBlob']).to_bytes(4, 'big'))
+                f.write(data_key['CiphertextBlob'])
+                # Write encrypted data
+                f.write(encrypted_data)
+        
+        def decrypt_file(self, encrypted_path: str, output_path: str):
+            """Decrypt a file"""
+            with open(encrypted_path, 'rb') as f:
+                # Read encrypted key
+                key_length = int.from_bytes(f.read(4), 'big')
+                encrypted_key = f.read(key_length)
+                # Read encrypted data
+                encrypted_data = f.read()
+            
+            # Decrypt the data key
+            plaintext_key = self.kms_client.decrypt(
+                CiphertextBlob=encrypted_key
+            )['Plaintext']
+            
+            # Create cipher and decrypt
+            fernet = Fernet(base64.urlsafe_b64encode(plaintext_key[:32]))
+            decrypted_data = fernet.decrypt(encrypted_data)
+            
+            # Save decrypted file
+            with open(output_path, 'wb') as f:
+                f.write(decrypted_data)
+        
+        def rotate_keys(self):
+            """Rotate encryption keys"""
+            # This would be called periodically to rotate keys
+            print("Rotating encryption keys...")
+            
+            # Rotate KMS key
+            self.kms_client.update_key_rotation_status(
+                KeyId=os.getenv('KMS_KEY_ID'),
+                KeyRotationEnabled=True
+            )
+            
+            # Re-encrypt data with new keys
+            # This would be done in batches in production
+
+---
+# TLS Configuration for Services
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tls-config
+  namespace: ytempire
+data:
+  nginx-ssl.conf: |
+    server {
+        listen 443 ssl http2;
+        server_name ytempire.com;
+        
+        # SSL Configuration
+        ssl_certificate /etc/nginx/certs/tls.crt;
+        ssl_certificate_key /etc/nginx/certs/tls.key;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384;
+        ssl_prefer_server_ciphers off;
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_timeout 10m;
+        ssl_stapling on;
+        ssl_stapling_verify on;
+        
+        # Security Headers
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Content-Security-Policy "default-src 'self'" always;
+        
+        location / {
+            proxy_pass http://backend:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+
+---
+# Certificate Manager
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@ytempire.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+
+---
+# Encryption Key Rotation CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: key-rotation
+  namespace: ytempire
+spec:
+  schedule: "0 0 1 * *"  # Monthly
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: key-rotator
+            image: ytempire/key-rotator:latest
+            command:
+            - python
+            - /scripts/rotate_keys.py
+            env:
+            - name: VAULT_ADDR
+              value: "http://vault:8200"
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vault-secret
+                  key: token
+          restartPolicy: OnFailure

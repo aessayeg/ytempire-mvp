@@ -22,6 +22,12 @@ class User(Base):
     is_superuser = Column(Boolean, default=False)
     is_verified = Column(Boolean, default=False)
     
+    # Verification & Security
+    verification_token = Column(String, unique=True, index=True)
+    verified_at = Column(DateTime(timezone=True))
+    password_reset_token = Column(String, unique=True, index=True)
+    password_reset_expires = Column(DateTime(timezone=True))
+    
     # Subscription
     subscription_tier = Column(String, default="free")  # free, starter, pro, enterprise
     subscription_status = Column(String, default="active")  # active, cancelled, expired
@@ -31,16 +37,23 @@ class User(Base):
     channels_limit = Column(Integer, default=1)
     videos_per_day_limit = Column(Integer, default=5)
     monthly_budget_limit = Column(Float, default=100.0)
+    api_quota_remaining = Column(Integer, default=100)
+    api_quota_reset_at = Column(DateTime(timezone=True))
     
     # Tracking
     total_videos_generated = Column(Integer, default=0)
     total_revenue_generated = Column(Float, default=0.0)
     total_cost_incurred = Column(Float, default=0.0)
     
+    # Profile
+    company_name = Column(String)
+    phone = Column(String)
+    
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     last_login = Column(DateTime(timezone=True))
+    deleted_at = Column(DateTime(timezone=True))
     
     # Relationships
     channels = relationship("Channel", back_populates="owner", cascade="all, delete-orphan")

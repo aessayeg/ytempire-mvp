@@ -1,0 +1,413 @@
+# Mobile Testing Implementation
+# Comprehensive mobile testing with Appium, BrowserStack, and responsive testing
+
+---
+# Mobile Test Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mobile-test-config
+  namespace: testing
+data:
+  appium-config.json: |
+    {
+      "platformName": "Android",
+      "platformVersion": "12.0",
+      "deviceName": "Pixel 5",
+      "browserName": "Chrome",
+      "automationName": "UiAutomator2",
+      "chromeOptions": {
+        "w3c": false,
+        "args": ["--disable-web-security", "--no-sandbox"]
+      }
+    }
+  
+  browserstack-config.json: |
+    {
+      "user": "${BROWSERSTACK_USER}",
+      "key": "${BROWSERSTACK_KEY}",
+      "capabilities": {
+        "project": "YTEmpire Mobile",
+        "build": "Mobile Test Build",
+        "name": "Mobile Responsiveness Test",
+        "browserstack.local": "false",
+        "browserstack.debug": "true",
+        "browserstack.networkLogs": "true"
+      },
+      "devices": [
+        {"device": "iPhone 14 Pro", "os_version": "16"},
+        {"device": "Samsung Galaxy S23", "os_version": "13"},
+        {"device": "Google Pixel 7", "os_version": "13"},
+        {"device": "iPad Pro 12.9", "os_version": "16"},
+        {"device": "OnePlus 11", "os_version": "13"}
+      ]
+    }
+
+---
+# Mobile Test Scripts
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mobile-test-scripts
+  namespace: testing
+data:
+  mobile_test.py: |
+    from appium import webdriver
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.common.exceptions import TimeoutException
+    import unittest
+    import time
+    import json
+    
+    class MobileResponsivenessTest(unittest.TestCase):
+        def setUp(self):
+            """Setup mobile test environment"""
+            with open('/config/appium-config.json') as f:
+                desired_caps = json.load(f)
+            
+            self.driver = webdriver.Remote(
+                command_executor='http://appium-server:4723/wd/hub',
+                desired_capabilities=desired_caps
+            )
+            self.driver.get('https://ytempire.com')
+            self.wait = WebDriverWait(self.driver, 10)
+        
+        def test_mobile_navigation(self):
+            """Test mobile navigation menu"""
+            # Check hamburger menu exists
+            hamburger = self.wait.until(
+                EC.presence_of_element_located((By.CLASS_NAME, "mobile-menu-toggle"))
+            )
+            self.assertTrue(hamburger.is_displayed())
+            
+            # Test menu opening
+            hamburger.click()
+            menu = self.wait.until(
+                EC.visibility_of_element_located((By.CLASS_NAME, "mobile-menu"))
+            )
+            self.assertTrue(menu.is_displayed())
+            
+            # Test menu items
+            menu_items = self.driver.find_elements(By.CLASS_NAME, "mobile-menu-item")
+            self.assertGreater(len(menu_items), 0)
+        
+        def test_touch_gestures(self):
+            """Test touch gestures and interactions"""
+            # Test swipe on video carousel
+            carousel = self.driver.find_element(By.CLASS_NAME, "video-carousel")
+            
+            # Swipe left
+            self.driver.swipe(
+                start_x=carousel.size['width'] * 0.8,
+                start_y=carousel.location['y'] + carousel.size['height'] / 2,
+                end_x=carousel.size['width'] * 0.2,
+                end_y=carousel.location['y'] + carousel.size['height'] / 2,
+                duration=500
+            )
+            
+            # Test tap to play video
+            video_thumbnail = self.driver.find_element(By.CLASS_NAME, "video-thumbnail")
+            video_thumbnail.click()
+            
+            # Verify video player opened
+            player = self.wait.until(
+                EC.presence_of_element_located((By.CLASS_NAME, "video-player"))
+            )
+            self.assertTrue(player.is_displayed())
+        
+        def test_responsive_layout(self):
+            """Test responsive layout at different orientations"""
+            # Portrait orientation
+            self.driver.orientation = "PORTRAIT"
+            time.sleep(1)
+            
+            # Check single column layout
+            content_columns = self.driver.find_elements(By.CLASS_NAME, "content-column")
+            self.assertEqual(len(content_columns), 1)
+            
+            # Landscape orientation
+            self.driver.orientation = "LANDSCAPE"
+            time.sleep(1)
+            
+            # Check multi-column layout
+            content_columns = self.driver.find_elements(By.CLASS_NAME, "content-column")
+            self.assertGreater(len(content_columns), 1)
+        
+        def test_form_inputs(self):
+            """Test mobile form inputs"""
+            # Navigate to login
+            login_btn = self.driver.find_element(By.ID, "mobile-login")
+            login_btn.click()
+            
+            # Test input fields
+            email_input = self.wait.until(
+                EC.presence_of_element_located((By.NAME, "email"))
+            )
+            
+            # Check virtual keyboard appears
+            email_input.click()
+            time.sleep(1)
+            self.assertTrue(self.driver.is_keyboard_shown())
+            
+            # Type in field
+            email_input.send_keys("test@example.com")
+            
+            # Test password field
+            password_input = self.driver.find_element(By.NAME, "password")
+            password_input.send_keys("testpass123")
+            
+            # Hide keyboard
+            self.driver.hide_keyboard()
+            
+            # Submit form
+            submit_btn = self.driver.find_element(By.ID, "login-submit")
+            submit_btn.click()
+        
+        def test_performance_on_mobile(self):
+            """Test page load performance on mobile"""
+            start_time = time.time()
+            self.driver.get('https://ytempire.com/dashboard')
+            
+            # Wait for main content to load
+            self.wait.until(
+                EC.presence_of_element_located((By.CLASS_NAME, "dashboard-content"))
+            )
+            
+            load_time = time.time() - start_time
+            
+            # Check load time is acceptable
+            self.assertLess(load_time, 5.0, "Page load time exceeds 5 seconds")
+            
+            # Check for mobile optimizations
+            images = self.driver.find_elements(By.TAG_NAME, "img")
+            for img in images[:5]:  # Check first 5 images
+                # Verify lazy loading
+                self.assertTrue(
+                    img.get_attribute("loading") == "lazy" or
+                    "lazy" in img.get_attribute("class")
+                )
+        
+        def test_offline_capability(self):
+            """Test offline functionality"""
+            # Enable airplane mode
+            self.driver.set_network_connection(0)  # Airplane mode
+            
+            # Try to access cached content
+            try:
+                cached_content = self.driver.find_element(By.CLASS_NAME, "offline-content")
+                self.assertTrue(cached_content.is_displayed())
+            except:
+                pass  # Offline content not required
+            
+            # Re-enable network
+            self.driver.set_network_connection(6)  # All networks on
+        
+        def tearDown(self):
+            """Cleanup after tests"""
+            self.driver.quit()
+
+  visual_regression_test.js: |
+    const { remote } = require('webdriverio');
+    const { expect } = require('chai');
+    const resemble = require('resemblejs');
+    const fs = require('fs');
+    
+    describe('Visual Regression Tests', () => {
+      let driver;
+      
+      const devices = [
+        { width: 375, height: 667, name: 'iPhone-8' },
+        { width: 414, height: 896, name: 'iPhone-11' },
+        { width: 360, height: 740, name: 'Samsung-S10' },
+        { width: 768, height: 1024, name: 'iPad' },
+        { width: 412, height: 915, name: 'Pixel-5' }
+      ];
+      
+      beforeEach(async () => {
+        driver = await remote({
+          capabilities: {
+            browserName: 'chrome',
+            'goog:chromeOptions': {
+              args: ['--headless', '--disable-gpu']
+            }
+          }
+        });
+      });
+      
+      devices.forEach(device => {
+        it(`should match baseline for ${device.name}`, async () => {
+          // Set viewport
+          await driver.setWindowSize(device.width, device.height);
+          
+          // Navigate to page
+          await driver.url('https://ytempire.com');
+          
+          // Wait for content
+          await driver.pause(2000);
+          
+          // Take screenshot
+          const screenshot = await driver.takeScreenshot();
+          const screenshotPath = `./screenshots/${device.name}-current.png`;
+          fs.writeFileSync(screenshotPath, screenshot, 'base64');
+          
+          // Compare with baseline
+          const baselinePath = `./baselines/${device.name}.png`;
+          
+          if (fs.existsSync(baselinePath)) {
+            const comparison = await new Promise((resolve) => {
+              resemble(screenshotPath)
+                .compareTo(baselinePath)
+                .ignoreColors()
+                .onComplete(resolve);
+            });
+            
+            expect(comparison.misMatchPercentage).to.be.below(5);
+            
+            if (comparison.misMatchPercentage > 5) {
+              // Save diff image
+              fs.writeFileSync(
+                `./diffs/${device.name}-diff.png`,
+                comparison.getBuffer()
+              );
+            }
+          } else {
+            // Create baseline
+            fs.copyFileSync(screenshotPath, baselinePath);
+          }
+        });
+      });
+      
+      afterEach(async () => {
+        await driver.deleteSession();
+      });
+    });
+
+---
+# Appium Server Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: appium-server
+  namespace: testing
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: appium
+  template:
+    metadata:
+      labels:
+        app: appium
+    spec:
+      containers:
+      - name: appium
+        image: appium/appium:latest
+        ports:
+        - containerPort: 4723
+        command: ["appium"]
+        args: 
+        - "--allow-insecure"
+        - "chromedriver_autodownload"
+        - "--relaxed-security"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+
+---
+# Mobile Test Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mobile-test-job
+  namespace: testing
+spec:
+  template:
+    spec:
+      containers:
+      - name: test-runner
+        image: ytempire/mobile-test-runner:latest
+        command: ["python", "-m", "pytest", "/tests/mobile_test.py", "-v"]
+        env:
+        - name: APPIUM_HOST
+          value: "appium-server"
+        - name: BROWSERSTACK_USER
+          valueFrom:
+            secretKeyRef:
+              name: browserstack-credentials
+              key: username
+        - name: BROWSERSTACK_KEY
+          valueFrom:
+            secretKeyRef:
+              name: browserstack-credentials
+              key: access_key
+        volumeMounts:
+        - name: test-scripts
+          mountPath: /tests
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: test-scripts
+        configMap:
+          name: mobile-test-scripts
+      - name: config
+        configMap:
+          name: mobile-test-config
+      restartPolicy: Never
+
+---
+# Lighthouse CI for Mobile Performance
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lighthouse-config
+  namespace: testing
+data:
+  lighthouserc.js: |
+    module.exports = {
+      ci: {
+        collect: {
+          url: [
+            'https://ytempire.com',
+            'https://ytempire.com/dashboard',
+            'https://ytempire.com/channels',
+            'https://ytempire.com/analytics'
+          ],
+          numberOfRuns: 3,
+          settings: {
+            preset: 'mobile',
+            throttling: {
+              rttMs: 150,
+              throughputKbps: 1638.4,
+              cpuSlowdownMultiplier: 4
+            },
+            screenEmulation: {
+              mobile: true,
+              width: 360,
+              height: 640,
+              deviceScaleFactor: 2
+            }
+          }
+        },
+        assert: {
+          assertions: {
+            'categories:performance': ['error', { minScore: 0.8 }],
+            'categories:accessibility': ['warn', { minScore: 0.9 }],
+            'categories:best-practices': ['warn', { minScore: 0.9 }],
+            'categories:seo': ['warn', { minScore: 0.9 }],
+            'first-contentful-paint': ['error', { maxNumericValue: 2000 }],
+            'largest-contentful-paint': ['error', { maxNumericValue: 3000 }],
+            'cumulative-layout-shift': ['error', { maxNumericValue: 0.1 }],
+            'total-blocking-time': ['error', { maxNumericValue: 300 }]
+          }
+        },
+        upload: {
+          target: 'temporary-public-storage'
+        }
+      }
+    };

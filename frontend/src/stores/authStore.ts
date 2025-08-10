@@ -22,6 +22,8 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  requires2FA: boolean;
+  tempAuthToken: string | null;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
@@ -30,6 +32,10 @@ interface AuthState {
   refreshAccessToken: () => Promise<void>;
   fetchUser: () => Promise<void>;
   clearError: () => void;
+  verifyTwoFactorCode: (code: string) => Promise<boolean>;
+  resendTwoFactorCode: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -43,6 +49,8 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      requires2FA: false,
+      tempAuthToken: null,
 
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
@@ -169,6 +177,101 @@ export const useAuthStore = create<AuthState>()(
       },
 
       clearError: () => set({ error: null }),
+
+      verifyTwoFactorCode: async (code: string) => {
+        set({ isLoading: true, error: null });
+        const tempToken = get().tempAuthToken;
+        
+        if (!tempToken) {
+          set({ error: 'No authentication token found', isLoading: false });
+          return false;
+        }
+
+        try {
+          const response = await axios.post(`${API_URL}/api/v1/auth/verify-2fa`, {
+            code,
+            temp_token: tempToken,
+          });
+
+          const { access_token, refresh_token } = response.data;
+          
+          set({
+            accessToken: access_token,
+            refreshToken: refresh_token,
+            isAuthenticated: true,
+            requires2FA: false,
+            tempAuthToken: null,
+            isLoading: false,
+          });
+
+          axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+          await get().fetchUser();
+          
+          return true;
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.detail || '2FA verification failed',
+            isLoading: false,
+          });
+          return false;
+        }
+      },
+
+      resendTwoFactorCode: async () => {
+        const tempToken = get().tempAuthToken;
+        
+        if (!tempToken) {
+          throw new Error('No authentication token found');
+        }
+
+        try {
+          await axios.post(`${API_URL}/api/v1/auth/resend-2fa`, {
+            temp_token: tempToken,
+          });
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.detail || 'Failed to resend code',
+          });
+          throw error;
+        }
+      },
+
+      forgotPassword: async (email: string) => {
+        set({ isLoading: true, error: null });
+        
+        try {
+          await axios.post(`${API_URL}/api/v1/auth/forgot-password`, {
+            email,
+          });
+          
+          set({ isLoading: false });
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.detail || 'Failed to send reset email',
+            isLoading: false,
+          });
+          throw error;
+        }
+      },
+
+      resetPassword: async (token: string, newPassword: string) => {
+        set({ isLoading: true, error: null });
+        
+        try {
+          await axios.post(`${API_URL}/api/v1/auth/reset-password`, {
+            token,
+            new_password: newPassword,
+          });
+          
+          set({ isLoading: false });
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.detail || 'Failed to reset password',
+            isLoading: false,
+          });
+          throw error;
+        }
+      },
     }),
     {
       name: 'auth-storage',

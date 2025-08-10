@@ -1,0 +1,515 @@
+# Container Optimization Configuration
+# Multi-stage builds and optimization strategies for all services
+
+# ============= Backend Optimization =============
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-dockerfile-optimized
+  namespace: ytempire
+data:
+  Dockerfile: |
+    # Multi-stage build for Python backend
+    # Stage 1: Builder
+    FROM python:3.11-slim-bullseye AS builder
+    
+    # Install build dependencies
+    RUN apt-get update && apt-get install -y --no-install-recommends \
+        gcc \
+        g++ \
+        libpq-dev \
+        && rm -rf /var/lib/apt/lists/*
+    
+    # Create virtual environment
+    RUN python -m venv /opt/venv
+    ENV PATH="/opt/venv/bin:$PATH"
+    
+    # Install Python dependencies
+    COPY requirements.txt .
+    RUN pip install --no-cache-dir --upgrade pip && \
+        pip install --no-cache-dir -r requirements.txt
+    
+    # Stage 2: Runtime
+    FROM python:3.11-slim-bullseye
+    
+    # Install runtime dependencies only
+    RUN apt-get update && apt-get install -y --no-install-recommends \
+        libpq5 \
+        curl \
+        && rm -rf /var/lib/apt/lists/*
+    
+    # Copy virtual environment from builder
+    COPY --from=builder /opt/venv /opt/venv
+    ENV PATH="/opt/venv/bin:$PATH"
+    
+    # Create non-root user
+    RUN useradd -m -u 1000 appuser && \
+        mkdir -p /app && \
+        chown -R appuser:appuser /app
+    
+    WORKDIR /app
+    
+    # Copy application code
+    COPY --chown=appuser:appuser . .
+    
+    # Switch to non-root user
+    USER appuser
+    
+    # Health check
+    HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+      CMD curl -f http://localhost:8000/health || exit 1
+    
+    # Run with optimized settings
+    CMD ["gunicorn", "app.main:app", \
+         "--workers", "4", \
+         "--worker-class", "uvicorn.workers.UvicornWorker", \
+         "--bind", "0.0.0.0:8000", \
+         "--max-requests", "1000", \
+         "--max-requests-jitter", "50", \
+         "--timeout", "60", \
+         "--keep-alive", "5", \
+         "--access-logfile", "-", \
+         "--error-logfile", "-"]
+
+---
+# ============= Frontend Optimization =============
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-dockerfile-optimized
+  namespace: ytempire
+data:
+  Dockerfile: |
+    # Multi-stage build for React frontend
+    # Stage 1: Dependencies
+    FROM node:18-alpine AS deps
+    
+    WORKDIR /app
+    
+    # Copy package files
+    COPY package*.json ./
+    
+    # Install dependencies with cache mount
+    RUN --mount=type=cache,target=/root/.npm \
+        npm ci --only=production
+    
+    # Stage 2: Builder
+    FROM node:18-alpine AS builder
+    
+    WORKDIR /app
+    
+    # Copy dependencies
+    COPY --from=deps /app/node_modules ./node_modules
+    COPY . .
+    
+    # Build application
+    ENV NODE_ENV=production
+    ENV GENERATE_SOURCEMAP=false
+    
+    RUN npm run build && \
+        npm run optimize
+    
+    # Stage 3: Runtime with Nginx
+    FROM nginx:alpine
+    
+    # Install security updates
+    RUN apk update && \
+        apk upgrade && \
+        apk add --no-cache tini && \
+        rm -rf /var/cache/apk/*
+    
+    # Create non-root user
+    RUN adduser -D -H -u 1000 -s /sbin/nologin www-data
+    
+    # Copy optimized Nginx config
+    COPY nginx.conf /etc/nginx/nginx.conf
+    COPY security-headers.conf /etc/nginx/conf.d/
+    
+    # Copy built application
+    COPY --from=builder --chown=www-data:www-data /app/build /usr/share/nginx/html
+    
+    # Add cache busting
+    RUN find /usr/share/nginx/html -type f -name "*.js" -o -name "*.css" | \
+        xargs -I {} sh -c 'gzip -9 -k {} && brotli -9 -k {}'
+    
+    # Security hardening
+    RUN chmod -R 755 /usr/share/nginx/html && \
+        chown -R www-data:www-data /var/cache/nginx && \
+        chown -R www-data:www-data /var/log/nginx && \
+        chown -R www-data:www-data /etc/nginx/conf.d && \
+        touch /var/run/nginx.pid && \
+        chown -R www-data:www-data /var/run/nginx.pid
+    
+    USER www-data
+    
+    EXPOSE 8080
+    
+    ENTRYPOINT ["/sbin/tini", "--"]
+    CMD ["nginx", "-g", "daemon off;"]
+
+---
+# ============= ML Service Optimization =============
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ml-dockerfile-optimized
+  namespace: ytempire
+data:
+  Dockerfile: |
+    # Multi-stage build for ML services
+    # Stage 1: CUDA base
+    FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 AS cuda-base
+    
+    # Install Python and system dependencies
+    RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3.10 \
+        python3-pip \
+        python3-dev \
+        && rm -rf /var/lib/apt/lists/*
+    
+    # Stage 2: Builder
+    FROM cuda-base AS builder
+    
+    # Install build dependencies
+    RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        git \
+        && rm -rf /var/lib/apt/lists/*
+    
+    # Create virtual environment
+    RUN python3 -m venv /opt/venv
+    ENV PATH="/opt/venv/bin:$PATH"
+    
+    # Install ML dependencies
+    COPY requirements-ml.txt .
+    RUN pip install --no-cache-dir --upgrade pip && \
+        pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 && \
+        pip install --no-cache-dir -r requirements-ml.txt
+    
+    # Stage 3: Runtime
+    FROM cuda-base
+    
+    # Copy virtual environment
+    COPY --from=builder /opt/venv /opt/venv
+    ENV PATH="/opt/venv/bin:$PATH"
+    
+    # Create non-root user
+    RUN useradd -m -u 1000 mluser && \
+        mkdir -p /app /models && \
+        chown -R mluser:mluser /app /models
+    
+    WORKDIR /app
+    
+    # Copy application and models
+    COPY --chown=mluser:mluser ./app ./app
+    COPY --chown=mluser:mluser ./models /models
+    
+    USER mluser
+    
+    # Optimize for inference
+    ENV PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+    ENV OMP_NUM_THREADS=4
+    ENV MKL_NUM_THREADS=4
+    
+    CMD ["python3", "-m", "app.ml_service"]
+
+---
+# ============= Container Resource Limits =============
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resource-limits
+  namespace: ytempire
+data:
+  limits.yaml: |
+    services:
+      backend:
+        requests:
+          memory: "256Mi"
+          cpu: "250m"
+        limits:
+          memory: "512Mi"
+          cpu: "500m"
+      frontend:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "256Mi"
+          cpu: "200m"
+      postgres:
+        requests:
+          memory: "512Mi"
+          cpu: "250m"
+        limits:
+          memory: "1Gi"
+          cpu: "1000m"
+      redis:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "256Mi"
+          cpu: "200m"
+      ml-service:
+        requests:
+          memory: "2Gi"
+          cpu: "1000m"
+          nvidia.com/gpu: "1"
+        limits:
+          memory: "4Gi"
+          cpu: "2000m"
+          nvidia.com/gpu: "1"
+
+---
+# ============= Build Optimization Script =============
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: build-optimization-script
+  namespace: ytempire
+data:
+  optimize.sh: |
+    #!/bin/bash
+    set -e
+    
+    echo "Starting container optimization..."
+    
+    # Function to analyze image size
+    analyze_image() {
+      IMAGE=$1
+      echo "Analyzing $IMAGE..."
+      
+      # Get image size
+      SIZE=$(docker images $IMAGE --format "{{.Size}}")
+      echo "Current size: $SIZE"
+      
+      # Analyze layers
+      docker history $IMAGE --no-trunc --format "table {{.CreatedBy}}\t{{.Size}}"
+      
+      # Run dive for detailed analysis
+      dive $IMAGE
+    }
+    
+    # Function to optimize image
+    optimize_image() {
+      IMAGE=$1
+      OPTIMIZED="${IMAGE}-optimized"
+      
+      echo "Optimizing $IMAGE..."
+      
+      # Build with BuildKit
+      DOCKER_BUILDKIT=1 docker build \
+        --target production \
+        --cache-from $IMAGE \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        --squash \
+        -t $OPTIMIZED .
+      
+      # Scan for vulnerabilities
+      trivy image $OPTIMIZED
+      
+      # Compare sizes
+      ORIGINAL_SIZE=$(docker images $IMAGE --format "{{.Size}}")
+      OPTIMIZED_SIZE=$(docker images $OPTIMIZED --format "{{.Size}}")
+      
+      echo "Original size: $ORIGINAL_SIZE"
+      echo "Optimized size: $OPTIMIZED_SIZE"
+      
+      # Calculate savings
+      ORIGINAL_BYTES=$(docker inspect $IMAGE --format='{{.Size}}')
+      OPTIMIZED_BYTES=$(docker inspect $OPTIMIZED --format='{{.Size}}')
+      SAVINGS=$((ORIGINAL_BYTES - OPTIMIZED_BYTES))
+      PERCENT=$((SAVINGS * 100 / ORIGINAL_BYTES))
+      
+      echo "Space saved: $(numfmt --to=iec $SAVINGS) ($PERCENT%)"
+    }
+    
+    # Function to clean up
+    cleanup() {
+      echo "Cleaning up..."
+      
+      # Remove dangling images
+      docker image prune -f
+      
+      # Remove unused volumes
+      docker volume prune -f
+      
+      # Remove stopped containers
+      docker container prune -f
+      
+      # Clear build cache
+      docker builder prune -f
+    }
+    
+    # Main optimization process
+    IMAGES=("ytempire/backend" "ytempire/frontend" "ytempire/ml-service")
+    
+    for IMAGE in "${IMAGES[@]}"; do
+      analyze_image $IMAGE
+      optimize_image $IMAGE
+    done
+    
+    cleanup
+    
+    echo "Container optimization complete!"
+
+---
+# ============= Docker Compose Optimization =============
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: docker-compose-optimized
+  namespace: ytempire
+data:
+  docker-compose.yml: |
+    version: '3.9'
+    
+    x-common-variables: &common-variables
+      LOG_LEVEL: info
+      NODE_ENV: production
+      PYTHONUNBUFFERED: 1
+    
+    x-healthcheck-defaults: &healthcheck-defaults
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    
+    services:
+      backend:
+        build:
+          context: ./backend
+          dockerfile: Dockerfile.optimized
+          cache_from:
+            - ytempire/backend:latest
+          args:
+            BUILDKIT_INLINE_CACHE: 1
+        image: ytempire/backend:optimized
+        deploy:
+          resources:
+            limits:
+              cpus: '0.5'
+              memory: 512M
+            reservations:
+              cpus: '0.25'
+              memory: 256M
+        environment:
+          <<: *common-variables
+        healthcheck:
+          <<: *healthcheck-defaults
+          test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+        restart: unless-stopped
+        logging:
+          driver: "json-file"
+          options:
+            max-size: "10m"
+            max-file: "3"
+        networks:
+          - ytempire-net
+        
+      frontend:
+        build:
+          context: ./frontend
+          dockerfile: Dockerfile.optimized
+          cache_from:
+            - ytempire/frontend:latest
+        image: ytempire/frontend:optimized
+        deploy:
+          resources:
+            limits:
+              cpus: '0.2'
+              memory: 256M
+            reservations:
+              cpus: '0.1'
+              memory: 128M
+        healthcheck:
+          <<: *healthcheck-defaults
+          test: ["CMD", "curl", "-f", "http://localhost:8080"]
+        restart: unless-stopped
+        networks:
+          - ytempire-net
+      
+      postgres:
+        image: postgres:14-alpine
+        deploy:
+          resources:
+            limits:
+              cpus: '1'
+              memory: 1G
+            reservations:
+              cpus: '0.25'
+              memory: 512M
+        environment:
+          POSTGRES_PASSWORD: ${DB_PASSWORD}
+          POSTGRES_DB: ytempire
+          POSTGRES_INITDB_ARGS: "--encoding=UTF8 --data-checksums"
+          POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+        command: >
+          postgres
+          -c shared_buffers=256MB
+          -c max_connections=100
+          -c effective_cache_size=1GB
+          -c maintenance_work_mem=64MB
+          -c checkpoint_completion_target=0.9
+          -c wal_buffers=16MB
+          -c default_statistics_target=100
+          -c random_page_cost=1.1
+          -c effective_io_concurrency=200
+          -c work_mem=2621kB
+          -c min_wal_size=1GB
+          -c max_wal_size=4GB
+        volumes:
+          - postgres-data:/var/lib/postgresql/data
+        healthcheck:
+          <<: *healthcheck-defaults
+          test: ["CMD-SHELL", "pg_isready -U ytempire"]
+        networks:
+          - ytempire-net
+      
+      redis:
+        image: redis:7-alpine
+        deploy:
+          resources:
+            limits:
+              cpus: '0.2'
+              memory: 256M
+            reservations:
+              cpus: '0.1'
+              memory: 128M
+        command: >
+          redis-server
+          --maxmemory 256mb
+          --maxmemory-policy allkeys-lru
+          --save 60 1
+          --save 300 10
+          --save 900 100
+        volumes:
+          - redis-data:/data
+        healthcheck:
+          <<: *healthcheck-defaults
+          test: ["CMD", "redis-cli", "ping"]
+        networks:
+          - ytempire-net
+    
+    volumes:
+      postgres-data:
+        driver: local
+        driver_opts:
+          type: none
+          o: bind
+          device: ./data/postgres
+      redis-data:
+        driver: local
+        driver_opts:
+          type: none
+          o: bind
+          device: ./data/redis
+    
+    networks:
+      ytempire-net:
+        driver: bridge
+        ipam:
+          config:
+            - subnet: 172.20.0.0/16
