@@ -1,0 +1,395 @@
+version: '3.8'
+
+services:
+  # Frontend with TLS termination
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.security
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html
+      - ./infrastructure/security/nginx-tls.conf:/etc/nginx/nginx.conf
+      - ./infrastructure/security/certs:/etc/nginx/certs:ro
+      - ./infrastructure/security/webroot:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      TLS_ENABLED: "true"
+      DOMAIN_NAME: ${DOMAIN_NAME:-ytempire.local}
+    networks:
+      - ytempire_secure_network
+    restart: unless-stopped
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://localhost:443/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API with TLS support
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.security
+    environment:
+      # Encrypted database connection
+      DATABASE_URL: postgresql://postgres:${DATABASE_PASSWORD}@postgres:5432/ytempire?sslmode=require&sslcert=/app/certs/ytempire.local.crt&sslkey=/app/certs/ytempire.local.key&sslrootcert=/app/certs/ca.crt
+      
+      # Encrypted Redis connection
+      REDIS_URL: rediss://redis:6379/0?ssl_cert_reqs=required&ssl_ca_certs=/app/certs/ca.crt&ssl_certfile=/app/certs/ytempire.local.crt&ssl_keyfile=/app/certs/ytempire.local.key
+      
+      # Encryption settings
+      ENCRYPTION_ENABLED: "true"
+      ENCRYPTION_KEY_STORE: /app/keys
+      TLS_CERT_FILE: /app/certs/ytempire.local.crt
+      TLS_KEY_FILE: /app/certs/ytempire.local.key
+      
+      # Security settings
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      API_KEY_ENCRYPTION_KEY: ${API_KEY_ENCRYPTION_KEY}
+      
+      # CORS settings
+      ALLOWED_ORIGINS: https://${DOMAIN_NAME:-ytempire.local}
+    volumes:
+      - ./backend:/app
+      - ./infrastructure/security/certs:/app/certs:ro
+      - encryption_keys:/app/keys
+      - backend_encrypted_data:/app/encrypted_data
+    networks:
+      - ytempire_secure_network
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      encryption_service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL with TLS and encryption at rest
+  postgres:
+    build:
+      context: ./infrastructure/security
+      dockerfile: Dockerfile.postgres-secure
+    environment:
+      POSTGRES_DB: ytempire
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --data-checksums"
+      
+      # Encryption settings
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_SSL_CERT: /var/lib/postgresql/certs/ytempire.local.crt
+      POSTGRES_SSL_KEY: /var/lib/postgresql/certs/ytempire.local.key
+      POSTGRES_SSL_CA: /var/lib/postgresql/certs/ca.crt
+    volumes:
+      - postgres_encrypted_data:/var/lib/postgresql/data
+      - ./infrastructure/security/postgres-tls.conf:/etc/postgresql/postgresql.conf
+      - ./infrastructure/security/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+      - ./infrastructure/security/certs:/var/lib/postgresql/certs:ro
+    command: >
+      postgres 
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c ssl=on
+      -c ssl_cert_file='/var/lib/postgresql/certs/ytempire.local.crt'
+      -c ssl_key_file='/var/lib/postgresql/certs/ytempire.local.key'
+      -c ssl_ca_file='/var/lib/postgresql/certs/ca.crt'
+    ports:
+      - "5432:5432"
+    networks:
+      - ytempire_secure_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ytempire"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis with TLS and encryption
+  redis:
+    build:
+      context: ./infrastructure/security
+      dockerfile: Dockerfile.redis-secure
+    command: redis-server /etc/redis/redis.conf
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - redis_encrypted_data:/data
+      - ./infrastructure/security/redis-tls.conf:/etc/redis/redis.conf
+      - ./infrastructure/security/certs:/etc/redis/certs:ro
+    ports:
+      - "6379:6379"
+    networks:
+      - ytempire_secure_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--tls", "--cert", "/etc/redis/certs/ytempire.local.crt", "--key", "/etc/redis/certs/ytempire.local.key", "--cacert", "/etc/redis/certs/ca.crt", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Dedicated Encryption Service
+  encryption_service:
+    build:
+      context: ./infrastructure/security
+      dockerfile: Dockerfile.encryption
+    environment:
+      KEY_STORE_PATH: /keys
+      CERT_PATH: /certs
+      YTEMPIRE_MASTER_PASSPHRASE: ${MASTER_ENCRYPTION_PASSPHRASE}
+      LOG_LEVEL: INFO
+    volumes:
+      - encryption_keys:/keys
+      - ./infrastructure/security/certs:/certs:ro
+      - encryption_logs:/var/log/encryption
+    ports:
+      - "8443:8443"  # Encryption service API
+    networks:
+      - ytempire_secure_network
+    restart: unless-stopped
+    command: ["python", "/app/encryption_manager.py", "init"]
+    healthcheck:
+      test: ["CMD", "python", "/app/encryption_manager.py", "status"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  # Certificate Authority and Certificate Management
+  ca_service:
+    build:
+      context: ./infrastructure/security
+      dockerfile: Dockerfile.ca
+    environment:
+      CA_DOMAIN: ${DOMAIN_NAME:-ytempire.local}
+      CA_COUNTRY: ${CA_COUNTRY:-US}
+      CA_STATE: ${CA_STATE:-CA}
+      CA_CITY: ${CA_CITY:-San Francisco}
+      CA_ORG: ${CA_ORG:-YTEmpire}
+    volumes:
+      - ./infrastructure/security/certs:/certs
+      - ca_data:/ca
+    networks:
+      - ytempire_secure_network
+    restart: "no"
+    command: ["python", "/app/ca_manager.py", "setup"]
+
+  # Vault for Secret Management (Alternative to file-based keys)
+  vault:
+    image: vault:latest
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_ROOT_TOKEN:-myroot}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      VAULT_LOCAL_CONFIG: |
+        {
+          "backend": {
+            "file": {
+              "path": "/vault/data"
+            }
+          },
+          "default_lease_ttl": "168h",
+          "max_lease_ttl": "720h",
+          "ui": true,
+          "listener": {
+            "tcp": {
+              "address": "0.0.0.0:8200",
+              "tls_cert_file": "/vault/certs/ytempire.local.crt",
+              "tls_key_file": "/vault/certs/ytempire.local.key"
+            }
+          }
+        }
+    volumes:
+      - vault_data:/vault/data
+      - ./infrastructure/security/certs:/vault/certs:ro
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - ytempire_secure_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Security Scanner Service
+  security_scanner:
+    build:
+      context: ./infrastructure/security
+      dockerfile: Dockerfile.scanner
+    environment:
+      SCAN_TARGETS: "frontend,backend,postgres,redis"
+      SCAN_INTERVAL: "3600"  # 1 hour
+      SECURITY_ALERTS_WEBHOOK: ${SECURITY_WEBHOOK_URL}
+    volumes:
+      - ./infrastructure/security:/app/security:ro
+      - scan_reports:/app/reports
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - ytempire_secure_network
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - backend
+      - postgres
+      - redis
+
+  # Certificate Auto-Renewal with Certbot
+  certbot:
+    image: certbot/certbot
+    environment:
+      CERTBOT_EMAIL: ${CERTBOT_EMAIL:-admin@ytempire.local}
+    volumes:
+      - ./infrastructure/security/certs:/etc/letsencrypt
+      - ./infrastructure/security/webroot:/var/www/certbot
+      - certbot_logs:/var/log/letsencrypt
+    networks:
+      - ytempire_secure_network
+    restart: "no"
+    command: >
+      sh -c "
+      if [ '${LETSENCRYPT_STAGING:-true}' = 'true' ]; then
+        certbot certonly --webroot --webroot-path=/var/www/certbot 
+        --email ${CERTBOT_EMAIL:-admin@ytempire.local} --agree-tos --no-eff-email 
+        --staging -d ${DOMAIN_NAME:-ytempire.local} -d *.${DOMAIN_NAME:-ytempire.local}
+      else
+        certbot certonly --webroot --webroot-path=/var/www/certbot 
+        --email ${CERTBOT_EMAIL:-admin@ytempire.local} --agree-tos --no-eff-email 
+        -d ${DOMAIN_NAME:-ytempire.local} -d *.${DOMAIN_NAME:-ytempire.local}
+      fi
+      "
+
+  # Certificate Renewal Cron
+  cert_renewal:
+    image: certbot/certbot
+    volumes:
+      - ./infrastructure/security/certs:/etc/letsencrypt
+      - ./infrastructure/security/webroot:/var/www/certbot
+      - certbot_logs:/var/log/letsencrypt
+    networks:
+      - ytempire_secure_network
+    restart: unless-stopped
+    command: >
+      sh -c "
+      while true; do
+        sleep 12h
+        certbot renew --quiet --webroot --webroot-path=/var/www/certbot
+        if [ $? -eq 0 ]; then
+          # Reload services after certificate renewal
+          docker-compose restart frontend
+          docker-compose restart backend
+        fi
+      done
+      "
+    depends_on:
+      - certbot
+
+  # WAF (Web Application Firewall) with ModSecurity
+  waf:
+    image: owasp/modsecurity:3-apache
+    environment:
+      BACKEND_HOST: frontend
+      BACKEND_PORT: 443
+      PROXY_SSL: "on"
+      PROXY_SSL_CERT: /etc/apache2/certs/ytempire.local.crt
+      PROXY_SSL_KEY: /etc/apache2/certs/ytempire.local.key
+    volumes:
+      - ./infrastructure/security/certs:/etc/apache2/certs:ro
+      - ./infrastructure/security/modsecurity:/etc/modsecurity
+      - waf_logs:/var/log/apache2
+    ports:
+      - "8443:443"  # WAF protected endpoint
+    networks:
+      - ytempire_secure_network
+    restart: unless-stopped
+    depends_on:
+      - frontend
+
+  # Intrusion Detection System
+  suricata:
+    image: jasonish/suricata:latest
+    environment:
+      SURICATA_OPTIONS: "-i eth0"
+    volumes:
+      - ./infrastructure/security/suricata:/etc/suricata
+      - suricata_logs:/var/log/suricata
+    networks:
+      - ytempire_secure_network
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_NICE
+
+  # Log Security Analysis
+  loganalyzer:
+    build:
+      context: ./infrastructure/security
+      dockerfile: Dockerfile.loganalyzer
+    environment:
+      LOG_SOURCES: "/logs/frontend,/logs/backend,/logs/waf,/logs/suricata"
+      ALERT_WEBHOOK: ${SECURITY_WEBHOOK_URL}
+    volumes:
+      - ./logs:/logs:ro
+      - waf_logs:/logs/waf:ro
+      - suricata_logs:/logs/suricata:ro
+      - certbot_logs:/logs/certbot:ro
+      - encryption_logs:/logs/encryption:ro
+      - loganalyzer_data:/app/data
+    networks:
+      - ytempire_secure_network
+    restart: unless-stopped
+
+volumes:
+  postgres_encrypted_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/ytempire/postgres_encrypted
+  redis_encrypted_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/ytempire/redis_encrypted
+  encryption_keys:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/ytempire/keys
+  backend_encrypted_data:
+    driver: local
+  vault_data:
+    driver: local
+  ca_data:
+    driver: local
+  scan_reports:
+    driver: local
+  certbot_logs:
+    driver: local
+  waf_logs:
+    driver: local
+  suricata_logs:
+    driver: local
+  encryption_logs:
+    driver: local
+  loganalyzer_data:
+    driver: local
+
+networks:
+  ytempire_secure_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+    driver_opts:
+      encrypted: "true"

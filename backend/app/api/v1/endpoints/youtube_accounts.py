@@ -1,42 +1,32 @@
 """
 YouTube Multi-Account Management API Endpoints
 """
-from typing import List, Optional, Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from typing import List, Dict, Any, Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
-from datetime import datetime
 
-from app.db.session import get_db
-from app.api.v1.endpoints.auth import get_current_verified_user
+from app.db.session import get_async_db
+from app.core.auth import get_current_user
 from app.models.user import User
-from app.services.youtube_multi_account import (
-    MultiAccountYouTubeService,
-    YouTubeServiceWrapper,
-    AccountStatus
-)
-import logging
-
-logger = logging.getLogger(__name__)
+from app.services.youtube_multi_account import get_youtube_manager, OperationType
 
 router = APIRouter()
 
-# Global service instance
-youtube_wrapper = YouTubeServiceWrapper()
 
-
-class YouTubeAccountInfo(BaseModel):
-    """YouTube account information"""
+class YouTubeAccountStatus(BaseModel):
+    """YouTube account status response"""
     account_id: str
     email: str
+    channel_id: str
+    channel_name: str
     status: str
-    channel_id: Optional[str] = None
+    health_score: float
     quota_used: int
     quota_limit: int
-    quota_percentage: float
-    health_score: float
+    last_used: str
     error_count: int
-    last_used: Optional[datetime] = None
+    total_uploads: int
 
 
 class YouTubeAccountStats(BaseModel):
@@ -44,278 +34,319 @@ class YouTubeAccountStats(BaseModel):
     total_accounts: int
     active_accounts: int
     total_quota_used: int
-    total_quota_limit: int
-    quota_usage_percentage: float
+    total_quota_available: int
+    average_health_score: float
     accounts: List[Dict[str, Any]]
 
 
-class YouTubeAuthRequest(BaseModel):
-    """Request to authenticate a YouTube account"""
-    account_id: str
-    client_secrets_path: Optional[str] = None
+class OAuthSetupRequest(BaseModel):
+    """OAuth setup request"""
+    account_index: int = Field(..., ge=0, lt=15, description="Account index (0-14)")
 
 
-class YouTubeSearchRequest(BaseModel):
-    """YouTube search request"""
-    query: str
-    max_results: int = Field(default=25, le=50)
-    channel_id: Optional[str] = None
-    order: str = Field(default="relevance")
-    published_after: Optional[datetime] = None
+class OAuthCompleteRequest(BaseModel):
+    """OAuth completion request"""
+    account_index: int = Field(..., ge=0, lt=15, description="Account index (0-14)")
+    auth_code: str = Field(..., description="Authorization code from OAuth flow")
 
 
-class YouTubeUploadRequest(BaseModel):
-    """YouTube video upload request"""
-    video_file_path: str
+class VideoUploadRequest(BaseModel):
+    """Video upload request with multi-account rotation"""
+    video_path: str
     title: str
     description: str
-    tags: List[str] = []
-    category_id: str = "22"
-    privacy_status: str = "private"
+    tags: List[str]
+    category_id: str = "22"  # People & Blogs default
+    privacy_status: str = "private"  # private, unlisted, public
     thumbnail_path: Optional[str] = None
 
 
-@router.on_event("startup")
-async def startup_event():
-    """Initialize YouTube multi-account service on startup"""
+@router.get("/stats", response_model=YouTubeAccountStats)
+async def get_accounts_stats(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Get statistics for all YouTube accounts"""
     try:
-        await youtube_wrapper.initialize()
-        logger.info("YouTube multi-account service initialized")
-    except Exception as e:
-        logger.error(f"Failed to initialize YouTube service: {e}")
-
-
-@router.get("/accounts", response_model=YouTubeAccountStats)
-async def get_youtube_accounts(
-    current_user: User = Depends(get_current_verified_user)
-) -> YouTubeAccountStats:
-    """
-    Get all YouTube accounts and their status
-    
-    Returns statistics and status for all 15 configured YouTube accounts
-    """
-    try:
-        stats = await youtube_wrapper.get_statistics()
+        manager = get_youtube_manager()
+        stats = manager.get_account_stats()
         return YouTubeAccountStats(**stats)
     except Exception as e:
-        logger.error(f"Failed to get YouTube accounts: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail=f"Failed to get account stats: {str(e)}"
         )
 
 
-@router.get("/accounts/{account_id}", response_model=YouTubeAccountInfo)
+@router.get("/accounts", response_model=List[YouTubeAccountStatus])
+async def list_youtube_accounts(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """List all YouTube accounts with their status"""
+    try:
+        manager = get_youtube_manager()
+        accounts = []
+        
+        for account in manager.accounts:
+            accounts.append(YouTubeAccountStatus(
+                account_id=account.account_id,
+                email=account.email,
+                channel_id=account.channel_id,
+                channel_name=account.channel_name,
+                status=account.status.value,
+                health_score=account.health_score,
+                quota_used=account.quota_used,
+                quota_limit=manager.DAILY_QUOTA_LIMIT,
+                last_used=account.last_used.isoformat(),
+                error_count=account.error_count,
+                total_uploads=account.total_uploads
+            ))
+            
+        return accounts
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list accounts: {str(e)}"
+        )
+
+
+@router.get("/accounts/{account_id}", response_model=YouTubeAccountStatus)
 async def get_youtube_account(
     account_id: str,
-    current_user: User = Depends(get_current_verified_user)
-) -> YouTubeAccountInfo:
-    """
-    Get specific YouTube account information
-    """
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Get specific YouTube account details"""
     try:
-        account = youtube_wrapper.multi_account_service.accounts.get(account_id)
-        if not account:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Account {account_id} not found"
-            )
-            
-        return YouTubeAccountInfo(
-            account_id=account.account_id,
-            email=account.email,
-            status=account.status.value,
-            channel_id=account.channel_id,
-            quota_used=account.quota_used,
-            quota_limit=account.quota_limit,
-            quota_percentage=(account.quota_used / account.quota_limit * 100) if account.quota_limit > 0 else 0,
-            health_score=account.health_score,
-            error_count=account.error_count,
-            last_used=account.last_used
+        manager = get_youtube_manager()
+        
+        for account in manager.accounts:
+            if account.account_id == account_id:
+                return YouTubeAccountStatus(
+                    account_id=account.account_id,
+                    email=account.email,
+                    channel_id=account.channel_id,
+                    channel_name=account.channel_name,
+                    status=account.status.value,
+                    health_score=account.health_score,
+                    quota_used=account.quota_used,
+                    quota_limit=manager.DAILY_QUOTA_LIMIT,
+                    last_used=account.last_used.isoformat(),
+                    error_count=account.error_count,
+                    total_uploads=account.total_uploads
+                )
+                
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Account {account_id} not found"
         )
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get account {account_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail=f"Failed to get account: {str(e)}"
         )
 
 
-@router.post("/accounts/{account_id}/authenticate")
-async def authenticate_youtube_account(
-    account_id: str,
-    request: YouTubeAuthRequest,
-    current_user: User = Depends(get_current_verified_user)
-) -> Dict[str, Any]:
-    """
-    Authenticate a YouTube account with OAuth
-    
-    This endpoint initiates the OAuth flow for a specific account
-    """
+@router.post("/oauth/setup")
+async def setup_oauth(
+    request: OAuthSetupRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Setup OAuth2 flow for a YouTube account"""
     try:
-        success = await youtube_wrapper.multi_account_service.authenticate_account(
-            account_id,
-            request.client_secrets_path
+        # Check admin permission
+        if not current_user.is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin access required"
+            )
+            
+        manager = get_youtube_manager()
+        auth_url = manager.setup_oauth_for_account(request.account_index)
+        
+        if not auth_url:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to generate OAuth URL"
+            )
+            
+        return {
+            "auth_url": auth_url,
+            "instructions": "Visit the URL, authorize the account, and use the auth code with /oauth/complete endpoint"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"OAuth setup failed: {str(e)}"
+        )
+
+
+@router.post("/oauth/complete")
+async def complete_oauth(
+    request: OAuthCompleteRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Complete OAuth2 flow with authorization code"""
+    try:
+        # Check admin permission
+        if not current_user.is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin access required"
+            )
+            
+        manager = get_youtube_manager()
+        success = manager.complete_oauth_for_account(
+            request.account_index,
+            request.auth_code
         )
         
-        if success:
-            return {
-                "status": "success",
-                "message": f"Account {account_id} authenticated successfully"
-            }
-        else:
+        if not success:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Failed to authenticate account {account_id}"
+                detail="Failed to complete OAuth flow"
             )
-    except Exception as e:
-        logger.error(f"Authentication error for {account_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
-
-
-@router.post("/accounts/health-check")
-async def health_check_accounts(
-    background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_verified_user)
-) -> Dict[str, Any]:
-    """
-    Perform health check on all YouTube accounts
-    
-    Tests API connectivity and updates health scores
-    """
-    try:
-        results = await youtube_wrapper.health_check()
-        return results
-    except Exception as e:
-        logger.error(f"Health check failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
-
-
-@router.post("/accounts/reset-quotas")
-async def reset_account_quotas(
-    current_user: User = Depends(get_current_verified_user)
-) -> Dict[str, Any]:
-    """
-    Reset daily quotas for all accounts
-    
-    This should be called at the start of each day or when needed
-    """
-    try:
-        await youtube_wrapper.multi_account_service.reset_daily_quotas()
+            
         return {
             "status": "success",
-            "message": "Daily quotas reset for all accounts"
+            "message": f"OAuth completed for account index {request.account_index}"
         }
-    except Exception as e:
-        logger.error(f"Failed to reset quotas: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
-
-
-@router.post("/search")
-async def search_videos_multi_account(
-    request: YouTubeSearchRequest,
-    current_user: User = Depends(get_current_verified_user)
-) -> Dict[str, Any]:
-    """
-    Search YouTube videos using multi-account rotation
-    
-    Automatically selects the best available account based on health and quota
-    """
-    try:
-        results = await youtube_wrapper.search_videos(
-            query=request.query,
-            max_results=request.max_results,
-            channel_id=request.channel_id,
-            order=request.order,
-            published_after=request.published_after
-        )
         
-        return {
-            "status": "success",
-            "results": results,
-            "count": len(results.get("items", []))
-        }
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Search failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail=f"OAuth completion failed: {str(e)}"
         )
 
 
 @router.post("/upload")
-async def upload_video_multi_account(
-    request: YouTubeUploadRequest,
-    background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_verified_user)
-) -> Dict[str, Any]:
-    """
-    Upload video to YouTube using multi-account rotation
-    
-    Automatically selects the best available authenticated account
-    """
+async def upload_video_with_rotation(
+    request: VideoUploadRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Upload video using multi-account rotation"""
     try:
-        result = await youtube_wrapper.upload_video(
-            video_file_path=request.video_file_path,
-            title=request.title,
-            description=request.description,
-            tags=request.tags,
-            category_id=request.category_id,
-            privacy_status=request.privacy_status,
-            thumbnail_path=request.thumbnail_path
+        manager = get_youtube_manager()
+        
+        # Prepare metadata
+        metadata = {
+            "title": request.title,
+            "description": request.description,
+            "tags": request.tags,
+            "category_id": request.category_id,
+            "privacy_status": request.privacy_status,
+            "thumbnail_path": request.thumbnail_path
+        }
+        
+        # Upload with rotation
+        result = await manager.upload_video_with_rotation(
+            request.video_path,
+            metadata
         )
         
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="All YouTube accounts unavailable or upload failed"
+            )
+            
         return {
             "status": "success",
-            "video_id": result.get("id"),
-            "title": result.get("snippet", {}).get("title"),
-            "upload_status": result.get("status", {}).get("uploadStatus")
+            "video_id": result["video_id"],
+            "channel_id": result["channel_id"],
+            "account_used": result["account_used"],
+            "upload_time": result["upload_time"]
         }
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Upload failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail=f"Upload failed: {str(e)}"
         )
 
 
-@router.get("/quota-status")
-async def get_quota_status(
-    current_user: User = Depends(get_current_verified_user)
-) -> Dict[str, Any]:
-    """
-    Get current quota status across all accounts
-    
-    Shows aggregate quota usage and availability
-    """
+@router.post("/accounts/{account_id}/reset-quota")
+async def reset_account_quota(
+    account_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Manually reset quota for a YouTube account (admin only)"""
     try:
-        stats = await youtube_wrapper.get_statistics()
+        # Check admin permission
+        if not current_user.is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin access required"
+            )
+            
+        manager = get_youtube_manager()
         
-        return {
-            "total_quota_available": stats["total_quota_limit"] - stats["total_quota_used"],
-            "total_quota_used": stats["total_quota_used"],
-            "total_quota_limit": stats["total_quota_limit"],
-            "usage_percentage": stats["quota_usage_percentage"],
-            "active_accounts": stats["active_accounts"],
-            "accounts_near_limit": [
-                acc for acc in stats["accounts"]
-                if acc["quota_percentage"] > 80
-            ]
-        }
+        for account in manager.accounts:
+            if account.account_id == account_id:
+                manager._reset_account_quota(account)
+                return {
+                    "status": "success",
+                    "message": f"Quota reset for account {account_id}"
+                }
+                
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Account {account_id} not found"
+        )
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Failed to get quota status: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail=f"Failed to reset quota: {str(e)}"
+        )
+
+
+@router.get("/best-account")
+async def get_best_available_account(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Get the best available YouTube account for upload"""
+    try:
+        manager = get_youtube_manager()
+        account = manager.get_best_account()
+        
+        if not account:
+            return {
+                "status": "unavailable",
+                "message": "No YouTube accounts available",
+                "account": None
+            }
+            
+        return {
+            "status": "available",
+            "account": {
+                "account_id": account.account_id,
+                "email": account.email,
+                "channel_id": account.channel_id,
+                "health_score": account.health_score,
+                "quota_available": manager.DAILY_QUOTA_LIMIT - account.quota_used
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get best account: {str(e)}"
         )

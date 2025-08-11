@@ -1,0 +1,366 @@
+# Horizontal Pod Autoscaler configurations for YTEmpire services
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ytempire
+---
+# Backend API HPA
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ytempire-backend-hpa
+  namespace: ytempire
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ytempire-backend
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Pods
+    pods:
+      metric:
+        name: request_rate
+      target:
+        type: AverageValue
+        averageValue: "1000"  # Requests per second per pod
+  - type: Object
+    object:
+      metric:
+        name: queue_depth
+      target:
+        type: Value
+        value: "50"  # Total queue items
+      describedObject:
+        apiVersion: v1
+        kind: Service
+        name: ytempire-redis
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+      - type: Pods
+        value: 4
+        periodSeconds: 60
+      selectPolicy: Max
+---
+# Celery Worker HPA
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ytempire-celery-hpa
+  namespace: ytempire
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ytempire-celery-worker
+  minReplicas: 1
+  maxReplicas: 30
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 85
+  - type: Object
+    object:
+      metric:
+        name: video_queue_length
+      target:
+        type: Value
+        value: "20"  # Video queue items
+      describedObject:
+        apiVersion: v1
+        kind: Service
+        name: ytempire-redis
+  - type: External
+    external:
+      metric:
+        name: gpu_utilization
+      target:
+        type: AverageValue
+        averageValue: "75"  # GPU utilization percentage
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 600  # Longer stabilization for video processing
+      policies:
+      - type: Percent
+        value: 25
+        periodSeconds: 120
+      - type: Pods
+        value: 1
+        periodSeconds: 120
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+      - type: Percent
+        value: 200
+        periodSeconds: 60
+      - type: Pods
+        value: 5
+        periodSeconds: 60
+      selectPolicy: Max
+---
+# Redis HPA (for read replicas)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ytempire-redis-replica-hpa
+  namespace: ytempire
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ytempire-redis-replica
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 75
+  - type: Pods
+    pods:
+      metric:
+        name: redis_operations_per_sec
+      target:
+        type: AverageValue
+        averageValue: "5000"  # Operations per second per pod
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 180
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+---
+# Frontend Nginx HPA
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ytempire-frontend-hpa
+  namespace: ytempire
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ytempire-frontend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Pods
+    pods:
+      metric:
+        name: nginx_requests_per_sec
+      target:
+        type: AverageValue
+        averageValue: "2000"  # HTTP requests per second per pod
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+---
+# Vertical Pod Autoscaler for database
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: ytempire-postgres-vpa
+  namespace: ytempire
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: ytempire-postgres
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: postgres
+      minAllowed:
+        cpu: 500m
+        memory: 1Gi
+      maxAllowed:
+        cpu: 8
+        memory: 32Gi
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+---
+# Custom Resource Definition for advanced scaling
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: advancedscalers.scaling.ytempire.com
+spec:
+  group: scaling.ytempire.com
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              targetRef:
+                type: object
+                properties:
+                  apiVersion:
+                    type: string
+                  kind:
+                    type: string
+                  name:
+                    type: string
+                required: ["apiVersion", "kind", "name"]
+              minReplicas:
+                type: integer
+                minimum: 1
+              maxReplicas:
+                type: integer
+                minimum: 1
+              metrics:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    threshold:
+                      type: number
+                    window:
+                      type: string
+              behavior:
+                type: object
+                properties:
+                  scaleUp:
+                    type: object
+                    properties:
+                      stabilizationWindowSeconds:
+                        type: integer
+                      rate:
+                        type: number
+                  scaleDown:
+                    type: object
+                    properties:
+                      stabilizationWindowSeconds:
+                        type: integer
+                      rate:
+                        type: number
+            required: ["targetRef", "minReplicas", "maxReplicas"]
+          status:
+            type: object
+            properties:
+              currentReplicas:
+                type: integer
+              desiredReplicas:
+                type: integer
+              lastScaleTime:
+                type: string
+                format: date-time
+  scope: Namespaced
+  names:
+    plural: advancedscalers
+    singular: advancedscaler
+    kind: AdvancedScaler
+---
+# Custom Scaler for video processing workloads
+apiVersion: scaling.ytempire.com/v1
+kind: AdvancedScaler
+metadata:
+  name: ytempire-video-processor
+  namespace: ytempire
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ytempire-video-processor
+  minReplicas: 1
+  maxReplicas: 50
+  metrics:
+  - name: video_queue_length
+    threshold: 10
+    window: "2m"
+  - name: gpu_memory_usage
+    threshold: 0.8
+    window: "1m"
+  - name: processing_time_p95
+    threshold: 300  # 5 minutes
+    window: "5m"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      rate: 2.0  # Double when scaling up
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      rate: 0.5  # Half when scaling down

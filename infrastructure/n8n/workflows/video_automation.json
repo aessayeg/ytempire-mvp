@@ -1,0 +1,396 @@
+{
+  "name": "YTEmpire Video Automation Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "video-generation-trigger",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "ytempire-video-trigger",
+      "id": "webhook_trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/analytics/trending",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$credentials.apiKey}}"
+            }
+          ]
+        }
+      },
+      "name": "Get Trending Topics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [450, 200],
+      "id": "get_trending"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/scripts/generate",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "topic",
+              "value": "={{$node[\"Get Trending Topics\"].json[\"topics\"][0][\"title\"]}}"
+            },
+            {
+              "name": "style",
+              "value": "={{$json[\"style\"] || \"educational\"}}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$credentials.apiKey}}"
+            }
+          ]
+        }
+      },
+      "name": "Generate Script",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [650, 200],
+      "id": "generate_script"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/cost-optimization/estimate",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "service",
+              "value": "voice_synthesis"
+            },
+            {
+              "name": "model",
+              "value": "elevenlabs"
+            },
+            {
+              "name": "input_tokens",
+              "value": "={{$node[\"Generate Script\"].json[\"token_count\"]}}"
+            }
+          ]
+        }
+      },
+      "name": "Check Cost Budget",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [850, 100],
+      "id": "check_cost"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$node[\"Check Cost Budget\"].json[\"budget_available\"]}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Budget Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 200],
+      "id": "budget_check"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/video-generation/create",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "script",
+              "value": "={{$node[\"Generate Script\"].json[\"script\"]}}"
+            },
+            {
+              "name": "topic",
+              "value": "={{$node[\"Get Trending Topics\"].json[\"topics\"][0][\"title\"]}}"
+            },
+            {
+              "name": "style",
+              "value": "={{$json[\"style\"] || \"educational\"}}"
+            }
+          ]
+        }
+      },
+      "name": "Create Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1250, 150],
+      "id": "create_video"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/youtube/upload",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "video_path",
+              "value": "={{$node[\"Create Video\"].json[\"video_path\"]}}"
+            },
+            {
+              "name": "title",
+              "value": "={{$node[\"Create Video\"].json[\"title\"]}}"
+            },
+            {
+              "name": "description",
+              "value": "={{$node[\"Generate Script\"].json[\"description\"]}}"
+            },
+            {
+              "name": "tags",
+              "value": "={{$node[\"Get Trending Topics\"].json[\"topics\"][0][\"tags\"]}}"
+            }
+          ]
+        }
+      },
+      "name": "Upload to YouTube",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1450, 150],
+      "id": "upload_youtube"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "success"
+            },
+            {
+              "name": "video_id",
+              "value": "={{$node[\"Upload to YouTube\"].json[\"video_id\"]}}"
+            },
+            {
+              "name": "youtube_url",
+              "value": "={{$node[\"Upload to YouTube\"].json[\"youtube_url\"]}}"
+            }
+          ]
+        }
+      },
+      "name": "Success Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1650, 150],
+      "id": "success_response"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "error"
+            },
+            {
+              "name": "reason",
+              "value": "Budget exceeded for video generation"
+            }
+          ]
+        }
+      },
+      "name": "Budget Exceeded Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1250, 350],
+      "id": "budget_exceeded"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/notifications/send",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "type",
+              "value": "video_published"
+            },
+            {
+              "name": "title",
+              "value": "Video Published Successfully"
+            },
+            {
+              "name": "message",
+              "value": "={{\"Video '\" + $node[\"Create Video\"].json[\"title\"] + \"' has been published to YouTube\"}}"
+            },
+            {
+              "name": "data",
+              "value": "={{$node[\"Upload to YouTube\"].json}}"
+            }
+          ]
+        }
+      },
+      "name": "Send Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1650, 50],
+      "id": "send_notification"
+    },
+    {
+      "parameters": {},
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1850, 200],
+      "id": "respond_webhook"
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Trending Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Trending Topics": {
+      "main": [
+        [
+          {
+            "node": "Generate Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Script": {
+      "main": [
+        [
+          {
+            "node": "Check Cost Budget",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Cost Budget": {
+      "main": [
+        [
+          {
+            "node": "Budget Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Budget Check": {
+      "main": [
+        [
+          {
+            "node": "Create Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Budget Exceeded Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Video": {
+      "main": [
+        [
+          {
+            "node": "Upload to YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to YouTube": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Budget Exceeded Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "error-handler-workflow"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "1.0.0",
+  "triggerCount": 1
+}

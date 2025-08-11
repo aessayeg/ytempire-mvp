@@ -1,84 +1,233 @@
 version: '3.9'
 
 # GPU-enabled Docker Compose configuration for YTEmpire
-# Requires NVIDIA Container Toolkit
+# Requires NVIDIA Container Toolkit and CUDA 12.2+
 
 services:
-  # ML Pipeline with GPU support
+  # ML Pipeline with GPU acceleration
   ml-pipeline:
     build:
       context: ./ml-pipeline
       dockerfile: Dockerfile.gpu
-    container_name: ytempire_ml_gpu
+      args:
+        CUDA_VERSION: "12.2.0"
+        PYTHON_VERSION: "3.11"
+    container_name: ytempire_ml_pipeline_gpu
     runtime: nvidia
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
-      - CUDA_VISIBLE_DEVICES=0
-      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
-      - CUDA_LAUNCH_BLOCKING=0
-      - TRANSFORMERS_CACHE=/app/cache/transformers
-      - HF_HOME=/app/cache/huggingface
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+      # GPU Configuration
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility,video
+      CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-0}
+      PYTORCH_CUDA_ALLOC_CONF: max_split_size_mb:512
+      CUDA_LAUNCH_BLOCKING: 0
+      
+      # Model Caching
+      TRANSFORMERS_CACHE: /app/cache/transformers
+      HF_HOME: /app/cache/huggingface
+      TORCH_HOME: /app/cache/torch
+      
+      # Database and Cache
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      
+      # AI Service Keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      
+      # Performance Settings
+      OMP_NUM_THREADS: 8
+      MKL_NUM_THREADS: 8
+      NUMEXPR_NUM_THREADS: 8
+      
+      # ML Configuration
+      ML_BATCH_SIZE: ${ML_BATCH_SIZE:-32}
+      ML_MAX_WORKERS: ${ML_MAX_WORKERS:-4}
+      USE_MIXED_PRECISION: ${USE_MIXED_PRECISION:-true}
+      USE_COMPILE: ${USE_COMPILE:-true}
+    
     volumes:
       - ./ml-pipeline:/app
       - ml_models:/app/models
       - ml_cache:/app/cache
       - gpu_logs:/app/logs
+      - ./data:/app/data
+    
     networks:
       - ytempire_network
-    depends_on:
-      - postgres
-      - redis
+    
+    ports:
+      - "${ML_API_PORT:-8001}:8001"
+      - "${ML_METRICS_PORT:-9091}:9091"
+    
     healthcheck:
-      test: ["CMD", "python", "-c", "import torch; assert torch.cuda.is_available()"]
+      test: ["CMD", "python", "-c", "import torch; assert torch.cuda.is_available(); import requests; r = requests.get('http://localhost:8001/health'); exit(0 if r.status_code == 200 else 1)"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    
+    restart: unless-stopped
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 32G
+        reservations:
+          cpus: '4'
+          memory: 16G
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    
+    command: >
+      sh -c "
+        echo 'Checking GPU availability...' &&
+        nvidia-smi &&
+        python -c 'import torch; print(f\"PyTorch CUDA available: {torch.cuda.is_available()}\"); print(f\"GPU count: {torch.cuda.device_count()}\")' &&
+        echo 'Starting ML Pipeline Service...' &&
+        python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --workers 2
+      "
 
   # Video Processing with GPU acceleration
   video-processor:
     build:
       context: ./backend
       dockerfile: Dockerfile.gpu
-    container_name: ytempire_video_gpu
+      args:
+        CUDA_VERSION: "12.2.0"
+        FFMPEG_VERSION: "6.0"
+    container_name: ytempire_video_processor_gpu
     runtime: nvidia
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
-      - OPENCV_CUDA_ENABLE=1
-      - FFMPEG_HWACCEL=cuda
-      - VIDEO_ENCODER=h264_nvenc
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu, video]
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility,video
+      CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-0}
+      
+      # Video Processing
+      OPENCV_CUDA_ENABLE: 1
+      FFMPEG_HWACCEL: cuda
+      VIDEO_ENCODER: h264_nvenc
+      VIDEO_DECODER: h264_cuvid
+      VIDEO_PRESET: ${VIDEO_PRESET:-medium}
+      VIDEO_BITRATE: ${VIDEO_BITRATE:-5M}
+      
+      # Database and Queue
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
+    
     volumes:
       - ./backend:/app
       - video_data:/app/videos
       - video_cache:/app/cache
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    
     networks:
       - ytempire_network
+    
     depends_on:
       - ml-pipeline
+      - redis
+    
+    restart: unless-stopped
+    
+    deploy:
+      replicas: ${VIDEO_PROCESSOR_REPLICAS:-2}
+      resources:
+        limits:
+          cpus: '4'
+          memory: 16G
+        reservations:
+          cpus: '2'
+          memory: 8G
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, video]
+    
+    command: celery -A app.core.celery_app worker --loglevel=info --concurrency=2 -Q video_processing
 
-  # Monitoring for GPU metrics
+  # Thumbnail Generator with GPU
+  thumbnail-generator:
+    build:
+      context: ./ml-pipeline
+      dockerfile: Dockerfile.gpu
+    container_name: ytempire_thumbnail_generator_gpu
+    runtime: nvidia
+    environment:
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-0}
+      
+      # AI Configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      THUMBNAIL_MODEL: ${THUMBNAIL_MODEL:-dall-e-3}
+      THUMBNAIL_SIZE: ${THUMBNAIL_SIZE:-1024x1024}
+      THUMBNAIL_QUALITY: ${THUMBNAIL_QUALITY:-hd}
+      USE_GPU_ENHANCEMENT: ${USE_GPU_ENHANCEMENT:-true}
+      
+      # Database
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    
+    volumes:
+      - ./ml-pipeline:/app
+      - ./uploads:/app/uploads
+      - thumbnail_cache:/app/thumbnail_cache
+      - ./logs:/app/logs
+    
+    networks:
+      - ytempire_network
+    
+    depends_on:
+      - redis
+      - ml-pipeline
+    
+    restart: unless-stopped
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8G
+        reservations:
+          cpus: '1'
+          memory: 4G
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    
+    command: celery -A app.tasks.thumbnail_tasks worker --loglevel=info --concurrency=1 -Q thumbnail_generation
+
+  # GPU Monitoring with DCGM Exporter
   gpu-monitor:
-    image: nvidia/dcgm-exporter:3.1.7-3.1.4-ubuntu20.04
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:3.1.7-3.1.4-ubuntu20.04
     container_name: ytempire_gpu_monitor
     runtime: nvidia
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: utility
+      DCGM_EXPORTER_LISTEN: ":9400"
+      DCGM_EXPORTER_KUBERNETES: "false"
+    ports:
+      - "9400:9400"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
     deploy:
       resources:
         reservations:
@@ -86,10 +235,6 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    ports:
-      - "9400:9400"
-    networks:
-      - ytempire_network
 
   # Prometheus with GPU metrics
   prometheus-gpu:
@@ -101,20 +246,79 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
     ports:
       - "9091:9090"
     networks:
       - ytempire_network
     depends_on:
       - gpu-monitor
+    restart: unless-stopped
+
+  # Grafana with GPU dashboards
+  grafana-gpu:
+    image: grafana/grafana:latest
+    container_name: ytempire_grafana_gpu
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_gpu_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana/gpu-dashboards:/etc/grafana/provisioning/dashboards
+      - ./infrastructure/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3002:3000"
+    networks:
+      - ytempire_network
+    depends_on:
+      - prometheus-gpu
+    restart: unless-stopped
+
+  # TensorBoard for ML monitoring
+  tensorboard:
+    image: tensorflow/tensorflow:latest-gpu
+    container_name: ytempire_tensorboard
+    runtime: nvidia
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    volumes:
+      - ./ml-pipeline/logs:/logs
+      - ml_models:/models
+    ports:
+      - "6006:6006"
+    networks:
+      - ytempire_network
+    command: tensorboard --logdir=/logs --bind_all
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
 
 volumes:
   ml_models:
+    driver: local
   ml_cache:
+    driver: local
   gpu_logs:
+    driver: local
   video_data:
+    driver: local
   video_cache:
+    driver: local
+  thumbnail_cache:
+    driver: local
   prometheus_gpu_data:
+    driver: local
+  grafana_gpu_data:
+    driver: local
 
 networks:
   ytempire_network:

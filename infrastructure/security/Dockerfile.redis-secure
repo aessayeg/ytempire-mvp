@@ -1,0 +1,28 @@
+# Secure Redis Dockerfile with TLS and encryption
+FROM redis:7-alpine
+
+# Install OpenSSL for certificate operations
+RUN apk add --no-cache openssl
+
+# Copy TLS configuration
+COPY redis-tls.conf /etc/redis/redis.conf
+
+# Create directories for certificates and encrypted data
+RUN mkdir -p /etc/redis/certs /data/encrypted
+
+# Copy custom Redis configuration with security enhancements
+COPY redis-security-module.conf /etc/redis/security.conf
+
+# Set secure permissions
+RUN chown -R redis:redis /etc/redis/certs /data/encrypted
+RUN chmod 700 /etc/redis/certs
+RUN chmod 600 /etc/redis/redis.conf /etc/redis/security.conf
+
+# Create custom entrypoint for secure initialization
+COPY redis-secure-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/redis-secure-entrypoint.sh
+
+USER redis
+
+ENTRYPOINT ["/usr/local/bin/redis-secure-entrypoint.sh"]
+CMD ["redis-server", "/etc/redis/redis.conf"]

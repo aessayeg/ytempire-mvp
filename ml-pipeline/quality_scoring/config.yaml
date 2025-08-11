@@ -1,0 +1,241 @@
+# Content Quality Scoring Configuration
+# YTEmpire AI/ML Quality Assessment System
+
+# Model Configuration
+models:
+  whisper:
+    model_size: "base"  # tiny, base, small, medium, large
+    device: "auto"  # auto, cuda, cpu
+    
+  clip:
+    model_name: "openai/clip-vit-base-patch32"
+    device: "auto"
+    
+  bert:
+    model_name: "bert-base-uncased"
+    device: "auto"
+    
+  sentiment_analysis:
+    model_name: "cardiffnlp/twitter-roberta-base-sentiment-latest"
+    
+  topic_classification:
+    model_name: "facebook/bart-large-mnli"
+
+# Quality Thresholds
+quality_thresholds:
+  min_acceptable_score: 0.65
+  excellent_score_threshold: 0.85
+  
+  # Category-specific thresholds
+  visual_quality:
+    min_resolution_score: 0.6
+    min_sharpness_score: 0.5
+    min_brightness_score: 0.4
+    min_contrast_score: 0.5
+    
+  audio_quality:
+    min_clarity_score: 0.6
+    min_speech_quality_score: 0.7
+    max_noise_level: 0.3
+    
+  content_quality:
+    min_coherence_score: 0.6
+    min_engagement_score: 0.5
+    min_information_density: 0.4
+    
+  technical_quality:
+    min_encoding_score: 0.7
+    max_file_size_mb_per_minute: 100
+    optimal_duration_range: [60, 600]  # seconds
+
+# Processing Configuration
+processing:
+  max_concurrent_analyses: 4
+  frame_sample_rate: 30  # Analyze every Nth frame
+  audio_chunk_duration: 10.0  # seconds
+  max_video_duration: 1200  # 20 minutes max
+  
+  # Performance targets
+  target_processing_time: 120  # seconds per video
+  timeout_seconds: 300
+  
+  # Memory management
+  max_frames_in_memory: 100
+  batch_size: 8
+
+# Feature Weights for Composite Scoring
+scoring_weights:
+  visual_weight: 0.25
+  audio_weight: 0.25
+  content_weight: 0.30
+  technical_weight: 0.20
+  
+  # Sub-category weights
+  visual_subcategory_weights:
+    resolution: 0.20
+    sharpness: 0.20
+    brightness: 0.15
+    contrast: 0.15
+    color_balance: 0.15
+    stability: 0.15
+    
+  audio_subcategory_weights:
+    clarity: 0.30
+    volume_consistency: 0.25
+    noise_level: 0.25
+    speech_quality: 0.20
+    
+  content_subcategory_weights:
+    coherence: 0.25
+    topic_relevance: 0.25
+    engagement_potential: 0.30
+    information_density: 0.20
+    
+  technical_subcategory_weights:
+    encoding_quality: 0.40
+    file_size_efficiency: 0.30
+    duration_appropriateness: 0.30
+
+# Storage and Caching
+storage:
+  cache_results: true
+  cache_duration_hours: 24
+  database_path: "ml-pipeline/data/quality_scores.db"
+  
+  # File paths
+  temp_directory: "/tmp/ytempire_quality_analysis"
+  models_cache_directory: "ml-pipeline/models"
+  results_directory: "ml-pipeline/results/quality_reports"
+  
+  # Cleanup settings
+  cleanup_temp_files: true
+  max_cache_size_mb: 1000
+
+# Video Analysis Settings
+video_analysis:
+  supported_formats: ["mp4", "avi", "mov", "mkv", "webm"]
+  
+  # Frame analysis
+  frame_analysis:
+    target_resolution: [1920, 1080]
+    min_resolution: [640, 360]
+    color_spaces: ["RGB", "YUV", "HSV"]
+    
+  # Audio analysis
+  audio_analysis:
+    sample_rate: 16000
+    target_bitrate: 128  # kbps
+    min_bitrate: 64
+    
+  # Content analysis
+  content_analysis:
+    max_script_length: 10000  # characters
+    min_script_length: 100
+    supported_languages: ["en"]  # English for now
+
+# Performance Monitoring
+monitoring:
+  enable_metrics: true
+  metrics_collection_interval: 10  # seconds
+  
+  # Performance alerts
+  alerts:
+    processing_time_threshold: 180  # seconds
+    memory_usage_threshold: 8192  # MB
+    gpu_memory_threshold: 12288  # MB
+    error_rate_threshold: 0.05  # 5%
+    
+  # Logging
+  log_level: "INFO"
+  log_file: "logs/quality_scoring.log"
+  max_log_size_mb: 100
+  log_retention_days: 30
+
+# Machine Learning Settings
+ml_settings:
+  # Training and validation
+  enable_model_training: false  # Set to true for custom model training
+  validation_split: 0.2
+  test_split: 0.1
+  
+  # Feature engineering
+  enable_feature_scaling: true
+  enable_feature_selection: true
+  max_features: 1000
+  
+  # Model optimization
+  enable_quantization: false  # Reduce model size
+  enable_tensorrt: false  # NVIDIA TensorRT optimization
+  enable_onnx_export: false  # Export to ONNX format
+
+# Integration Settings
+integration:
+  # API settings
+  api_endpoint: "http://localhost:8000/api/v1/quality"
+  api_timeout: 30
+  max_retries: 3
+  
+  # Webhook notifications
+  webhook_url: ""  # Set for quality score notifications
+  webhook_events: ["low_quality", "analysis_complete", "error"]
+  
+  # Database integration
+  save_to_main_database: true
+  database_table: "video_quality_scores"
+
+# Development and Testing
+development:
+  debug_mode: false
+  enable_profiling: false
+  save_intermediate_results: false
+  
+  # Test data
+  test_video_path: "test_data/sample_video.mp4"
+  test_script_text: "This is a test script for quality analysis."
+  test_target_topic: "technology"
+  
+  # Benchmarking
+  benchmark_mode: false
+  benchmark_iterations: 10
+  benchmark_video_path: "test_data/benchmark_video.mp4"
+
+# Advanced Features
+advanced:
+  # Multi-modal analysis
+  enable_multimodal_fusion: true
+  fusion_method: "weighted_average"  # weighted_average, attention, neural_network
+  
+  # Ensemble methods
+  enable_ensemble_scoring: false
+  ensemble_models: ["base_model", "fine_tuned_model"]
+  
+  # Custom metrics
+  enable_custom_metrics: false
+  custom_metrics_path: "ml-pipeline/custom_metrics/"
+  
+  # A/B testing
+  enable_ab_testing: false
+  ab_test_variants: ["model_v1", "model_v2"]
+  
+  # Real-time analysis
+  enable_streaming_analysis: false
+  streaming_chunk_size: 5  # seconds
+
+# Error Handling
+error_handling:
+  max_retries: 3
+  retry_delay: 5  # seconds
+  backoff_factor: 2
+  
+  # Fallback strategies
+  fallback_on_model_error: true
+  fallback_scores:
+    default_visual_score: 0.5
+    default_audio_score: 0.5
+    default_content_score: 0.5
+    default_technical_score: 0.5
+  
+  # Error reporting
+  report_errors: true
+  error_webhook_url: ""
+  include_stack_traces: false

@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     
     # Database
     POSTGRES_USER: str = "ytempire"
-    POSTGRES_PASSWORD: str = "ytempire_secure_pwd_2024"
+    POSTGRES_PASSWORD: str = "admin"
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: str = "5432"
     POSTGRES_DB: str = "ytempire_db"

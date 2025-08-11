@@ -14,8 +14,10 @@ from app.core.logging import setup_logging
 from app.db.session import engine
 from app.db.base import Base
 from app.services.websocket_manager import ConnectionManager
-from app.core.performance import (
-    cache_manager, connection_pool, PerformanceMiddleware
+from app.core.performance_enhanced import (
+    cache_manager, db_pool, http_pool, 
+    FastPerformanceMiddleware, initialize_performance_systems,
+    cleanup_performance_systems
 )
 
 # Setup logging
@@ -34,10 +36,9 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting YTEmpire API...")
     
-    # Initialize performance components
-    await cache_manager.initialize()
-    await connection_pool.initialize()
-    logger.info("Performance optimization initialized")
+    # Initialize enhanced performance components
+    await initialize_performance_systems()
+    logger.info("Enhanced performance optimization initialized")
     
     # Create database tables
     async with engine.begin() as conn:
@@ -50,7 +51,7 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("Shutting down YTEmpire API...")
-    await connection_pool.cleanup()
+    await cleanup_performance_systems()
     await engine.dispose()
 
 
@@ -65,14 +66,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Security Headers Middleware - MUST BE FIRST
+from app.middleware.security_headers import setup_security_headers
+app = setup_security_headers(app)
 
 # Trusted host middleware
 app.add_middleware(
@@ -80,8 +76,23 @@ app.add_middleware(
     allowed_hosts=settings.ALLOWED_HOSTS
 )
 
-# Performance middleware
-app.add_middleware(PerformanceMiddleware, cache_manager=cache_manager)
+# Enhanced performance middleware
+app.add_middleware(FastPerformanceMiddleware, cache_manager=cache_manager)
+
+# Enhanced Rate Limiting Middleware
+from app.middleware.rate_limiting_enhanced import RateLimitMiddleware
+app.add_middleware(RateLimitMiddleware)
+
+# Input Validation and Sanitization Middleware
+from app.middleware.input_validation import InputValidationMiddleware
+app.add_middleware(InputValidationMiddleware)
+
+# Global error handling middleware
+from app.middleware.global_error_handler import GlobalErrorMiddleware, create_error_handlers
+app.add_middleware(GlobalErrorMiddleware)
+
+# Register error handlers
+create_error_handlers(app)
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
@@ -102,6 +113,34 @@ async def health_check():
         "environment": settings.ENVIRONMENT
     }
 
+# Performance metrics endpoint
+@app.get("/metrics/performance", tags=["Metrics"])
+async def performance_metrics():
+    """
+    Performance metrics endpoint for monitoring
+    """
+    # Get middleware metrics
+    middleware = None
+    for middleware_item in app.user_middleware:
+        if isinstance(middleware_item.cls, type) and issubclass(middleware_item.cls, FastPerformanceMiddleware):
+            middleware = middleware_item
+            break
+    
+    metrics = {}
+    if middleware and hasattr(middleware, 'get_metrics'):
+        metrics = middleware.get_metrics()
+    
+    # Get cache metrics
+    cache_stats = cache_manager.stats if cache_manager else {}
+    
+    return {
+        "performance": metrics,
+        "cache": cache_stats,
+        "timestamp": str(datetime.utcnow())
+    }
+
+from datetime import datetime
+
 # Root endpoint
 @app.get("/", tags=["Root"])
 async def root():
@@ -118,6 +157,7 @@ async def root():
 # WebSocket endpoints
 from fastapi import WebSocket, WebSocketDisconnect
 from typing import Optional
+import json
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
@@ -128,21 +168,38 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
     try:
         while True:
             # Wait for messages from client
-            data = await websocket.receive_text()
-            # Echo back to sender
-            await ws_manager.send_personal_message(f"Echo: {data}", client_id)
+            data = await websocket.receive_json()
+            # Process incoming message
+            await ws_manager.handle_incoming_message(websocket, client_id, data)
     except WebSocketDisconnect:
-        ws_manager.disconnect(client_id)
-        await ws_manager.broadcast(f"Client {client_id} left")
+        await ws_manager.disconnect(websocket, client_id)
+        await ws_manager.broadcast({
+            "type": "notification",
+            "data": {
+                "message": f"Client {client_id} disconnected"
+            }
+        })
+    except Exception as e:
+        logger.error(f"WebSocket error for client {client_id}: {e}")
+        await ws_manager.disconnect(websocket, client_id)
 
 @app.websocket("/ws/video-updates/{channel_id}")
 async def video_updates_websocket(websocket: WebSocket, channel_id: str):
     """
     WebSocket endpoint for video generation updates
     """
-    await ws_manager.connect(websocket, f"channel_{channel_id}")
+    room_id = f"channel:{channel_id}"
+    await ws_manager.connect(websocket, channel_id, metadata={"channel_id": channel_id})
+    await ws_manager.join_room(channel_id, room_id)
+    
     try:
         while True:
-            await websocket.receive_text()
+            data = await websocket.receive_json()
+            await ws_manager.handle_incoming_message(websocket, channel_id, data)
     except WebSocketDisconnect:
-        ws_manager.disconnect(f"channel_{channel_id}")
+        await ws_manager.leave_room(channel_id, room_id)
+        await ws_manager.disconnect(websocket, channel_id)
+    except Exception as e:
+        logger.error(f"WebSocket error for channel {channel_id}: {e}")
+        await ws_manager.leave_room(channel_id, room_id)
+        await ws_manager.disconnect(websocket, channel_id)

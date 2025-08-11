@@ -112,8 +112,11 @@ class QueueStatsResponse(BaseModel):
     processing_rate: float  # videos per hour
 
 
-# In-memory storage (should be replaced with database)
-video_queue_storage: Dict[str, Dict] = {}
+# Import the queue service
+from app.services.video_queue_service import VideoQueueService, QueueStatus as ServiceQueueStatus
+from app.models.video_queue import VideoQueue
+
+queue_service = VideoQueueService()
 
 
 @router.post("/add", response_model=VideoQueueResponse)
@@ -127,75 +130,54 @@ async def add_to_queue(
     Add a video to the generation queue
     """
     try:
-        # Generate queue ID
-        queue_id = str(uuid.uuid4())
-        
-        # Estimate cost based on duration and features
-        estimated_cost = calculate_estimated_cost(
-            duration_minutes=request.duration_minutes,
-            style=request.style,
-            voice_style=request.voice_style,
-            thumbnail_style=request.thumbnail_style
-        )
-        
-        # Estimate processing time
-        processing_time = estimate_processing_time(
-            duration_minutes=request.duration_minutes,
-            priority=request.priority
-        )
-        
-        # Create queue item
-        queue_item = {
-            "queue_id": queue_id,
-            "channel_id": request.channel_id,
-            "user_id": str(current_user.id),
-            "title": request.title,
-            "description": request.description,
-            "topic": request.topic,
-            "style": request.style,
-            "duration_minutes": request.duration_minutes,
-            "scheduled_time": request.scheduled_time or datetime.utcnow(),
-            "priority": request.priority.value,
-            "status": QueueStatus.SCHEDULED if request.scheduled_time else QueueStatus.PENDING,
-            "tags": request.tags,
-            "estimated_cost": estimated_cost,
-            "processing_time_estimate": processing_time,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
-            "completed_at": None,
-            "error_message": None,
-            "retry_count": 0,
-            "metadata": {
-                "target_audience": request.target_audience,
-                "keywords": request.keywords,
-                "voice_style": request.voice_style,
-                "thumbnail_style": request.thumbnail_style,
-                "auto_publish": request.auto_publish
-            }
+        # Prepare metadata
+        metadata = {
+            "target_audience": request.target_audience,
+            "keywords": request.keywords,
+            "voice_style": request.voice_style,
+            "thumbnail_style": request.thumbnail_style,
+            "auto_publish": request.auto_publish
         }
         
-        # Store in memory (replace with database)
-        video_queue_storage[queue_id] = queue_item
-        
-        # Schedule processing task
-        if request.scheduled_time:
-            # Schedule for later
-            eta = request.scheduled_time
-        else:
-            # Process based on priority
-            eta = datetime.utcnow() + timedelta(minutes=1 if request.priority == Priority.URGENT else 5)
-        
-        # Queue Celery task
-        task = celery_app.send_task(
-            'app.tasks.video_generation.process_video',
-            args=[queue_id],
-            eta=eta,
-            priority=request.priority.value
+        # Add to queue using service
+        queue_item = await queue_service.add_to_queue(
+            db=db,
+            user_id=str(current_user.id),
+            channel_id=request.channel_id,
+            title=request.title,
+            topic=request.topic,
+            duration_minutes=request.duration_minutes,
+            style=request.style,
+            description=request.description,
+            scheduled_time=request.scheduled_time,
+            priority=request.priority.value,
+            tags=request.tags,
+            metadata=metadata
         )
         
-        queue_item['metadata']['task_id'] = task.id
-        
-        return VideoQueueResponse(**queue_item)
+        # Convert to response model
+        return VideoQueueResponse(
+            queue_id=str(queue_item.id),
+            channel_id=queue_item.channel_id,
+            user_id=queue_item.user_id,
+            title=queue_item.title,
+            description=queue_item.description,
+            topic=queue_item.topic,
+            style=queue_item.style,
+            duration_minutes=queue_item.duration_minutes,
+            scheduled_time=queue_item.scheduled_time,
+            priority=queue_item.priority,
+            status=queue_item.status,
+            tags=queue_item.tags,
+            estimated_cost=queue_item.estimated_cost,
+            processing_time_estimate=queue_item.processing_time_estimate,
+            created_at=queue_item.created_at,
+            updated_at=queue_item.updated_at,
+            completed_at=queue_item.completed_at,
+            error_message=queue_item.error_message,
+            retry_count=queue_item.retry_count,
+            metadata=queue_item.metadata or {}
+        )
         
     except Exception as e:
         logger.error(f"Failed to add to queue: {e}")

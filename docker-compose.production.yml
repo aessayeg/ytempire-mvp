@@ -68,7 +68,7 @@ services:
       target: production
     container_name: ytempire_backend
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:ytempire_secure_pwd_2024@postgres:5432/ytempire_db}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       ENVIRONMENT: production
       SECRET_KEY: ${SECRET_KEY}
@@ -159,7 +159,7 @@ services:
       target: production
     container_name: ytempire_celery_worker
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:ytempire_secure_pwd_2024@postgres:5432/ytempire_db}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
@@ -196,7 +196,7 @@ services:
       target: production
     container_name: ytempire_celery_beat
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:ytempire_secure_pwd_2024@postgres:5432/ytempire_db}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
@@ -361,7 +361,7 @@ services:
       dockerfile: Dockerfile
     container_name: ytempire_ml_pipeline
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:ytempire_secure_pwd_2024@postgres:5432/ytempire_db}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-0}

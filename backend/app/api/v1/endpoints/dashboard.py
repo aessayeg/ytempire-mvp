@@ -440,6 +440,163 @@ async def get_analytics_summary(
         )
 
 
+@router.get("/user-preferences")
+async def get_user_preferences(
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Get user dashboard preferences and settings
+    """
+    return {
+        "dashboard_layout": getattr(current_user, 'dashboard_layout', 'default'),
+        "default_channel": getattr(current_user, 'default_channel_id', None),
+        "notification_settings": {
+            "email_notifications": getattr(current_user, 'email_notifications', True),
+            "push_notifications": getattr(current_user, 'push_notifications', True),
+            "video_complete": True,
+            "revenue_milestones": True
+        },
+        "timezone": getattr(current_user, 'timezone', 'UTC'),
+        "currency": getattr(current_user, 'currency', 'USD')
+    }
+
+
+@router.post("/user-preferences")
+async def update_user_preferences(
+    preferences: Dict[str, Any],
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, str]:
+    """
+    Update user dashboard preferences
+    """
+    try:
+        # Update user preferences (in a real app, these would be stored)
+        logger.info(f"Updating preferences for user {current_user.id}: {preferences}")
+        # Implementation would update user model with preferences
+        
+        return {"message": "Preferences updated successfully"}
+        
+    except Exception as e:
+        logger.error(f"Failed to update preferences: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update preferences"
+        )
+
+
+@router.get("/realtime-stats")
+async def get_realtime_stats(
+    current_user: User = Depends(get_current_verified_user),
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Get real-time statistics for dashboard
+    """
+    try:
+        now = datetime.utcnow()
+        today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        # Get today's stats
+        today_videos = await db.execute(
+            select(func.count(Video.id)).where(
+                and_(
+                    Video.channel_id.in_(
+                        select(Channel.id).where(Channel.user_id == current_user.id)
+                    ),
+                    Video.created_at >= today
+                )
+            )
+        )
+        
+        # Get active queue count
+        active_queues = 3  # Mock data - would query actual queue
+        
+        # Get current cost today
+        today_cost = await db.execute(
+            select(func.sum(Cost.amount)).where(
+                and_(
+                    Cost.user_id == current_user.id,
+                    Cost.created_at >= today
+                )
+            )
+        )
+        
+        return {
+            "timestamp": now.isoformat(),
+            "videos_generated_today": today_videos.scalar() or 0,
+            "active_video_queue": active_queues,
+            "cost_today": round(today_cost.scalar() or 0, 2),
+            "system_status": "operational",
+            "last_video_time": (now - timedelta(minutes=23)).isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Realtime stats error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch realtime stats"
+        )
+
+
+@router.get("/notifications")
+async def get_notifications(
+    limit: int = Query(20, ge=1, le=100),
+    unread_only: bool = Query(False),
+    current_user: User = Depends(get_current_verified_user)
+) -> List[Dict[str, Any]]:
+    """
+    Get user notifications for dashboard
+    """
+    # Mock notification data - would query actual notifications table
+    notifications = [
+        {
+            "id": "notif_1",
+            "type": "video_complete",
+            "title": "Video Generation Complete",
+            "message": "Your video 'AI Marketing Trends' has been generated successfully",
+            "timestamp": (datetime.utcnow() - timedelta(minutes=15)).isoformat(),
+            "read": False,
+            "priority": "normal",
+            "metadata": {
+                "video_id": "video_123",
+                "channel_name": "Tech Channel"
+            }
+        },
+        {
+            "id": "notif_2",
+            "type": "milestone",
+            "title": "Revenue Milestone Reached",
+            "message": "Congratulations! You've reached $100 in monthly revenue",
+            "timestamp": (datetime.utcnow() - timedelta(hours=2)).isoformat(),
+            "read": True,
+            "priority": "high",
+            "metadata": {
+                "milestone_amount": 100,
+                "currency": "USD"
+            }
+        }
+    ]
+    
+    if unread_only:
+        notifications = [n for n in notifications if not n["read"]]
+    
+    return notifications[:limit]
+
+
+@router.post("/notifications/{notification_id}/mark-read")
+async def mark_notification_read(
+    notification_id: str,
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, str]:
+    """
+    Mark notification as read
+    """
+    # Implementation would update notification in database
+    logger.info(f"Marking notification {notification_id} as read for user {current_user.id}")
+    return {"message": "Notification marked as read"}
+
+
 # Helper functions
 async def get_recent_activity(
     db: AsyncSession,

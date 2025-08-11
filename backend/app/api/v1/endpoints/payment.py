@@ -14,7 +14,7 @@ import logging
 from app.db.session import get_db
 from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
-from app.services.payment_service import PaymentService
+from app.services.payment_service_enhanced import payment_service, SubscriptionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -51,9 +51,35 @@ class SubscriptionResponse(BaseModel):
     current_period_start: datetime
     current_period_end: datetime
     plan_name: str
+    plan_tier: str
     plan_amount: float
     currency: str
     cancel_at_period_end: bool
+    trial_end: Optional[datetime] = None
+    usage_limits: Dict[str, Any]
+    current_usage: Dict[str, Any]
+
+
+class UsageTrackingRequest(BaseModel):
+    """Request for tracking usage"""
+    usage_type: str = Field(..., description="Type of usage: videos, api_calls, storage")
+    quantity: float = Field(..., gt=0, description="Quantity of usage")
+    unit: str = Field(default="count", description="Unit of measurement")
+    resource_type: Optional[str] = None
+    resource_id: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class CancelSubscriptionRequest(BaseModel):
+    """Request to cancel subscription"""
+    cancel_at_period_end: bool = Field(default=True, description="Cancel at end of billing period")
+    reason: Optional[str] = Field(None, description="Cancellation reason")
+
+
+class WebhookRequest(BaseModel):
+    """Stripe webhook request"""
+    payload: bytes
+    signature: str
 
 
 @router.post("/checkout-session")
@@ -66,36 +92,17 @@ async def create_checkout_session(
     Create a Stripe checkout session for subscription
     """
     try:
-        payment_service = PaymentService(db)
-        
-        # Create or get Stripe customer
-        customer_id = await payment_service.get_or_create_customer(
-            user_id=current_user.id,
-            email=current_user.email,
-            name=current_user.full_name
-        )
-        
-        # Create checkout session
-        session = stripe.checkout.Session.create(
-            customer=customer_id,
-            payment_method_types=['card'],
-            line_items=[{
-                'price': request.price_id,
-                'quantity': 1,
-            }],
-            mode='subscription',
+        # Create checkout session using enhanced service
+        result = await payment_service.create_checkout_session(
+            db=db,
+            user_id=str(current_user.id),
+            price_id=request.price_id,
             success_url=request.success_url,
             cancel_url=request.cancel_url,
-            metadata={
-                'user_id': str(current_user.id),
-                **(request.metadata or {})
-            }
+            metadata=request.metadata
         )
         
-        return {
-            "checkout_url": session.url,
-            "session_id": session.id
-        }
+        return result
         
     except stripe.error.StripeError as e:
         logger.error(f"Stripe error: {e}")
@@ -108,6 +115,341 @@ async def create_checkout_session(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Payment processing failed"
+        )
+
+
+@router.post("/subscription", response_model=SubscriptionResponse)
+async def create_subscription(
+    request: CreateSubscriptionRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> SubscriptionResponse:
+    """
+    Create a new subscription with payment method
+    """
+    try:
+        subscription = await payment_service.create_subscription(
+            db=db,
+            user_id=str(current_user.id),
+            price_id=request.price_id,
+            payment_method_id=request.payment_method_id,
+            trial_days=request.trial_days
+        )
+        
+        return SubscriptionResponse(
+            subscription_id=subscription.stripe_subscription_id,
+            status=subscription.status,
+            current_period_start=subscription.current_period_start,
+            current_period_end=subscription.current_period_end,
+            plan_name=subscription.plan_name,
+            plan_tier=subscription.plan_tier,
+            plan_amount=subscription.unit_amount / 100,  # Convert from cents
+            currency=subscription.currency,
+            cancel_at_period_end=subscription.cancel_at_period_end,
+            trial_end=subscription.trial_end,
+            usage_limits={
+                "videos_monthly": subscription.video_limit_monthly,
+                "storage_gb": subscription.storage_limit_gb,
+                "api_calls_monthly": subscription.api_calls_limit_monthly
+            },
+            current_usage={
+                "videos_generated": subscription.videos_generated_current_period,
+                "storage_used_gb": subscription.storage_used_gb,
+                "api_calls": subscription.api_calls_current_period
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to create subscription: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create subscription"
+        )
+
+
+@router.get("/subscription", response_model=SubscriptionResponse)
+async def get_current_subscription(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> SubscriptionResponse:
+    """
+    Get current user's active subscription
+    """
+    try:
+        subscription = await payment_service.get_active_subscription(
+            db=db,
+            user_id=str(current_user.id)
+        )
+        
+        if not subscription:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No active subscription found"
+            )
+            
+        return SubscriptionResponse(
+            subscription_id=subscription.stripe_subscription_id,
+            status=subscription.status,
+            current_period_start=subscription.current_period_start,
+            current_period_end=subscription.current_period_end,
+            plan_name=subscription.plan_name,
+            plan_tier=subscription.plan_tier,
+            plan_amount=subscription.unit_amount / 100,
+            currency=subscription.currency,
+            cancel_at_period_end=subscription.cancel_at_period_end,
+            trial_end=subscription.trial_end,
+            usage_limits={
+                "videos_monthly": subscription.video_limit_monthly,
+                "storage_gb": subscription.storage_limit_gb,
+                "api_calls_monthly": subscription.api_calls_limit_monthly
+            },
+            current_usage={
+                "videos_generated": subscription.videos_generated_current_period,
+                "storage_used_gb": subscription.storage_used_gb,
+                "api_calls": subscription.api_calls_current_period
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get subscription: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve subscription"
+        )
+
+
+@router.post("/subscription/cancel")
+async def cancel_subscription(
+    request: CancelSubscriptionRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Cancel user's subscription
+    """
+    try:
+        # Get current subscription
+        subscription = await payment_service.get_active_subscription(
+            db=db,
+            user_id=str(current_user.id)
+        )
+        
+        if not subscription:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No active subscription found"
+            )
+            
+        # Cancel subscription
+        canceled_subscription = await payment_service.cancel_subscription(
+            db=db,
+            user_id=str(current_user.id),
+            subscription_id=subscription.stripe_subscription_id,
+            cancel_at_period_end=request.cancel_at_period_end,
+            reason=request.reason
+        )
+        
+        return {
+            "status": "canceled",
+            "subscription_id": canceled_subscription.stripe_subscription_id,
+            "cancel_at_period_end": canceled_subscription.cancel_at_period_end,
+            "canceled_at": canceled_subscription.canceled_at.isoformat() if canceled_subscription.canceled_at else None,
+            "access_until": canceled_subscription.current_period_end.isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to cancel subscription: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to cancel subscription"
+        )
+
+
+@router.post("/usage/track")
+async def track_usage(
+    request: UsageTrackingRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, str]:
+    """
+    Track usage for billing purposes
+    """
+    try:
+        await payment_service.track_usage(
+            db=db,
+            user_id=str(current_user.id),
+            usage_type=request.usage_type,
+            quantity=request.quantity,
+            unit=request.unit,
+            resource_type=request.resource_type,
+            resource_id=request.resource_id,
+            metadata=request.metadata
+        )
+        
+        return {
+            "status": "tracked",
+            "usage_type": request.usage_type,
+            "quantity": str(request.quantity)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to track usage: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to track usage"
+        )
+
+
+@router.get("/usage/summary")
+async def get_usage_summary(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Get current billing period usage summary
+    """
+    try:
+        summary = await payment_service.get_usage_summary(
+            db=db,
+            user_id=str(current_user.id)
+        )
+        
+        if not summary:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No subscription found"
+            )
+            
+        return summary
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get usage summary: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve usage summary"
+        )
+
+
+@router.get("/billing/history")
+async def get_billing_history(
+    limit: int = 20,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> List[Dict[str, Any]]:
+    """
+    Get billing history
+    """
+    try:
+        history = await payment_service.get_billing_history(
+            db=db,
+            user_id=str(current_user.id),
+            limit=limit
+        )
+        
+        return history
+        
+    except Exception as e:
+        logger.error(f"Failed to get billing history: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve billing history"
+        )
+
+
+@router.post("/webhook")
+async def stripe_webhook(
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Handle Stripe webhooks
+    """
+    try:
+        payload = await request.body()
+        signature = request.headers.get("stripe-signature")
+        
+        if not signature:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Missing Stripe signature"
+            )
+            
+        result = await payment_service.process_webhook(
+            db=db,
+            payload=payload,
+            signature=signature
+        )
+        
+        return result
+        
+    except stripe.error.SignatureVerificationError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid webhook signature"
+        )
+    except Exception as e:
+        logger.error(f"Webhook processing failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Webhook processing failed"
+        )
+
+
+@router.get("/plans")
+async def get_available_plans() -> List[Dict[str, Any]]:
+    """
+    Get available subscription plans
+    """
+    try:
+        # Get plans from Stripe
+        prices = stripe.Price.list(
+            active=True,
+            type="recurring",
+            expand=["data.product"]
+        )
+        
+        plans = []
+        for price in prices.data:
+            product = price.product
+            
+            plan = {
+                "price_id": price.id,
+                "product_id": product.id,
+                "name": product.name,
+                "description": product.description,
+                "tier": product.metadata.get("tier", "basic"),
+                "amount": price.unit_amount,
+                "currency": price.currency,
+                "interval": price.recurring.interval,
+                "interval_count": price.recurring.interval_count,
+                "features": product.metadata.get("features", "").split(",") if product.metadata.get("features") else [],
+                "limits": {
+                    "videos_monthly": int(product.metadata.get("videos_monthly", 50)),
+                    "storage_gb": int(product.metadata.get("storage_gb", 25)),
+                    "api_calls_monthly": int(product.metadata.get("api_calls_monthly", 5000)),
+                    "channels": int(product.metadata.get("channels", 3)),
+                    "video_length_minutes": int(product.metadata.get("video_length_minutes", 10))
+                }
+            }
+            
+            plans.append(plan)
+            
+        # Sort by amount
+        plans.sort(key=lambda x: x["amount"])
+        
+        return plans
+        
+    except Exception as e:
+        logger.error(f"Failed to get plans: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve plans"
         )
 
 

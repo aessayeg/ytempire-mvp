@@ -1,0 +1,410 @@
+version: '3.8'
+
+services:
+  # Auto-Scaler Service
+  auto_scaler:
+    build:
+      context: .
+      dockerfile: ./infrastructure/scaling/Dockerfile.scaler
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ytempire
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres_pass}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_pass}
+      API_BASE_URL: http://backend:8000
+      ORCHESTRATOR: docker
+      SCALING_INTERVAL: 30
+      LOG_LEVEL: INFO
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./infrastructure/scaling:/app/scaling
+      - scaling_logs:/var/log/scaling
+    depends_on:
+      - postgres
+      - redis
+      - backend
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    command: ["python", "/app/scaling/auto_scaler.py", "start"]
+    healthcheck:
+      test: ["CMD", "python", "/app/scaling/auto_scaler.py", "status"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  # Metrics Collector Service
+  metrics_collector:
+    build:
+      context: .
+      dockerfile: ./infrastructure/scaling/Dockerfile.metrics
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ytempire
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres_pass}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_pass}
+      API_BASE_URL: http://backend:8000
+      PROMETHEUS_URL: http://prometheus:9090
+    volumes:
+      - ./infrastructure/scaling:/app/scaling
+      - metrics_data:/app/data
+    ports:
+      - "8001:8000"  # Metrics API endpoint
+    depends_on:
+      - postgres
+      - redis
+      - prometheus
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    command: ["python", "/app/scaling/metrics_collector.py"]
+
+  # Load Balancer (HAProxy)
+  load_balancer:
+    image: haproxy:2.8-alpine
+    volumes:
+      - ./infrastructure/scaling/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ./infrastructure/scaling/haproxy-stats.cfg:/usr/local/etc/haproxy/stats.cfg:ro
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8404:8404"  # HAProxy stats
+    depends_on:
+      - backend
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Enhanced Backend with scaling support
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:${DATABASE_PASSWORD:-postgres_pass}@postgres:5432/ytempire
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev_secret_key}
+      SCALING_ENABLED: "true"
+      METRICS_EXPORT: "true"
+      INSTANCE_ID: ${HOSTNAME:-backend-1}
+    volumes:
+      - ./backend:/app
+      - backend_data:/app/data
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Celery Worker with GPU support
+  celery_worker:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.celery
+    environment:
+      DATABASE_URL: postgresql://postgres:${DATABASE_PASSWORD:-postgres_pass}@postgres:5432/ytempire
+      REDIS_URL: redis://redis:6379/0
+      CELERY_WORKER_ID: ${HOSTNAME:-worker-1}
+      GPU_ENABLED: "true"
+      SCALING_ENABLED: "true"
+    volumes:
+      - ./backend:/app
+      - /tmp:/tmp
+      - worker_data:/app/data
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    # GPU support (if available)
+    runtime: nvidia
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    healthcheck:
+      test: ["CMD", "celery", "-A", "app.core.celery_app", "inspect", "ping"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  # Redis with scaling support
+  redis:
+    image: redis:7-alpine
+    command: >
+      redis-server 
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD:-redis_pass}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL with connection pooling
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ytempire
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres_pass}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/scaling/postgres-scaling.conf:/etc/postgresql/postgresql.conf
+    ports:
+      - "5432:5432"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    command: >
+      postgres 
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ytempire"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PgBouncer for connection pooling
+  pgbouncer:
+    image: pgbouncer/pgbouncer:latest
+    environment:
+      DATABASES_HOST: postgres
+      DATABASES_PORT: 5432
+      DATABASES_USER: postgres
+      DATABASES_PASSWORD: ${DATABASE_PASSWORD:-postgres_pass}
+      DATABASES_DBNAME: ytempire
+      POOL_MODE: transaction
+      SERVER_RESET_QUERY: DISCARD ALL
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+      MIN_POOL_SIZE: 5
+      RESERVE_POOL_SIZE: 5
+      SERVER_LIFETIME: 3600
+      SERVER_IDLE_TIMEOUT: 600
+    ports:
+      - "5433:5432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # Frontend with multiple replicas
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      VITE_API_URL: http://load_balancer
+      NGINX_WORKER_PROCESSES: auto
+      NGINX_WORKER_CONNECTIONS: 1024
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html
+      - ./infrastructure/scaling/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus with scaling-specific metrics
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./infrastructure/scaling/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./infrastructure/scaling/scaling-rules.yml:/etc/prometheus/scaling-rules.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    ports:
+      - "9090:9090"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # Grafana with scaling dashboards
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_SERVER_ROOT_URL: http://localhost:3001
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/scaling/grafana/provisioning:/etc/grafana/provisioning
+      - ./infrastructure/scaling/grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # Node Exporter for system metrics
+  node_exporter:
+    image: prom/node-exporter:latest
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # cAdvisor for container metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # Redis Exporter for Redis metrics
+  redis_exporter:
+    image: oliver006/redis_exporter:latest
+    environment:
+      REDIS_ADDR: redis://redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_pass}
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # Postgres Exporter for database metrics
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    environment:
+      DATA_SOURCE_NAME: postgresql://postgres:${DATABASE_PASSWORD:-postgres_pass}@postgres:5432/ytempire?sslmode=disable
+    ports:
+      - "9187:9187"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_data:
+    driver: local
+  worker_data:
+    driver: local
+  scaling_logs:
+    driver: local
+  metrics_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  ytempire_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16

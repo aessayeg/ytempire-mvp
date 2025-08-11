@@ -1,0 +1,97 @@
+[run]
+# Coverage.py configuration
+
+# Source packages
+source = backend/app
+
+# Omit files from coverage
+omit = 
+    */tests/*
+    */test_*
+    */__pycache__/*
+    */venv/*
+    */migrations/*
+    */alembic/*
+    */config.py
+    */conftest.py
+    */fixtures/*
+    */factories/*
+    */__init__.py
+    */mock_*
+    */main.py
+
+# Enable branch coverage
+branch = True
+
+# Parallel execution support
+parallel = True
+concurrency = multiprocessing
+
+# Context for coverage
+context = test
+
+[report]
+# Reporting options
+
+# Exclude lines from coverage
+exclude_lines =
+    # Standard pragma
+    pragma: no cover
+    
+    # Debug statements
+    def __repr__
+    def __str__
+    
+    # Defensive programming
+    raise AssertionError
+    raise NotImplementedError
+    
+    # Non-runnable code
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstract
+    @abstractmethod
+    
+    # Logging
+    logger.debug
+    logger.info
+    
+    # Error handling
+    except ImportError
+    except Exception as e:
+    
+# Ignore errors
+ignore_errors = True
+
+# Precision
+precision = 2
+
+# Skip covered files in report
+skip_covered = False
+
+# Sort report
+sort = Cover
+
+# Show missing lines
+show_missing = True
+
+[html]
+# HTML report settings
+directory = htmlcov
+title = YTEmpire Test Coverage Report
+extra_css = 
+
+[xml]
+# XML report for CI/CD
+output = coverage.xml
+
+[json]
+# JSON report
+output = coverage.json
+pretty_print = True
+
+[paths]
+# Path mappings for combining coverage from different environments
+source =
+    backend/app
+    */site-packages/app

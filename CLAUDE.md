@@ -242,3 +242,9 @@ npm test -- --testNamePattern="VideoCard"
 ```
 - always place test or fix scripts that you generate in the misc/ folder
 - Always refer to the provided documentation in the _documentation/ folder before executing a development task
+- For [AI/ML] related tasks, check the documentation first located in the _documentation/AI ML TL
+- For [BACKEND] related tasks, check the documentation first located in the _documentation/Backend TL
+- For [FRONTEND] related tasks, check the documentation first located in the _documentation/Frontend TL
+- For [INFRASTRUCTURE/PLATFORM] related tasks, check the documentation first located in the _documentation/Platform OPS TL
+- For [DATA/ANALYTICS] related tasks, check the documentation first located in the _documentation/DATA TL
+- you are operating in a Windows environment

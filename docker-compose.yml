@@ -6,11 +6,13 @@ services:
     image: postgres:15-alpine
     container_name: ytempire_postgres
     environment:
-      POSTGRES_USER: ytempire
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: ytempire_db
+      POSTGRES_USER: ${POSTGRES_USER:-ytempire}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      POSTGRES_DB: ${POSTGRES_DB:-ytempire_db}
+      POSTGRES_MAX_CONNECTIONS: 200
+      POSTGRES_SHARED_BUFFERS: 256MB
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infrastructure/postgres/init_file.sql:/docker-entrypoint-initdb.d/init.sql
@@ -18,44 +20,67 @@ services:
       - ytempire_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ytempire"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ytempire}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
 
   # Redis Cache & Queue
   redis:
     image: redis:7-alpine
     container_name: ytempire_redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
+      - ./infrastructure/redis/redis.conf:/usr/local/etc/redis/redis.conf
     networks:
       - ytempire_network
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
   # Backend API
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: ${BUILD_TARGET:-development}
     container_name: ytempire_backend
     environment:
-      DATABASE_URL: postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db
-      REDIS_URL: redis://redis:6379/0
-      ENVIRONMENT: development
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      SECRET_KEY: ${SECRET_KEY:-development-secret-key}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY}
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./backend:/app
       - ./uploads:/app/uploads
+      - ./logs:/app/logs
     networks:
       - ytempire_network
     depends_on:
@@ -65,29 +90,51 @@ services:
         condition: service_healthy
     restart: unless-stopped
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
 
   # Celery Worker
   celery_worker:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: ${BUILD_TARGET:-development}
     container_name: ytempire_celery_worker
     environment:
-      DATABASE_URL: postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
     volumes:
       - ./backend:/app
       - ./uploads:/app/uploads
       - ./data:/app/data
+      - ./logs:/app/logs
     networks:
       - ytempire_network
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
-    command: celery -A app.core.celery_app worker --loglevel=info
+    command: celery -A app.core.celery_app worker --loglevel=info --concurrency=4
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
 
   # Celery Beat Scheduler
   celery_beat:
@@ -134,18 +181,28 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: ${BUILD_TARGET:-development}
     container_name: ytempire_frontend
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules
     networks:
       - ytempire_network
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+      - NODE_ENV=${NODE_ENV:-development}
     restart: unless-stopped
     command: npm run dev -- --host 0.0.0.0 --port 3000
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
   # N8N Workflow Automation
   n8n:
@@ -175,7 +232,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     networks:
       - ytempire_network
@@ -195,21 +252,62 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=ytempire_grafana_2024
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./infrastructure/grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./infrastructure/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./infrastructure/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./infrastructure/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
     networks:
       - ytempire_network
     depends_on:
       - prometheus
     restart: unless-stopped
 
+  # ML Pipeline Service
+  ml_pipeline:
+    build:
+      context: ./ml-pipeline
+      dockerfile: Dockerfile
+    container_name: ytempire_ml_pipeline
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-0}
+    volumes:
+      - ./ml-pipeline:/app
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+    networks:
+      - ytempire_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+
 networks:
   ytempire_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
 
 volumes:
   postgres_data:
+    driver: local
   redis_data:
+    driver: local
   n8n_data:
+    driver: local
   prometheus_data:
+    driver: local
   grafana_data:
+    driver: local

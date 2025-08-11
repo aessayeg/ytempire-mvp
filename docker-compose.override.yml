@@ -1,0 +1,194 @@
+# Docker Compose Override for Local Development
+# This file is automatically applied when running docker-compose up
+# It overrides settings in docker-compose.yml for development
+
+version: '3.9'
+
+services:
+  # PostgreSQL with development settings
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: admin  # Simple password for local dev
+    ports:
+      - "5432:5432"  # Expose for local tools
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Redis with development settings
+  redis:
+    ports:
+      - "6379:6379"  # Expose for local tools
+    command: redis-server --appendonly yes --loglevel debug
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Backend with hot reload and debug settings
+  backend:
+    build:
+      target: development
+    environment:
+      ENVIRONMENT: development
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+      # Development API keys (replace with your test keys)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-test-key}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY:-test-key}
+    volumes:
+      - ./backend:/app  # Mount source for hot reload
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+      - ./data:/app/data
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # Frontend with hot reload
+  frontend:
+    build:
+      target: development
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend:/app  # Mount source for hot reload
+      - /app/node_modules  # Don't override node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 3000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Celery worker with debug settings
+  celery_worker:
+    build:
+      target: development
+    environment:
+      CELERY_LOGLEVEL: DEBUG
+      C_FORCE_ROOT: "true"  # Allow running as root in dev
+    volumes:
+      - ./backend:/app  # Mount source for auto-reload
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+      - ./logs:/app/logs
+    command: celery -A app.core.celery_app worker --loglevel=debug --concurrency=2
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # Celery beat with debug settings
+  celery_beat:
+    environment:
+      CELERY_LOGLEVEL: DEBUG
+    volumes:
+      - ./backend:/app
+      - ./logs:/app/logs
+    command: celery -A app.core.celery_app beat --loglevel=debug
+
+  # Flower with development settings
+  flower:
+    environment:
+      FLOWER_DEBUG: "true"
+      FLOWER_BASIC_AUTH: admin:admin  # Simple auth for local dev
+    ports:
+      - "5555:5555"
+    command: celery -A app.core.celery_app flower --port=5555 --debug
+
+  # N8N with development settings
+  n8n:
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: "false"  # Disable auth for local dev
+      N8N_LOG_LEVEL: debug
+      NODE_ENV: development
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./infrastructure/n8n/workflows:/home/node/workflows
+
+  # Prometheus with development config
+  prometheus:
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'  # Allow config reload via API
+      - '--log.level=debug'
+
+  # Grafana with development settings
+  grafana:
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin  # Simple password for local dev
+      GF_AUTH_ANONYMOUS_ENABLED: "true"  # Allow anonymous access
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_LOG_LEVEL: debug
+    ports:
+      - "3001:3000"
+
+  # ML Pipeline with development settings
+  ml_pipeline:
+    build:
+      context: ./ml-pipeline
+      dockerfile: Dockerfile
+      target: development
+    environment:
+      ENVIRONMENT: development
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+      CUDA_VISIBLE_DEVICES: ""  # Disable GPU for local dev if not available
+    volumes:
+      - ./ml-pipeline:/app
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+    command: python main.py --debug
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  # Development database admin tool (optional)
+  adminer:
+    image: adminer:latest
+    container_name: ytempire_adminer
+    ports:
+      - "8080:8080"
+    networks:
+      - ytempire_network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # Development mail server (optional)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ytempire_mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+# Development-specific volumes
+volumes:
+  # Use named volumes for better performance on Windows/Mac
+  node_modules:
+  pip_cache:

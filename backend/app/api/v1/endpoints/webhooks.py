@@ -103,9 +103,9 @@ class WebhookTestRequest(BaseModel):
     sample_data: Optional[Dict[str, Any]] = None
 
 
-# In-memory storage (should be replaced with database)
-webhooks_storage: Dict[str, Dict] = {}
-deliveries_storage: List[Dict] = []
+# Import webhook service
+from app.services.webhook_service import webhook_service, WebhookEvents, WebhookStatus
+from app.models.webhook import Webhook
 
 
 @router.post("/", response_model=WebhookResponse)
@@ -119,43 +119,36 @@ async def create_webhook(
     Register a new webhook endpoint
     """
     try:
-        webhook_id = str(uuid.uuid4())
+        webhook = await webhook_service.create_webhook(
+            db=db,
+            user_id=str(current_user.id),
+            name=request.name,
+            url=str(request.url),
+            events=[e.value for e in request.events],
+            secret=request.secret,
+            headers=request.headers or {},
+            active=request.active,
+            retry_policy=request.retry_policy
+        )
         
-        # Generate secret if not provided
-        if not request.secret:
-            request.secret = generate_webhook_secret()
-        
-        webhook = {
-            "webhook_id": webhook_id,
-            "user_id": str(current_user.id),
-            "name": request.name,
-            "url": str(request.url),
-            "events": [e.value for e in request.events],
-            "secret": request.secret,
-            "headers": request.headers or {},
-            "status": WebhookStatus.ACTIVE if request.active else WebhookStatus.INACTIVE,
-            "active": request.active,
-            "retry_policy": request.retry_policy or {"max_attempts": 3, "backoff_seconds": 60},
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
-            "last_triggered_at": None,
-            "last_status_code": None,
-            "failure_count": 0,
-            "success_count": 0
-        }
-        
-        webhooks_storage[webhook_id] = webhook
-        
-        # Send test webhook to verify endpoint
-        if request.active:
-            background_tasks.add_task(
-                send_test_webhook,
-                webhook_id,
-                str(request.url),
-                request.secret
-            )
-        
-        return WebhookResponse(**webhook)
+        return WebhookResponse(
+            webhook_id=str(webhook.id),
+            user_id=webhook.user_id,
+            name=webhook.name,
+            url=webhook.url,
+            events=webhook.events,
+            secret=webhook.secret,
+            headers=webhook.headers,
+            status=webhook.status,
+            active=webhook.active,
+            retry_policy=webhook.retry_policy,
+            created_at=webhook.created_at,
+            updated_at=webhook.updated_at,
+            last_triggered_at=webhook.last_triggered_at,
+            last_status_code=webhook.last_status_code,
+            failure_count=webhook.failure_count,
+            success_count=webhook.success_count
+        )
         
     except Exception as e:
         logger.error(f"Failed to create webhook: {e}")

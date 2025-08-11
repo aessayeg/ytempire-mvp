@@ -1,0 +1,301 @@
+# YTEmpire Prometheus Configuration
+# Complete monitoring setup with all service endpoints
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'ytempire-prod'
+    environment: '{{ ENVIRONMENT }}'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+      timeout: 10s
+      api_version: v2
+
+# Load alert rules
+rule_files:
+  - '/etc/prometheus/alerts/*.yml'
+
+# Remote write for long-term storage (optional)
+remote_write:
+  - url: "${PROMETHEUS_REMOTE_WRITE_URL}"
+    queue_config:
+      max_samples_per_send: 10000
+      batch_send_deadline: 5s
+    basic_auth:
+      username: "${PROMETHEUS_REMOTE_USER}"
+      password: "${PROMETHEUS_REMOTE_PASSWORD}"
+
+# Scrape configurations
+scrape_configs:
+  # ============================================================================
+  # YTEmpire Backend API Metrics
+  # ============================================================================
+  - job_name: 'ytempire-backend'
+    static_configs:
+      - targets:
+          - backend:8000
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'backend-primary'
+      - source_labels: []
+        target_label: service
+        replacement: 'ytempire-api'
+
+  # ============================================================================
+  # Frontend Metrics (if instrumented)
+  # ============================================================================
+  - job_name: 'ytempire-frontend'
+    static_configs:
+      - targets:
+          - frontend:80
+    metrics_path: /metrics
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: []
+        target_label: service
+        replacement: 'ytempire-frontend'
+
+  # ============================================================================
+  # PostgreSQL Database Metrics
+  # ============================================================================
+  - job_name: 'postgres'
+    static_configs:
+      - targets:
+          - postgres-exporter:9187
+    metrics_path: /metrics
+    scrape_interval: 30s
+    params:
+      collect[]:
+        - 'pg_stat_database'
+        - 'pg_stat_user_tables'
+        - 'pg_stat_user_indexes'
+        - 'pg_stat_statements'
+        - 'pg_stat_bgwriter'
+        - 'pg_stat_activity'
+        - 'pg_replication'
+        - 'pg_locks'
+    relabel_configs:
+      - source_labels: []
+        target_label: database
+        replacement: 'ytempire_production'
+
+  # ============================================================================
+  # Redis Cache Metrics
+  # ============================================================================
+  - job_name: 'redis'
+    static_configs:
+      - targets:
+          - redis-exporter:9121
+    metrics_path: /metrics
+    scrape_interval: 30s
+    params:
+      check-keys: ['*']
+      check-single-keys: ['cache:*', 'session:*', 'queue:*']
+    relabel_configs:
+      - source_labels: []
+        target_label: cache_type
+        replacement: 'primary'
+
+  # ============================================================================
+  # Celery Worker Metrics
+  # ============================================================================
+  - job_name: 'celery'
+    static_configs:
+      - targets:
+          - celery-exporter:9540
+    metrics_path: /metrics
+    scrape_interval: 30s
+    params:
+      broker: ['redis://redis:6379/0']
+    relabel_configs:
+      - source_labels: []
+        target_label: worker_type
+        replacement: 'video_processor'
+
+  # ============================================================================
+  # Node/Host Metrics
+  # ============================================================================
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets:
+          - node-exporter:9100
+    metrics_path: /metrics
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '([^:]+):\d+'
+        target_label: hostname
+        replacement: '${1}'
+
+  # ============================================================================
+  # GPU Metrics (NVIDIA DCGM)
+  # ============================================================================
+  - job_name: 'nvidia-gpu'
+    static_configs:
+      - targets:
+          - dcgm-exporter:9400
+    metrics_path: /metrics
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: []
+        target_label: gpu_cluster
+        replacement: 'ml-pipeline'
+
+  # ============================================================================
+  # Docker Container Metrics
+  # ============================================================================
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets:
+          - cadvisor:8080
+    metrics_path: /metrics
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [container_label_com_docker_compose_service]
+        target_label: service
+      - source_labels: [container_label_com_docker_compose_project]
+        target_label: project
+
+  # ============================================================================
+  # Nginx Metrics
+  # ============================================================================
+  - job_name: 'nginx'
+    static_configs:
+      - targets:
+          - nginx-exporter:9113
+    metrics_path: /metrics
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: []
+        target_label: proxy_type
+        replacement: 'reverse_proxy'
+
+  # ============================================================================
+  # ML Pipeline Metrics
+  # ============================================================================
+  - job_name: 'ml-pipeline'
+    static_configs:
+      - targets:
+          - ml-pipeline:9090
+    metrics_path: /metrics
+    scrape_interval: 30s
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'ml_.*'
+        target_label: pipeline_stage
+        replacement: 'processing'
+
+  # ============================================================================
+  # Blackbox Exporter (Endpoint Probing)
+  # ============================================================================
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://ytempire.com
+          - https://api.ytempire.com/health
+          - https://api.ytempire.com/api/v1/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # ============================================================================
+  # Custom Business Metrics
+  # ============================================================================
+  - job_name: 'business-metrics'
+    static_configs:
+      - targets:
+          - backend:8000
+    metrics_path: /api/v1/metrics/business
+    scrape_interval: 60s
+    scrape_timeout: 30s
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: '(videos_generated_total|revenue_total|cost_per_video|youtube_quota_.*)'
+        action: keep
+
+  # ============================================================================
+  # Prometheus Self-Monitoring
+  # ============================================================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+          - localhost:9090
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # ============================================================================
+  # Grafana Metrics
+  # ============================================================================
+  - job_name: 'grafana'
+    static_configs:
+      - targets:
+          - grafana:3000
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # ============================================================================
+  # AlertManager Metrics
+  # ============================================================================
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets:
+          - alertmanager:9093
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+# Service discovery for dynamic environments
+# Uncomment and configure based on your infrastructure
+
+# Kubernetes service discovery
+# - job_name: 'kubernetes-pods'
+#   kubernetes_sd_configs:
+#     - role: pod
+#   relabel_configs:
+#     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+#       action: keep
+#       regex: true
+#     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+#       action: replace
+#       target_label: __metrics_path__
+#       regex: (.+)
+#     - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+#       action: replace
+#       regex: ([^:]+)(?::\d+)?;(\d+)
+#       replacement: $1:$2
+#       target_label: __address__
+#     - action: labelmap
+#       regex: __meta_kubernetes_pod_label_(.+)
+#     - source_labels: [__meta_kubernetes_namespace]
+#       action: replace
+#       target_label: kubernetes_namespace
+#     - source_labels: [__meta_kubernetes_pod_name]
+#       action: replace
+#       target_label: kubernetes_pod_name
+
+# Docker Swarm service discovery
+# - job_name: 'docker-swarm'
+#   dockerswarm_sd_configs:
+#     - host: unix:///var/run/docker.sock
+#       role: services
+#   relabel_configs:
+#     - source_labels: [__meta_dockerswarm_service_name]
+#       target_label: service
+#     - source_labels: [__meta_dockerswarm_service_label_com_docker_stack_namespace]
+#       target_label: namespace

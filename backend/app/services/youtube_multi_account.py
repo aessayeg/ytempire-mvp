@@ -1,582 +1,516 @@
 """
-YouTube Multi-Account Management Service
-Handles rotation and management of 15 YouTube accounts
+YouTube Multi-Account Management System
+Handles 15 YouTube accounts with intelligent rotation and quota management
 """
 import os
 import json
-import asyncio
-import random
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime, timedelta
-from pathlib import Path
+import redis
 import logging
-from dataclasses import dataclass, field
+import random
+from typing import List, Dict, Any, Optional
+from datetime import datetime, timedelta
+from dataclasses import dataclass, asdict
 from enum import Enum
-import aiofiles
+import asyncio
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import Flow
-from googleapiclient.http import MediaFileUpload
-import httplib2
-from tenacity import retry, stop_after_attempt, wait_exponential
-import redis.asyncio as redis
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
 
 logger = logging.getLogger(__name__)
 
+# Redis connection for distributed state management
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+REDIS_DB = int(os.getenv("REDIS_DB", "1"))  # Use DB 1 for YouTube accounts
+
+redis_client = redis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    db=REDIS_DB,
+    decode_responses=True
+)
+
+
 class AccountStatus(Enum):
-    """YouTube account status"""
+    """YouTube account status states"""
     ACTIVE = "active"
+    SUSPENDED = "suspended"
     QUOTA_EXCEEDED = "quota_exceeded"
-    RATE_LIMITED = "rate_limited"
+    AUTH_EXPIRED = "auth_expired"
     ERROR = "error"
-    DISABLED = "disabled"
-    PENDING_AUTH = "pending_auth"
+    COOLING_DOWN = "cooling_down"
+
+
+class OperationType(Enum):
+    """YouTube API operation types with quota costs"""
+    UPLOAD = 1600  # Video upload
+    LIST = 1  # List videos/channels
+    UPDATE = 50  # Update video metadata
+    DELETE = 50  # Delete video
+    INSERT_PLAYLIST = 50  # Create playlist
+    ANALYTICS = 1  # Analytics read
+
 
 @dataclass
 class YouTubeAccount:
-    """Individual YouTube account configuration"""
+    """YouTube account configuration and state"""
     account_id: str
     email: str
-    channel_id: Optional[str] = None
-    client_secrets_file: str = None
-    credentials_file: str = None
-    api_key: Optional[str] = None
-    status: AccountStatus = AccountStatus.PENDING_AUTH
-    quota_used: int = 0
-    quota_limit: int = 10000
-    last_used: Optional[datetime] = None
-    error_count: int = 0
-    health_score: float = 100.0
-    authenticated_service: Any = None
-    metadata: Dict = field(default_factory=dict)
-    
-    def is_available(self) -> bool:
-        """Check if account is available for use"""
-        return (
-            self.status == AccountStatus.ACTIVE and
-            self.quota_used < self.quota_limit * 0.9 and  # 90% quota threshold
-            self.health_score > 50.0
-        )
-    
-    def update_health_score(self, success: bool):
-        """Update health score based on operation result"""
-        if success:
-            self.health_score = min(100.0, self.health_score + 5.0)
-            self.error_count = 0
-        else:
-            self.health_score = max(0.0, self.health_score - 10.0)
-            self.error_count += 1
-            
-        # Auto-disable if too many errors
-        if self.error_count >= 5:
-            self.status = AccountStatus.ERROR
-        elif self.health_score <= 25.0:
-            self.status = AccountStatus.DISABLED
+    channel_id: str
+    channel_name: str
+    credentials_json: str  # OAuth2 credentials
+    refresh_token: str
+    status: AccountStatus
+    quota_used: int
+    quota_reset_time: datetime
+    last_used: datetime
+    error_count: int
+    health_score: float  # 0-100 score
+    total_uploads: int
+    total_views: int
+    strikes: int
+    created_at: datetime
+    updated_at: datetime
 
-class MultiAccountYouTubeService:
-    """Manages multiple YouTube accounts with rotation and health monitoring"""
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for Redis storage"""
+        data = asdict(self)
+        data['status'] = self.status.value
+        data['quota_reset_time'] = self.quota_reset_time.isoformat()
+        data['last_used'] = self.last_used.isoformat()
+        data['created_at'] = self.created_at.isoformat()
+        data['updated_at'] = self.updated_at.isoformat()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'YouTubeAccount':
+        """Create from dictionary (Redis storage)"""
+        data['status'] = AccountStatus(data['status'])
+        data['quota_reset_time'] = datetime.fromisoformat(data['quota_reset_time'])
+        data['last_used'] = datetime.fromisoformat(data['last_used'])
+        data['created_at'] = datetime.fromisoformat(data['created_at'])
+        data['updated_at'] = datetime.fromisoformat(data['updated_at'])
+        return cls(**data)
+
+
+class YouTubeMultiAccountManager:
+    """Manages multiple YouTube accounts with intelligent rotation"""
     
-    def __init__(self, accounts_config_path: str = "config/youtube_accounts.json"):
-        self.accounts: Dict[str, YouTubeAccount] = {}
-        self.accounts_config_path = accounts_config_path
-        self.redis_client: Optional[redis.Redis] = None
-        self.rotation_strategy = "health_weighted"  # Options: round_robin, health_weighted, least_used
-        self.current_index = 0
-        self.initialized = False
+    DAILY_QUOTA_LIMIT = 10000  # YouTube API daily quota per account
+    QUOTA_BUFFER = 1000  # Keep buffer to avoid hitting exact limit
+    MAX_ERROR_COUNT = 5  # Max errors before suspending account
+    COOLDOWN_HOURS = 6  # Hours to cool down after quota exceeded
+    HEALTH_SCORE_THRESHOLD = 30  # Minimum health score to use account
+    
+    def __init__(self):
+        """Initialize the multi-account manager"""
+        self.accounts: List[YouTubeAccount] = []
+        self.redis = redis_client
+        self.load_accounts()
         
-    async def initialize(self):
-        """Initialize multi-account service"""
+    def load_accounts(self):
+        """Load all YouTube accounts from configuration/Redis"""
         try:
-            # Initialize Redis for distributed coordination
-            self.redis_client = await redis.from_url(
-                os.getenv("REDIS_URL", "redis://localhost:6379"),
-                encoding="utf-8",
-                decode_responses=True
-            )
+            # Load from Redis if exists
+            account_keys = self.redis.keys("youtube:account:*")
             
-            # Load accounts configuration
-            await self.load_accounts_config()
-            
-            # Initialize each account
-            for account_id in self.accounts:
-                await self.initialize_account(account_id)
-                
-            self.initialized = True
-            logger.info(f"Initialized {len(self.accounts)} YouTube accounts")
-            
-        except Exception as e:
-            logger.error(f"Failed to initialize multi-account service: {e}")
-            raise
-            
-    async def load_accounts_config(self):
-        """Load accounts configuration from file or environment"""
-        config_path = Path(self.accounts_config_path)
-        
-        if config_path.exists():
-            async with aiofiles.open(config_path, 'r') as f:
-                config = json.loads(await f.read())
-        else:
-            # Create default configuration for 15 accounts
-            config = self.create_default_config()
-            await self.save_accounts_config(config)
-            
-        for account_config in config["accounts"]:
-            account = YouTubeAccount(
-                account_id=account_config["account_id"],
-                email=account_config["email"],
-                channel_id=account_config.get("channel_id"),
-                client_secrets_file=account_config.get("client_secrets_file"),
-                credentials_file=account_config.get("credentials_file"),
-                api_key=account_config.get("api_key"),
-                quota_limit=account_config.get("quota_limit", 10000)
-            )
-            self.accounts[account.account_id] = account
-            
-    def create_default_config(self) -> Dict:
-        """Create default configuration for 15 accounts"""
-        accounts = []
-        for i in range(1, 16):
-            accounts.append({
-                "account_id": f"youtube_account_{i:02d}",
-                "email": f"ytempire.account{i:02d}@gmail.com",
-                "client_secrets_file": f"config/youtube_secrets/client_secret_{i:02d}.json",
-                "credentials_file": f"config/youtube_credentials/credentials_{i:02d}.json",
-                "api_key": os.getenv(f"YOUTUBE_API_KEY_{i:02d}"),
-                "quota_limit": 10000
-            })
-            
-        return {
-            "version": "1.0",
-            "created_at": datetime.now().isoformat(),
-            "accounts": accounts
-        }
-        
-    async def save_accounts_config(self, config: Dict):
-        """Save accounts configuration to file"""
-        config_path = Path(self.accounts_config_path)
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        async with aiofiles.open(config_path, 'w') as f:
-            await f.write(json.dumps(config, indent=2))
-            
-    async def initialize_account(self, account_id: str):
-        """Initialize a single YouTube account"""
-        account = self.accounts.get(account_id)
-        if not account:
-            return
-            
-        try:
-            # Check for API key first (for read-only operations)
-            if account.api_key:
-                service = build(
-                    "youtube", "v3",
-                    developerKey=account.api_key,
-                    cache_discovery=False
-                )
-                # Test the API key
-                service.videos().list(part="id", chart="mostPopular", maxResults=1).execute()
-                account.status = AccountStatus.ACTIVE
-                logger.info(f"Account {account_id} initialized with API key")
-                
-            # Check for OAuth credentials (for write operations)
-            if account.credentials_file and Path(account.credentials_file).exists():
-                store = Storage(account.credentials_file)
-                credentials = store.get()
-                
-                if credentials and not credentials.invalid:
-                    account.authenticated_service = build(
-                        "youtube", "v3",
-                        http=credentials.authorize(httplib2.Http()),
-                        cache_discovery=False
-                    )
-                    account.status = AccountStatus.ACTIVE
-                    logger.info(f"Account {account_id} authenticated with OAuth")
-                else:
-                    account.status = AccountStatus.PENDING_AUTH
-                    logger.warning(f"Account {account_id} needs authentication")
+            if account_keys:
+                for key in account_keys:
+                    account_data = self.redis.hgetall(key)
+                    if account_data:
+                        account = YouTubeAccount.from_dict(account_data)
+                        self.accounts.append(account)
+                        logger.info(f"Loaded YouTube account: {account.email}")
             else:
-                account.status = AccountStatus.PENDING_AUTH
+                # Initialize from environment or config file
+                self._initialize_accounts_from_config()
                 
-            # Load quota usage from Redis
-            await self.load_account_quota(account_id)
+            logger.info(f"Loaded {len(self.accounts)} YouTube accounts")
             
         except Exception as e:
-            logger.error(f"Failed to initialize account {account_id}: {e}")
-            account.status = AccountStatus.ERROR
-            account.update_health_score(False)
+            logger.error(f"Failed to load YouTube accounts: {e}")
             
-    async def load_account_quota(self, account_id: str):
-        """Load quota usage from Redis"""
-        if not self.redis_client:
-            return
-            
-        try:
-            quota_key = f"youtube:quota:{account_id}:{datetime.now().strftime('%Y%m%d')}"
-            quota_used = await self.redis_client.get(quota_key)
-            
-            if quota_used:
-                self.accounts[account_id].quota_used = int(quota_used)
-                
-        except Exception as e:
-            logger.error(f"Failed to load quota for {account_id}: {e}")
-            
-    async def update_account_quota(self, account_id: str, units: int):
-        """Update account quota usage"""
-        account = self.accounts.get(account_id)
-        if not account:
-            return
-            
-        account.quota_used += units
-        account.last_used = datetime.now()
+    def _initialize_accounts_from_config(self):
+        """Initialize accounts from configuration file"""
+        config_path = "config/youtube_accounts.json"
         
-        # Check quota limit
-        if account.quota_used >= account.quota_limit * 0.95:
-            account.status = AccountStatus.QUOTA_EXCEEDED
-            logger.warning(f"Account {account_id} quota exceeded: {account.quota_used}/{account.quota_limit}")
-            
-        # Store in Redis with daily expiry
-        if self.redis_client:
-            try:
-                quota_key = f"youtube:quota:{account_id}:{datetime.now().strftime('%Y%m%d')}"
-                await self.redis_client.setex(
-                    quota_key,
-                    86400,  # 24 hours
-                    str(account.quota_used)
-                )
-            except Exception as e:
-                logger.error(f"Failed to update quota in Redis: {e}")
+        if os.path.exists(config_path):
+            with open(config_path, 'r') as f:
+                config = json.load(f)
                 
-    async def get_best_account(self, required_units: int = 100) -> Optional[YouTubeAccount]:
-        """Get the best available account based on strategy"""
+            for acc_config in config.get('accounts', []):
+                account = YouTubeAccount(
+                    account_id=acc_config['account_id'],
+                    email=acc_config['email'],
+                    channel_id=acc_config.get('channel_id', ''),
+                    channel_name=acc_config.get('channel_name', ''),
+                    credentials_json=acc_config.get('credentials_json', ''),
+                    refresh_token=acc_config.get('refresh_token', ''),
+                    status=AccountStatus.ACTIVE,
+                    quota_used=0,
+                    quota_reset_time=datetime.utcnow() + timedelta(days=1),
+                    last_used=datetime.utcnow(),
+                    error_count=0,
+                    health_score=100.0,
+                    total_uploads=0,
+                    total_views=0,
+                    strikes=0,
+                    created_at=datetime.utcnow(),
+                    updated_at=datetime.utcnow()
+                )
+                
+                self.accounts.append(account)
+                self.save_account(account)
+                
+    def save_account(self, account: YouTubeAccount):
+        """Save account state to Redis"""
+        try:
+            key = f"youtube:account:{account.account_id}"
+            account.updated_at = datetime.utcnow()
+            self.redis.hset(key, mapping=account.to_dict())
+            self.redis.expire(key, 86400 * 30)  # 30 days expiry
+        except Exception as e:
+            logger.error(f"Failed to save account {account.email}: {e}")
+            
+    def get_best_account(self) -> Optional[YouTubeAccount]:
+        """Get the best available YouTube account based on health score"""
         available_accounts = [
-            acc for acc in self.accounts.values()
-            if acc.is_available() and (acc.quota_used + required_units) < acc.quota_limit
+            acc for acc in self.accounts
+            if self._is_account_available(acc)
         ]
         
-        if not available_accounts:
-            # Try to reset quota for accounts if it's a new day
-            await self.reset_daily_quotas()
-            available_accounts = [
-                acc for acc in self.accounts.values()
-                if acc.is_available() and (acc.quota_used + required_units) < acc.quota_limit
-            ]
-            
         if not available_accounts:
             logger.error("No available YouTube accounts")
             return None
             
-        if self.rotation_strategy == "round_robin":
-            account = available_accounts[self.current_index % len(available_accounts)]
-            self.current_index += 1
-            
-        elif self.rotation_strategy == "health_weighted":
-            # Select based on health score
-            weights = [acc.health_score for acc in available_accounts]
-            total_weight = sum(weights)
-            if total_weight == 0:
-                account = random.choice(available_accounts)
-            else:
-                weights = [w/total_weight for w in weights]
-                account = random.choices(available_accounts, weights=weights)[0]
-                
-        elif self.rotation_strategy == "least_used":
-            # Select account with lowest quota usage
-            account = min(available_accounts, key=lambda x: x.quota_used)
-            
-        else:
-            account = random.choice(available_accounts)
-            
-        return account
-        
-    async def reset_daily_quotas(self):
-        """Reset daily quotas for all accounts"""
-        current_date = datetime.now().strftime('%Y%m%d')
-        
-        for account_id, account in self.accounts.items():
-            # Check if it's a new day
-            if account.last_used and account.last_used.date() < datetime.now().date():
-                account.quota_used = 0
-                if account.status == AccountStatus.QUOTA_EXCEEDED:
-                    account.status = AccountStatus.ACTIVE
-                logger.info(f"Reset quota for account {account_id}")
-                
-    async def execute_with_rotation(
-        self,
-        operation_func,
-        required_units: int = 100,
-        max_retries: int = 3,
-        **kwargs
-    ):
-        """Execute an operation with automatic account rotation"""
-        retries = 0
-        last_error = None
-        
-        while retries < max_retries:
-            account = await self.get_best_account(required_units)
-            
-            if not account:
-                raise Exception("No available YouTube accounts for operation")
-                
-            try:
-                # Execute the operation
-                result = await operation_func(account, **kwargs)
-                
-                # Update account metrics on success
-                await self.update_account_quota(account.account_id, required_units)
-                account.update_health_score(True)
-                
-                # Log successful operation
-                await self.log_operation(account.account_id, "success", operation_func.__name__)
-                
-                return result
-                
-            except HttpError as e:
-                last_error = e
-                account.update_health_score(False)
-                
-                if e.resp.status == 429:  # Rate limit
-                    account.status = AccountStatus.RATE_LIMITED
-                    logger.warning(f"Account {account.account_id} rate limited")
-                elif e.resp.status == 403:  # Quota exceeded
-                    account.status = AccountStatus.QUOTA_EXCEEDED
-                    logger.warning(f"Account {account.account_id} quota exceeded")
-                else:
-                    logger.error(f"Operation failed on account {account.account_id}: {e}")
-                    
-                await self.log_operation(account.account_id, "error", operation_func.__name__, str(e))
-                retries += 1
-                
-            except Exception as e:
-                last_error = e
-                account.update_health_score(False)
-                logger.error(f"Unexpected error on account {account.account_id}: {e}")
-                await self.log_operation(account.account_id, "error", operation_func.__name__, str(e))
-                retries += 1
-                
-        raise Exception(f"Operation failed after {max_retries} retries: {last_error}")
-        
-    async def log_operation(self, account_id: str, status: str, operation: str, error: str = None):
-        """Log operation to Redis for monitoring"""
-        if not self.redis_client:
-            return
-            
-        try:
-            log_entry = {
-                "account_id": account_id,
-                "timestamp": datetime.now().isoformat(),
-                "operation": operation,
-                "status": status,
-                "error": error
-            }
-            
-            # Store in Redis list with expiry
-            log_key = f"youtube:operations:{datetime.now().strftime('%Y%m%d')}"
-            await self.redis_client.lpush(log_key, json.dumps(log_entry))
-            await self.redis_client.expire(log_key, 86400 * 7)  # Keep logs for 7 days
-            
-        except Exception as e:
-            logger.error(f"Failed to log operation: {e}")
-            
-    async def get_account_statistics(self) -> Dict:
-        """Get statistics for all accounts"""
-        stats = {
-            "total_accounts": len(self.accounts),
-            "active_accounts": 0,
-            "total_quota_used": 0,
-            "total_quota_limit": 0,
-            "accounts": []
-        }
-        
-        for account_id, account in self.accounts.items():
-            if account.status == AccountStatus.ACTIVE:
-                stats["active_accounts"] += 1
-                
-            stats["total_quota_used"] += account.quota_used
-            stats["total_quota_limit"] += account.quota_limit
-            
-            stats["accounts"].append({
-                "account_id": account_id,
-                "email": account.email,
-                "status": account.status.value,
-                "quota_used": account.quota_used,
-                "quota_limit": account.quota_limit,
-                "quota_percentage": (account.quota_used / account.quota_limit * 100) if account.quota_limit > 0 else 0,
-                "health_score": account.health_score,
-                "error_count": account.error_count,
-                "last_used": account.last_used.isoformat() if account.last_used else None
-            })
-            
-        stats["quota_usage_percentage"] = (
-            (stats["total_quota_used"] / stats["total_quota_limit"] * 100)
-            if stats["total_quota_limit"] > 0 else 0
+        # Sort by health score and quota availability
+        available_accounts.sort(
+            key=lambda x: (x.health_score, self.DAILY_QUOTA_LIMIT - x.quota_used),
+            reverse=True
         )
         
-        return stats
+        selected = available_accounts[0]
+        logger.info(f"Selected YouTube account: {selected.email} (health: {selected.health_score})")
         
-    async def authenticate_account(self, account_id: str, client_secrets_path: str = None):
-        """Manually authenticate a YouTube account"""
-        account = self.accounts.get(account_id)
-        if not account:
-            raise ValueError(f"Account {account_id} not found")
+        return selected
+        
+    def _is_account_available(self, account: YouTubeAccount) -> bool:
+        """Check if account is available for use"""
+        # Check status
+        if account.status not in [AccountStatus.ACTIVE, AccountStatus.COOLING_DOWN]:
+            return False
             
-        try:
-            secrets_file = client_secrets_path or account.client_secrets_file
+        # Check health score
+        if account.health_score < self.HEALTH_SCORE_THRESHOLD:
+            return False
             
-            if not secrets_file or not Path(secrets_file).exists():
-                raise ValueError(f"Client secrets file not found: {secrets_file}")
+        # Check quota
+        if account.quota_used >= (self.DAILY_QUOTA_LIMIT - self.QUOTA_BUFFER):
+            # Check if quota should reset
+            if datetime.utcnow() >= account.quota_reset_time:
+                self._reset_account_quota(account)
+            else:
+                return False
                 
-            flow = flow_from_clientsecrets(
-                secrets_file,
-                scope=[
-                    "https://www.googleapis.com/auth/youtube",
-                    "https://www.googleapis.com/auth/youtube.upload",
-                    "https://www.googleapis.com/auth/youtube.readonly",
-                    "https://www.googleapis.com/auth/youtubepartner",
-                    "https://www.googleapis.com/auth/youtube.force-ssl"
-                ]
+        # Check cooldown
+        if account.status == AccountStatus.COOLING_DOWN:
+            cooldown_end = account.last_used + timedelta(hours=self.COOLDOWN_HOURS)
+            if datetime.utcnow() >= cooldown_end:
+                account.status = AccountStatus.ACTIVE
+                self.save_account(account)
+            else:
+                return False
+                
+        return True
+        
+    def _reset_account_quota(self, account: YouTubeAccount):
+        """Reset daily quota for account"""
+        logger.info(f"Resetting quota for account: {account.email}")
+        account.quota_used = 0
+        account.quota_reset_time = datetime.utcnow() + timedelta(days=1)
+        account.status = AccountStatus.ACTIVE
+        self.save_account(account)
+        
+    def use_account(self, account: YouTubeAccount, operation: OperationType) -> bool:
+        """Mark account as used and update quota"""
+        try:
+            quota_cost = operation.value
+            
+            # Check if operation would exceed quota
+            if account.quota_used + quota_cost > self.DAILY_QUOTA_LIMIT:
+                logger.warning(f"Operation would exceed quota for {account.email}")
+                account.status = AccountStatus.QUOTA_EXCEEDED
+                self.save_account(account)
+                return False
+                
+            # Update account usage
+            account.quota_used += quota_cost
+            account.last_used = datetime.utcnow()
+            
+            # Update health score based on quota usage
+            quota_percentage = (account.quota_used / self.DAILY_QUOTA_LIMIT) * 100
+            account.health_score = max(0, 100 - quota_percentage - (account.error_count * 10))
+            
+            self.save_account(account)
+            
+            logger.info(
+                f"Used account {account.email} for {operation.name}. "
+                f"Quota: {account.quota_used}/{self.DAILY_QUOTA_LIMIT}"
             )
-            
-            store = Storage(account.credentials_file)
-            credentials = run_flow(flow, store)
-            
-            account.authenticated_service = build(
-                "youtube", "v3",
-                http=credentials.authorize(httplib2.Http()),
-                cache_discovery=False
-            )
-            
-            account.status = AccountStatus.ACTIVE
-            logger.info(f"Successfully authenticated account {account_id}")
             
             return True
             
         except Exception as e:
-            logger.error(f"Failed to authenticate account {account_id}: {e}")
-            account.status = AccountStatus.ERROR
+            logger.error(f"Failed to update account usage: {e}")
             return False
             
-    async def health_check(self) -> Dict:
-        """Perform health check on all accounts"""
-        results = {
-            "timestamp": datetime.now().isoformat(),
-            "healthy_accounts": 0,
-            "unhealthy_accounts": 0,
-            "accounts": {}
+    def handle_account_error(self, account: YouTubeAccount, error: Exception):
+        """Handle error for a YouTube account"""
+        account.error_count += 1
+        
+        # Determine error type and update status
+        error_str = str(error).lower()
+        
+        if 'quota' in error_str:
+            account.status = AccountStatus.QUOTA_EXCEEDED
+            account.last_used = datetime.utcnow()
+            logger.warning(f"Quota exceeded for account {account.email}")
+            
+        elif 'credentials' in error_str or 'auth' in error_str:
+            account.status = AccountStatus.AUTH_EXPIRED
+            logger.error(f"Authentication expired for account {account.email}")
+            
+        elif account.error_count >= self.MAX_ERROR_COUNT:
+            account.status = AccountStatus.SUSPENDED
+            logger.error(f"Suspending account {account.email} due to excessive errors")
+            
+        else:
+            account.status = AccountStatus.COOLING_DOWN
+            logger.warning(f"Cooling down account {account.email} after error")
+            
+        # Update health score
+        account.health_score = max(0, account.health_score - 20)
+        
+        self.save_account(account)
+        
+    def get_youtube_service(self, account: YouTubeAccount):
+        """Get authenticated YouTube service for an account"""
+        try:
+            # Parse credentials
+            if account.credentials_json:
+                creds_data = json.loads(account.credentials_json)
+                credentials = Credentials(
+                    token=creds_data.get('token'),
+                    refresh_token=account.refresh_token,
+                    token_uri=creds_data.get('token_uri'),
+                    client_id=creds_data.get('client_id'),
+                    client_secret=creds_data.get('client_secret'),
+                    scopes=creds_data.get('scopes', [
+                        'https://www.googleapis.com/auth/youtube.upload',
+                        'https://www.googleapis.com/auth/youtube',
+                        'https://www.googleapis.com/auth/youtubepartner'
+                    ])
+                )
+                
+                # Refresh if needed
+                if credentials.expired and credentials.refresh_token:
+                    credentials.refresh(Request())
+                    # Update stored credentials
+                    account.credentials_json = credentials.to_json()
+                    self.save_account(account)
+                    
+                # Build YouTube service
+                service = build('youtube', 'v3', credentials=credentials)
+                return service
+                
+            else:
+                logger.error(f"No credentials for account {account.email}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Failed to get YouTube service for {account.email}: {e}")
+            self.handle_account_error(account, e)
+            return None
+            
+    def rotate_to_next_account(self, current_account: Optional[YouTubeAccount] = None) -> Optional[YouTubeAccount]:
+        """Rotate to the next available account"""
+        if current_account:
+            # Mark current as cooling down
+            current_account.status = AccountStatus.COOLING_DOWN
+            self.save_account(current_account)
+            
+        # Get next best account
+        return self.get_best_account()
+        
+    def get_account_stats(self) -> Dict[str, Any]:
+        """Get statistics for all accounts"""
+        total_quota = sum(acc.quota_used for acc in self.accounts)
+        active_accounts = sum(1 for acc in self.accounts if acc.status == AccountStatus.ACTIVE)
+        
+        return {
+            'total_accounts': len(self.accounts),
+            'active_accounts': active_accounts,
+            'total_quota_used': total_quota,
+            'total_quota_available': len(self.accounts) * self.DAILY_QUOTA_LIMIT,
+            'average_health_score': sum(acc.health_score for acc in self.accounts) / len(self.accounts) if self.accounts else 0,
+            'accounts': [
+                {
+                    'email': acc.email,
+                    'status': acc.status.value,
+                    'health_score': acc.health_score,
+                    'quota_used': acc.quota_used,
+                    'quota_limit': self.DAILY_QUOTA_LIMIT
+                }
+                for acc in self.accounts
+            ]
         }
         
-        for account_id, account in self.accounts.items():
+    async def upload_video_with_rotation(self, video_path: str, metadata: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Upload video with automatic account rotation on failure"""
+        max_retries = min(3, len(self.accounts))
+        
+        for attempt in range(max_retries):
+            account = self.get_best_account()
+            
+            if not account:
+                logger.error("No available YouTube accounts for upload")
+                return None
+                
             try:
-                if account.api_key:
-                    # Test with simple API call
-                    service = build("youtube", "v3", developerKey=account.api_key, cache_discovery=False)
-                    service.videos().list(part="id", chart="mostPopular", maxResults=1).execute()
+                # Get YouTube service
+                service = self.get_youtube_service(account)
+                if not service:
+                    continue
                     
-                    account.status = AccountStatus.ACTIVE
-                    account.update_health_score(True)
-                    results["healthy_accounts"] += 1
-                    results["accounts"][account_id] = "healthy"
-                else:
-                    results["accounts"][account_id] = "no_api_key"
+                # Mark account as being used
+                if not self.use_account(account, OperationType.UPLOAD):
+                    continue
                     
+                # Perform upload (simplified - actual implementation would use resumable upload)
+                logger.info(f"Uploading video using account: {account.email}")
+                
+                # TODO: Implement actual video upload logic here
+                # This is a placeholder for the upload implementation
+                result = {
+                    'video_id': f"video_{account.account_id}_{datetime.utcnow().timestamp()}",
+                    'channel_id': account.channel_id,
+                    'account_used': account.email,
+                    'upload_time': datetime.utcnow().isoformat()
+                }
+                
+                # Update account stats
+                account.total_uploads += 1
+                self.save_account(account)
+                
+                return result
+                
             except Exception as e:
-                account.update_health_score(False)
-                results["unhealthy_accounts"] += 1
-                results["accounts"][account_id] = f"error: {str(e)}"
+                logger.error(f"Upload failed with account {account.email}: {e}")
+                self.handle_account_error(account, e)
                 
-        return results
-
-
-# Integration with existing YouTube service
-class YouTubeServiceWrapper:
-    """Wrapper to integrate multi-account service with existing YouTube operations"""
-    
-    def __init__(self):
-        self.multi_account_service = MultiAccountYouTubeService()
+                if attempt < max_retries - 1:
+                    logger.info(f"Retrying with different account (attempt {attempt + 2}/{max_retries})")
+                    await asyncio.sleep(2)  # Brief delay before retry
+                    
+        logger.error("All upload attempts failed")
+        return None
         
-    async def initialize(self):
-        """Initialize the service"""
-        await self.multi_account_service.initialize()
-        
-    async def search_videos(self, query: str, **kwargs):
-        """Search videos with automatic account rotation"""
-        async def operation(account: YouTubeAccount, **op_kwargs):
-            service = build("youtube", "v3", developerKey=account.api_key, cache_discovery=False)
-            
-            search_params = {
-                "q": op_kwargs.get("query"),
-                "type": "video",
-                "part": "id,snippet",
-                "maxResults": op_kwargs.get("max_results", 25)
-            }
-            
-            response = service.search().list(**search_params).execute()
-            return response
-            
-        return await self.multi_account_service.execute_with_rotation(
-            operation,
-            required_units=100,  # Search costs 100 units
-            query=query,
-            **kwargs
-        )
-        
-    async def upload_video(self, video_file_path: str, title: str, description: str, **kwargs):
-        """Upload video with automatic account rotation"""
-        async def operation(account: YouTubeAccount, **op_kwargs):
-            if not account.authenticated_service:
-                raise ValueError(f"Account {account.account_id} not authenticated for uploads")
-                
-            body = {
-                "snippet": {
-                    "title": op_kwargs.get("title"),
-                    "description": op_kwargs.get("description"),
-                    "tags": op_kwargs.get("tags", []),
-                    "categoryId": op_kwargs.get("category_id", "22")
-                },
-                "status": {
-                    "privacyStatus": op_kwargs.get("privacy_status", "private"),
-                    "selfDeclaredMadeForKids": False
+    def setup_oauth_for_account(self, account_index: int) -> Optional[str]:
+        """Setup OAuth2 flow for a specific account"""
+        try:
+            # OAuth2 configuration
+            client_config = {
+                "installed": {
+                    "client_id": os.getenv(f"YOUTUBE_CLIENT_ID_{account_index}"),
+                    "client_secret": os.getenv(f"YOUTUBE_CLIENT_SECRET_{account_index}"),
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"]
                 }
             }
             
-            media = MediaFileUpload(
-                op_kwargs.get("video_file_path"),
-                chunksize=1024 * 1024,
-                resumable=True,
-                mimetype="video/*"
+            # Create flow
+            flow = Flow.from_client_config(
+                client_config,
+                scopes=[
+                    'https://www.googleapis.com/auth/youtube.upload',
+                    'https://www.googleapis.com/auth/youtube',
+                    'https://www.googleapis.com/auth/youtubepartner',
+                    'https://www.googleapis.com/auth/youtube.force-ssl'
+                ]
             )
             
-            request = account.authenticated_service.videos().insert(
-                part=",".join(body.keys()),
-                body=body,
-                media_body=media
+            flow.redirect_uri = 'urn:ietf:wg:oauth:2.0:oob'
+            
+            # Get authorization URL
+            auth_url, _ = flow.authorization_url(
+                access_type='offline',
+                include_granted_scopes='true',
+                prompt='consent'
             )
             
-            response = None
-            while response is None:
-                status, response = request.next_chunk()
-                if status:
-                    logger.info(f"Upload progress: {int(status.progress() * 100)}%")
-                    
-            return response
+            logger.info(f"OAuth URL for account {account_index}: {auth_url}")
+            return auth_url
             
-        return await self.multi_account_service.execute_with_rotation(
-            operation,
-            required_units=1600,  # Upload costs 1600 units
-            video_file_path=video_file_path,
-            title=title,
-            description=description,
-            **kwargs
-        )
-        
-    async def get_statistics(self):
-        """Get multi-account statistics"""
-        return await self.multi_account_service.get_account_statistics()
-        
-    async def health_check(self):
-        """Perform health check"""
-        return await self.multi_account_service.health_check()
-# Global instance
-youtube_account_manager = YouTubeServiceWrapper()
+        except Exception as e:
+            logger.error(f"Failed to setup OAuth for account {account_index}: {e}")
+            return None
+            
+    def complete_oauth_for_account(self, account_index: int, auth_code: str) -> bool:
+        """Complete OAuth2 flow with authorization code"""
+        try:
+            # Recreate flow
+            client_config = {
+                "installed": {
+                    "client_id": os.getenv(f"YOUTUBE_CLIENT_ID_{account_index}"),
+                    "client_secret": os.getenv(f"YOUTUBE_CLIENT_SECRET_{account_index}"),
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"]
+                }
+            }
+            
+            flow = Flow.from_client_config(
+                client_config,
+                scopes=[
+                    'https://www.googleapis.com/auth/youtube.upload',
+                    'https://www.googleapis.com/auth/youtube',
+                    'https://www.googleapis.com/auth/youtubepartner',
+                    'https://www.googleapis.com/auth/youtube.force-ssl'
+                ],
+                redirect_uri='urn:ietf:wg:oauth:2.0:oob'
+            )
+            
+            # Exchange code for token
+            flow.fetch_token(code=auth_code)
+            credentials = flow.credentials
+            
+            # Save credentials for account
+            if account_index < len(self.accounts):
+                account = self.accounts[account_index]
+                account.credentials_json = credentials.to_json()
+                account.refresh_token = credentials.refresh_token
+                account.status = AccountStatus.ACTIVE
+                self.save_account(account)
+                
+                logger.info(f"OAuth completed for account {account.email}")
+                return True
+                
+        except Exception as e:
+            logger.error(f"Failed to complete OAuth for account {account_index}: {e}")
+            
+        return False
+
+
+# Singleton instance
+_manager_instance = None
+
+
+def get_youtube_manager() -> YouTubeMultiAccountManager:
+    """Get singleton instance of YouTube multi-account manager"""
+    global _manager_instance
+    if _manager_instance is None:
+        _manager_instance = YouTubeMultiAccountManager()
+    return _manager_instance

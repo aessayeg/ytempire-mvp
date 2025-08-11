@@ -49,7 +49,7 @@ class SystemValidator:
             'port': 5432,
             'database': 'ytempire_db',
             'user': 'ytempire',
-            'password': 'ytempire_secure_pwd_2024'
+            'password': 'admin'
         }
         self.redis_config = {
             'host': 'localhost',

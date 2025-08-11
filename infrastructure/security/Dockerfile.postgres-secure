@@ -1,0 +1,30 @@
+# Secure PostgreSQL Dockerfile with TLS and encryption at rest
+FROM postgres:15-alpine
+
+# Install additional packages for security
+RUN apk add --no-cache \
+    openssl \
+    postgresql-contrib
+
+# Copy configuration files
+COPY postgres-tls.conf /etc/postgresql/postgresql.conf
+COPY pg_hba.conf /etc/postgresql/pg_hba.conf
+
+# Create directories for certificates and encrypted data
+RUN mkdir -p /var/lib/postgresql/certs /var/lib/postgresql/encrypted
+
+# Set up encryption at rest using PostgreSQL TDE (Transparent Data Encryption)
+# Note: This is a simplified version. In production, use proper TDE solutions
+COPY init-encryption.sql /docker-entrypoint-initdb.d/
+
+# Create custom entrypoint for secure initialization
+COPY postgres-secure-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/postgres-secure-entrypoint.sh
+
+# Set secure permissions
+RUN chown -R postgres:postgres /var/lib/postgresql/certs /var/lib/postgresql/encrypted
+RUN chmod 700 /var/lib/postgresql/certs /var/lib/postgresql/encrypted
+
+# Use custom entrypoint
+ENTRYPOINT ["/usr/local/bin/postgres-secure-entrypoint.sh"]
+CMD ["postgres"]

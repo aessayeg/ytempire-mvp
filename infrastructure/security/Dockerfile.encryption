@@ -1,0 +1,48 @@
+# Encryption Service Dockerfile
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    openssl \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt /tmp/
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Additional encryption-specific packages
+RUN pip install --no-cache-dir \
+    cryptography==41.0.* \
+    sqlalchemy-utils==0.41.* \
+    aiofiles==23.2.*
+
+# Create app directory
+WORKDIR /app
+
+# Copy encryption manager
+COPY infrastructure/security/encryption_manager.py /app/
+COPY infrastructure/security/tls_config.py /app/
+
+# Create directories
+RUN mkdir -p /keys /certs /var/log/encryption
+
+# Set permissions for key storage
+RUN chmod 700 /keys
+
+# Create non-root user for security
+RUN groupadd -r encryption && useradd -r -g encryption encryption
+RUN chown -R encryption:encryption /app /keys /var/log/encryption
+
+# Switch to non-root user
+USER encryption
+
+# Expose encryption service port
+EXPOSE 8443
+
+# Health check
+HEALTHCHECK --interval=60s --timeout=30s --start-period=10s --retries=3 \
+    CMD python /app/encryption_manager.py status || exit 1
+
+# Default command
+CMD ["python", "/app/encryption_manager.py", "init"]

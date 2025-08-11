@@ -1,0 +1,390 @@
+# YTEmpire Critical Alert Rules
+# Performance and availability alerts with <5ms p95 database target
+
+groups:
+  # ============================================================================
+  # Database Performance Alerts
+  # ============================================================================
+  - name: database_performance
+    interval: 30s
+    rules:
+      - alert: DatabaseQueryLatencyHigh
+        expr: histogram_quantile(0.95, sum(rate(db_query_duration_seconds_bucket[5m])) by (le)) > 0.005
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+          component: database
+        annotations:
+          summary: "Database p95 latency exceeds 5ms target"
+          description: "Database query p95 latency is {{ $value | humanizeDuration }} (target: <5ms)"
+          runbook_url: "https://docs.ytempire.com/runbooks/database-latency"
+          dashboard_url: "https://grafana.ytempire.com/d/ytempire-database"
+      
+      - alert: DatabaseQueryLatencyWarning
+        expr: histogram_quantile(0.95, sum(rate(db_query_duration_seconds_bucket[5m])) by (le)) > 0.003
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+          component: database
+        annotations:
+          summary: "Database p95 latency approaching threshold"
+          description: "Database query p95 latency is {{ $value | humanizeDuration }} (warning: >3ms)"
+      
+      - alert: DatabaseConnectionPoolExhaustion
+        expr: (db_connections_active / (db_connections_active + db_connections_idle)) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+          component: database
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "{{ $value | humanizePercentage }} of database connections are in use"
+      
+      - alert: DatabaseErrorRate
+        expr: rate(db_query_errors_total[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+          component: database
+        annotations:
+          summary: "High database error rate"
+          description: "Database error rate is {{ $value | humanize }} errors/sec"
+
+  # ============================================================================
+  # API Performance Alerts
+  # ============================================================================
+  - name: api_performance
+    interval: 30s
+    rules:
+      - alert: APIResponseTimeHigh
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+          component: api
+        annotations:
+          summary: "API p95 response time exceeds 500ms"
+          description: "API response time p95 is {{ $value | humanizeDuration }}"
+          dashboard_url: "https://grafana.ytempire.com/d/ytempire-api"
+      
+      - alert: APIErrorRateHigh
+        expr: (sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+          component: api
+        annotations:
+          summary: "API error rate exceeds 5%"
+          description: "API error rate is {{ $value | humanizePercentage }}"
+          runbook_url: "https://docs.ytempire.com/runbooks/api-errors"
+      
+      - alert: APITrafficSpike
+        expr: sum(rate(http_requests_total[5m])) > 1000
+        for: 2m
+        labels:
+          severity: info
+          team: backend
+          component: api
+        annotations:
+          summary: "Unusual API traffic spike detected"
+          description: "API receiving {{ $value | humanize }} requests/sec"
+
+  # ============================================================================
+  # Video Generation Alerts
+  # ============================================================================
+  - name: video_generation
+    interval: 30s
+    rules:
+      - alert: VideoCostExceeded
+        expr: avg(video_generation_cost_dollars) > 3
+        for: 2m
+        labels:
+          severity: critical
+          team: ai-ml
+          component: video-generation
+        annotations:
+          summary: "Video generation cost exceeds $3 target"
+          description: "Average video generation cost is ${{ $value | humanize }}"
+          runbook_url: "https://docs.ytempire.com/runbooks/video-cost"
+      
+      - alert: VideoGenerationSlow
+        expr: histogram_quantile(0.95, video_generation_duration_seconds_bucket) > 600
+        for: 10m
+        labels:
+          severity: warning
+          team: ai-ml
+          component: video-generation
+        annotations:
+          summary: "Video generation taking longer than 10 minutes"
+          description: "Video generation p95 duration is {{ $value | humanizeDuration }}"
+      
+      - alert: VideoQualityLow
+        expr: avg(video_quality_score) < 0.7
+        for: 15m
+        labels:
+          severity: warning
+          team: ai-ml
+          component: video-generation
+        annotations:
+          summary: "Video quality score below threshold"
+          description: "Average video quality score is {{ $value | humanize }} (threshold: 0.7)"
+
+  # ============================================================================
+  # YouTube API Alerts
+  # ============================================================================
+  - name: youtube_api
+    interval: 30s
+    rules:
+      - alert: YouTubeQuotaNearLimit
+        expr: (youtube_quota_used / youtube_quota_limit) > 0.9
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+          component: youtube
+        annotations:
+          summary: "YouTube API quota near exhaustion"
+          description: "Account {{ $labels.account_id }} at {{ $value | humanizePercentage }} quota usage"
+          runbook_url: "https://docs.ytempire.com/runbooks/youtube-quota"
+      
+      - alert: YouTubeQuotaWarning
+        expr: (youtube_quota_used / youtube_quota_limit) > 0.75
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+          component: youtube
+        annotations:
+          summary: "YouTube API quota usage high"
+          description: "Account {{ $labels.account_id }} at {{ $value | humanizePercentage }} quota usage"
+      
+      - alert: YouTubeUploadFailures
+        expr: rate(youtube_api_calls_total{endpoint="upload", status="error"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+          component: youtube
+        annotations:
+          summary: "High YouTube upload failure rate"
+          description: "YouTube upload failing at {{ $value | humanize }} errors/sec"
+
+  # ============================================================================
+  # Infrastructure Alerts
+  # ============================================================================
+  - name: infrastructure
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"ytempire-.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: ops
+          component: infrastructure
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been unreachable for 2 minutes"
+          runbook_url: "https://docs.ytempire.com/runbooks/service-down"
+      
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          team: ops
+          component: infrastructure
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining"
+          runbook_url: "https://docs.ytempire.com/runbooks/disk-space"
+      
+      - alert: MemoryPressure
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: ops
+          component: infrastructure
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage at {{ $value | humanizePercentage }}"
+      
+      - alert: CPUThrottling
+        expr: rate(container_cpu_cfs_throttled_seconds_total[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          team: ops
+          component: infrastructure
+        annotations:
+          summary: "CPU throttling detected"
+          description: "Container {{ $labels.container }} experiencing CPU throttling"
+
+  # ============================================================================
+  # GPU Alerts
+  # ============================================================================
+  - name: gpu_monitoring
+    interval: 30s
+    rules:
+      - alert: GPUMemoryHigh
+        expr: (gpu_memory_used_bytes / gpu_memory_total_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: ai-ml
+          component: gpu
+        annotations:
+          summary: "GPU memory usage high"
+          description: "GPU {{ $labels.gpu_id }} memory at {{ $value | humanizePercentage }}"
+      
+      - alert: GPUTemperatureHigh
+        expr: gpu_temperature_celsius > 85
+        for: 5m
+        labels:
+          severity: warning
+          team: ai-ml
+          component: gpu
+        annotations:
+          summary: "GPU temperature high"
+          description: "GPU {{ $labels.gpu_id }} temperature at {{ $value }}°C"
+      
+      - alert: GPUUtilizationLow
+        expr: avg_over_time(gpu_utilization_percent[30m]) < 20
+        for: 30m
+        labels:
+          severity: info
+          team: ai-ml
+          component: gpu
+        annotations:
+          summary: "GPU underutilized"
+          description: "GPU {{ $labels.gpu_id }} average utilization at {{ $value }}%"
+
+  # ============================================================================
+  # Queue Alerts
+  # ============================================================================
+  - name: queue_monitoring
+    interval: 30s
+    rules:
+      - alert: QueueBacklogHigh
+        expr: queue_depth > 100
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+          component: queue
+        annotations:
+          summary: "Queue backlog exceeds 100 items"
+          description: "Queue {{ $labels.queue_name }} has {{ $value }} items pending"
+      
+      - alert: QueueProcessingSlow
+        expr: histogram_quantile(0.95, queue_processing_duration_seconds_bucket) > 300
+        for: 15m
+        labels:
+          severity: warning
+          team: backend
+          component: queue
+        annotations:
+          summary: "Queue processing taking too long"
+          description: "Queue {{ $labels.queue_name }} p95 processing time is {{ $value | humanizeDuration }}"
+
+  # ============================================================================
+  # Business Metrics Alerts
+  # ============================================================================
+  - name: business_metrics
+    interval: 60s
+    rules:
+      - alert: RevenueDropDetected
+        expr: sum(increase(revenue_total_dollars[1h])) < 10
+        for: 2h
+        labels:
+          severity: warning
+          team: business
+          component: revenue
+        annotations:
+          summary: "Revenue drop detected"
+          description: "Hourly revenue is ${{ $value | humanize }}"
+      
+      - alert: ChannelHealthLow
+        expr: channel_health_score < 0.5
+        for: 30m
+        labels:
+          severity: warning
+          team: business
+          component: channel
+        annotations:
+          summary: "Channel health score low"
+          description: "Channel {{ $labels.channel_id }} health score is {{ $value }}"
+      
+      - alert: SubscriptionChurnHigh
+        expr: rate(subscription_active_count[1h]) < -1
+        for: 1h
+        labels:
+          severity: warning
+          team: business
+          component: subscription
+        annotations:
+          summary: "High subscription churn rate"
+          description: "Losing {{ $value | humanize }} subscriptions per hour"
+
+  # ============================================================================
+  # Cache Performance Alerts
+  # ============================================================================
+  - name: cache_performance
+    interval: 30s
+    rules:
+      - alert: CacheHitRateLow
+        expr: (cache_hits_total / (cache_hits_total + cache_misses_total)) < 0.8
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+          component: cache
+        annotations:
+          summary: "Cache hit rate below 80%"
+          description: "Cache {{ $labels.cache_type }} hit rate is {{ $value | humanizePercentage }}"
+      
+      - alert: RedisMemoryHigh
+        expr: (cache_memory_bytes{cache_type="redis"} / 8589934592) > 0.9  # 8GB limit
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+          component: cache
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis using {{ $value | humanizePercentage }} of available memory"
+
+  # ============================================================================
+  # SSL Certificate Alerts
+  # ============================================================================
+  - name: ssl_certificates
+    interval: 1h
+    rules:
+      - alert: SSLCertificateExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 7
+        for: 1h
+        labels:
+          severity: warning
+          team: ops
+          component: ssl
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "Certificate for {{ $labels.instance }} expires in {{ $value }} days"
+      
+      - alert: SSLCertificateExpiryCritical
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 2
+        for: 1h
+        labels:
+          severity: critical
+          team: ops
+          component: ssl
+        annotations:
+          summary: "SSL certificate expiring in less than 2 days"
+          description: "Certificate for {{ $labels.instance }} expires in {{ $value }} days"

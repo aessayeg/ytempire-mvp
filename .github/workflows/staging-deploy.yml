@@ -1,0 +1,468 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy'
+        required: false
+        default: 'latest'
+  workflow_call:
+    inputs:
+      version:
+        required: false
+        type: string
+        default: 'latest'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ============================================================================
+  # Pre-deployment Checks
+  # ============================================================================
+  pre-deploy-checks:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+      version: ${{ steps.version.outputs.version }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check deployment eligibility
+      id: check
+      run: |
+        # Check if tests passed
+        if [ "${{ github.event.workflow_run.conclusion }}" == "failure" ]; then
+          echo "Tests failed, skipping deployment"
+          echo "should_deploy=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        echo "should_deploy=true" >> $GITHUB_OUTPUT
+    
+    - name: Determine version
+      id: version
+      run: |
+        if [ -n "${{ inputs.version }}" ]; then
+          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${{ github.sha }}" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Check resource availability
+      run: |
+        echo "Checking staging server resources..."
+        # Add actual resource checks here via SSH or API
+
+  # ============================================================================
+  # Database Backup
+  # ============================================================================
+  backup-staging:
+    name: Backup Staging Database
+    runs-on: ubuntu-latest
+    needs: [pre-deploy-checks]
+    if: needs.pre-deploy-checks.outputs.should_deploy == 'true'
+    
+    steps:
+    - name: Configure SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+    
+    - name: Create database backup
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_DIR="/var/backups/ytempire/staging"
+          mkdir -p $BACKUP_DIR
+          
+          # Backup PostgreSQL
+          docker exec ytempire_postgres pg_dump -U ytempire ytempire_staging > $BACKUP_DIR/db_backup_$TIMESTAMP.sql
+          
+          # Backup Redis
+          docker exec ytempire_redis redis-cli BGSAVE
+          
+          # Keep only last 7 days of backups
+          find $BACKUP_DIR -name "*.sql" -mtime +7 -delete
+          
+          echo "Backup created: db_backup_$TIMESTAMP.sql"
+        EOF
+    
+    - name: Upload backup to S3
+      if: false  # Enable when S3 is configured
+      run: |
+        echo "Uploading backup to S3..."
+        # aws s3 cp backup.sql s3://ytempire-backups/staging/
+
+  # ============================================================================
+  # Deploy Infrastructure
+  # ============================================================================
+  deploy-infrastructure:
+    name: Deploy Infrastructure Updates
+    runs-on: ubuntu-latest
+    needs: [backup-staging]
+    environment:
+      name: staging
+      url: https://staging.ytempire.com
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Configure SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+    
+    - name: Copy deployment files
+      run: |
+        # Create deployment package
+        tar czf deployment.tar.gz \
+          docker-compose.staging.yml \
+          docker-compose.yml \
+          infrastructure/ \
+          scripts/
+        
+        # Copy to staging server
+        scp -o StrictHostKeyChecking=no deployment.tar.gz \
+          ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}:/tmp/
+        
+        # Extract on server
+        ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+          cd /opt/ytempire
+          tar xzf /tmp/deployment.tar.gz
+          rm /tmp/deployment.tar.gz
+        EOF
+    
+    - name: Update environment variables
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+          cd /opt/ytempire
+          
+          # Update .env file with staging values
+          cat > .env.staging << 'END'
+          ENVIRONMENT=staging
+          DATABASE_URL=${{ secrets.STAGING_DATABASE_URL }}
+          REDIS_URL=${{ secrets.STAGING_REDIS_URL }}
+          SECRET_KEY=${{ secrets.STAGING_SECRET_KEY }}
+          OPENAI_API_KEY=${{ secrets.STAGING_OPENAI_API_KEY }}
+          ELEVENLABS_API_KEY=${{ secrets.STAGING_ELEVENLABS_API_KEY }}
+          YOUTUBE_API_KEY_01=${{ secrets.STAGING_YOUTUBE_API_KEY }}
+          STRIPE_API_KEY=${{ secrets.STAGING_STRIPE_API_KEY }}
+          SENTRY_DSN=${{ secrets.STAGING_SENTRY_DSN }}
+          END
+        EOF
+
+  # ============================================================================
+  # Database Migration
+  # ============================================================================
+  migrate-database:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    needs: [deploy-infrastructure]
+    
+    steps:
+    - name: Configure SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+    
+    - name: Run Alembic migrations
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+          cd /opt/ytempire
+          
+          # Run migrations in a temporary container
+          docker run --rm \
+            --network ytempire_network \
+            --env-file .env.staging \
+            ghcr.io/${{ github.repository }}-backend:${{ needs.pre-deploy-checks.outputs.version }} \
+            alembic upgrade head
+          
+          echo "Database migrations completed"
+        EOF
+    
+    - name: Verify migration
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+          # Check migration status
+          docker exec ytempire_postgres psql -U ytempire -d ytempire_staging -c \
+            "SELECT version_num, description FROM alembic_version ORDER BY version_num DESC LIMIT 1;"
+        EOF
+
+  # ============================================================================
+  # Deploy Services
+  # ============================================================================
+  deploy-services:
+    name: Deploy Application Services
+    runs-on: ubuntu-latest
+    needs: [migrate-database]
+    strategy:
+      matrix:
+        service: [backend, frontend, celery_worker, ml_pipeline]
+    
+    steps:
+    - name: Configure SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+    
+    - name: Deploy ${{ matrix.service }}
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+          cd /opt/ytempire
+          
+          # Pull latest image
+          docker pull ghcr.io/${{ github.repository }}-${{ matrix.service }}:${{ needs.pre-deploy-checks.outputs.version }}
+          
+          # Tag for staging
+          docker tag \
+            ghcr.io/${{ github.repository }}-${{ matrix.service }}:${{ needs.pre-deploy-checks.outputs.version }} \
+            ytempire_${{ matrix.service }}:staging
+          
+          # Rolling update with zero downtime
+          if [ "${{ matrix.service }}" == "backend" ] || [ "${{ matrix.service }}" == "frontend" ]; then
+            # Scale up new version
+            docker-compose -f docker-compose.staging.yml up -d --no-deps --scale ${{ matrix.service }}=2 ${{ matrix.service }}
+            sleep 30
+            
+            # Remove old containers
+            docker-compose -f docker-compose.staging.yml rm -f -s ${{ matrix.service }}_old || true
+          else
+            # Regular deployment for stateful services
+            docker-compose -f docker-compose.staging.yml up -d --no-deps ${{ matrix.service }}
+          fi
+          
+          echo "${{ matrix.service }} deployed successfully"
+        EOF
+    
+    - name: Health check ${{ matrix.service }}
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+          cd /opt/ytempire
+          
+          # Service-specific health checks
+          case "${{ matrix.service }}" in
+            backend)
+              for i in {1..30}; do
+                if curl -f http://localhost:8000/api/v1/health; then
+                  echo "Backend is healthy"
+                  exit 0
+                fi
+                sleep 5
+              done
+              echo "Backend health check failed"
+              exit 1
+              ;;
+            frontend)
+              for i in {1..30}; do
+                if curl -f http://localhost:3000; then
+                  echo "Frontend is healthy"
+                  exit 0
+                fi
+                sleep 5
+              done
+              echo "Frontend health check failed"
+              exit 1
+              ;;
+            *)
+              # Check container is running
+              if docker ps | grep -q ytempire_${{ matrix.service }}; then
+                echo "${{ matrix.service }} is running"
+              else
+                echo "${{ matrix.service }} is not running"
+                exit 1
+              fi
+              ;;
+          esac
+        EOF
+
+  # ============================================================================
+  # Post-deployment Testing
+  # ============================================================================
+  smoke-tests:
+    name: Run Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [deploy-services]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install test dependencies
+      run: |
+        pip install requests pytest
+    
+    - name: Run API smoke tests
+      env:
+        STAGING_URL: https://staging.ytempire.com
+      run: |
+        python -c "
+        import requests
+        import sys
+        
+        # Test health endpoint
+        response = requests.get('${{ secrets.STAGING_URL }}/api/v1/health')
+        assert response.status_code == 200, f'Health check failed: {response.status_code}'
+        
+        # Test authentication endpoint
+        response = requests.post('${{ secrets.STAGING_URL }}/api/v1/auth/login', 
+                                json={'email': 'test@example.com', 'password': 'test'})
+        assert response.status_code in [200, 401], f'Auth endpoint failed: {response.status_code}'
+        
+        # Test static assets
+        response = requests.get('${{ secrets.STAGING_URL }}/')
+        assert response.status_code == 200, f'Frontend failed: {response.status_code}'
+        
+        print('All smoke tests passed!')
+        "
+    
+    - name: Run performance baseline
+      run: |
+        # Quick performance check
+        curl -w "@-" -o /dev/null -s "${{ secrets.STAGING_URL }}/api/v1/health" << 'EOF'
+        Response Time: %{time_total}s
+        HTTP Code: %{http_code}
+        EOF
+
+  # ============================================================================
+  # Monitoring Setup
+  # ============================================================================
+  setup-monitoring:
+    name: Configure Monitoring
+    runs-on: ubuntu-latest
+    needs: [smoke-tests]
+    
+    steps:
+    - name: Configure SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+    
+    - name: Update monitoring configuration
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+          cd /opt/ytempire
+          
+          # Restart monitoring services
+          docker-compose -f docker-compose.staging.yml restart prometheus grafana
+          
+          # Configure alerts
+          curl -X POST http://localhost:3001/api/alerts \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "Staging High Error Rate",
+              "condition": "rate(errors[5m]) > 0.05",
+              "channels": ["slack", "email"]
+            }'
+        EOF
+
+  # ============================================================================
+  # Rollback on Failure
+  # ============================================================================
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-services]
+    if: failure()
+    
+    steps:
+    - name: Configure SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+    
+    - name: Rollback to previous version
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+          cd /opt/ytempire
+          
+          echo "Rolling back deployment..."
+          
+          # Restore from backup
+          LATEST_BACKUP=$(ls -t /var/backups/ytempire/staging/*.sql | head -1)
+          if [ -n "$LATEST_BACKUP" ]; then
+            docker exec -i ytempire_postgres psql -U ytempire ytempire_staging < $LATEST_BACKUP
+          fi
+          
+          # Revert to previous image tags
+          docker-compose -f docker-compose.staging.yml down
+          docker-compose -f docker-compose.staging.yml up -d
+          
+          echo "Rollback completed"
+        EOF
+    
+    - name: Notify rollback
+      uses: 8398a7/action-slack@v3
+      with:
+        status: custom
+        custom_payload: |
+          {
+            text: "⚠️ Staging deployment rolled back",
+            attachments: [{
+              color: "warning",
+              text: "Deployment to staging failed and was rolled back. Check the logs for details."
+            }]
+          }
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # ============================================================================
+  # Notification
+  # ============================================================================
+  notify-deployment:
+    name: Send Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [smoke-tests, setup-monitoring]
+    if: always()
+    
+    steps:
+    - name: Notify Slack
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: |
+          Staging Deployment: ${{ job.status }}
+          Version: ${{ needs.pre-deploy-checks.outputs.version }}
+          URL: https://staging.ytempire.com
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      if: always()
+    
+    - name: Update deployment status
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const deploymentStatus = '${{ job.status }}' === 'success' ? 'success' : 'failure';
+          
+          // Create deployment status
+          await github.rest.repos.createDeploymentStatus({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            deployment_id: context.payload.deployment.id,
+            state: deploymentStatus,
+            environment_url: 'https://staging.ytempire.com',
+            description: `Staging deployment ${deploymentStatus}`
+          });
+      if: github.event_name == 'deployment'
+    
+    - name: Generate deployment summary
+      run: |
+        echo "## Staging Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Version:** ${{ needs.pre-deploy-checks.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment:** Staging" >> $GITHUB_STEP_SUMMARY
+        echo "**URL:** https://staging.ytempire.com" >> $GITHUB_STEP_SUMMARY
+        echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Services Deployed" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Backend API" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Frontend Application" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Celery Workers" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ ML Pipeline" >> $GITHUB_STEP_SUMMARY

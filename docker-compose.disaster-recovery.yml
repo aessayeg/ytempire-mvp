@@ -1,0 +1,362 @@
+version: '3.8'
+
+services:
+  # Main application services (from main docker-compose.yml)
+  postgres_primary:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ytempire
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres_pass}
+      POSTGRES_REPLICATION_MODE: master
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:-repl_pass}
+    volumes:
+      - postgres_data_primary:/var/lib/postgresql/data
+      - ./infrastructure/backup/postgres-setup:/docker-entrypoint-initdb.d
+      - ./infrastructure/backup/postgresql.conf:/etc/postgresql/postgresql.conf
+    ports:
+      - "5432:5432"
+    command: >
+      postgres 
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c wal_level=replica
+      -c max_wal_senders=3
+      -c wal_keep_size=64
+      -c hot_standby=on
+    networks:
+      - ytempire_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ytempire"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL replica for read scaling and backup
+  postgres_replica:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ytempire
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres_pass}
+      POSTGRES_REPLICATION_MODE: slave
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:-repl_pass}
+      POSTGRES_MASTER_SERVICE: postgres_primary
+    volumes:
+      - postgres_data_replica:/var/lib/postgresql/data
+      - ./infrastructure/backup/recovery.conf:/var/lib/postgresql/data/recovery.conf
+    ports:
+      - "5433:5432"
+    command: >
+      postgres 
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hot_standby=on
+    depends_on:
+      postgres_primary:
+        condition: service_healthy
+    networks:
+      - ytempire_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ytempire"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis with persistence enabled
+  redis_primary:
+    image: redis:7-alpine
+    command: >
+      redis-server 
+      --save 900 1 
+      --save 300 10 
+      --save 60 10000
+      --appendonly yes
+      --appendfsync everysec
+      --requirepass ${REDIS_PASSWORD:-redis_pass}
+    volumes:
+      - redis_data_primary:/data
+      - ./infrastructure/backup/redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+    networks:
+      - ytempire_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Sentinel for high availability
+  redis_sentinel:
+    image: redis:7-alpine
+    command: >
+      redis-sentinel /usr/local/etc/redis/sentinel.conf
+    volumes:
+      - ./infrastructure/backup/sentinel.conf:/usr/local/etc/redis/sentinel.conf
+    ports:
+      - "26379:26379"
+    depends_on:
+      - redis_primary
+    networks:
+      - ytempire_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Backup Manager Service
+  backup_manager:
+    build:
+      context: .
+      dockerfile: ./infrastructure/backup/Dockerfile.backup
+    environment:
+      DATABASE_HOST: postgres_primary
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ytempire
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres_pass}
+      REDIS_HOST: redis_primary
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_pass}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:-ytempire-backups}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      BACKUP_ENCRYPTION_KEY: ${BACKUP_ENCRYPTION_KEY}
+      BACKUP_WEBHOOK_URL: ${BACKUP_WEBHOOK_URL}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+    volumes:
+      - backup_data:/var/backups/ytempire
+      - ./infrastructure/backup:/app/backup
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /app/uploads:/app/uploads:ro
+      - /app/generated_videos:/app/generated_videos:ro
+    depends_on:
+      postgres_primary:
+        condition: service_healthy
+      redis_primary:
+        condition: service_healthy
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    command: ["python", "/app/backup/backup_manager.py", "schedule"]
+
+  # Health Monitor Service  
+  health_monitor:
+    build:
+      context: .
+      dockerfile: ./infrastructure/monitoring/Dockerfile.monitoring
+    environment:
+      DATABASE_HOST: postgres_primary
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ytempire
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres_pass}
+      REDIS_HOST: redis_primary
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_pass}
+      API_BASE_URL: http://backend:8000
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:-ytempire-backups}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+    volumes:
+      - health_reports:/app/reports
+      - ./infrastructure/monitoring:/app/monitoring
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      postgres_primary:
+        condition: service_healthy
+      redis_primary:
+        condition: service_healthy
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    command: ["python", "/app/monitoring/health_check.py", "--watch", "--interval", "300"]
+    healthcheck:
+      test: ["CMD", "python", "/app/monitoring/health_check.py"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  # MinIO for local S3-compatible storage (backup alternative)
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-ytempire_access}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-ytempire_secret_key_minimum_length}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - ytempire_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Create MinIO buckets
+  minio_setup:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    networks:
+      - ytempire_network
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set ytempire http://minio:9000 ${MINIO_ACCESS_KEY:-ytempire_access} ${MINIO_SECRET_KEY:-ytempire_secret_key_minimum_length};
+      /usr/bin/mc mb ytempire/ytempire-backups;
+      /usr/bin/mc mb ytempire/ytempire-uploads;
+      /usr/bin/mc mb ytempire/ytempire-videos;
+      /usr/bin/mc policy set public ytempire/ytempire-uploads;
+      exit 0;
+      "
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # Grafana for monitoring dashboards
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_SERVER_ROOT_URL: http://localhost:3001
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./infrastructure/monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # AlertManager for alerts
+  alertmanager:
+    image: prom/alertmanager:latest
+    volumes:
+      - ./infrastructure/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    ports:
+      - "9093:9093"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # Node Exporter for system metrics
+  node_exporter:
+    image: prom/node-exporter:latest
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # cAdvisor for container metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # Log aggregation with Loki
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./infrastructure/monitoring/loki-config.yml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # Log collection with Promtail
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./infrastructure/monitoring/promtail-config.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data_primary:
+    driver: local
+  postgres_data_replica:
+    driver: local
+  redis_data_primary:
+    driver: local
+  backup_data:
+    driver: local
+  health_reports:
+    driver: local
+  minio_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  alertmanager_data:
+    driver: local
+  loki_data:
+    driver: local
+
+networks:
+  ytempire_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

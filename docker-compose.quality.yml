@@ -1,0 +1,156 @@
+# Quality Scoring Service Docker Compose
+version: '3.8'
+
+services:
+  quality-scorer:
+    build:
+      context: ml-pipeline/quality_scoring/
+      dockerfile: Dockerfile
+    container_name: ytempire_quality_scorer
+    ports:
+      - "8001:8001"
+    environment:
+      - QUALITY_API_HOST=0.0.0.0
+      - QUALITY_API_PORT=8001
+      - PYTHONPATH=/app
+      - CUDA_VISIBLE_DEVICES=0  # Use GPU 0 if available
+    volumes:
+      - ./ml-pipeline/quality_scoring:/app
+      - ./ml-pipeline/data:/app/data
+      - ./logs:/app/logs
+      - ./test_videos:/app/test_videos:ro  # Read-only test videos
+      - /tmp/ytempire_uploads:/tmp/ytempire_uploads
+    networks:
+      - ytempire-network
+    restart: unless-stopped
+    depends_on:
+      - quality-db
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 30s
+
+  quality-db:
+    image: postgres:15-alpine
+    container_name: ytempire_quality_db
+    environment:
+      - POSTGRES_DB=quality_scores
+      - POSTGRES_USER=quality_user
+      - POSTGRES_PASSWORD=quality_secure_password_2024
+    volumes:
+      - quality_db_data:/var/lib/postgresql/data
+      - ./ml-pipeline/quality_scoring/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    ports:
+      - "5433:5432"
+    networks:
+      - ytempire-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quality_user -d quality_scores"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  quality-redis:
+    image: redis:7-alpine
+    container_name: ytempire_quality_redis
+    command: redis-server --appendonly yes --requirepass quality_redis_password_2024
+    volumes:
+      - quality_redis_data:/data
+    ports:
+      - "6380:6379"
+    networks:
+      - ytempire-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  quality-monitor:
+    image: prom/prometheus:latest
+    container_name: ytempire_quality_monitor
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/quality-prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - quality_prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - ytempire-network
+    restart: unless-stopped
+
+  quality-grafana:
+    image: grafana/grafana:latest
+    container_name: ytempire_quality_grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=quality_grafana_admin_2024
+    volumes:
+      - quality_grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-quality-dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    networks:
+      - ytempire-network
+    restart: unless-stopped
+    depends_on:
+      - quality-monitor
+
+  quality-worker:
+    build:
+      context: ml-pipeline/quality_scoring/
+      dockerfile: Dockerfile
+    container_name: ytempire_quality_worker
+    command: ["python", "-m", "celery", "worker", "-A", "quality_tasks", "--loglevel=info", "--concurrency=2"]
+    environment:
+      - CELERY_BROKER_URL=redis://:quality_redis_password_2024@quality-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:quality_redis_password_2024@quality-redis:6379/0
+      - PYTHONPATH=/app
+    volumes:
+      - ./ml-pipeline/quality_scoring:/app
+      - ./ml-pipeline/data:/app/data
+      - ./logs:/app/logs
+      - ./test_videos:/app/test_videos:ro
+    networks:
+      - ytempire-network
+    restart: unless-stopped
+    depends_on:
+      - quality-redis
+      - quality-db
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+networks:
+  ytempire-network:
+    driver: bridge
+
+volumes:
+  quality_db_data:
+    driver: local
+  quality_redis_data:
+    driver: local
+  quality_prometheus_data:
+    driver: local
+  quality_grafana_data:
+    driver: local

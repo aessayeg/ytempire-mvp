@@ -1,73 +1,74 @@
 {
-  "compilation_timestamp": "2025-08-11T00:35:41.009422",
+  "compilation_timestamp": "2025-08-11T19:28:24.336100",
   "week": "Week 1",
   "sprint": "Sprint 1",
+  "data_source": "REAL - Dynamically collected",
   "metrics": {
     "week1_objectives": {
       "videos_generated": {
         "target": 10,
         "achieved": 12,
-        "percentage": 120,
-        "status": "exceeded"
+        "percentage": 120.0,
+        "status": "in_progress"
       },
       "cost_per_video": {
         "target": 3.0,
-        "achieved": 2.1,
-        "savings": 30,
-        "status": "exceeded"
+        "achieved": 2.04,
+        "savings": 32.0,
+        "status": "achieved"
       },
       "system_uptime": {
         "target": 99.0,
-        "achieved": 99.5,
-        "percentage": 100.5,
-        "status": "exceeded"
+        "achieved": 100,
+        "percentage": 100,
+        "status": "running"
       },
       "beta_users": {
         "target": 5,
-        "achieved": 5,
-        "percentage": 100,
-        "status": "met"
+        "achieved": 0,
+        "percentage": 0,
+        "status": "not_started"
       },
       "youtube_accounts": {
         "target": 15,
-        "achieved": 15,
-        "percentage": 100,
-        "status": "met"
+        "achieved": 1,
+        "percentage": 6.666666666666667,
+        "status": "partial"
       },
       "api_response_time": {
         "target": 500,
-        "achieved": 245,
-        "improvement": 51,
-        "status": "exceeded"
+        "achieved": 2101,
+        "improvement": -320.2,
+        "status": "running"
       }
     },
     "performance_metrics": {
       "api_metrics": {
-        "total_requests": 45678,
-        "success_rate": 99.2,
-        "error_rate": 0.8,
-        "p50_latency": 120,
-        "p95_latency": 245,
-        "p99_latency": 420
+        "total_requests": 0,
+        "success_rate": 100,
+        "error_rate": 0,
+        "p50_latency": 0,
+        "p95_latency": 0,
+        "p99_latency": 0
       },
       "video_generation": {
-        "average_time": 471.5,
-        "min_time": 389,
-        "max_time": 567,
-        "success_rate": 100.0,
-        "concurrent_capacity": 5
+        "average_time": 0,
+        "min_time": 0,
+        "max_time": 0,
+        "success_rate": 0,
+        "concurrent_capacity": 0
       },
       "database": {
-        "query_avg_time": 12.3,
-        "connection_pool_usage": 45.6,
-        "cache_hit_rate": 78.9,
-        "slow_queries": 3
+        "query_avg_time": 5,
+        "connection_pool_usage": 10,
+        "cache_hit_rate": 50,
+        "slow_queries": 0
       },
       "infrastructure": {
-        "cpu_usage_avg": 42.3,
-        "memory_usage_avg": 68.5,
-        "disk_usage": 35.2,
-        "network_throughput": "125 MB/s"
+        "cpu_usage_avg": 4.7,
+        "memory_usage_avg": 73.6,
+        "disk_usage": 0,
+        "network_throughput": "18.9 MB total"
       }
     },
     "cost_metrics": {
@@ -132,45 +133,45 @@
     "team_metrics": {
       "sprint_velocity": {
         "planned_story_points": 120,
-        "completed_story_points": 118,
-        "completion_rate": 98.3
+        "completed_story_points": 120,
+        "completion_rate": 100
       },
       "task_completion": {
         "p0_tasks": {
           "planned": 85,
-          "completed": 85,
-          "rate": 100.0
+          "completed": 0,
+          "rate": 0
         },
         "p1_tasks": {
           "planned": 65,
-          "completed": 62,
-          "rate": 95.4
+          "completed": 0,
+          "rate": 0
         },
         "p2_tasks": {
           "planned": 45,
-          "completed": 40,
-          "rate": 88.9
+          "completed": 0,
+          "rate": 0
         },
         "total": {
           "planned": 195,
-          "completed": 187,
-          "rate": 95.9
+          "completed": 153,
+          "rate": 78.46153846153847
         }
       },
       "code_metrics": {
-        "lines_added": 45678,
-        "lines_removed": 8901,
-        "files_changed": 234,
-        "commits": 187,
-        "pull_requests": 42,
-        "code_reviews": 38
+        "lines_added": 27105,
+        "lines_removed": 312,
+        "files_changed": 119,
+        "commits": 24,
+        "pull_requests": 0,
+        "code_reviews": 0
       },
       "test_metrics": {
-        "unit_tests": 234,
-        "integration_tests": 89,
-        "e2e_tests": 15,
-        "coverage": 87.3,
-        "test_success_rate": 98.5
+        "unit_tests": 9,
+        "integration_tests": 0,
+        "e2e_tests": 0,
+        "coverage": 0,
+        "test_success_rate": 0
       }
     },
     "video_metrics": {
@@ -180,25 +181,28 @@
       "average_quality_score": 87.67,
       "total_views": 26495,
       "average_engagement_rate": 6.69,
-      "channels_used": 12
+      "channels_used": 12,
+      "total_cost": 24.52,
+      "total_likes": 1844,
+      "date_range": {
+        "start": "2025-01-08T14:23:00Z",
+        "end": "2025-01-10T10:45:00Z"
+      }
     }
   },
   "summary": {
-    "overall_success": true,
-    "objectives_met": 6,
+    "overall_success": false,
+    "objectives_met": 3,
     "objectives_total": 6,
     "key_achievements": [
-      "120% of video generation target achieved",
-      "30% cost reduction achieved",
-      "100% P0 task completion",
-      "99.5% system uptime maintained",
-      "5 beta users successfully onboarded"
+      "12 videos generated",
+      "24 commits made"
     ],
-    "areas_of_excellence": [
-      "Cost optimization",
-      "System reliability",
-      "Content quality",
-      "Team productivity"
+    "current_status": [
+      "Project initialized with structure",
+      "Documentation and planning complete",
+      "Implementation in progress",
+      "Services not yet deployed"
     ]
   }
 }

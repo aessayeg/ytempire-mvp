@@ -1,0 +1,407 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "security-monitoring",
+    "title": "Security Monitoring Dashboard",
+    "description": "Comprehensive security monitoring for YTEmpire MVP",
+    "tags": ["security", "monitoring", "compliance"],
+    "timezone": "browser",
+    "schemaVersion": 30,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "type": "stat",
+        "title": "Security Score",
+        "targets": [
+          {
+            "expr": "(1 - (sum(rate(security_violations_total[5m])) / sum(rate(http_requests_total[5m])))) * 100",
+            "legendFormat": "Score"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 85},
+                {"color": "green", "value": 95}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "type": "stat",
+        "title": "Failed Auth Attempts",
+        "targets": [
+          {
+            "expr": "sum(rate(auth_failures_total[5m])) * 300",
+            "legendFormat": "Failed Attempts"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 10},
+                {"color": "red", "value": 50}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "type": "stat",
+        "title": "Rate Limit Violations",
+        "targets": [
+          {
+            "expr": "sum(rate(rate_limit_exceeded_total[5m])) * 300",
+            "legendFormat": "Violations"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 5},
+                {"color": "red", "value": 20}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+        "type": "stat",
+        "title": "Active Threats",
+        "targets": [
+          {
+            "expr": "sum(security_threats_active)",
+            "legendFormat": "Threats"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 5}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "type": "graph",
+        "title": "Security Events Timeline",
+        "targets": [
+          {
+            "expr": "sum(rate(security_events_total[5m])) by (event_type)",
+            "legendFormat": "{{event_type}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Events/sec"},
+          {"format": "short"}
+        ],
+        "xaxis": {"mode": "time"},
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "stack": false,
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "current": true,
+          "max": true,
+          "min": false,
+          "avg": true
+        }
+      },
+      {
+        "id": 6,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "type": "graph",
+        "title": "Authentication Metrics",
+        "targets": [
+          {
+            "expr": "sum(rate(auth_success_total[5m])) * 60",
+            "legendFormat": "Successful Logins"
+          },
+          {
+            "expr": "sum(rate(auth_failures_total[5m])) * 60",
+            "legendFormat": "Failed Logins"
+          },
+          {
+            "expr": "sum(rate(jwt_tokens_issued_total[5m])) * 60",
+            "legendFormat": "Tokens Issued"
+          },
+          {
+            "expr": "sum(rate(jwt_tokens_revoked_total[5m])) * 60",
+            "legendFormat": "Tokens Revoked"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Count/min"},
+          {"format": "short"}
+        ],
+        "xaxis": {"mode": "time"},
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2
+      },
+      {
+        "id": 7,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+        "type": "heatmap",
+        "title": "IP Address Activity Heatmap",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m])) by (client_ip)",
+            "format": "heatmap",
+            "legendFormat": "{{client_ip}}"
+          }
+        ],
+        "dataFormat": "timeseries",
+        "cards": {
+          "cardPadding": 2,
+          "cardRound": 2
+        },
+        "color": {
+          "mode": "spectrum",
+          "scheme": "interpolateRdYlGn",
+          "reverse": true
+        },
+        "yAxis": {
+          "decimals": 0
+        },
+        "tooltip": {
+          "show": true,
+          "showHistogram": false
+        }
+      },
+      {
+        "id": 8,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+        "type": "table",
+        "title": "Recent Security Violations",
+        "targets": [
+          {
+            "expr": "topk(10, security_violations_total)",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {},
+              "indexByName": {},
+              "renameByName": {
+                "Time": "Timestamp",
+                "Value": "Count",
+                "violation_type": "Type",
+                "client_ip": "IP Address",
+                "user_id": "User ID"
+              }
+            }
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "displayName": "Count",
+              "desc": true
+            }
+          ]
+        }
+      },
+      {
+        "id": 9,
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 20},
+        "type": "piechart",
+        "title": "Attack Types Distribution",
+        "targets": [
+          {
+            "expr": "sum(security_attacks_detected_total) by (attack_type)",
+            "legendFormat": "{{attack_type}}"
+          }
+        ],
+        "pieType": "donut",
+        "legendDisplayMode": "table",
+        "legendPlacement": "right",
+        "legendValues": ["percent", "value"],
+        "displayLabels": ["name", "percent"]
+      },
+      {
+        "id": 10,
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 20},
+        "type": "gauge",
+        "title": "SSL Certificate Expiry",
+        "targets": [
+          {
+            "expr": "(ssl_cert_expiry_timestamp_seconds - time()) / 86400",
+            "legendFormat": "Days until expiry"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "days",
+            "min": 0,
+            "max": 90,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 7},
+                {"color": "green", "value": 30}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 20},
+        "type": "stat",
+        "title": "Compliance Status",
+        "targets": [
+          {
+            "expr": "compliance_score",
+            "legendFormat": "OWASP Score"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 70},
+                {"color": "green", "value": 90}
+              ]
+            },
+            "mappings": [
+              {
+                "type": "range",
+                "options": {
+                  "from": 90,
+                  "to": 100,
+                  "result": {
+                    "text": "COMPLIANT",
+                    "color": "green"
+                  }
+                }
+              },
+              {
+                "type": "range",
+                "options": {
+                  "from": 70,
+                  "to": 89,
+                  "result": {
+                    "text": "PARTIAL",
+                    "color": "yellow"
+                  }
+                }
+              },
+              {
+                "type": "range",
+                "options": {
+                  "from": 0,
+                  "to": 69,
+                  "result": {
+                    "text": "NON-COMPLIANT",
+                    "color": "red"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": 12,
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 26},
+        "type": "logs",
+        "title": "Security Audit Log",
+        "targets": [
+          {
+            "expr": "{job=\"security-audit\"} |~ \"SECURITY|VIOLATION|ATTACK|BREACH\"",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "showCommonLabels": false,
+          "wrapLogMessage": true,
+          "sortOrder": "Descending",
+          "dedupStrategy": "none",
+          "enableLogDetails": true
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "environment",
+          "type": "custom",
+          "current": {
+            "text": "production",
+            "value": "production"
+          },
+          "options": [
+            {"text": "production", "value": "production"},
+            {"text": "staging", "value": "staging"},
+            {"text": "development", "value": "development"}
+          ]
+        }
+      ]
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+      "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "security_incident_detected",
+          "name": "Security Incidents",
+          "tagKeys": "severity,type",
+          "titleFormat": "Security Incident",
+          "textFormat": "{{type}}: {{description}}"
+        }
+      ]
+    }
+  }
+}

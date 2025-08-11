@@ -1,0 +1,132 @@
+{
+  "accounts": [
+    {
+      "account_id": "yt_account_01",
+      "email": "ytempire.channel01@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 01",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_02",
+      "email": "ytempire.channel02@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 02",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_03",
+      "email": "ytempire.channel03@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 03",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_04",
+      "email": "ytempire.channel04@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 04",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_05",
+      "email": "ytempire.channel05@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 05",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_06",
+      "email": "ytempire.channel06@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 06",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_07",
+      "email": "ytempire.channel07@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 07",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_08",
+      "email": "ytempire.channel08@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 08",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_09",
+      "email": "ytempire.channel09@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 09",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_10",
+      "email": "ytempire.channel10@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 10",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_11",
+      "email": "ytempire.channel11@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 11",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_12",
+      "email": "ytempire.channel12@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 12",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_13",
+      "email": "ytempire.channel13@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 13",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_14",
+      "email": "ytempire.channel14@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 14",
+      "credentials_json": "",
+      "refresh_token": ""
+    },
+    {
+      "account_id": "yt_account_15",
+      "email": "ytempire.channel15@gmail.com",
+      "channel_id": "",
+      "channel_name": "YTEmpire Channel 15",
+      "credentials_json": "",
+      "refresh_token": ""
+    }
+  ],
+  "settings": {
+    "max_accounts": 15,
+    "daily_quota_per_account": 10000,
+    "quota_buffer": 1000,
+    "rotation_strategy": "health_score",
+    "cooldown_hours": 6,
+    "max_errors_before_suspend": 5
+  }
+}

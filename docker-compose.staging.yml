@@ -1,0 +1,484 @@
+version: '3.9'
+
+# Staging environment configuration
+# Reduced resources compared to production, with test data and feature flags
+
+services:
+  # ============================================================================
+  # PostgreSQL Database - Staging
+  # ============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: ytempire_postgres_staging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ytempire}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-staging_password}
+      POSTGRES_DB: ${POSTGRES_DB:-ytempire_staging}
+      POSTGRES_MAX_CONNECTIONS: 100  # Reduced from production
+      POSTGRES_SHARED_BUFFERS: 128MB  # Reduced from production
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init_staging.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ytempire_staging_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ytempire}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'  # Reduced from production
+          memory: 1G  # Reduced from production
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ============================================================================
+  # Redis Cache - Staging
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: ytempire_redis_staging
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts
+    volumes:
+      - redis_staging_data:/data
+      - ./infrastructure/redis/redis-staging.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - ytempire_staging_network
+    restart: unless-stopped
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'  # Reduced from production
+          memory: 512M  # Reduced from production
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ============================================================================
+  # Backend API - Staging
+  # ============================================================================
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-ytempire/ytempire-mvp}-backend:${VERSION:-staging}
+    container_name: ytempire_backend_staging
+    environment:
+      # Core settings
+      ENVIRONMENT: staging
+      DEBUG: ${DEBUG:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      
+      # Database
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:staging_password@postgres:5432/ytempire_staging}
+      DATABASE_POOL_SIZE: 10  # Reduced from production
+      
+      # Redis
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CACHE_TTL: 300  # Shorter cache for staging
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY:-staging_secret_key_change_me}
+      JWT_EXPIRATION: 3600  # Shorter token life for staging
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://staging.ytempire.com,http://localhost:3000}
+      
+      # AI Services (with reduced quotas)
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_DAILY_LIMIT: 100  # Reduced for staging
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      ELEVENLABS_DAILY_LIMIT: 50  # Reduced for staging
+      
+      # YouTube (test accounts)
+      YOUTUBE_API_KEY_TEST: ${YOUTUBE_API_KEY_TEST}
+      YOUTUBE_TEST_MODE: "true"
+      
+      # Payment (Stripe test mode)
+      STRIPE_API_KEY: ${STRIPE_TEST_API_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_TEST_WEBHOOK_SECRET}
+      PAYMENT_TEST_MODE: "true"
+      
+      # Feature flags
+      FEATURE_VIDEO_GENERATION: ${FEATURE_VIDEO_GENERATION:-true}
+      FEATURE_AI_SCRIPTS: ${FEATURE_AI_SCRIPTS:-true}
+      FEATURE_MULTI_ACCOUNT: ${FEATURE_MULTI_ACCOUNT:-false}
+      FEATURE_ANALYTICS: ${FEATURE_ANALYTICS:-true}
+      
+      # Monitoring
+      SENTRY_DSN: ${SENTRY_DSN_STAGING}
+      SENTRY_ENVIRONMENT: staging
+      PROMETHEUS_ENABLED: "true"
+      
+    ports:
+      - "8001:8000"  # Different port for staging
+    volumes:
+      - ./uploads_staging:/app/uploads
+      - ./logs_staging:/app/logs
+    networks:
+      - ytempire_staging_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "
+        alembic upgrade head &&
+        python scripts/seed_staging_data.py &&
+        gunicorn app.main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --reload
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'  # Reduced from production
+          memory: 1G  # Reduced from production
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ============================================================================
+  # Frontend - Staging
+  # ============================================================================
+  frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-ytempire/ytempire-mvp}-frontend:${VERSION:-staging}
+    container_name: ytempire_frontend_staging
+    environment:
+      NODE_ENV: staging
+      VITE_API_URL: ${VITE_API_URL:-http://backend:8000}
+      VITE_WS_URL: ${VITE_WS_URL:-ws://backend:8000}
+      VITE_ENVIRONMENT: staging
+      VITE_SENTRY_DSN: ${VITE_SENTRY_DSN_STAGING}
+      VITE_FEATURE_FLAGS: ${VITE_FEATURE_FLAGS:-{"videoGeneration":true,"analytics":true}}
+      VITE_DEBUG_MODE: ${VITE_DEBUG_MODE:-false}
+    ports:
+      - "3001:80"  # Different port for staging
+    networks:
+      - ytempire_staging_network
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'  # Reduced from production
+          memory: 512M  # Reduced from production
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ============================================================================
+  # Celery Worker - Staging
+  # ============================================================================
+  celery_worker:
+    image: ghcr.io/${GITHUB_REPOSITORY:-ytempire/ytempire-mvp}-backend:${VERSION:-staging}
+    container_name: ytempire_celery_worker_staging
+    environment:
+      ENVIRONMENT: staging
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:staging_password@postgres:5432/ytempire_staging}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      CELERY_TASK_TIME_LIMIT: 300  # 5 minutes for staging
+      CELERY_CONCURRENCY: 2  # Reduced for staging
+      
+      # AI Services
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      
+      # Feature flags
+      WORKER_VIDEO_GENERATION: ${WORKER_VIDEO_GENERATION:-true}
+      WORKER_BATCH_SIZE: 5  # Smaller batches for staging
+    volumes:
+      - ./uploads_staging:/app/uploads
+      - ./data_staging:/app/data
+      - ./logs_staging:/app/logs
+    networks:
+      - ytempire_staging_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: celery -A app.core.celery_app worker --loglevel=info --concurrency=2 --max-tasks-per-child=50
+    deploy:
+      replicas: 1  # Single worker for staging
+      resources:
+        limits:
+          cpus: '1'  # Reduced from production
+          memory: 1G  # Reduced from production
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ============================================================================
+  # Celery Beat - Staging
+  # ============================================================================
+  celery_beat:
+    image: ghcr.io/${GITHUB_REPOSITORY:-ytempire/ytempire-mvp}-backend:${VERSION:-staging}
+    container_name: ytempire_celery_beat_staging
+    environment:
+      ENVIRONMENT: staging
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:staging_password@postgres:5432/ytempire_staging}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      BEAT_SCHEDULE_FILENAME: /app/celerybeat-schedule-staging
+    volumes:
+      - ./logs_staging:/app/logs
+      - celerybeat_staging_schedule:/app
+    networks:
+      - ytempire_staging_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: celery -A app.core.celery_app beat --loglevel=info
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'  # Minimal resources
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+  # ============================================================================
+  # Flower - Celery Monitoring (Staging)
+  # ============================================================================
+  flower:
+    image: ghcr.io/${GITHUB_REPOSITORY:-ytempire/ytempire-mvp}-backend:${VERSION:-staging}
+    container_name: ytempire_flower_staging
+    environment:
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      FLOWER_BASIC_AUTH: ${FLOWER_USER:-admin}:${FLOWER_PASSWORD:-staging_password}
+      FLOWER_PORT: 5555
+    ports:
+      - "5556:5555"  # Different port for staging
+    networks:
+      - ytempire_staging_network
+    depends_on:
+      - redis
+    restart: unless-stopped
+    command: celery -A app.core.celery_app flower --port=5555 --url_prefix=flower
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
+  # ============================================================================
+  # ML Pipeline - Staging (CPU only)
+  # ============================================================================
+  ml_pipeline:
+    image: ghcr.io/${GITHUB_REPOSITORY:-ytempire/ytempire-mvp}-ml-pipeline:${VERSION:-staging}
+    container_name: ytempire_ml_pipeline_staging
+    environment:
+      ENVIRONMENT: staging
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:staging_password@postgres:5432/ytempire_staging}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      
+      # AI Configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      USE_GPU: "false"  # CPU only for staging
+      MODEL_CACHE_DIR: /app/models
+      
+      # Reduced limits for staging
+      MAX_VIDEO_LENGTH: 300  # 5 minutes max
+      MAX_CONCURRENT_JOBS: 2
+      QUALITY_THRESHOLD: 0.7  # Lower threshold for staging
+    volumes:
+      - ./ml-pipeline:/app
+      - ./data_staging:/app/data
+      - ./models_staging:/app/models
+    networks:
+      - ytempire_staging_network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'  # CPU only for staging
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # ============================================================================
+  # Nginx - Staging
+  # ============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: ytempire_nginx_staging
+    ports:
+      - "8080:80"  # Different port for staging
+    volumes:
+      - ./infrastructure/nginx/nginx-staging.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/nginx/sites-enabled:/etc/nginx/sites-enabled:ro
+      - nginx_staging_cache:/var/cache/nginx
+    networks:
+      - ytempire_staging_network
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # ============================================================================
+  # Monitoring Stack - Staging
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ytempire_prometheus_staging
+    volumes:
+      - ./infrastructure/monitoring/prometheus-staging.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_staging_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'  # Shorter retention for staging
+      - '--web.enable-lifecycle'
+    ports:
+      - "9091:9090"  # Different port for staging
+    networks:
+      - ytempire_staging_network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ytempire_grafana_staging
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-staging_password}
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+      GF_SERVER_ROOT_URL: https://staging-grafana.ytempire.com
+    volumes:
+      - grafana_staging_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana/dashboards-staging:/etc/grafana/provisioning/dashboards:ro
+      - ./infrastructure/monitoring/grafana/datasources-staging:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3002:3000"  # Different port for staging
+    networks:
+      - ytempire_staging_network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
+  # ============================================================================
+  # Test Data Generator - Staging Only
+  # ============================================================================
+  test_data_generator:
+    image: ghcr.io/${GITHUB_REPOSITORY:-ytempire/ytempire-mvp}-backend:${VERSION:-staging}
+    container_name: ytempire_test_data_staging
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ytempire:staging_password@postgres:5432/ytempire_staging}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      GENERATE_TEST_DATA: "true"
+      TEST_USERS_COUNT: 10
+      TEST_CHANNELS_COUNT: 5
+      TEST_VIDEOS_COUNT: 50
+    networks:
+      - ytempire_staging_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"  # Run once to generate test data
+    command: python scripts/generate_test_data.py
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ============================================================================
+  # Mailhog - Email Testing for Staging
+  # ============================================================================
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ytempire_mailhog_staging
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI
+    networks:
+      - ytempire_staging_network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  ytempire_staging_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.29.0.0/16  # Different subnet from production
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  postgres_staging_data:
+    driver: local
+  redis_staging_data:
+    driver: local
+  nginx_staging_cache:
+    driver: local
+  prometheus_staging_data:
+    driver: local
+  grafana_staging_data:
+    driver: local
+  celerybeat_staging_schedule:
+    driver: local

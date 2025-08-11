@@ -1,0 +1,48 @@
+# Health Monitoring Dockerfile
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    redis-tools \
+    curl \
+    docker.io \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt /tmp/
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Additional monitoring-specific packages
+RUN pip install --no-cache-dir \
+    psycopg2-binary==2.9.* \
+    redis==5.0.* \
+    aiohttp==3.9.* \
+    psutil==5.9.* \
+    boto3==1.34.*
+
+# Create app directory
+WORKDIR /app
+
+# Copy monitoring scripts
+COPY infrastructure/monitoring/ /app/monitoring/
+
+# Create reports directory
+RUN mkdir -p /app/reports
+
+# Set permissions
+RUN chmod +x /app/monitoring/*.py
+
+# Create non-root user
+RUN groupadd -r monitor && useradd -r -g monitor monitor
+RUN chown -R monitor:monitor /app
+
+# Switch to non-root user
+USER monitor
+
+# Health check
+HEALTHCHECK --interval=60s --timeout=30s --start-period=10s --retries=3 \
+    CMD python /app/monitoring/health_check.py || exit 1
+
+# Default command
+CMD ["python", "/app/monitoring/health_check.py", "--watch", "--interval", "300"]
