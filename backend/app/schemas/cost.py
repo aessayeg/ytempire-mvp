@@ -43,7 +43,7 @@ class CostAggregationResponse(BaseModel):
 
 class ThresholdCreate(BaseModel):
     """Schema for creating threshold"""
-    threshold_type: str = Field(..., regex="^(daily|monthly|per_video|service)$")
+    threshold_type: str = Field(..., pattern="^(daily|monthly|per_video|service)$")
     value: float = Field(..., gt=0, description="Threshold value in USD")
     service: Optional[str] = Field(None, description="Service name for service-specific thresholds")
     alert_email: Optional[str] = Field(None, description="Email for alerts")

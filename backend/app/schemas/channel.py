@@ -11,7 +11,7 @@ class ChannelBase(BaseModel):
     channel_handle: Optional[str] = None
     channel_description: Optional[str] = None
     niche: Optional[str] = None
-    content_type: Optional[str] = Field(None, regex="^(shorts|long-form|mixed)$")
+    content_type: Optional[str] = Field(None, pattern="^(shorts|long-form|mixed)$")
     
 
 class ChannelCreate(ChannelBase):

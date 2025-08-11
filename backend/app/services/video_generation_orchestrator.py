@@ -18,20 +18,41 @@ from fastapi import WebSocket
 
 from app.services.youtube_multi_account import youtube_account_manager
 from app.services.video_pipeline import VideoPipelineOrchestrator, PipelineStage
-from app.services.cost_tracking import CostTracker
-from app.services.websocket_manager import WebSocketManager
+from app.services.cost_tracking import cost_tracker
+from app.services.websocket_manager import ConnectionManager
 from app.models.video import Video, VideoStatus
 from app.models.channel import Channel
-from app.models.cost import CostRecord
-from app.core.database import get_db
+from app.models.cost import Cost as CostRecord
+from app.db.session import get_db
 from app.core.config import settings
 
-# Import ML services
-from ml_pipeline.src.trend_detection_model import TrendDetector
-from ml_pipeline.src.script_generation import ScriptGenerator
-from ml_pipeline.src.voice_synthesis import VoiceSynthesizer
-from ml_pipeline.src.thumbnail_generation import ThumbnailGenerator
-from ml_pipeline.src.content_quality_scorer import QualityScorer
+# Import ML services (commented out until ml_pipeline is set up)
+# from ml_pipeline.src.trend_detection_model import TrendDetector
+# from ml_pipeline.src.script_generation import ScriptGenerator
+# from ml_pipeline.src.voice_synthesis import VoiceSynthesizer
+# from ml_pipeline.src.thumbnail_generation import ThumbnailGenerator
+# from ml_pipeline.src.content_quality_scorer import QualityScorer
+
+# Placeholder classes until ML pipeline is ready
+class TrendDetector:
+    async def detect_trends(self, *args, **kwargs):
+        return {"topics": ["AI", "Technology"], "scores": [0.9, 0.85]}
+
+class ScriptGenerator:
+    async def generate_script(self, *args, **kwargs):
+        return {"script": "Sample script content", "title": "Sample Title"}
+
+class VoiceSynthesizer:
+    async def synthesize(self, *args, **kwargs):
+        return {"audio_path": "/tmp/audio.mp3"}
+
+class ThumbnailGenerator:
+    async def generate(self, *args, **kwargs):
+        return {"thumbnail_path": "/tmp/thumbnail.jpg"}
+
+class QualityScorer:
+    async def score(self, *args, **kwargs):
+        return {"score": 85.0}
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +99,8 @@ class VideoGenerationOrchestrator:
     
     def __init__(self):
         self.pipeline = VideoPipelineOrchestrator()
-        self.cost_tracker = CostTracker()
-        self.ws_manager = WebSocketManager()
+        self.cost_tracker = cost_tracker
+        self.ws_manager = ConnectionManager()
         self.trend_detector = TrendDetector()
         self.script_generator = ScriptGenerator()
         self.voice_synthesizer = VoiceSynthesizer()

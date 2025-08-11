@@ -16,10 +16,10 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import json
 
-from ..core.config import settings
-from ..db.session import get_db
-from ..services.email_service import EmailService
-from ..services.websocket_manager import WebSocketManager
+from app.core.config import settings
+from app.db.session import get_db
+from app.services.email_service import EmailService
+from app.services.websocket_manager import ConnectionManager
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class NotificationPayload:
 class NotificationService:
     def __init__(self):
         self.email_service = EmailService()
-        self.websocket_manager = WebSocketManager()
+        self.websocket_manager = ConnectionManager()
         self.templates = self._load_templates()
         
     def _load_templates(self) -> Dict[str, NotificationTemplate]:

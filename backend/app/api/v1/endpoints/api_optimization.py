@@ -7,9 +7,9 @@ from typing import Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from ....core.security import get_current_user
-from ....services.api_optimization import api_optimizer, APIProvider
-from ....models.user import User
+from app.api.v1.endpoints.auth import get_current_verified_user
+from app.services.api_optimization import api_optimizer, APIProvider
+from app.models.user import User
 
 router = APIRouter()
 
@@ -20,11 +20,11 @@ class RateLimitUpdateRequest(BaseModel):
 
 class CacheControlRequest(BaseModel):
     provider: Optional[APIProvider] = None
-    action: str = Field(..., regex="^(clear|refresh)$")
+    action: str = Field(..., pattern="^(clear|refresh)$")
 
 @router.get("/stats")
 async def get_optimization_stats(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Get API optimization statistics and metrics"""
     try:
@@ -44,7 +44,7 @@ async def get_optimization_stats(
 
 @router.get("/providers")
 async def get_provider_configs(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Get API provider configurations"""
     try:
@@ -81,7 +81,7 @@ async def get_provider_configs(
 @router.post("/cache/control")
 async def control_cache(
     request: CacheControlRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Control API cache (clear or refresh)"""
     try:
@@ -108,7 +108,7 @@ async def control_cache(
 @router.post("/rate-limits/update")
 async def update_rate_limits(
     request: RateLimitUpdateRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Update rate limits for a provider (admin only)"""
     try:
@@ -138,7 +138,7 @@ async def update_rate_limits(
 
 @router.get("/circuit-breakers")
 async def get_circuit_breaker_status(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Get circuit breaker status for all providers"""
     try:
@@ -171,7 +171,7 @@ async def get_circuit_breaker_status(
 @router.post("/circuit-breakers/{provider}/reset")
 async def reset_circuit_breaker(
     provider: APIProvider,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Manually reset a circuit breaker (admin only)"""
     try:
@@ -194,7 +194,7 @@ async def reset_circuit_breaker(
 @router.get("/test/{provider}")
 async def test_provider_connection(
     provider: APIProvider,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Test connection to a specific provider"""
     try:
@@ -243,7 +243,7 @@ async def test_provider_connection(
 
 @router.get("/recommendations")
 async def get_optimization_recommendations(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Get optimization recommendations based on current metrics"""
     try:
@@ -310,7 +310,7 @@ async def get_optimization_recommendations(
 async def make_test_optimized_request(
     config_key: str,
     request_data: Dict[str, Any] = None,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Make a test optimized API request (for testing purposes)"""
     try:

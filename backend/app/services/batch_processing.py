@@ -14,11 +14,11 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import asynccontextmanager
 
-from ..core.config import settings
-from ..db.session import get_db
-from ..services.cost_tracking import cost_tracker
-from ..services.notification_service import notification_service, NotificationType
-from ..services.websocket_manager import WebSocketManager
+from app.core.config import settings
+from app.db.session import get_db
+from app.services.cost_tracking import cost_tracker
+from app.services.notification_service import notification_service, NotificationType
+from app.services.websocket_manager import ConnectionManager
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class BatchProcessor:
     def __init__(self):
         self.running_jobs: Dict[str, BatchJobConfig] = {}
         self.job_history: List[Dict[str, Any]] = []
-        self.websocket_manager = WebSocketManager()
+        self.websocket_manager = ConnectionManager()
         
     async def submit_batch_job(
         self, 

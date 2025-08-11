@@ -14,9 +14,6 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.http import MediaFileUpload
 import httplib2
-from oauth2client.client import flow_from_clientsecrets
-from oauth2client.file import Storage
-from oauth2client.tools import run_flow
 from dataclasses import dataclass
 import aiohttp
 from tenacity import retry, stop_after_attempt, wait_exponential

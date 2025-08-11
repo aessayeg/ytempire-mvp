@@ -168,3 +168,5 @@ influxdb_data/
 victoria_metrics_data/
 
 _documentation/
+*.nul
+nul

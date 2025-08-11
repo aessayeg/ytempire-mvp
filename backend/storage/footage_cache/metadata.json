@@ -1,0 +1,167 @@
+{
+  "c1f081114a7cf62ad0da701a318b1f43": {
+    "clips": [
+      {
+        "type": "video",
+        "url": "https://videos.pexels.com/video-files/8467253/8467253-hd_1280_720_25fps.mp4",
+        "duration": 40,
+        "source": "pexels",
+        "id": 8467253
+      },
+      {
+        "type": "video",
+        "url": "https://videos.pexels.com/video-files/8084499/8084499-sd_960_540_25fps.mp4",
+        "duration": 9,
+        "source": "pexels",
+        "id": 8084499
+      },
+      {
+        "type": "video",
+        "url": "https://videos.pexels.com/video-files/8328101/8328101-sd_540_960_25fps.mp4",
+        "duration": 13,
+        "source": "pexels",
+        "id": 8328101
+      },
+      {
+        "type": "image",
+        "url": "https://images.pexels.com/photos/9242852/pexels-photo-9242852.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        "duration": 5,
+        "source": "pexels",
+        "id": 9242852
+      },
+      {
+        "type": "image",
+        "url": "https://images.pexels.com/photos/8566445/pexels-photo-8566445.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        "duration": 5,
+        "source": "pexels",
+        "id": 8566445
+      }
+    ],
+    "cached_at": "2025-08-11T12:08:16.805117",
+    "query": "amazing world artificial intelligence machine"
+  },
+  "fc75638c46bd35b4f1d9e1df7addabb3": {
+    "clips": [
+      {
+        "type": "video",
+        "url": "https://videos.pexels.com/video-files/2792370/2792370-sd_426_240_30fps.mp4",
+        "duration": 10,
+        "source": "pexels",
+        "id": 2792370
+      },
+      {
+        "type": "video",
+        "url": "https://videos.pexels.com/video-files/30767356/13160958_640_360_30fps.mp4",
+        "duration": 3,
+        "source": "pexels",
+        "id": 30767356
+      },
+      {
+        "type": "video",
+        "url": "https://videos.pexels.com/video-files/9244547/9244547-hd_1920_1080_25fps.mp4",
+        "duration": 16,
+        "source": "pexels",
+        "id": 9244547
+      },
+      {
+        "type": "image",
+        "url": "https://images.pexels.com/photos/8849295/pexels-photo-8849295.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        "duration": 5,
+        "source": "pexels",
+        "id": 8849295
+      },
+      {
+        "type": "image",
+        "url": "https://images.pexels.com/photos/17486100/pexels-photo-17486100.png?auto=compress&cs=tinysrgb&h=650&w=940",
+        "duration": 5,
+        "source": "pexels",
+        "id": 17486100
+      },
+      {
+        "type": "video",
+        "url": "https://cdn.pixabay.com/video/2024/03/12/203987-923133879_medium.mp4",
+        "duration": 10,
+        "source": "pixabay",
+        "id": 203987
+      },
+      {
+        "type": "video",
+        "url": "https://cdn.pixabay.com/video/2023/07/19/172170-846731303_medium.mp4",
+        "duration": 10,
+        "source": "pixabay",
+        "id": 172170
+      },
+      {
+        "type": "video",
+        "url": "https://cdn.pixabay.com/video/2024/03/12/203986-923133871_medium.mp4",
+        "duration": 10,
+        "source": "pixabay",
+        "id": 203986
+      }
+    ],
+    "cached_at": "2025-08-11T12:41:14.315454",
+    "query": "technology innovation artificial intelligence"
+  },
+  "f40cba0e045db6514fa9143e3f30e271": {
+    "clips": [
+      {
+        "type": "video",
+        "url": "https://videos.pexels.com/video-files/14618955/14618955-sd_360_640_24fps.mp4",
+        "duration": 8,
+        "source": "pexels",
+        "id": 14618955
+      },
+      {
+        "type": "video",
+        "url": "https://videos.pexels.com/video-files/856309/856309-sd_960_540_30fps.mp4",
+        "duration": 15,
+        "source": "pexels",
+        "id": 856309
+      },
+      {
+        "type": "video",
+        "url": "https://videos.pexels.com/video-files/12722063/12722063-sd_426_240_24fps.mp4",
+        "duration": 15,
+        "source": "pexels",
+        "id": 12722063
+      },
+      {
+        "type": "image",
+        "url": "https://images.pexels.com/photos/713664/pexels-photo-713664.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        "duration": 5,
+        "source": "pexels",
+        "id": 713664
+      },
+      {
+        "type": "image",
+        "url": "https://images.pexels.com/photos/17809421/pexels-photo-17809421.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        "duration": 5,
+        "source": "pexels",
+        "id": 17809421
+      },
+      {
+        "type": "video",
+        "url": "https://cdn.pixabay.com/video/2018/02/05/14139-254487741_medium.mp4",
+        "duration": 10,
+        "source": "pixabay",
+        "id": 14139
+      },
+      {
+        "type": "video",
+        "url": "https://cdn.pixabay.com/video/2020/11/09/55990-478348906_medium.mp4",
+        "duration": 10,
+        "source": "pixabay",
+        "id": 55990
+      },
+      {
+        "type": "video",
+        "url": "https://cdn.pixabay.com/video/2016/02/10/2118-155244104_medium.mp4",
+        "duration": 10,
+        "source": "pixabay",
+        "id": 2118
+      }
+    ],
+    "cached_at": "2025-08-11T12:52:02.319012",
+    "query": "space stars galaxy planets"
+  }
+}

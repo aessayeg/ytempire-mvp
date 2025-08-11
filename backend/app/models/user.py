@@ -5,7 +5,7 @@ from sqlalchemy import Column, String, Boolean, DateTime, Integer, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
-from app.db.base import Base
+from app.db.base_class import Base
 
 
 class User(Base):
@@ -59,3 +59,5 @@ class User(Base):
     channels = relationship("Channel", back_populates="owner", cascade="all, delete-orphan")
     api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan")
     costs = relationship("Cost", back_populates="user", cascade="all, delete-orphan")
+    subscription = relationship("Subscription", back_populates="user", uselist=False)
+    cost_budgets = relationship("CostBudget", back_populates="user", cascade="all, delete-orphan")

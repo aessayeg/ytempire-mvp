@@ -13,8 +13,12 @@ import base64
 from datetime import datetime
 import openai
 from elevenlabs import generate, voices, set_api_key
-from google.cloud import texttospeech
-from google.oauth2 import service_account
+try:
+    from google.cloud import texttospeech
+    from google.oauth2 import service_account
+    GOOGLE_TTS_AVAILABLE = True
+except ImportError:
+    GOOGLE_TTS_AVAILABLE = False
 import tempfile
 import wave
 from pydub import AudioSegment
@@ -26,11 +30,10 @@ logger = logging.getLogger(__name__)
 class AIServiceConfig:
     """Configuration for AI services"""
     openai_api_key: str
+    elevenlabs_api_key: str
     openai_model: str = "gpt-4-turbo-preview"
     openai_max_tokens: int = 4000
     openai_temperature: float = 0.7
-    
-    elevenlabs_api_key: str
     elevenlabs_voice_id: str = "21m00Tcm4TlvDq8ikWAM"  # Rachel voice
     elevenlabs_model: str = "eleven_monolingual_v1"
     
@@ -392,16 +395,24 @@ class GoogleTTSService:
     
     def __init__(self, config: AIServiceConfig):
         self.config = config
+        self.client = None
         
-        # Initialize Google TTS client
-        if os.path.exists(config.google_tts_credentials_path):
-            credentials = service_account.Credentials.from_service_account_file(
-                config.google_tts_credentials_path
-            )
-            self.client = texttospeech.TextToSpeechClient(credentials=credentials)
+        # Initialize Google TTS client if available and credentials exist
+        if GOOGLE_TTS_AVAILABLE:
+            try:
+                if os.path.exists(config.google_tts_credentials_path):
+                    credentials = service_account.Credentials.from_service_account_file(
+                        config.google_tts_credentials_path
+                    )
+                    self.client = texttospeech.TextToSpeechClient(credentials=credentials)
+                else:
+                    # Try to use default credentials (for GCP environments)
+                    self.client = texttospeech.TextToSpeechClient()
+            except Exception as e:
+                logger.warning(f"Google TTS client not initialized: {e}")
+                self.client = None
         else:
-            # Use default credentials (for GCP environments)
-            self.client = texttospeech.TextToSpeechClient()
+            logger.info("Google TTS library not installed, using mock TTS")
             
     async def text_to_speech(
         self,
@@ -412,6 +423,10 @@ class GoogleTTSService:
         audio_encoding: str = "MP3"
     ) -> Dict[str, Any]:
         """Convert text to speech using Google TTS"""
+        if self.client is None:
+            # Return mock audio data for testing
+            return await self._create_mock_audio(text, output_path)
+        
         try:
             language_code = language_code or self.config.google_tts_language_code
             voice_name = voice_name or self.config.google_tts_voice_name
@@ -511,6 +526,35 @@ class GoogleTTSService:
             
         cost = (characters / 1_000_000) * rate
         return round(cost, 4)
+    
+    async def _create_mock_audio(self, text: str, output_path: Optional[str] = None) -> Dict[str, Any]:
+        """Create mock audio file for testing when Google TTS is not available"""
+        import json
+        
+        if not output_path:
+            output_path = tempfile.mktemp(suffix=".mp3")
+        
+        # Create a simple mock audio file
+        mock_audio_data = {
+            "type": "mock_audio",
+            "text": text[:500],
+            "duration": len(text) / 15,  # Estimate 15 chars per second
+            "format": "mp3"
+        }
+        
+        # Write mock data as binary
+        with open(output_path, 'wb') as f:
+            f.write(b'ID3')  # MP3 header
+            f.write(b'\x00' * 128)  # Some padding
+            f.write(json.dumps(mock_audio_data).encode('utf-8'))
+        
+        return {
+            "audio_path": output_path,
+            "duration": mock_audio_data["duration"],
+            "characters": len(text),
+            "cost": 0.0,  # Free mock
+            "is_mock": True
+        }
 
 
 class AIServiceOrchestrator:

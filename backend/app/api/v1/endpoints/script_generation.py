@@ -14,9 +14,9 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', 'ml-pipeline', 'src'))
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
-from app.services.cost_tracking import CostTrackingService
+from app.services.cost_tracking import CostTracker
 from script_generation import ScriptGenerator, ScriptRequest, ScriptStyle, ScriptTone
 import logging
 
@@ -87,7 +87,7 @@ async def generate_script(
     request: ScriptGenerationRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> ScriptGenerationResponse:
     """
     Generate a video script using AI
@@ -124,7 +124,7 @@ async def generate_script(
         )
         
         # Track cost
-        cost_service = CostTrackingService(db)
+        cost_service = CostTracker(db)
         await cost_service.track_cost(
             user_id=current_user.id,
             service_name="openai",
@@ -181,7 +181,7 @@ async def generate_script_variations(
     request: ScriptVariationsRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Generate multiple script variations for A/B testing
@@ -219,7 +219,7 @@ async def generate_script_variations(
         total_cost = sum(v.cost for v in variations)
         
         # Track cost
-        cost_service = CostTrackingService(db)
+        cost_service = CostTracker(db)
         await cost_service.track_cost(
             user_id=current_user.id,
             service_name="openai",
@@ -261,7 +261,7 @@ async def generate_script_variations(
 async def optimize_script(
     request: ScriptOptimizationRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Optimize an existing script based on analytics data
@@ -298,7 +298,7 @@ async def optimize_script(
         
         # Track optimization cost
         optimization_cost = 0.002  # Approximate cost for optimization
-        cost_service = CostTrackingService(db)
+        cost_service = CostTracker(db)
         await cost_service.track_cost(
             user_id=current_user.id,
             service_name="openai",
@@ -331,7 +331,7 @@ async def optimize_script(
 
 @router.get("/styles")
 async def get_available_styles(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, List[str]]:
     """
     Get available script styles and tones
@@ -347,7 +347,7 @@ async def estimate_script_cost(
     duration_minutes: int = 5,
     quality_preset: str = "balanced",
     num_variations: int = 1,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Estimate the cost of script generation

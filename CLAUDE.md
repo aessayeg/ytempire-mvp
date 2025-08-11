@@ -240,3 +240,5 @@ npm test -- --testNamePattern="VideoCard"
 # Frontend requires:
 # VITE_API_URL (defaults to http://localhost:8000)
 ```
+- always place test or fix scripts that you generate in the misc/ folder
+- Always refer to the provided documentation in the _documentation/ folder before executing a development task

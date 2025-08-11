@@ -13,9 +13,9 @@ from prometheus_client import Counter, Histogram, Gauge
 import redis.asyncio as redis
 from pydantic import BaseModel
 
-from app.core.database import get_db
+from app.db.session import get_db
 from app.core.config import settings
-from app.models.cost import CostRecord, CostThreshold, CostAggregation
+from app.models.cost import Cost, CostThreshold, CostAggregation
 from app.core.exceptions import ThresholdExceededException
 
 

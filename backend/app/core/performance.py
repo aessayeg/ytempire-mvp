@@ -3,6 +3,7 @@ Performance Optimization Module
 Implements caching, connection pooling, and response optimization
 """
 import asyncio
+import os
 import time
 import json
 import hashlib
@@ -13,6 +14,8 @@ from datetime import datetime, timedelta
 import redis.asyncio as redis
 from fastapi import Request, Response
 from fastapi.responses import ORJSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import StreamingResponse
 import orjson
 import logging
 from dataclasses import dataclass
@@ -300,7 +303,7 @@ class ConnectionPoolManager:
     async def create_db_pool(self) -> AsyncSession:
         """Create database connection pool"""
         engine = create_async_engine(
-            "postgresql+asyncpg://user:password@localhost/ytempire",
+            os.getenv("DATABASE_URL", "postgresql+asyncpg://localhost/ytempire"),
             pool_size=20,
             max_overflow=10,
             pool_timeout=30,
@@ -408,13 +411,13 @@ class ResponseOptimizer:
         return generate()
 
 
-class PerformanceMiddleware:
+class PerformanceMiddleware(BaseHTTPMiddleware):
     """
     Middleware for performance monitoring and optimization
     """
     
     def __init__(self, app, cache_manager: Optional[CacheManager] = None):
-        self.app = app
+        super().__init__(app)
         self.cache_manager = cache_manager
         self.metrics = {
             "request_count": 0,
@@ -423,7 +426,7 @@ class PerformanceMiddleware:
             "errors": 0
         }
         
-    async def __call__(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next):
         start_time = time.time()
         
         # Add request ID for tracing
@@ -465,22 +468,33 @@ class PerformanceMiddleware:
             
             # Cache successful GET responses
             if request.method == "GET" and response.status_code == 200 and self.cache_manager:
-                # Read response body
-                body = b""
-                async for chunk in response.body_iterator:
-                    body += chunk
+                # For caching, we need to read the response body
+                # Check if it's a streaming response
+                if isinstance(response, StreamingResponse):
+                    # Collect the body from streaming response
+                    body_chunks = []
+                    async for chunk in response.body_iterator:
+                        body_chunks.append(chunk)
+                    body = b"".join(body_chunks)
                     
-                # Cache the response
-                cache_key = self.cache_manager.cache_key("response", str(request.url))
-                await self.cache_manager.set(cache_key, orjson.loads(body), ttl=60)
-                
-                # Return new response with cached body
-                return Response(
-                    content=body,
-                    status_code=response.status_code,
-                    headers=dict(response.headers),
-                    media_type=response.media_type
-                )
+                    # Try to cache JSON responses
+                    try:
+                        # Cache the response
+                        cache_key = self.cache_manager.cache_key("response", str(request.url))
+                        await self.cache_manager.set(cache_key, orjson.loads(body), ttl=60)
+                    except Exception as e:
+                        logger.debug(f"Could not cache response: {e}")
+                    
+                    # Return new response with the collected body
+                    return Response(
+                        content=body,
+                        status_code=response.status_code,
+                        headers=dict(response.headers),
+                        media_type=response.media_type
+                    )
+                else:
+                    # For regular responses, just pass through
+                    pass
                 
             return response
             

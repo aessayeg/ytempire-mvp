@@ -12,7 +12,7 @@ import os
 import logging
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
 from app.services.payment_service import PaymentService
 
@@ -60,7 +60,7 @@ class SubscriptionResponse(BaseModel):
 async def create_checkout_session(
     request: CreateCheckoutSessionRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Create a Stripe checkout session for subscription
@@ -115,7 +115,7 @@ async def create_checkout_session(
 async def create_subscription(
     request: CreateSubscriptionRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> SubscriptionResponse:
     """
     Create a subscription directly (for users with saved payment methods)
@@ -185,7 +185,7 @@ async def create_subscription(
 @router.get("/subscription")
 async def get_subscription(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Optional[SubscriptionResponse]:
     """
     Get current user's subscription details
@@ -220,7 +220,7 @@ async def get_subscription(
 @router.post("/subscription/cancel")
 async def cancel_subscription(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Cancel the current subscription at period end
@@ -266,7 +266,7 @@ async def cancel_subscription(
 @router.post("/subscription/resume")
 async def resume_subscription(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Resume a subscription that was set to cancel
@@ -311,7 +311,7 @@ async def resume_subscription(
 @router.get("/payment-methods")
 async def get_payment_methods(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> List[Dict[str, Any]]:
     """
     Get user's saved payment methods

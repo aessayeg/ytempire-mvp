@@ -17,8 +17,8 @@ import aiohttp
 from collections import defaultdict
 
 import redis.asyncio as redis
-from ..core.config import settings
-from ..services.cost_tracking import cost_tracker
+from app.core.config import settings
+from app.services.cost_tracking import cost_tracker
 
 logger = logging.getLogger(__name__)
 

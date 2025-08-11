@@ -2,9 +2,10 @@
 Analytics Model
 """
 from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, JSON
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
-from app.db.base import Base
+from app.db.base_class import Base
 
 
 class Analytics(Base):

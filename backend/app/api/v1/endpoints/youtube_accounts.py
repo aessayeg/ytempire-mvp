@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
 from app.services.youtube_multi_account import (
     MultiAccountYouTubeService,
@@ -87,7 +87,7 @@ async def startup_event():
 
 @router.get("/accounts", response_model=YouTubeAccountStats)
 async def get_youtube_accounts(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> YouTubeAccountStats:
     """
     Get all YouTube accounts and their status
@@ -108,7 +108,7 @@ async def get_youtube_accounts(
 @router.get("/accounts/{account_id}", response_model=YouTubeAccountInfo)
 async def get_youtube_account(
     account_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> YouTubeAccountInfo:
     """
     Get specific YouTube account information
@@ -147,7 +147,7 @@ async def get_youtube_account(
 async def authenticate_youtube_account(
     account_id: str,
     request: YouTubeAuthRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Authenticate a YouTube account with OAuth
@@ -181,7 +181,7 @@ async def authenticate_youtube_account(
 @router.post("/accounts/health-check")
 async def health_check_accounts(
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Perform health check on all YouTube accounts
@@ -201,7 +201,7 @@ async def health_check_accounts(
 
 @router.post("/accounts/reset-quotas")
 async def reset_account_quotas(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Reset daily quotas for all accounts
@@ -225,7 +225,7 @@ async def reset_account_quotas(
 @router.post("/search")
 async def search_videos_multi_account(
     request: YouTubeSearchRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Search YouTube videos using multi-account rotation
@@ -258,7 +258,7 @@ async def search_videos_multi_account(
 async def upload_video_multi_account(
     request: YouTubeUploadRequest,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Upload video to YouTube using multi-account rotation
@@ -292,7 +292,7 @@ async def upload_video_multi_account(
 
 @router.get("/quota-status")
 async def get_quota_status(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Get current quota status across all accounts

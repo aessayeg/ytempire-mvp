@@ -7,8 +7,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
 import uuid
 import logging
-from backend.app.websocket.websocket_manager import manager, VideoGenerationNotifier
-from backend.app.core.auth import verify_token
+from app.websocket.websocket_manager import manager, VideoGenerationNotifier
+from app.core.security import verify_token
 
 logger = logging.getLogger(__name__)
 

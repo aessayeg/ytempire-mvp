@@ -7,6 +7,10 @@ from pydantic import AnyHttpUrl, validator, EmailStr
 import secrets
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env file
+load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -84,10 +88,21 @@ class Settings(BaseSettings):
     GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = None
     
     # YouTube API
+    YOUTUBE_API_KEY: Optional[str] = None  # Single key for MVP
     YOUTUBE_API_KEYS: List[str] = []
     YOUTUBE_CLIENT_ID: Optional[str] = None
     YOUTUBE_CLIENT_SECRET: Optional[str] = None
     YOUTUBE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/youtube/callback"
+    
+    # Stock Footage APIs
+    PEXELS_API_KEY: Optional[str] = None
+    PIXABAY_API_KEY: Optional[str] = None
+    
+    # AI Service APIs
+    OPENAI_API_KEY: Optional[str] = None
+    ELEVENLABS_API_KEY: Optional[str] = None
+    ANTHROPIC_API_KEY: Optional[str] = None
+    GOOGLE_TTS_API_KEY: Optional[str] = None
     
     # Cost Optimization
     MAX_COST_PER_VIDEO: float = 3.00  # $3 per video target
@@ -126,6 +141,8 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_PASSWORD: str = "changeme123!"
     
     # N8N Workflow
+    N8N_URL: Optional[str] = None
+    N8N_PASSWORD: Optional[str] = None
     N8N_WEBHOOK_URL: Optional[str] = None
     N8N_API_KEY: Optional[str] = None
     

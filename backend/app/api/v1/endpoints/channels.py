@@ -87,7 +87,7 @@ async def create_channel(
     result = await db.execute(
         select(Channel).filter(
             Channel.owner_id == current_user.id,
-            Channel.name == channel_data.name
+            Channel.name == channel_data.channel_name
         )
     )
     if result.scalar_one_or_none():
@@ -97,11 +97,28 @@ async def create_channel(
         )
     
     # Create new channel with enhanced fields
+    channel_dict = channel_data.dict()
+    
+    # Map schema fields to model fields
+    mapped_dict = {}
+    if 'channel_name' in channel_dict:
+        mapped_dict['name'] = channel_dict['channel_name']
+    if 'channel_description' in channel_dict:
+        mapped_dict['description'] = channel_dict['channel_description']
+    if 'youtube_channel_id' in channel_dict:
+        mapped_dict['youtube_channel_id'] = channel_dict['youtube_channel_id']
+    if 'niche' in channel_dict:
+        mapped_dict['category'] = channel_dict['niche']  # Map niche to category
+    if 'content_type' in channel_dict:
+        mapped_dict['content_type'] = channel_dict['content_type']
+    
+    # Only add fields that exist in the Channel model
     db_channel = Channel(
         owner_id=current_user.id,
-        **channel_data.dict(),
+        **mapped_dict,
         api_key=secrets.token_urlsafe(32),  # Generate unique API key
-        is_verified=False
+        is_verified=False,
+        is_active=True
     )
     
     # If YouTube credentials provided, verify them

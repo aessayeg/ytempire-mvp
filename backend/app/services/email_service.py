@@ -23,9 +23,9 @@ class EmailService:
         self.smtp_port = settings.SMTP_PORT
         self.smtp_user = settings.SMTP_USER
         self.smtp_password = settings.SMTP_PASSWORD
-        self.from_email = settings.FROM_EMAIL
-        self.from_name = settings.FROM_NAME
-        self.base_url = settings.FRONTEND_URL
+        self.from_email = settings.EMAILS_FROM_EMAIL or "noreply@ytempire.com"
+        self.from_name = settings.EMAILS_FROM_NAME or "YTEmpire"
+        self.base_url = "http://localhost:3000"  # Frontend URL
         
         # Setup Jinja2 for email templates
         template_dir = os.path.join(os.path.dirname(__file__), "../templates/emails")

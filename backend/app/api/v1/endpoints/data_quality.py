@@ -9,16 +9,17 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 import logging
 
-from backend.app.api.deps import get_current_user, get_db
-from backend.app.services.data_quality import (
+from app.api.v1.endpoints.auth import get_current_verified_user
+from app.db.session import get_db
+from app.services.data_quality import (
     DataQualityFramework, 
     BatchDataProcessor, 
     QualityReport,
     QualityLevel,
     ValidationSeverity
 )
-from backend.app.models.user import User
-from backend.app.schemas.data_quality import (
+from app.models.user import User
+from app.schemas.data_quality import (
     QualityReportResponse,
     QualityMetricsResponse, 
     ValidationRuleResponse,
@@ -41,7 +42,7 @@ async def health_check():
 @router.get("/report/{dataset_name}", response_model=QualityReportResponse)
 async def get_quality_report(
     dataset_name: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: Session = Depends(get_db)
 ):
     """Generate data quality report for a specific dataset"""
@@ -93,7 +94,7 @@ async def get_quality_report(
 
 @router.get("/metrics/summary")
 async def get_quality_metrics_summary(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     datasets: List[str] = Query(default=["videos", "channels", "analytics"])
 ):
     """Get quality metrics summary for multiple datasets"""
@@ -126,7 +127,7 @@ async def get_quality_metrics_summary(
 
 @router.get("/validation-rules")
 async def get_validation_rules(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Get all data validation rules"""
     try:
@@ -158,7 +159,7 @@ async def get_validation_rules(
 async def batch_quality_check(
     background_tasks: BackgroundTasks,
     request: BatchProcessingRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: Session = Depends(get_db)
 ):
     """Run batch quality checks on multiple datasets"""
@@ -194,7 +195,7 @@ async def batch_quality_check(
 async def batch_data_cleanup(
     dataset_name: str,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     dry_run: bool = Query(default=True, description="Run in dry-run mode without making changes")
 ):
     """Run batch data cleanup for a specific dataset"""
@@ -247,7 +248,7 @@ async def batch_data_cleanup(
 @router.get("/trends/{dataset_name}")
 async def get_quality_trends(
     dataset_name: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     days: int = Query(default=30, ge=1, le=365)
 ):
     """Get quality trends for a dataset over time"""
@@ -279,7 +280,7 @@ async def get_quality_trends(
 
 @router.get("/alerts")
 async def get_quality_alerts(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     severity: Optional[str] = Query(default=None, description="Filter by severity: critical, error, warning, info")
 ):
     """Get active data quality alerts"""
@@ -329,7 +330,7 @@ async def get_quality_alerts(
 
 @router.post("/monitoring/schedule")
 async def setup_quality_monitoring(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Set up automated quality monitoring schedule"""
     try:

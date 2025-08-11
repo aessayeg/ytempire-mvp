@@ -10,7 +10,7 @@ from datetime import datetime, date, timedelta
 from enum import Enum
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
 from app.services.analytics_pipeline import (
     analytics_pipeline,
@@ -98,7 +98,7 @@ async def ingest_metric(
     request: MetricRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, str]:
     """
     Ingest a single metric into the analytics pipeline
@@ -132,7 +132,7 @@ async def ingest_batch_metrics(
     request: BatchMetricRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Ingest a batch of metrics
@@ -172,7 +172,7 @@ async def ingest_batch_metrics(
 async def query_analytics(
     query: AnalyticsQuery,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Query analytics data with flexible parameters
@@ -237,7 +237,7 @@ async def get_channel_analytics(
     start_date: date = Query(default=None),
     end_date: date = Query(default=None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> ChannelAnalyticsResponse:
     """
     Get comprehensive analytics for a channel
@@ -270,7 +270,7 @@ async def get_video_performance(
     video_id: str,
     days: int = Query(default=7, ge=1, le=90),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> VideoPerformanceResponse:
     """
     Get performance metrics for a specific video
@@ -294,7 +294,7 @@ async def get_video_performance(
 @router.get("/realtime", response_model=RealtimeMetrics)
 async def get_realtime_metrics(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> RealtimeMetrics:
     """
     Get real-time system metrics
@@ -329,7 +329,7 @@ async def list_reports(
     report_type: Optional[str] = Query(default=None),
     limit: int = Query(default=10, le=100),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> List[Dict[str, Any]]:
     """
     List available analytics reports
@@ -368,7 +368,7 @@ async def list_reports(
 async def get_report(
     report_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Get a specific analytics report
@@ -416,10 +416,10 @@ async def get_report(
 
 @router.get("/export")
 async def export_analytics(
-    format: str = Query(default="csv", regex="^(csv|json|excel)$"),
+    format: str = Query(default="csv", pattern="^(csv|json|excel)$"),
     time_range: TimeRange = Query(default=TimeRange.LAST_7_DAYS),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Export analytics data in various formats
@@ -448,7 +448,7 @@ async def export_analytics(
 async def get_industry_benchmarks(
     category: Optional[str] = Query(default=None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Get industry benchmark data for comparison

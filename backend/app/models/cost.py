@@ -5,7 +5,7 @@ from sqlalchemy import Column, String, Float, DateTime, ForeignKey, JSON, Boolea
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
-from app.db.base import Base
+from app.db.base_class import Base
 
 
 class Cost(Base):
@@ -32,7 +32,7 @@ class Cost(Base):
     # Tracking
     request_id = Column(String)
     response_time_ms = Column(Float)
-    metadata = Column(JSON, default={})  # Additional tracking data
+    extra_data = Column(JSON, default={})  # Additional tracking data
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
@@ -70,7 +70,7 @@ class CostAggregation(Base):
     operation_count = Column(Integer, default=0)
     video_count = Column(Integer, default=0)
     user_count = Column(Integer, default=0)
-    metadata = Column(JSON, default={})
+    extra_data = Column(JSON, default={})
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 

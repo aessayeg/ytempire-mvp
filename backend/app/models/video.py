@@ -5,7 +5,15 @@ from sqlalchemy import Column, String, Boolean, DateTime, Integer, Float, Foreig
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
-from app.db.base import Base
+from enum import Enum
+from app.db.base_class import Base
+
+class VideoStatus(str, Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    PUBLISHED = "published"
 
 
 class Video(Base):

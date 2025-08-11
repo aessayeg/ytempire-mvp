@@ -13,7 +13,7 @@ from app.api.v1.api import api_router
 from app.core.logging import setup_logging
 from app.db.session import engine
 from app.db.base import Base
-from app.services.websocket_manager import WebSocketManager
+from app.services.websocket_manager import ConnectionManager
 from app.core.performance import (
     cache_manager, connection_pool, PerformanceMiddleware
 )
@@ -23,7 +23,7 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 # Initialize WebSocket manager
-ws_manager = WebSocketManager()
+ws_manager = ConnectionManager()
 
 
 @asynccontextmanager

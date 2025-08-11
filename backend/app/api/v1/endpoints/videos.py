@@ -19,7 +19,7 @@ from app.models.channel import Channel
 from app.models.user import User
 from app.models.cost import Cost
 from app.api.v1.endpoints.auth import get_current_verified_user
-from app.services.ai_service import AIService
+from app.services.ai_services import AIServiceOrchestrator, AIServiceConfig
 from app.services.youtube_service import YouTubeService
 from app.services.video_processor import VideoProcessor
 from app.services.cost_tracker import CostTracker
@@ -30,7 +30,11 @@ router = APIRouter(prefix="/videos", tags=["videos"])
 logger = logging.getLogger(__name__)
 
 # Initialize services
-ai_service = AIService()
+ai_config = AIServiceConfig(
+    openai_api_key=settings.OPENAI_API_KEY or "",
+    elevenlabs_api_key=settings.ELEVENLABS_API_KEY or ""
+)
+ai_service = AIServiceOrchestrator(ai_config)
 youtube_service = YouTubeService()
 video_processor = VideoProcessor()
 cost_tracker = CostTracker()

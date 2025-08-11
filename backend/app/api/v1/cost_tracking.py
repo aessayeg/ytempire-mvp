@@ -7,9 +7,9 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from app.core.database import get_db
+from app.db.session import get_db
 from app.services.cost_tracking import cost_tracker, CostMetrics
-from app.core.auth import get_current_user
+from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
 from app.schemas.cost import (
     CostRecordCreate,
@@ -26,7 +26,7 @@ router = APIRouter(prefix="/cost", tags=["cost-tracking"])
 @router.post("/track")
 async def track_cost(
     cost_data: CostRecordCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ) -> CostRecordResponse:
     """Track API usage cost"""
@@ -57,7 +57,7 @@ async def track_cost(
 
 @router.get("/realtime")
 async def get_realtime_costs(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> CostMetrics:
     """Get real-time cost metrics"""
     try:
@@ -70,7 +70,7 @@ async def get_realtime_costs(
 @router.get("/video/{video_id}")
 async def get_video_cost(
     video_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ) -> VideoCostResponse:
     """Get cost breakdown for a specific video"""
@@ -89,9 +89,9 @@ async def get_video_cost(
 async def get_cost_aggregations(
     start_date: datetime = Query(..., description="Start date for aggregation"),
     end_date: datetime = Query(..., description="End date for aggregation"),
-    granularity: str = Query("day", regex="^(hour|day|week|month)$"),
+    granularity: str = Query("day", pattern="^(hour|day|week|month)$"),
     service: Optional[str] = Query(None, description="Filter by service"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ) -> List[CostAggregationResponse]:
     """Get aggregated cost data"""
@@ -115,7 +115,7 @@ async def get_cost_aggregations(
 @router.post("/threshold")
 async def set_cost_threshold(
     threshold_data: ThresholdCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ) -> ThresholdResponse:
     """Set a cost threshold alert"""
@@ -148,7 +148,7 @@ async def set_cost_threshold(
 @router.get("/daily-summary")
 async def get_daily_cost_summary(
     date: Optional[datetime] = Query(None, description="Date for summary (defaults to today)"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get daily cost summary"""
@@ -201,7 +201,7 @@ async def get_daily_cost_summary(
 @router.get("/trends")
 async def get_cost_trends(
     days: int = Query(7, ge=1, le=90, description="Number of days to analyze"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get cost trends over time"""

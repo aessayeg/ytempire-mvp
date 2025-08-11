@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-from ....core.security import get_current_user
-from ....services.batch_processing import (
+from app.api.v1.endpoints.auth import get_current_verified_user
+from app.services.batch_processing import (
     batch_processor,
     video_batch_processor,
     data_batch_processor,
@@ -16,7 +16,7 @@ from ....services.batch_processing import (
     BatchJobConfig,
     BatchJobItem
 )
-from ....models.user import User
+from app.models.user import User
 
 router = APIRouter()
 
@@ -33,8 +33,8 @@ class BatchVideoGenerationRequest(BaseModel):
 
 class BatchAnalyticsRequest(BaseModel):
     channel_ids: List[str] = Field(..., min_items=1, max_items=20)
-    start_date: str = Field(..., regex=r'^\d{4}-\d{2}-\d{2}$')
-    end_date: str = Field(..., regex=r'^\d{4}-\d{2}-\d{2}$')
+    start_date: str = Field(..., pattern=r'^\d{4}-\d{2}-\d{2}$')
+    end_date: str = Field(..., pattern=r'^\d{4}-\d{2}-\d{2}$')
 
 class BatchJobStatusResponse(BaseModel):
     job_id: str
@@ -50,7 +50,7 @@ class BatchJobStatusResponse(BaseModel):
 @router.post("/videos/generate")
 async def batch_generate_videos(
     request: BatchVideoGenerationRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Generate multiple videos in batch"""
     try:
@@ -88,7 +88,7 @@ async def batch_generate_videos(
 @router.post("/analytics/process")
 async def batch_process_analytics(
     request: BatchAnalyticsRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Process analytics for multiple channels in batch"""
     try:
@@ -118,7 +118,7 @@ async def batch_process_analytics(
 @router.get("/jobs/{job_id}")
 async def get_job_status(
     job_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Get status of a specific batch job"""
     try:
@@ -145,7 +145,7 @@ async def get_job_status(
 
 @router.get("/jobs")
 async def get_all_jobs(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Get status of all batch jobs for the current user"""
     try:
@@ -168,7 +168,7 @@ async def get_all_jobs(
 @router.post("/jobs/{job_id}/cancel")
 async def cancel_job(
     job_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Cancel a running batch job"""
     try:
@@ -197,7 +197,7 @@ async def cancel_job(
 @router.get("/jobs/{job_id}/items")
 async def get_job_items(
     job_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Get detailed status of all items in a batch job"""
     try:
@@ -241,7 +241,7 @@ async def get_job_items(
 @router.post("/videos/validate")
 async def validate_batch_video_request(
     request: BatchVideoGenerationRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Validate a batch video generation request without submitting"""
     try:
@@ -289,7 +289,7 @@ async def validate_batch_video_request(
 
 @router.get("/templates")
 async def get_batch_templates(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Get predefined batch processing templates"""
     try:

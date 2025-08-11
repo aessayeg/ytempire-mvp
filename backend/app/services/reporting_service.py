@@ -113,7 +113,7 @@ class ReportingInfrastructure:
     def _default_config(self) -> Dict[str, Any]:
         """Default configuration"""
         return {
-            "database_url": "postgresql://user:pass@localhost/ytempire",
+            "database_url": os.getenv("DATABASE_URL", "postgresql://localhost/ytempire"),
             "report_storage_path": "reports/generated",
             "template_path": "reports/templates",
             "cache_ttl": 3600,

@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import logging
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
 from app.models.channel import Channel
 from app.models.video import Video
@@ -88,7 +88,7 @@ class RecentActivity(BaseModel):
 @router.get("/overview", response_model=DashboardStats)
 async def get_dashboard_overview(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> DashboardStats:
     """
     Get comprehensive dashboard overview statistics
@@ -213,7 +213,7 @@ async def get_dashboard_overview(
 async def get_performance_metrics(
     period: str = Query("7d", description="Time period: 24h, 7d, 30d, 90d"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> List[PerformanceMetrics]:
     """
     Get performance metrics over time
@@ -297,7 +297,7 @@ async def get_performance_metrics(
 @router.get("/channels", response_model=List[ChannelSummary])
 async def get_channel_summaries(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> List[ChannelSummary]:
     """
     Get summary of all user channels for dashboard
@@ -352,7 +352,7 @@ async def get_channel_summaries(
 async def get_video_queue(
     limit: int = Query(10, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> List[VideoQueueItem]:
     """
     Get upcoming video queue
@@ -389,7 +389,7 @@ async def get_video_queue(
 @router.get("/analytics-summary")
 async def get_analytics_summary(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Get analytics summary for dashboard widgets

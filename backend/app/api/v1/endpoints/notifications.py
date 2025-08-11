@@ -8,15 +8,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-from ....core.security import get_current_user
-from ....db.session import get_db
-from ....services.notification_service import (
+from app.api.v1.endpoints.auth import get_current_verified_user
+from app.db.session import get_db
+from app.services.notification_service import (
     notification_service, 
     NotificationPayload, 
     NotificationType, 
     NotificationPriority
 )
-from ....models.user import User
+from app.models.user import User
 
 router = APIRouter()
 
@@ -54,7 +54,7 @@ class ScheduleNotificationRequest(BaseModel):
 @router.post("/send")
 async def send_notification(
     request: SendNotificationRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Send a single notification"""
@@ -96,7 +96,7 @@ async def send_notification(
 @router.post("/send-template")
 async def send_template_notification(
     request: SendTemplateNotificationRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Send notification using a template"""
@@ -134,7 +134,7 @@ async def send_template_notification(
 @router.post("/send-bulk")
 async def send_bulk_notification(
     request: BulkNotificationRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Send bulk notifications (admin only)"""
@@ -167,7 +167,7 @@ async def send_bulk_notification(
 @router.post("/schedule")
 async def schedule_notification(
     request: ScheduleNotificationRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Schedule a notification for future delivery"""
@@ -214,7 +214,7 @@ async def schedule_notification(
 
 @router.get("/templates")
 async def get_notification_templates(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ):
     """Get all available notification templates"""
     try:
@@ -235,7 +235,7 @@ async def get_notification_templates(
 @router.get("/test/{notification_type}")
 async def test_notification(
     notification_type: NotificationType,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Send a test notification (for testing purposes)"""
@@ -270,7 +270,7 @@ async def test_notification(
 @router.post("/video-generation-complete")
 async def notify_video_generation_complete(
     video_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Send video generation complete notification"""
@@ -301,7 +301,7 @@ async def notify_video_generation_complete(
 async def send_cost_alert(
     threshold: float,
     current_cost: float,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Send cost threshold exceeded alert"""

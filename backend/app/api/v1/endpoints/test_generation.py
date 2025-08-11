@@ -7,12 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Dict, Any, Optional
 import logging
 
-from app.core.database import get_db
+from app.db.session import get_db
 from app.services.video_generation_orchestrator import video_orchestrator
 from app.services.youtube_multi_account import youtube_account_manager
-from app.services.cost_tracking import CostTracker
+from app.services.cost_tracking import cost_tracker
 from app.models.channel import Channel
-from app.api.v1.deps import get_current_user
+from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
 
 router = APIRouter()
@@ -24,7 +24,7 @@ async def test_video_generation(
     topic: Optional[str] = "Latest AI Technology Trends 2024",
     background_tasks: BackgroundTasks = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Test endpoint for first video generation
@@ -167,7 +167,7 @@ async def test_generation_websocket(
 
 @router.get("/test-generation-status")
 async def get_generation_status(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Get status of all active video generations
@@ -178,7 +178,7 @@ async def get_generation_status(
     quota_status = await youtube_account_manager.check_quota_limits()
     
     # Get cost tracker status
-    cost_tracker = CostTracker()
+    # Use global cost_tracker instance
     daily_costs = await cost_tracker.get_daily_total()
     
     return {
@@ -206,7 +206,7 @@ async def test_batch_generation(
     num_videos: int = 3,
     background_tasks: BackgroundTasks = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Test batch video generation (up to 10 concurrent)

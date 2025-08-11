@@ -13,7 +13,7 @@ import uuid
 import logging
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
 from app.core.celery_app import celery_app
 
@@ -121,7 +121,7 @@ async def add_to_queue(
     request: VideoQueueRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> VideoQueueResponse:
     """
     Add a video to the generation queue
@@ -210,7 +210,7 @@ async def add_batch_to_queue(
     request: QueueBatchRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> List[VideoQueueResponse]:
     """
     Add multiple videos to queue with staggered scheduling
@@ -250,7 +250,7 @@ async def get_queue(
     limit: int = 50,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> List[VideoQueueResponse]:
     """
     Get video queue items
@@ -285,7 +285,7 @@ async def get_queue(
 async def get_queue_item(
     queue_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> VideoQueueResponse:
     """
     Get specific queue item details
@@ -312,7 +312,7 @@ async def update_queue_item(
     queue_id: str,
     update_request: VideoQueueUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> VideoQueueResponse:
     """
     Update queue item (reschedule, change priority, etc.)
@@ -373,7 +373,7 @@ async def update_queue_item(
 async def cancel_queue_item(
     queue_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, str]:
     """
     Cancel/remove item from queue
@@ -407,7 +407,7 @@ async def cancel_queue_item(
 async def retry_failed_item(
     queue_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> VideoQueueResponse:
     """
     Retry a failed queue item
@@ -452,7 +452,7 @@ async def retry_failed_item(
 @router.get("/stats/summary", response_model=QueueStatsResponse)
 async def get_queue_statistics(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> QueueStatsResponse:
     """
     Get queue statistics and estimates
@@ -517,7 +517,7 @@ async def get_queue_statistics(
 @router.post("/pause-all")
 async def pause_all_queue_items(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Pause all pending/scheduled items in queue
@@ -546,7 +546,7 @@ async def pause_all_queue_items(
 @router.post("/resume-all")
 async def resume_all_queue_items(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Resume all paused items in queue

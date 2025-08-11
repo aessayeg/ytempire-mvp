@@ -29,9 +29,9 @@ class UserProfileUpdate(BaseModel):
     """User profile update request"""
     full_name: Optional[str] = Field(None, min_length=1, max_length=100)
     company_name: Optional[str] = Field(None, max_length=100)
-    phone: Optional[str] = Field(None, regex=r'^\+?1?\d{9,15}$')
+    phone: Optional[str] = Field(None, pattern=r'^\+?1?\d{9,15}$')
     bio: Optional[str] = Field(None, max_length=500)
-    website: Optional[str] = Field(None, regex=r'^https?://')
+    website: Optional[str] = Field(None, pattern=r'^https?://')
     social_links: Optional[Dict[str, str]] = None
 
 class UserPreferences(BaseModel):

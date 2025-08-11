@@ -18,7 +18,7 @@ import logging
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -113,7 +113,7 @@ async def create_webhook(
     request: WebhookRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> WebhookResponse:
     """
     Register a new webhook endpoint
@@ -170,7 +170,7 @@ async def list_webhooks(
     active_only: bool = False,
     event: Optional[WebhookEvent] = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> List[WebhookResponse]:
     """
     List all webhooks for the current user
@@ -194,7 +194,7 @@ async def list_webhooks(
 async def get_webhook(
     webhook_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> WebhookResponse:
     """
     Get webhook details
@@ -221,7 +221,7 @@ async def update_webhook(
     webhook_id: str,
     request: WebhookRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> WebhookResponse:
     """
     Update webhook configuration
@@ -260,7 +260,7 @@ async def update_webhook(
 async def delete_webhook(
     webhook_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, str]:
     """
     Delete a webhook
@@ -290,7 +290,7 @@ async def test_webhook(
     test_request: WebhookTestRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Send a test payload to webhook
@@ -334,7 +334,7 @@ async def get_webhook_deliveries(
     webhook_id: str,
     limit: int = 50,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> List[WebhookDelivery]:
     """
     Get delivery history for a webhook
@@ -370,7 +370,7 @@ async def get_webhook_deliveries(
 async def toggle_webhook(
     webhook_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> WebhookResponse:
     """
     Toggle webhook active status
@@ -403,7 +403,7 @@ async def trigger_event(
     payload: Dict[str, Any],
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """
     Manually trigger a webhook event (for testing)

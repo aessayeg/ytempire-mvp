@@ -7,13 +7,13 @@ services:
     container_name: ytempire_postgres
     environment:
       POSTGRES_USER: ytempire
-      POSTGRES_PASSWORD: ytempire_secure_pwd_2024
+      POSTGRES_PASSWORD: admin
       POSTGRES_DB: ytempire_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./infrastructure/postgres/init_file.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - ytempire_network
     restart: unless-stopped
@@ -48,7 +48,7 @@ services:
       dockerfile: Dockerfile
     container_name: ytempire_backend
     environment:
-      DATABASE_URL: postgresql+asyncpg://ytempire:ytempire_secure_pwd_2024@postgres:5432/ytempire_db
+      DATABASE_URL: postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db
       REDIS_URL: redis://redis:6379/0
       ENVIRONMENT: development
     ports:
@@ -73,7 +73,7 @@ services:
       dockerfile: Dockerfile
     container_name: ytempire_celery_worker
     environment:
-      DATABASE_URL: postgresql+asyncpg://ytempire:ytempire_secure_pwd_2024@postgres:5432/ytempire_db
+      DATABASE_URL: postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
@@ -96,7 +96,7 @@ services:
       dockerfile: Dockerfile
     container_name: ytempire_celery_beat
     environment:
-      DATABASE_URL: postgresql+asyncpg://ytempire:ytempire_secure_pwd_2024@postgres:5432/ytempire_db
+      DATABASE_URL: postgresql+asyncpg://ytempire:admin@postgres:5432/ytempire_db
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0

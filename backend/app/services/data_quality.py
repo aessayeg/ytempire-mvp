@@ -17,11 +17,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text, func
 import statistics
 
-from backend.app.db.database import get_db
-from backend.app.models.video import Video
-from backend.app.models.analytics import Analytics
-from backend.app.models.channel import Channel
-from backend.app.core.config import settings
+from app.db.session import get_db
+from app.models.video import Video
+from app.models.analytics import Analytics
+from app.models.channel import Channel
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
