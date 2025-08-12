@@ -96,13 +96,30 @@ class YouTubeAccount:
 
 
 class YouTubeMultiAccountManager:
-    """Manages multiple YouTube accounts with intelligent rotation"""
+    """Manages multiple YouTube accounts with intelligent rotation and advanced monitoring"""
     
     DAILY_QUOTA_LIMIT = 10000  # YouTube API daily quota per account
     QUOTA_BUFFER = 1000  # Keep buffer to avoid hitting exact limit
     MAX_ERROR_COUNT = 5  # Max errors before suspending account
     COOLDOWN_HOURS = 6  # Hours to cool down after quota exceeded
     HEALTH_SCORE_THRESHOLD = 30  # Minimum health score to use account
+    
+    # Enhanced configuration for 15 account management
+    TARGET_ACCOUNT_COUNT = 15  # Target number of accounts to manage
+    FAILOVER_THRESHOLD = 3  # Minimum healthy accounts before alerting
+    ROTATION_STRATEGY = "weighted_round_robin"  # weighted_round_robin, health_based, quota_based
+    HEALTH_CHECK_INTERVAL = 300  # Health check every 5 minutes
+    QUOTA_REDISTRIBUTION = True  # Enable quota redistribution across accounts
+    
+    # Advanced monitoring thresholds
+    CRITICAL_HEALTH_THRESHOLD = 20  # Critical health alert threshold
+    WARNING_QUOTA_THRESHOLD = 0.8  # Warning when quota usage exceeds 80%
+    ERROR_SPIKE_THRESHOLD = 5  # Alert when errors spike within time window
+    
+    # Performance optimization
+    CONCURRENT_OPERATIONS = 3  # Max concurrent operations per account
+    OPERATION_TIMEOUT = 30  # Operation timeout in seconds
+    RETRY_BACKOFF_BASE = 2  # Exponential backoff base for retries
     
     def __init__(self):
         """Initialize the multi-account manager"""
@@ -502,6 +519,473 @@ class YouTubeMultiAccountManager:
             logger.error(f"Failed to complete OAuth for account {account_index}: {e}")
             
         return False
+    
+    # Enhanced methods for 15 account management
+    
+    async def initialize_account_pool(self, target_count: int = None) -> Dict[str, Any]:
+        """Initialize and maintain a pool of YouTube accounts"""
+        if target_count is None:
+            target_count = self.TARGET_ACCOUNT_COUNT
+            
+        initialization_results = {
+            "target_count": target_count,
+            "current_count": len(self.accounts),
+            "healthy_count": 0,
+            "initialized": [],
+            "failed": [],
+            "warnings": []
+        }
+        
+        # Health check existing accounts
+        await self.perform_health_check()
+        
+        # Count healthy accounts
+        healthy_accounts = [acc for acc in self.accounts if self._is_account_healthy(acc)]
+        initialization_results["healthy_count"] = len(healthy_accounts)
+        
+        # Initialize missing accounts if needed
+        missing_count = target_count - len(healthy_accounts)
+        if missing_count > 0:
+            logger.info(f"Need to initialize {missing_count} additional accounts")
+            initialization_results["warnings"].append(f"Missing {missing_count} accounts from target pool")
+        
+        # Validate account distribution
+        account_distribution = self._analyze_account_distribution()
+        initialization_results.update(account_distribution)
+        
+        return initialization_results
+    
+    def _is_account_healthy(self, account: YouTubeAccount) -> bool:
+        """Enhanced health check for an account"""
+        # Basic availability check
+        if not self._is_account_available(account):
+            return False
+        
+        # Health score threshold
+        if account.health_score < self.HEALTH_SCORE_THRESHOLD:
+            return False
+        
+        # Check for recent errors
+        if account.error_count > 3:
+            return False
+        
+        # Check strikes
+        if account.strikes > 2:
+            return False
+        
+        # Check quota sustainability
+        quota_usage_rate = account.quota_used / self.DAILY_QUOTA_LIMIT
+        if quota_usage_rate > self.WARNING_QUOTA_THRESHOLD:
+            logger.warning(f"Account {account.email} quota usage at {quota_usage_rate:.1%}")
+        
+        return True
+    
+    async def perform_health_check(self) -> Dict[str, Any]:
+        """Perform comprehensive health check on all accounts"""
+        health_results = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "total_accounts": len(self.accounts),
+            "healthy_accounts": 0,
+            "critical_accounts": 0,
+            "warning_accounts": 0,
+            "suspended_accounts": 0,
+            "account_details": [],
+            "alerts": []
+        }
+        
+        for account in self.accounts:
+            try:
+                # Test API connectivity
+                service = self.get_youtube_service(account)
+                if service:
+                    # Quick API test - list channels (low quota cost)
+                    try:
+                        response = service.channels().list(
+                            part="snippet,statistics",
+                            mine=True
+                        ).execute()
+                        
+                        # Update account stats from API
+                        if 'items' in response and response['items']:
+                            channel_data = response['items'][0]
+                            account.channel_name = channel_data['snippet']['title']
+                            account.total_views = int(channel_data['statistics'].get('viewCount', 0))
+                            
+                        # Mark as successful API call
+                        account.error_count = max(0, account.error_count - 1)
+                        
+                    except Exception as e:
+                        logger.warning(f"API test failed for {account.email}: {e}")
+                        account.error_count += 1
+                
+                # Determine health status
+                if account.health_score >= 80:
+                    health_results["healthy_accounts"] += 1
+                    status = "healthy"
+                elif account.health_score >= self.CRITICAL_HEALTH_THRESHOLD:
+                    health_results["warning_accounts"] += 1
+                    status = "warning"
+                else:
+                    health_results["critical_accounts"] += 1
+                    status = "critical"
+                    health_results["alerts"].append(f"Critical health: {account.email}")
+                
+                if account.status == AccountStatus.SUSPENDED:
+                    health_results["suspended_accounts"] += 1
+                    status = "suspended"
+                
+                # Update account health trend
+                self._update_health_trend(account)
+                
+                health_results["account_details"].append({
+                    "email": account.email,
+                    "health_score": account.health_score,
+                    "status": status,
+                    "quota_used": account.quota_used,
+                    "quota_percentage": (account.quota_used / self.DAILY_QUOTA_LIMIT) * 100,
+                    "error_count": account.error_count,
+                    "last_used": account.last_used.isoformat(),
+                    "strikes": account.strikes
+                })
+                
+                # Save updated account state
+                self.save_account(account)
+                
+            except Exception as e:
+                logger.error(f"Health check failed for {account.email}: {e}")
+                health_results["account_details"].append({
+                    "email": account.email,
+                    "status": "error",
+                    "error": str(e)
+                })
+        
+        # Generate alerts for critical conditions
+        if health_results["healthy_accounts"] < self.FAILOVER_THRESHOLD:
+            health_results["alerts"].append(
+                f"CRITICAL: Only {health_results['healthy_accounts']} healthy accounts remaining"
+            )
+        
+        return health_results
+    
+    def _update_health_trend(self, account: YouTubeAccount):
+        """Update health trend metrics for an account"""
+        try:
+            # Store health trend in Redis
+            key = f"youtube:health_trend:{account.account_id}"
+            timestamp = int(datetime.utcnow().timestamp())
+            
+            # Store last 24 hours of health scores
+            self.redis.zadd(key, {timestamp: account.health_score})
+            self.redis.expire(key, 86400)  # 24 hours
+            
+            # Remove old entries (older than 24 hours)
+            old_timestamp = timestamp - 86400
+            self.redis.zremrangebyscore(key, 0, old_timestamp)
+            
+        except Exception as e:
+            logger.error(f"Failed to update health trend for {account.email}: {e}")
+    
+    def get_account_with_strategy(self, strategy: str = None) -> Optional[YouTubeAccount]:
+        """Get account using specified rotation strategy"""
+        if strategy is None:
+            strategy = self.ROTATION_STRATEGY
+        
+        available_accounts = [acc for acc in self.accounts if self._is_account_healthy(acc)]
+        
+        if not available_accounts:
+            logger.error("No healthy accounts available")
+            return None
+        
+        if strategy == "health_based":
+            # Select account with highest health score
+            return max(available_accounts, key=lambda x: x.health_score)
+        
+        elif strategy == "quota_based":
+            # Select account with most available quota
+            return max(available_accounts, key=lambda x: self.DAILY_QUOTA_LIMIT - x.quota_used)
+        
+        elif strategy == "weighted_round_robin":
+            # Weighted selection based on health and quota
+            weights = []
+            for acc in available_accounts:
+                quota_weight = (self.DAILY_QUOTA_LIMIT - acc.quota_used) / self.DAILY_QUOTA_LIMIT
+                health_weight = acc.health_score / 100
+                combined_weight = (quota_weight * 0.6) + (health_weight * 0.4)
+                weights.append(combined_weight)
+            
+            # Select based on weights
+            import random
+            selected = random.choices(available_accounts, weights=weights)[0]
+            return selected
+        
+        else:
+            # Default: round robin
+            return available_accounts[0]
+    
+    async def redistribute_quota(self) -> Dict[str, Any]:
+        """Redistribute quota across accounts to optimize usage"""
+        if not self.QUOTA_REDISTRIBUTION:
+            return {"status": "disabled"}
+        
+        # Calculate total available quota
+        total_quota_available = 0
+        quota_distribution = {}
+        
+        for account in self.accounts:
+            if self._is_account_healthy(account):
+                available = self.DAILY_QUOTA_LIMIT - account.quota_used
+                total_quota_available += available
+                quota_distribution[account.email] = {
+                    "used": account.quota_used,
+                    "available": available,
+                    "health_score": account.health_score
+                }
+        
+        redistribution_results = {
+            "total_accounts": len(self.accounts),
+            "healthy_accounts": len(quota_distribution),
+            "total_quota_available": total_quota_available,
+            "quota_distribution": quota_distribution,
+            "recommendations": []
+        }
+        
+        # Generate optimization recommendations
+        if total_quota_available < 5000:  # Less than 5k quota across all accounts
+            redistribution_results["recommendations"].append(
+                "WARNING: Low total quota remaining across all accounts"
+            )
+        
+        # Identify accounts with very high usage
+        high_usage_accounts = [
+            email for email, data in quota_distribution.items()
+            if (data["used"] / self.DAILY_QUOTA_LIMIT) > 0.9
+        ]
+        
+        if high_usage_accounts:
+            redistribution_results["recommendations"].append(
+                f"Consider cooling down high-usage accounts: {', '.join(high_usage_accounts)}"
+            )
+        
+        return redistribution_results
+    
+    def _analyze_account_distribution(self) -> Dict[str, Any]:
+        """Analyze account distribution and identify optimization opportunities"""
+        status_counts = {}
+        health_distribution = {"excellent": 0, "good": 0, "fair": 0, "poor": 0}
+        quota_distribution = {"low": 0, "medium": 0, "high": 0, "critical": 0}
+        
+        for account in self.accounts:
+            # Status distribution
+            status = account.status.value
+            status_counts[status] = status_counts.get(status, 0) + 1
+            
+            # Health distribution
+            if account.health_score >= 80:
+                health_distribution["excellent"] += 1
+            elif account.health_score >= 60:
+                health_distribution["good"] += 1
+            elif account.health_score >= 40:
+                health_distribution["fair"] += 1
+            else:
+                health_distribution["poor"] += 1
+            
+            # Quota distribution
+            quota_pct = (account.quota_used / self.DAILY_QUOTA_LIMIT) * 100
+            if quota_pct < 25:
+                quota_distribution["low"] += 1
+            elif quota_pct < 50:
+                quota_distribution["medium"] += 1
+            elif quota_pct < 80:
+                quota_distribution["high"] += 1
+            else:
+                quota_distribution["critical"] += 1
+        
+        return {
+            "status_distribution": status_counts,
+            "health_distribution": health_distribution,
+            "quota_distribution": quota_distribution
+        }
+    
+    async def auto_failover_check(self) -> Dict[str, Any]:
+        """Check if automatic failover is needed and execute if necessary"""
+        healthy_count = sum(1 for acc in self.accounts if self._is_account_healthy(acc))
+        
+        failover_results = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "healthy_account_count": healthy_count,
+            "failover_threshold": self.FAILOVER_THRESHOLD,
+            "failover_needed": healthy_count < self.FAILOVER_THRESHOLD,
+            "actions_taken": []
+        }
+        
+        if failover_results["failover_needed"]:
+            logger.critical(f"FAILOVER TRIGGERED: Only {healthy_count} healthy accounts remaining!")
+            
+            # Attempt to recover suspended/cooling accounts
+            recovered = await self._attempt_account_recovery()
+            failover_results["actions_taken"].extend(recovered)
+            
+            # Reset quota for accounts if new day
+            reset_count = self._emergency_quota_reset()
+            if reset_count > 0:
+                failover_results["actions_taken"].append(f"Emergency quota reset for {reset_count} accounts")
+            
+            # Send critical alerts
+            await self._send_failover_alert(failover_results)
+            
+            # Update healthy count after recovery attempts
+            healthy_count = sum(1 for acc in self.accounts if self._is_account_healthy(acc))
+            failover_results["healthy_account_count_after_recovery"] = healthy_count
+        
+        return failover_results
+    
+    async def _attempt_account_recovery(self) -> List[str]:
+        """Attempt to recover suspended or cooling accounts"""
+        recovery_actions = []
+        
+        for account in self.accounts:
+            if account.status == AccountStatus.COOLING_DOWN:
+                # Check if cooldown period has passed
+                cooldown_end = account.last_used + timedelta(hours=self.COOLDOWN_HOURS // 2)  # Reduced for emergency
+                if datetime.utcnow() >= cooldown_end:
+                    account.status = AccountStatus.ACTIVE
+                    account.error_count = max(0, account.error_count - 2)  # Reduce error count
+                    self.save_account(account)
+                    recovery_actions.append(f"Recovered cooling account: {account.email}")
+            
+            elif account.status == AccountStatus.QUOTA_EXCEEDED:
+                # Check if quota should reset
+                if datetime.utcnow() >= account.quota_reset_time:
+                    self._reset_account_quota(account)
+                    recovery_actions.append(f"Reset quota for: {account.email}")
+        
+        return recovery_actions
+    
+    def _emergency_quota_reset(self) -> int:
+        """Emergency quota reset for accounts that might be eligible"""
+        reset_count = 0
+        current_hour = datetime.utcnow().hour
+        
+        # If it's past midnight, consider emergency reset
+        if current_hour >= 0 and current_hour <= 6:
+            for account in self.accounts:
+                if account.status == AccountStatus.QUOTA_EXCEEDED:
+                    time_since_reset = datetime.utcnow() - account.quota_reset_time + timedelta(days=1)
+                    if time_since_reset.total_seconds() > 21600:  # 6 hours past reset time
+                        self._reset_account_quota(account)
+                        reset_count += 1
+        
+        return reset_count
+    
+    async def _send_failover_alert(self, failover_info: Dict[str, Any]):
+        """Send critical failover alert"""
+        try:
+            # Store alert in Redis for monitoring systems
+            alert_key = f"youtube:failover_alert:{int(datetime.utcnow().timestamp())}"
+            self.redis.setex(alert_key, 3600, json.dumps(failover_info))  # Store for 1 hour
+            
+            logger.critical(f"FAILOVER ALERT: {json.dumps(failover_info, indent=2)}")
+            
+        except Exception as e:
+            logger.error(f"Failed to send failover alert: {e}")
+    
+    async def get_advanced_statistics(self) -> Dict[str, Any]:
+        """Get comprehensive statistics for all 15 accounts"""
+        stats = self.get_account_stats()
+        
+        # Add advanced metrics
+        advanced_stats = {
+            **stats,
+            "failover_status": await self.auto_failover_check(),
+            "health_check_results": await self.perform_health_check(),
+            "quota_redistribution": await self.redistribute_quota(),
+            "account_distribution": self._analyze_account_distribution(),
+            
+            # Performance metrics
+            "performance_metrics": {
+                "average_upload_success_rate": self._calculate_success_rate(),
+                "quota_efficiency": self._calculate_quota_efficiency(),
+                "account_rotation_frequency": self._get_rotation_frequency(),
+                "error_rate_trend": self._get_error_trend()
+            },
+            
+            # Operational status
+            "operational_status": {
+                "target_account_count": self.TARGET_ACCOUNT_COUNT,
+                "current_healthy_count": sum(1 for acc in self.accounts if self._is_account_healthy(acc)),
+                "failover_ready": sum(1 for acc in self.accounts if self._is_account_healthy(acc)) >= self.FAILOVER_THRESHOLD,
+                "quota_sustainability": self._assess_quota_sustainability(),
+                "last_health_check": datetime.utcnow().isoformat()
+            }
+        }
+        
+        return advanced_stats
+    
+    def _calculate_success_rate(self) -> float:
+        """Calculate overall upload success rate"""
+        if not self.accounts:
+            return 0.0
+        
+        total_uploads = sum(acc.total_uploads for acc in self.accounts)
+        total_errors = sum(acc.error_count for acc in self.accounts)
+        
+        if total_uploads + total_errors == 0:
+            return 100.0
+        
+        return (total_uploads / (total_uploads + total_errors)) * 100
+    
+    def _calculate_quota_efficiency(self) -> float:
+        """Calculate quota efficiency across accounts"""
+        total_quota = len(self.accounts) * self.DAILY_QUOTA_LIMIT
+        total_used = sum(acc.quota_used for acc in self.accounts)
+        
+        if total_quota == 0:
+            return 0.0
+        
+        return (total_used / total_quota) * 100
+    
+    def _get_rotation_frequency(self) -> Dict[str, Any]:
+        """Get account rotation frequency statistics"""
+        # This would typically be stored in Redis with timestamps
+        return {
+            "rotations_last_hour": 0,  # Placeholder - implement with Redis tracking
+            "most_used_account": max(self.accounts, key=lambda x: x.total_uploads).email if self.accounts else None,
+            "least_used_account": min(self.accounts, key=lambda x: x.total_uploads).email if self.accounts else None
+        }
+    
+    def _get_error_trend(self) -> Dict[str, float]:
+        """Get error trend across accounts"""
+        if not self.accounts:
+            return {"current": 0.0, "trend": "stable"}
+        
+        total_errors = sum(acc.error_count for acc in self.accounts)
+        avg_errors = total_errors / len(self.accounts)
+        
+        return {
+            "average_errors_per_account": avg_errors,
+            "total_errors": total_errors,
+            "accounts_with_errors": sum(1 for acc in self.accounts if acc.error_count > 0),
+            "trend": "increasing" if avg_errors > 2 else "stable" if avg_errors > 1 else "improving"
+        }
+    
+    def _assess_quota_sustainability(self) -> str:
+        """Assess quota sustainability across the account pool"""
+        healthy_accounts = [acc for acc in self.accounts if self._is_account_healthy(acc)]
+        
+        if not healthy_accounts:
+            return "critical"
+        
+        total_available = sum(self.DAILY_QUOTA_LIMIT - acc.quota_used for acc in healthy_accounts)
+        avg_available = total_available / len(healthy_accounts)
+        
+        if avg_available > 5000:
+            return "excellent"
+        elif avg_available > 2000:
+            return "good"
+        elif avg_available > 500:
+            return "fair"
+        else:
+            return "poor"
 
 
 # Singleton instance

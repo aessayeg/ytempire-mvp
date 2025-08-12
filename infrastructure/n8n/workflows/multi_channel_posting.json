@@ -1,0 +1,438 @@
+{
+  "name": "Multi-Channel Content Distribution Workflow",
+  "description": "Advanced workflow for posting content across multiple channels with intelligent scheduling and performance tracking",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "multi-channel-publish",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Multi-Channel Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 400],
+      "webhookId": "multi-channel-trigger",
+      "id": "multi_channel_trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/youtube/accounts/active",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$credentials.ytempire_api_key}}"
+            }
+          ]
+        }
+      },
+      "name": "Get Active YouTube Accounts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [400, 200],
+      "id": "get_youtube_accounts"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/channels/list",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "status",
+              "value": "active"
+            },
+            {
+              "name": "limit",
+              "value": "50"
+            }
+          ]
+        }
+      },
+      "name": "Get Active Channels",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [400, 400],
+      "id": "get_channels"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/advanced-analytics/predict",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "model_type",
+              "value": "trend"
+            },
+            {
+              "name": "historical_days",
+              "value": "30"
+            },
+            {
+              "name": "forecast_days",
+              "value": "7"
+            }
+          ]
+        }
+      },
+      "name": "Predict Optimal Timing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [600, 300],
+      "id": "predict_timing"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Multi-channel distribution logic\nconst content = $input.first().json;\nconst channels = $node['Get Active Channels'].json.channels;\nconst accounts = $node['Get Active YouTube Accounts'].json.accounts;\nconst timing = $node['Predict Optimal Timing'].json.predictions;\n\n// Channel selection algorithm\nfunction selectOptimalChannels(channels, content, maxChannels = 5) {\n  return channels\n    .filter(channel => {\n      // Filter based on content relevance and channel health\n      const relevanceScore = calculateRelevance(channel, content);\n      const healthScore = channel.health_score || 0.8;\n      return relevanceScore > 0.6 && healthScore > 0.7;\n    })\n    .sort((a, b) => {\n      // Sort by predicted performance\n      const scoreA = (a.avg_views || 0) * (a.subscriber_count || 1) * (a.engagement_rate || 0.05);\n      const scoreB = (b.avg_views || 0) * (b.subscriber_count || 1) * (b.engagement_rate || 0.05);\n      return scoreB - scoreA;\n    })\n    .slice(0, maxChannels);\n}\n\nfunction calculateRelevance(channel, content) {\n  const channelTags = channel.tags || [];\n  const contentTags = content.tags || [];\n  const commonTags = channelTags.filter(tag => contentTags.includes(tag));\n  return commonTags.length / Math.max(channelTags.length, contentTags.length, 1);\n}\n\n// Account rotation logic\nfunction selectAccount(accounts, channelId) {\n  const availableAccounts = accounts.filter(acc => \n    acc.status === 'active' && \n    acc.quota_remaining > 1000 &&\n    acc.health_score > 0.8\n  );\n  \n  if (availableAccounts.length === 0) {\n    throw new Error('No healthy YouTube accounts available');\n  }\n  \n  // Round-robin with health weighting\n  return availableAccounts.reduce((best, current) => \n    current.health_score > best.health_score ? current : best\n  );\n}\n\n// Generate publishing schedule\nfunction generateSchedule(channels, timing) {\n  const schedule = [];\n  const baseTime = new Date();\n  const optimalHours = timing.optimal_hours || [14, 16, 18, 20]; // Default peak hours\n  \n  channels.forEach((channel, index) => {\n    const publishTime = new Date(baseTime);\n    publishTime.setHours(optimalHours[index % optimalHours.length]);\n    publishTime.setMinutes(Math.floor(Math.random() * 60)); // Random minutes for staggering\n    \n    // Stagger by 2-4 hours between channels\n    publishTime.setHours(publishTime.getHours() + (index * 2));\n    \n    schedule.push({\n      channel_id: channel.id,\n      channel_name: channel.name,\n      publish_time: publishTime.toISOString(),\n      expected_views: channel.avg_views * (timing.trend_multiplier || 1.0),\n      priority: index + 1\n    });\n  });\n  \n  return schedule;\n}\n\n// Execute multi-channel distribution\nconst selectedChannels = selectOptimalChannels(channels, content);\nconst publishingSchedule = generateSchedule(selectedChannels, timing);\n\n// Prepare output for each channel\nconst outputs = publishingSchedule.map(item => {\n  const account = selectAccount(accounts, item.channel_id);\n  \n  return {\n    channel_id: item.channel_id,\n    channel_name: item.channel_name,\n    account_id: account.id,\n    account_email: account.email,\n    publish_time: item.publish_time,\n    expected_views: item.expected_views,\n    priority: item.priority,\n    content: {\n      title: content.title,\n      description: content.description,\n      tags: content.tags,\n      video_path: content.video_path,\n      thumbnail_path: content.thumbnail_path\n    },\n    distribution_id: `dist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`\n  };\n});\n\nreturn outputs.map(output => ({ json: output }));"
+      },
+      "name": "Multi-Channel Distribution Logic",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [800, 400],
+      "id": "distribution_logic"
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {
+          "reset": false
+        }
+      },
+      "name": "Split by Channel",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [1000, 400],
+      "id": "split_channels"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/youtube/upload-scheduled",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "channel_id",
+              "value": "={{$json.channel_id}}"
+            },
+            {
+              "name": "account_id",
+              "value": "={{$json.account_id}}"
+            },
+            {
+              "name": "title",
+              "value": "={{$json.content.title}}"
+            },
+            {
+              "name": "description",
+              "value": "={{$json.content.description}}"
+            },
+            {
+              "name": "tags",
+              "value": "={{$json.content.tags}}"
+            },
+            {
+              "name": "video_path",
+              "value": "={{$json.content.video_path}}"
+            },
+            {
+              "name": "thumbnail_path",
+              "value": "={{$json.content.thumbnail_path}}"
+            },
+            {
+              "name": "scheduled_time",
+              "value": "={{$json.publish_time}}"
+            },
+            {
+              "name": "distribution_id",
+              "value": "={{$json.distribution_id}}"
+            }
+          ]
+        }
+      },
+      "name": "Schedule YouTube Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1200, 400],
+      "id": "schedule_upload"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/advanced-analytics/process",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "request_type",
+              "value": "performance_metrics"
+            },
+            {
+              "name": "channel_ids",
+              "value": "={{[$json.channel_id]}}"
+            },
+            {
+              "name": "streaming_mode",
+              "value": "real_time"
+            },
+            {
+              "name": "metrics",
+              "value": "=[\"views\", \"engagement\", \"subscriber_growth\"]"
+            }
+          ]
+        }
+      },
+      "name": "Track Performance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1400, 400],
+      "id": "track_performance"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/notifications/send",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "type",
+              "value": "multi_channel_scheduled"
+            },
+            {
+              "name": "title",
+              "value": "Multi-Channel Distribution Scheduled"
+            },
+            {
+              "name": "message",
+              "value": "={{\"Content scheduled across \" + $node['Split by Channel'].json.length + \" channels\"}}"
+            },
+            {
+              "name": "data",
+              "value": "={{$json}}"
+            }
+          ]
+        }
+      },
+      "name": "Send Success Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1600, 300],
+      "id": "success_notification"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.success}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Check Upload Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1400, 300],
+      "id": "check_success"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Aggregate results from all channels\nconst allResults = $input.all();\nconst successful = allResults.filter(item => item.json.success);\nconst failed = allResults.filter(item => !item.json.success);\n\nconst summary = {\n  total_channels: allResults.length,\n  successful_uploads: successful.length,\n  failed_uploads: failed.length,\n  success_rate: successful.length / allResults.length,\n  distribution_id: allResults[0]?.json?.distribution_id || 'unknown',\n  scheduled_times: successful.map(item => ({\n    channel: item.json.channel_name,\n    time: item.json.publish_time,\n    video_id: item.json.video_id\n  })),\n  errors: failed.map(item => ({\n    channel: item.json.channel_name,\n    error: item.json.error\n  }))\n};\n\nreturn { json: summary };"
+      },
+      "name": "Aggregate Results",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1200, 200],
+      "id": "aggregate_results"
+    },
+    {
+      "parameters": {},
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1800, 400],
+      "id": "respond_webhook"
+    }
+  ],
+  "connections": {
+    "Multi-Channel Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Active YouTube Accounts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Active Channels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active YouTube Accounts": {
+      "main": [
+        [
+          {
+            "node": "Predict Optimal Timing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active Channels": {
+      "main": [
+        [
+          {
+            "node": "Predict Optimal Timing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Predict Optimal Timing": {
+      "main": [
+        [
+          {
+            "node": "Multi-Channel Distribution Logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Multi-Channel Distribution Logic": {
+      "main": [
+        [
+          {
+            "node": "Split by Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split by Channel": {
+      "main": [
+        [
+          {
+            "node": "Schedule YouTube Upload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule YouTube Upload": {
+      "main": [
+        [
+          {
+            "node": "Check Upload Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Upload Success": {
+      "main": [
+        [
+          {
+            "node": "Track Performance",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Success Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Track Performance": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Success Notification": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Results": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "error-handler-workflow"
+  },
+  "staticData": {
+    "node:Multi-Channel Distribution Logic": {
+      "lastAccountIndex": 0,
+      "distributionStats": {
+        "totalDistributions": 0,
+        "successRate": 0
+      }
+    }
+  },
+  "versionId": "2.0.0",
+  "triggerCount": 1
+}

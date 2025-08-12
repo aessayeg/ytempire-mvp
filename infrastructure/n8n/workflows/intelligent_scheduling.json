@@ -1,0 +1,444 @@
+{
+  "name": "Intelligent Content Scheduling Workflow",
+  "description": "AI-powered content scheduling based on audience behavior, trends, and optimal timing predictions",
+  "nodes": [
+    {
+      "parameters": {
+        "cron": "0 */2 * * *",
+        "triggerAtStartup": false
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [200, 400],
+      "id": "schedule_trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/queue/pending",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "status",
+              "value": "pending"
+            },
+            {
+              "name": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      },
+      "name": "Get Pending Videos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [400, 300],
+      "id": "get_pending_videos"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/advanced-analytics/process",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "request_type",
+              "value": "audience_insights"
+            },
+            {
+              "name": "channel_ids",
+              "value": "={{$node['Get Pending Videos'].json.videos.map(v => v.channel_id)}}"
+            },
+            {
+              "name": "date_range",
+              "value": "={\"start_date\": new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0], \"end_date\": new Date().toISOString().split('T')[0]}"
+            }
+          ]
+        }
+      },
+      "name": "Analyze Audience Behavior",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [400, 500],
+      "id": "analyze_audience"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/advanced-analytics/predict",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "model_type",
+              "value": "trend"
+            },
+            {
+              "name": "historical_days",
+              "value": "60"
+            },
+            {
+              "name": "forecast_days",
+              "value": "14"
+            },
+            {
+              "name": "include_seasonality",
+              "value": "true"
+            },
+            {
+              "name": "external_factors",
+              "value": "={\"day_of_week\": true, \"time_of_day\": true, \"trending_topics\": true}"
+            }
+          ]
+        }
+      },
+      "name": "Predict Optimal Times",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [600, 400],
+      "id": "predict_times"
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/trending",
+        "options": {
+          "timeout": 10000
+        },
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "since",
+              "value": "daily"
+            }
+          ]
+        }
+      },
+      "name": "Get Trending Topics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [600, 200],
+      "id": "get_trending_topics"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Intelligent scheduling algorithm\nconst pendingVideos = $node['Get Pending Videos'].json.videos || [];\nconst audienceData = $node['Analyze Audience Behavior'].json;\nconst predictions = $node['Predict Optimal Times'].json.predictions;\nconst trendingTopics = $node['Get Trending Topics'].json || [];\n\n// Scoring algorithm for optimal scheduling\nfunction calculateScheduleScore(video, timeSlot, audienceInsights, trendPredictions) {\n  let score = 0;\n  \n  // Time-based scoring\n  const hour = new Date(timeSlot).getHours();\n  const dayOfWeek = new Date(timeSlot).getDay();\n  \n  // Peak hours boost (based on audience data)\n  const peakHours = audienceInsights.peak_hours || [14, 16, 18, 20, 22];\n  if (peakHours.includes(hour)) {\n    score += 30;\n  }\n  \n  // Weekend vs weekday preference\n  const weekendBoost = audienceInsights.weekend_performance_boost || 1.1;\n  if ([0, 6].includes(dayOfWeek)) {\n    score += (weekendBoost - 1) * 20;\n  }\n  \n  // Content relevance to trending topics\n  const videoTags = video.tags || [];\n  const trendingScore = trendingTopics.reduce((acc, topic) => {\n    const relevance = videoTags.some(tag => \n      topic.name && topic.name.toLowerCase().includes(tag.toLowerCase())\n    ) ? 1 : 0;\n    return acc + relevance;\n  }, 0);\n  score += trendingScore * 10;\n  \n  // Channel-specific optimization\n  const channelPerformance = audienceInsights.channel_insights?.[video.channel_id] || {};\n  const channelMultiplier = channelPerformance.performance_multiplier || 1.0;\n  score *= channelMultiplier;\n  \n  // Competition analysis (avoid overcrowded time slots)\n  const competitionPenalty = audienceInsights.competition_density?.[hour] || 1.0;\n  score /= competitionPenalty;\n  \n  // Predicted engagement boost\n  const predictedEngagement = trendPredictions.engagement_forecast?.[hour] || 1.0;\n  score *= predictedEngagement;\n  \n  return Math.round(score * 100) / 100;\n}\n\n// Generate time slots for next 7 days\nfunction generateTimeSlots(days = 7) {\n  const slots = [];\n  const now = new Date();\n  \n  for (let day = 0; day < days; day++) {\n    for (let hour = 6; hour <= 23; hour++) {\n      const timeSlot = new Date(now);\n      timeSlot.setDate(now.getDate() + day);\n      timeSlot.setHours(hour, Math.floor(Math.random() * 60), 0, 0);\n      \n      // Skip slots too close to current time\n      if (timeSlot > new Date(Date.now() + 2 * 60 * 60 * 1000)) {\n        slots.push(timeSlot.toISOString());\n      }\n    }\n  }\n  \n  return slots;\n}\n\n// Content categorization for better scheduling\nfunction categorizeContent(video) {\n  const title = video.title.toLowerCase();\n  const description = (video.description || '').toLowerCase();\n  const tags = (video.tags || []).join(' ').toLowerCase();\n  const content = `${title} ${description} ${tags}`;\n  \n  const categories = {\n    entertainment: ['funny', 'comedy', 'entertainment', 'meme', 'viral'],\n    educational: ['tutorial', 'how to', 'learn', 'education', 'guide', 'tips'],\n    news: ['news', 'update', 'breaking', 'latest', 'current'],\n    gaming: ['game', 'gaming', 'gameplay', 'stream', 'esports'],\n    lifestyle: ['lifestyle', 'vlog', 'daily', 'routine', 'personal'],\n    tech: ['tech', 'technology', 'review', 'unboxing', 'gadget']\n  };\n  \n  for (const [category, keywords] of Object.entries(categories)) {\n    if (keywords.some(keyword => content.includes(keyword))) {\n      return category;\n    }\n  }\n  \n  return 'general';\n}\n\n// Optimal scheduling based on content category\nconst categoryOptimalTimes = {\n  entertainment: { hours: [19, 20, 21, 22], days: [5, 6, 0] }, // Friday-Sunday evenings\n  educational: { hours: [14, 15, 16, 17], days: [1, 2, 3, 4] }, // Weekday afternoons\n  news: { hours: [7, 8, 12, 18], days: [1, 2, 3, 4, 5] }, // Business days, key times\n  gaming: { hours: [15, 16, 17, 18, 19, 20], days: [0, 5, 6] }, // Weekends and Friday\n  lifestyle: { hours: [10, 11, 14, 15], days: [0, 1, 2, 3, 4, 5, 6] }, // Any day, mid-day\n  tech: { hours: [9, 10, 14, 15, 16], days: [1, 2, 3, 4] }, // Weekdays, work hours\n  general: { hours: [14, 16, 18, 20], days: [1, 2, 3, 4, 5] } // Balanced approach\n};\n\n// Process each video for optimal scheduling\nconst scheduledVideos = [];\nconst usedTimeSlots = new Set();\nconst timeSlots = generateTimeSlots(14); // 14 days of scheduling\n\npendingVideos.forEach((video, index) => {\n  const category = categorizeContent(video);\n  const optimalTimes = categoryOptimalTimes[category];\n  \n  // Find best time slot for this video\n  let bestSlot = null;\n  let bestScore = 0;\n  \n  timeSlots.forEach(slot => {\n    if (usedTimeSlots.has(slot)) return; // Skip already used slots\n    \n    const slotDate = new Date(slot);\n    const slotHour = slotDate.getHours();\n    const slotDay = slotDate.getDay();\n    \n    // Check if slot matches category preferences\n    const hourMatch = optimalTimes.hours.includes(slotHour);\n    const dayMatch = optimalTimes.days.includes(slotDay);\n    \n    if (!hourMatch && !dayMatch) return; // Skip non-optimal slots\n    \n    const score = calculateScheduleScore(\n      video, \n      slot, \n      audienceData.result || {}, \n      predictions\n    );\n    \n    // Boost score for category-optimal times\n    const categoryBoost = (hourMatch ? 1.2 : 1.0) * (dayMatch ? 1.1 : 1.0);\n    const finalScore = score * categoryBoost;\n    \n    if (finalScore > bestScore) {\n      bestScore = finalScore;\n      bestSlot = slot;\n    }\n  });\n  \n  if (bestSlot) {\n    usedTimeSlots.add(bestSlot);\n    scheduledVideos.push({\n      queue_id: video.id,\n      video_id: video.video_id,\n      channel_id: video.channel_id,\n      title: video.title,\n      category: category,\n      scheduled_time: bestSlot,\n      score: bestScore,\n      predicted_views: Math.round(bestScore * 100 * (Math.random() * 0.4 + 0.8)), // Simulated prediction\n      optimization_factors: {\n        time_optimization: optimalTimes.hours.includes(new Date(bestSlot).getHours()),\n        day_optimization: optimalTimes.days.includes(new Date(bestSlot).getDay()),\n        trend_alignment: bestScore > 50,\n        audience_targeting: audienceData.result ? true : false\n      }\n    });\n  }\n});\n\n// Sort by schedule time\nscheduledVideos.sort((a, b) => new Date(a.scheduled_time) - new Date(b.scheduled_time));\n\nconst summary = {\n  total_videos_processed: pendingVideos.length,\n  videos_scheduled: scheduledVideos.length,\n  scheduling_window: '14 days',\n  average_score: scheduledVideos.reduce((sum, v) => sum + v.score, 0) / scheduledVideos.length,\n  category_distribution: scheduledVideos.reduce((acc, v) => {\n    acc[v.category] = (acc[v.category] || 0) + 1;\n    return acc;\n  }, {}),\n  next_publish: scheduledVideos[0]?.scheduled_time,\n  optimization_enabled: {\n    audience_insights: !!audienceData.result,\n    predictive_modeling: !!predictions,\n    trend_analysis: trendingTopics.length > 0,\n    competition_analysis: true,\n    category_optimization: true\n  }\n};\n\nreturn [{ json: { scheduled_videos: scheduledVideos, summary: summary } }];"
+      },
+      "name": "Intelligent Scheduling Logic",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [800, 400],
+      "id": "scheduling_logic"
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {
+          "reset": false
+        }
+      },
+      "name": "Process Each Video",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [1000, 400],
+      "id": "process_videos"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/queue/update/{{$json.scheduled_videos[0].queue_id}}",
+        "method": "PUT",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "scheduled_time",
+              "value": "={{$json.scheduled_videos[0].scheduled_time}}"
+            },
+            {
+              "name": "priority",
+              "value": "={{Math.ceil($json.scheduled_videos[0].score / 25)}}"
+            },
+            {
+              "name": "metadata",
+              "value": "={{{\n  \"scheduling_score\": $json.scheduled_videos[0].score,\n  \"content_category\": $json.scheduled_videos[0].category,\n  \"predicted_views\": $json.scheduled_videos[0].predicted_views,\n  \"optimization_factors\": $json.scheduled_videos[0].optimization_factors,\n  \"scheduled_by\": \"intelligent_scheduler\",\n  \"scheduling_version\": \"2.0\"\n}}}"
+            }
+          ]
+        }
+      },
+      "name": "Update Queue Schedule",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1200, 400],
+      "id": "update_schedule"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/advanced-analytics/stream/start",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "stream_id",
+              "value": "scheduling_monitor_{{Date.now()}}"
+            },
+            {
+              "name": "channel_ids",
+              "value": "={{[$json.scheduled_videos[0].channel_id]}}"
+            },
+            {
+              "name": "metrics",
+              "value": "=[\"views\", \"engagement\", \"subscriber_growth\", \"click_through_rate\"]"
+            },
+            {
+              "name": "stream_duration_minutes",
+              "value": "180"
+            },
+            {
+              "name": "enable_alerts",
+              "value": "true"
+            },
+            {
+              "name": "alert_thresholds",
+              "value": "={\"views_spike\": 1.5, \"engagement_drop\": 0.5}"
+            }
+          ]
+        }
+      },
+      "name": "Start Performance Monitoring",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1400, 300],
+      "id": "start_monitoring"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Aggregate final scheduling results\nconst allResults = $input.all();\nconst successful = allResults.filter(item => item.json.success !== false);\nconst failed = allResults.filter(item => item.json.success === false);\n\nconst summary = {\n  scheduling_session_id: `sched_${Date.now()}`,\n  timestamp: new Date().toISOString(),\n  total_processed: allResults.length,\n  successfully_scheduled: successful.length,\n  failed_to_schedule: failed.length,\n  success_rate: successful.length / allResults.length,\n  \n  scheduling_stats: {\n    next_24h: successful.filter(item => {\n      const schedTime = new Date(item.json.scheduled_time || '');\n      const now = new Date();\n      return schedTime > now && schedTime < new Date(now.getTime() + 24 * 60 * 60 * 1000);\n    }).length,\n    \n    next_week: successful.filter(item => {\n      const schedTime = new Date(item.json.scheduled_time || '');\n      const now = new Date();\n      return schedTime > now && schedTime < new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);\n    }).length,\n    \n    peak_hours_utilized: successful.filter(item => {\n      const hour = new Date(item.json.scheduled_time || '').getHours();\n      return [14, 16, 18, 20, 22].includes(hour);\n    }).length\n  },\n  \n  optimization_results: {\n    average_scheduling_score: successful.reduce((sum, item) => {\n      return sum + (item.json.scheduling_score || 0);\n    }, 0) / successful.length,\n    \n    high_confidence_schedules: successful.filter(item => \n      (item.json.scheduling_score || 0) > 75\n    ).length,\n    \n    trend_aligned_videos: successful.filter(item => \n      item.json.optimization_factors?.trend_alignment\n    ).length\n  },\n  \n  errors: failed.map(item => ({\n    queue_id: item.json.queue_id,\n    error: item.json.error || 'Unknown error'\n  }))\n};\n\nreturn { json: summary };"
+      },
+      "name": "Aggregate Scheduling Results",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1200, 200],
+      "id": "aggregate_results"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/notifications/send",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "type",
+              "value": "intelligent_scheduling_complete"
+            },
+            {
+              "name": "title",
+              "value": "Intelligent Scheduling Completed"
+            },
+            {
+              "name": "message",
+              "value": "={{\"Scheduled \" + $json.successfully_scheduled + \" videos with \" + Math.round($json.optimization_results.average_scheduling_score) + \"% avg optimization score\"}}"
+            },
+            {
+              "name": "data",
+              "value": "={{$json}}"
+            }
+          ]
+        }
+      },
+      "name": "Send Scheduling Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1400, 200],
+      "id": "send_report"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "success"
+            },
+            {
+              "name": "message",
+              "value": "Intelligent scheduling completed successfully"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Success Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [1600, 300],
+      "id": "success_response"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Pending Videos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analyze Audience Behavior",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Pending Videos": {
+      "main": [
+        [
+          {
+            "node": "Predict Optimal Times",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Audience Behavior": {
+      "main": [
+        [
+          {
+            "node": "Predict Optimal Times",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Predict Optimal Times": {
+      "main": [
+        [
+          {
+            "node": "Get Trending Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Trending Topics": {
+      "main": [
+        [
+          {
+            "node": "Intelligent Scheduling Logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intelligent Scheduling Logic": {
+      "main": [
+        [
+          {
+            "node": "Process Each Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Each Video": {
+      "main": [
+        [
+          {
+            "node": "Update Queue Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aggregate Scheduling Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Queue Schedule": {
+      "main": [
+        [
+          {
+            "node": "Start Performance Monitoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Performance Monitoring": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Scheduling Results": {
+      "main": [
+        [
+          {
+            "node": "Send Scheduling Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Scheduling Report": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "error-handler-workflow"
+  },
+  "staticData": {
+    "node:Intelligent Scheduling Logic": {
+      "schedulingHistory": [],
+      "performanceMetrics": {
+        "totalScheduled": 0,
+        "averageScore": 0,
+        "successRate": 0
+      }
+    }
+  },
+  "versionId": "2.0.0",
+  "triggerCount": 0
+}

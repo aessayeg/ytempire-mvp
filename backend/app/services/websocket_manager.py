@@ -22,10 +22,17 @@ class MessageType(Enum):
     ERROR = "error"
     PING = "ping"
     PONG = "pong"
+    COLLABORATION = "collaboration"
+    PRESENCE = "presence"
+    CURSOR = "cursor"
+    TYPING = "typing"
+    SYNC = "sync"
+    BROADCAST = "broadcast"
+    PRIVATE_MESSAGE = "private_message"
 
 
 class ConnectionManager:
-    """Manages WebSocket connections and message broadcasting"""
+    """Enhanced WebSocket manager for real-time collaboration"""
     
     def __init__(self):
         # Store active connections by user_id
@@ -34,9 +41,19 @@ class ConnectionManager:
         self.connection_metadata: Dict[WebSocket, Dict[str, Any]] = {}
         # Room/channel subscriptions
         self.room_subscriptions: Dict[str, Set[str]] = {}
+        # User presence tracking
+        self.user_presence: Dict[str, Dict[str, Any]] = {}
+        # Collaboration sessions
+        self.collaboration_sessions: Dict[str, Dict[str, Any]] = {}
+        # Message history for rooms (last 100 messages)
+        self.room_history: Dict[str, List[Dict[str, Any]]] = {}
+        # Typing indicators
+        self.typing_status: Dict[str, Set[str]] = {}
+        # User cursor positions for collaborative editing
+        self.cursor_positions: Dict[str, Dict[str, Any]] = {}
         
     async def connect(self, websocket: WebSocket, user_id: str, metadata: Optional[Dict[str, Any]] = None):
-        """Accept and register a new WebSocket connection"""
+        """Accept and register a new WebSocket connection with enhanced features"""
         await websocket.accept()
         
         # Add to active connections
@@ -48,25 +65,39 @@ class ConnectionManager:
         self.connection_metadata[websocket] = {
             "user_id": user_id,
             "connected_at": datetime.utcnow().isoformat(),
-            "metadata": metadata or {}
+            "metadata": metadata or {},
+            "client_id": metadata.get("client_id") if metadata else None
+        }
+        
+        # Update user presence
+        self.user_presence[user_id] = {
+            "status": "online",
+            "last_seen": datetime.utcnow().isoformat(),
+            "metadata": metadata or {},
+            "active_rooms": set()
         }
         
         logger.info(f"WebSocket connected for user {user_id}")
         
-        # Send initial connection message
+        # Send initial connection message with session info
         await self.send_personal_message(
             user_id,
             {
                 "type": MessageType.NOTIFICATION.value,
                 "data": {
                     "message": "Connected to YTEmpire real-time updates",
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "session_id": websocket.__hash__(),
+                    "features": ["collaboration", "presence", "typing", "cursor_tracking"]
                 }
             }
         )
+        
+        # Broadcast presence update
+        await self.broadcast_presence_update(user_id, "online")
     
     async def disconnect(self, websocket: WebSocket, user_id: str):
-        """Remove a WebSocket connection"""
+        """Remove a WebSocket connection with cleanup"""
         if user_id in self.active_connections:
             if websocket in self.active_connections[user_id]:
                 self.active_connections[user_id].remove(websocket)
@@ -74,15 +105,31 @@ class ConnectionManager:
             # Clean up empty lists
             if not self.active_connections[user_id]:
                 del self.active_connections[user_id]
+                
+                # Update presence to offline
+                if user_id in self.user_presence:
+                    self.user_presence[user_id]["status"] = "offline"
+                    self.user_presence[user_id]["last_seen"] = datetime.utcnow().isoformat()
+                    
+                # Broadcast presence update
+                await self.broadcast_presence_update(user_id, "offline")
         
         # Remove metadata
         if websocket in self.connection_metadata:
             del self.connection_metadata[websocket]
         
-        # Remove from room subscriptions
-        for room_id, subscribers in self.room_subscriptions.items():
+        # Remove from room subscriptions and typing status
+        for room_id, subscribers in list(self.room_subscriptions.items()):
             if user_id in subscribers:
                 subscribers.remove(user_id)
+                # Clear typing status
+                if room_id in self.typing_status and user_id in self.typing_status[room_id]:
+                    self.typing_status[room_id].remove(user_id)
+                    await self.broadcast_typing_status(room_id)
+        
+        # Remove cursor position
+        if user_id in self.cursor_positions:
+            del self.cursor_positions[user_id]
         
         logger.info(f"WebSocket disconnected for user {user_id}")
     
@@ -133,20 +180,43 @@ class ConnectionManager:
             await self.send_personal_message(user_id, message)
     
     async def join_room(self, user_id: str, room_id: str):
-        """Add user to a room/channel"""
+        """Add user to a room with enhanced collaboration features"""
         if room_id not in self.room_subscriptions:
             self.room_subscriptions[room_id] = set()
+            self.room_history[room_id] = []
+            self.typing_status[room_id] = set()
         
         self.room_subscriptions[room_id].add(user_id)
+        
+        # Update user presence
+        if user_id in self.user_presence:
+            self.user_presence[user_id]["active_rooms"].add(room_id)
+        
+        # Send room history to new member
+        if room_id in self.room_history:
+            await self.send_personal_message(
+                user_id,
+                {
+                    "type": MessageType.SYNC.value,
+                    "data": {
+                        "room_id": room_id,
+                        "history": self.room_history[room_id][-50:],  # Last 50 messages
+                        "members": list(self.room_subscriptions[room_id]),
+                        "timestamp": datetime.utcnow().isoformat()
+                    }
+                }
+            )
         
         # Notify room members
         await self.send_to_room(
             room_id,
             {
-                "type": MessageType.NOTIFICATION.value,
+                "type": MessageType.PRESENCE.value,
                 "data": {
-                    "message": f"User {user_id} joined the room",
+                    "action": "joined",
+                    "user_id": user_id,
                     "room_id": room_id,
+                    "members": list(self.room_subscriptions[room_id]),
                     "timestamp": datetime.utcnow().isoformat()
                 }
             },
@@ -222,7 +292,7 @@ class ConnectionManager:
         await self.send_to_room(room_id, message)
     
     async def handle_incoming_message(self, websocket: WebSocket, user_id: str, data: Dict[str, Any]):
-        """Process incoming WebSocket messages"""
+        """Process incoming WebSocket messages with collaboration features"""
         message_type = data.get("type")
         
         if message_type == MessageType.PING.value:
@@ -244,6 +314,34 @@ class ConnectionManager:
             if room_id:
                 await self.leave_room(user_id, room_id)
         
+        elif message_type == MessageType.COLLABORATION.value:
+            # Handle collaboration message
+            await self.handle_collaboration_message(user_id, data.get("data", {}))
+        
+        elif message_type == MessageType.TYPING.value:
+            # Handle typing indicator
+            room_id = data.get("room_id")
+            is_typing = data.get("is_typing", False)
+            if room_id:
+                await self.update_typing_status(user_id, room_id, is_typing)
+        
+        elif message_type == MessageType.CURSOR.value:
+            # Handle cursor position update
+            await self.update_cursor_position(user_id, data.get("data", {}))
+        
+        elif message_type == MessageType.BROADCAST.value:
+            # Broadcast message to room
+            room_id = data.get("room_id")
+            if room_id and user_id in self.room_subscriptions.get(room_id, set()):
+                await self.broadcast_room_message(user_id, room_id, data.get("data", {}))
+        
+        elif message_type == MessageType.PRIVATE_MESSAGE.value:
+            # Send private message to another user
+            target_user = data.get("target_user")
+            message_data = data.get("data", {})
+            if target_user:
+                await self.send_private_message(user_id, target_user, message_data)
+        
         else:
             # Handle custom message types
             logger.info(f"Received message from {user_id}: {message_type}")
@@ -256,12 +354,198 @@ class ConnectionManager:
         """Get number of connected users"""
         return len(self.active_connections)
     
-    def get_room_info(self) -> Dict[str, int]:
-        """Get information about active rooms"""
+    def get_room_info(self) -> Dict[str, Any]:
+        """Get detailed information about active rooms"""
         return {
-            room_id: len(subscribers)
+            room_id: {
+                "member_count": len(subscribers),
+                "members": list(subscribers),
+                "typing_users": list(self.typing_status.get(room_id, set())),
+                "message_count": len(self.room_history.get(room_id, []))
+            }
             for room_id, subscribers in self.room_subscriptions.items()
         }
+    
+    async def broadcast_presence_update(self, user_id: str, status: str):
+        """Broadcast user presence update to all relevant rooms"""
+        presence_data = {
+            "type": MessageType.PRESENCE.value,
+            "data": {
+                "user_id": user_id,
+                "status": status,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+        # Send to all rooms the user is in
+        for room_id, subscribers in self.room_subscriptions.items():
+            if user_id in subscribers:
+                await self.send_to_room(room_id, presence_data, exclude_user=user_id)
+    
+    async def update_typing_status(self, user_id: str, room_id: str, is_typing: bool):
+        """Update and broadcast typing status"""
+        if room_id not in self.typing_status:
+            self.typing_status[room_id] = set()
+        
+        if is_typing:
+            self.typing_status[room_id].add(user_id)
+        else:
+            self.typing_status[room_id].discard(user_id)
+        
+        await self.broadcast_typing_status(room_id)
+    
+    async def broadcast_typing_status(self, room_id: str):
+        """Broadcast current typing status for a room"""
+        typing_users = list(self.typing_status.get(room_id, set()))
+        
+        await self.send_to_room(
+            room_id,
+            {
+                "type": MessageType.TYPING.value,
+                "data": {
+                    "room_id": room_id,
+                    "typing_users": typing_users,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+            }
+        )
+    
+    async def update_cursor_position(self, user_id: str, data: Dict[str, Any]):
+        """Update and broadcast cursor position for collaborative editing"""
+        self.cursor_positions[user_id] = {
+            "position": data.get("position"),
+            "selection": data.get("selection"),
+            "document_id": data.get("document_id"),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        # Broadcast to users in the same document/room
+        room_id = data.get("room_id") or f"doc:{data.get('document_id')}"
+        if room_id:
+            await self.send_to_room(
+                room_id,
+                {
+                    "type": MessageType.CURSOR.value,
+                    "data": {
+                        "user_id": user_id,
+                        "cursor": self.cursor_positions[user_id]
+                    }
+                },
+                exclude_user=user_id
+            )
+    
+    async def handle_collaboration_message(self, user_id: str, data: Dict[str, Any]):
+        """Handle real-time collaboration messages"""
+        action = data.get("action")
+        room_id = data.get("room_id")
+        
+        if not room_id:
+            return
+        
+        collaboration_data = {
+            "type": MessageType.COLLABORATION.value,
+            "data": {
+                "user_id": user_id,
+                "action": action,
+                "payload": data.get("payload"),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+        # Store in room history
+        if room_id not in self.room_history:
+            self.room_history[room_id] = []
+        
+        self.room_history[room_id].append(collaboration_data)
+        
+        # Keep only last 100 messages
+        if len(self.room_history[room_id]) > 100:
+            self.room_history[room_id] = self.room_history[room_id][-100:]
+        
+        # Broadcast to room members
+        await self.send_to_room(room_id, collaboration_data, exclude_user=user_id)
+    
+    async def broadcast_room_message(self, user_id: str, room_id: str, data: Dict[str, Any]):
+        """Broadcast a message to all room members"""
+        message = {
+            "type": MessageType.BROADCAST.value,
+            "data": {
+                "sender_id": user_id,
+                "room_id": room_id,
+                "content": data,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+        # Store in room history
+        if room_id not in self.room_history:
+            self.room_history[room_id] = []
+        
+        self.room_history[room_id].append(message)
+        
+        # Broadcast to room
+        await self.send_to_room(room_id, message)
+    
+    async def send_private_message(self, sender_id: str, target_id: str, data: Dict[str, Any]):
+        """Send a private message between users"""
+        message = {
+            "type": MessageType.PRIVATE_MESSAGE.value,
+            "data": {
+                "sender_id": sender_id,
+                "content": data,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+        await self.send_personal_message(target_id, message)
+    
+    async def create_collaboration_session(self, session_id: str, owner_id: str, metadata: Dict[str, Any]):
+        """Create a new collaboration session"""
+        self.collaboration_sessions[session_id] = {
+            "owner_id": owner_id,
+            "created_at": datetime.utcnow().isoformat(),
+            "participants": [owner_id],
+            "metadata": metadata,
+            "state": {}
+        }
+        
+        return session_id
+    
+    async def join_collaboration_session(self, session_id: str, user_id: str):
+        """Join an existing collaboration session"""
+        if session_id in self.collaboration_sessions:
+            session = self.collaboration_sessions[session_id]
+            if user_id not in session["participants"]:
+                session["participants"].append(user_id)
+            
+            # Send session state to new participant
+            await self.send_personal_message(
+                user_id,
+                {
+                    "type": MessageType.SYNC.value,
+                    "data": {
+                        "session_id": session_id,
+                        "state": session["state"],
+                        "participants": session["participants"],
+                        "timestamp": datetime.utcnow().isoformat()
+                    }
+                }
+            )
+            
+            return True
+        return False
+    
+    def get_user_presence(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get user presence information"""
+        return self.user_presence.get(user_id)
+    
+    def get_online_users(self) -> List[str]:
+        """Get list of online users"""
+        return [
+            user_id 
+            for user_id, presence in self.user_presence.items() 
+            if presence.get("status") == "online"
+        ]
 
 
 # Global connection manager instance

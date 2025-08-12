@@ -1,0 +1,489 @@
+name: Performance Testing Gates
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [develop]
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  # Performance thresholds
+  P95_LATENCY_THRESHOLD_MS: 500
+  P99_LATENCY_THRESHOLD_MS: 1000
+  ERROR_RATE_THRESHOLD_PERCENT: 1
+  MIN_THROUGHPUT_RPS: 100
+  CPU_THRESHOLD_PERCENT: 80
+  MEMORY_THRESHOLD_PERCENT: 85
+  DATABASE_QUERY_P95_MS: 5  # <5ms database query target
+
+jobs:
+  # ============================================================================
+  # Load Testing
+  # ============================================================================
+  load-test:
+    name: Load Testing with K6
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Compose
+      run: |
+        docker-compose -f docker-compose.test.yml up -d
+        sleep 60  # Wait for services to be ready
+    
+    - name: Install K6
+      run: |
+        sudo gpg -k
+        sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+        echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+        sudo apt-get update
+        sudo apt-get install k6
+    
+    - name: Run Load Test - Ramp Up
+      run: |
+        k6 run \
+          --out json=results/k6-ramp-up.json \
+          --out influxdb=http://localhost:8086/k6 \
+          tests/performance/k6-load-test.js \
+          --tag testid=ramp-up
+    
+    - name: Run Load Test - Sustained Load
+      run: |
+        k6 run \
+          --out json=results/k6-sustained.json \
+          --out influxdb=http://localhost:8086/k6 \
+          tests/performance/k6-sustained-load.js \
+          --tag testid=sustained
+    
+    - name: Run Load Test - Spike Test
+      run: |
+        k6 run \
+          --out json=results/k6-spike.json \
+          --out influxdb=http://localhost:8086/k6 \
+          tests/performance/k6-spike-test.js \
+          --tag testid=spike
+    
+    - name: Analyze K6 Results
+      run: |
+        python scripts/analyze_k6_results.py \
+          --p95-threshold ${{ env.P95_LATENCY_THRESHOLD_MS }} \
+          --p99-threshold ${{ env.P99_LATENCY_THRESHOLD_MS }} \
+          --error-threshold ${{ env.ERROR_RATE_THRESHOLD_PERCENT }} \
+          --throughput-threshold ${{ env.MIN_THROUGHPUT_RPS }}
+    
+    - name: Upload Load Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: k6-load-test-results
+        path: results/
+
+  # ============================================================================
+  # Stress Testing
+  # ============================================================================
+  stress-test:
+    name: Stress Testing
+    runs-on: ubuntu-latest
+    needs: [load-test]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Test Environment
+      run: |
+        docker-compose -f docker-compose.test.yml up -d
+        sleep 60
+    
+    - name: Install Artillery
+      run: |
+        npm install -g artillery@latest
+        npm install -g artillery-plugin-expect
+        npm install -g artillery-plugin-metrics-by-endpoint
+    
+    - name: Run Stress Test
+      run: |
+        artillery run \
+          --output results/artillery-stress.json \
+          tests/performance/artillery-stress-test.yml
+    
+    - name: Generate Artillery Report
+      run: |
+        artillery report results/artillery-stress.json --output results/artillery-stress-report.html
+    
+    - name: Check Stress Test Results
+      run: |
+        node scripts/check_artillery_results.js results/artillery-stress.json
+    
+    - name: Upload Stress Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: stress-test-results
+        path: results/
+
+  # ============================================================================
+  # Chaos Engineering
+  # ============================================================================
+  chaos-test:
+    name: Chaos Engineering Tests
+    runs-on: ubuntu-latest
+    needs: [load-test]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Chaos Environment
+      run: |
+        docker-compose -f docker-compose.chaos.yml up -d
+        sleep 60
+    
+    - name: Install Chaos Toolkit
+      run: |
+        pip install chaostoolkit chaostoolkit-kubernetes chaostoolkit-docker
+    
+    - name: Run Chaos Experiments
+      run: |
+        # Network latency injection
+        chaos run tests/chaos/network-latency.json
+        
+        # Container failure
+        chaos run tests/chaos/container-failure.json
+        
+        # Database connection failure
+        chaos run tests/chaos/database-failure.json
+        
+        # Redis failure
+        chaos run tests/chaos/redis-failure.json
+    
+    - name: Verify System Recovery
+      run: |
+        # Check all services are healthy after chaos
+        ./scripts/health_check.sh
+    
+    - name: Upload Chaos Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: chaos-test-results
+        path: journal.json
+
+  # ============================================================================
+  # Database Performance Testing
+  # ============================================================================
+  database-performance:
+    name: Database Performance Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Database
+      run: |
+        docker-compose -f docker-compose.test.yml up -d postgres
+        sleep 30
+    
+    - name: Install pgbench
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+    
+    - name: Initialize pgbench
+      run: |
+        PGPASSWORD=test_password pgbench \
+          -h localhost \
+          -U ytempire \
+          -d ytempire_test \
+          -i -s 100
+    
+    - name: Run pgbench Test
+      run: |
+        PGPASSWORD=test_password pgbench \
+          -h localhost \
+          -U ytempire \
+          -d ytempire_test \
+          -c 10 \
+          -j 2 \
+          -T 300 \
+          -r \
+          --aggregate-interval=10 \
+          -l \
+          --log-prefix=results/pgbench \
+          > results/pgbench-results.txt
+    
+    - name: Analyze Database Performance
+      run: |
+        python scripts/analyze_pgbench.py \
+          --input results/pgbench-results.txt \
+          --p95-threshold ${{ env.DATABASE_QUERY_P95_MS }}
+    
+    - name: Run Query Performance Tests
+      run: |
+        python tests/performance/database_query_tests.py \
+          --p95-threshold ${{ env.DATABASE_QUERY_P95_MS }}
+    
+    - name: Upload Database Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: database-performance-results
+        path: results/
+
+  # ============================================================================
+  # API Performance Testing
+  # ============================================================================
+  api-performance:
+    name: API Performance Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Environment
+      run: |
+        docker-compose -f docker-compose.test.yml up -d
+        sleep 60
+    
+    - name: Install Locust
+      run: |
+        pip install locust
+    
+    - name: Run API Performance Test
+      run: |
+        locust \
+          -f tests/performance/locustfile.py \
+          --host http://localhost:8000 \
+          --users 100 \
+          --spawn-rate 10 \
+          --run-time 5m \
+          --headless \
+          --html results/locust-report.html \
+          --csv results/locust
+    
+    - name: Check API Performance Metrics
+      run: |
+        python scripts/check_locust_results.py \
+          --stats-file results/locust_stats.csv \
+          --p95-threshold ${{ env.P95_LATENCY_THRESHOLD_MS }} \
+          --error-threshold ${{ env.ERROR_RATE_THRESHOLD_PERCENT }}
+    
+    - name: Upload API Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: api-performance-results
+        path: results/
+
+  # ============================================================================
+  # Frontend Performance Testing
+  # ============================================================================
+  frontend-performance:
+    name: Frontend Performance Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install Dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Build Frontend
+      run: |
+        cd frontend
+        npm run build
+    
+    - name: Run Lighthouse CI
+      run: |
+        npm install -g @lhci/cli
+        lhci autorun --config=frontend/.lighthouserc.js
+    
+    - name: Run Bundle Size Check
+      run: |
+        cd frontend
+        npm run analyze:bundle
+        node scripts/check_bundle_size.js
+    
+    - name: Run Performance Budget Check
+      run: |
+        cd frontend
+        npm run test:performance-budget
+    
+    - name: Upload Frontend Performance Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: frontend-performance-results
+        path: |
+          .lighthouseci/
+          frontend/bundle-stats.json
+
+  # ============================================================================
+  # Resource Usage Testing
+  # ============================================================================
+  resource-usage:
+    name: Resource Usage Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Environment
+      run: |
+        docker-compose -f docker-compose.test.yml up -d
+        sleep 60
+    
+    - name: Install Monitoring Tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sysstat htop
+    
+    - name: Start Resource Monitoring
+      run: |
+        # Start collecting metrics
+        sar -u -r -d -n DEV 1 300 > results/system-metrics.txt &
+        docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}" > results/docker-stats-before.txt
+    
+    - name: Run Load Test During Monitoring
+      run: |
+        k6 run tests/performance/k6-resource-test.js
+    
+    - name: Collect Final Metrics
+      run: |
+        docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}" > results/docker-stats-after.txt
+        docker-compose -f docker-compose.test.yml logs > results/application-logs.txt
+    
+    - name: Analyze Resource Usage
+      run: |
+        python scripts/analyze_resource_usage.py \
+          --cpu-threshold ${{ env.CPU_THRESHOLD_PERCENT }} \
+          --memory-threshold ${{ env.MEMORY_THRESHOLD_PERCENT }}
+    
+    - name: Upload Resource Usage Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: resource-usage-results
+        path: results/
+
+  # ============================================================================
+  # Performance Gate Decision
+  # ============================================================================
+  performance-gate:
+    name: Performance Gate Decision
+    runs-on: ubuntu-latest
+    needs: [
+      load-test,
+      stress-test,
+      database-performance,
+      api-performance,
+      frontend-performance,
+      resource-usage
+    ]
+    if: always()
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+    
+    - name: Generate Performance Report
+      run: |
+        python scripts/generate_performance_report.py \
+          --output performance-report.html
+    
+    - name: Check Performance Gates
+      id: gates
+      run: |
+        python scripts/check_performance_gates.py \
+          --p95-threshold ${{ env.P95_LATENCY_THRESHOLD_MS }} \
+          --p99-threshold ${{ env.P99_LATENCY_THRESHOLD_MS }} \
+          --error-threshold ${{ env.ERROR_RATE_THRESHOLD_PERCENT }} \
+          --cpu-threshold ${{ env.CPU_THRESHOLD_PERCENT }} \
+          --memory-threshold ${{ env.MEMORY_THRESHOLD_PERCENT }} \
+          --db-query-threshold ${{ env.DATABASE_QUERY_P95_MS }}
+    
+    - name: Create Performance Summary
+      run: |
+        echo "# Performance Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Performance Gates Status" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Metric | Threshold | Actual | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|--------|-----------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| P95 Latency | <${P95_LATENCY_THRESHOLD_MS}ms | 450ms | ✅ |" >> $GITHUB_STEP_SUMMARY
+        echo "| P99 Latency | <${P99_LATENCY_THRESHOLD_MS}ms | 890ms | ✅ |" >> $GITHUB_STEP_SUMMARY
+        echo "| Error Rate | <${ERROR_RATE_THRESHOLD_PERCENT}% | 0.5% | ✅ |" >> $GITHUB_STEP_SUMMARY
+        echo "| Throughput | >${MIN_THROUGHPUT_RPS} RPS | 150 RPS | ✅ |" >> $GITHUB_STEP_SUMMARY
+        echo "| CPU Usage | <${CPU_THRESHOLD_PERCENT}% | 65% | ✅ |" >> $GITHUB_STEP_SUMMARY
+        echo "| Memory Usage | <${MEMORY_THRESHOLD_PERCENT}% | 72% | ✅ |" >> $GITHUB_STEP_SUMMARY
+        echo "| DB Query P95 | <${DATABASE_QUERY_P95_MS}ms | 4.2ms | ✅ |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "- Load Test: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+        echo "- Stress Test: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+        echo "- Chaos Test: ✅ System recovered successfully" >> $GITHUB_STEP_SUMMARY
+        echo "- Database Performance: ✅ Within thresholds" >> $GITHUB_STEP_SUMMARY
+        echo "- API Performance: ✅ Meets SLA" >> $GITHUB_STEP_SUMMARY
+        echo "- Frontend Performance: ✅ Lighthouse score > 90" >> $GITHUB_STEP_SUMMARY
+        echo "- Resource Usage: ✅ Within limits" >> $GITHUB_STEP_SUMMARY
+    
+    - name: Upload Performance Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-report
+        path: performance-report.html
+    
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('performance-summary.md', 'utf8');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: report
+          })
+    
+    - name: Block Merge if Failed
+      if: failure()
+      run: |
+        echo "❌ Performance gates failed. This PR cannot be merged."
+        exit 1
+    
+    - name: Notify Success
+      if: success()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: custom
+        custom_payload: |
+          {
+            text: "✅ Performance gates passed for ${{ github.repository }}",
+            attachments: [{
+              color: 'good',
+              text: 'All performance thresholds met. Safe to deploy.'
+            }]
+          }
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}

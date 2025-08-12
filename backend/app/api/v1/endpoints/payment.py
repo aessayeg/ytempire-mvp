@@ -82,6 +82,24 @@ class WebhookRequest(BaseModel):
     signature: str
 
 
+class UpgradeDowngradeRequest(BaseModel):
+    """Request for subscription upgrade/downgrade"""
+    new_price_id: str = Field(..., description="New Stripe price ID")
+    proration_behavior: str = Field(default="create_prorations", description="How to handle proration")
+
+
+class PaymentMethodRequest(BaseModel):
+    """Request for payment method operations"""
+    payment_method_id: str = Field(..., description="Stripe payment method ID")
+    set_as_default: bool = Field(default=True, description="Set as default payment method")
+
+
+class InvoiceGenerationRequest(BaseModel):
+    """Request for generating custom invoice"""
+    items: List[Dict[str, Any]] = Field(..., description="Invoice line items")
+    send_invoice: bool = Field(default=True, description="Send invoice immediately")
+
+
 @router.post("/checkout-session")
 async def create_checkout_session(
     request: CreateCheckoutSessionRequest,
@@ -217,6 +235,39 @@ async def get_current_subscription(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve subscription"
+        )
+
+
+@router.put("/subscription/upgrade-downgrade")
+async def upgrade_downgrade_subscription(
+    request: UpgradeDowngradeRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Upgrade or downgrade user's subscription tier
+    """
+    try:
+        result = await payment_service.upgrade_downgrade_subscription(
+            db=db,
+            user_id=str(current_user.id),
+            new_price_id=request.new_price_id,
+            proration_behavior=request.proration_behavior
+        )
+        
+        return {
+            "status": "success",
+            "subscription_id": result["subscription_id"],
+            "new_plan": result["new_plan"],
+            "effective_date": result["effective_date"],
+            "proration_amount": result.get("proration_amount", 0)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to upgrade/downgrade subscription: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to upgrade/downgrade subscription"
         )
 
 
@@ -359,6 +410,97 @@ async def get_billing_history(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve billing history"
+        )
+
+
+@router.post("/invoices/generate")
+async def generate_invoice(
+    request: InvoiceGenerationRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Generate a custom invoice
+    """
+    try:
+        result = await payment_service.generate_invoice(
+            db=db,
+            user_id=str(current_user.id),
+            items=request.items,
+            send_invoice=request.send_invoice
+        )
+        
+        return {
+            "status": "success",
+            "invoice_id": result["invoice_id"],
+            "invoice_url": result.get("invoice_url"),
+            "amount_due": result["amount_due"],
+            "due_date": result["due_date"],
+            "sent": result.get("sent", False)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to generate invoice: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate invoice"
+        )
+
+
+@router.get("/invoices")
+async def get_invoices(
+    limit: int = 20,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> List[Dict[str, Any]]:
+    """
+    Get invoice history
+    """
+    try:
+        invoices = await payment_service.get_invoice_history(
+            db=db,
+            user_id=str(current_user.id),
+            limit=limit
+        )
+        
+        return invoices
+        
+    except Exception as e:
+        logger.error(f"Failed to get invoices: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve invoices"
+        )
+
+
+@router.post("/usage/overage")
+async def process_usage_overage(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Process usage overage charges for the current billing period
+    """
+    try:
+        result = await payment_service.process_usage_overage(
+            db=db,
+            user_id=str(current_user.id)
+        )
+        
+        return {
+            "status": "success",
+            "overage_detected": result.get("overage_detected", False),
+            "overage_amount": result.get("overage_amount", 0),
+            "invoice_created": result.get("invoice_created", False),
+            "invoice_id": result.get("invoice_id"),
+            "details": result.get("details", {})
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to process usage overage: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to process usage overage"
         )
 
 
@@ -647,6 +789,68 @@ async def resume_subscription(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
+        )
+
+
+@router.post("/payment-methods")
+async def add_payment_method(
+    request: PaymentMethodRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Add a new payment method
+    """
+    try:
+        result = await payment_service.add_payment_method(
+            db=db,
+            user_id=str(current_user.id),
+            payment_method_id=request.payment_method_id,
+            set_as_default=request.set_as_default
+        )
+        
+        return {
+            "status": "success",
+            "payment_method_id": result["payment_method_id"],
+            "is_default": result["is_default"],
+            "message": "Payment method added successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to add payment method: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to add payment method"
+        )
+
+
+@router.delete("/payment-methods/{payment_method_id}")
+async def remove_payment_method(
+    payment_method_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Remove a payment method
+    """
+    try:
+        result = await payment_service.remove_payment_method(
+            db=db,
+            user_id=str(current_user.id),
+            payment_method_id=payment_method_id
+        )
+        
+        return {
+            "status": "success",
+            "removed": result["removed"],
+            "message": "Payment method removed successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to remove payment method: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to remove payment method"
         )
 
 

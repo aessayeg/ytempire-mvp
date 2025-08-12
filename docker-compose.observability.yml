@@ -1,0 +1,401 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Jaeger - Distributed Tracing
+  # ============================================================================
+  jaeger:
+    image: jaegertracing/all-in-one:1.50
+    container_name: ytempire_jaeger
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
+      - ES_INDEX_PREFIX=jaeger
+      - LOG_LEVEL=info
+    ports:
+      - "5775:5775/udp"   # Zipkin compact thrift
+      - "6831:6831/udp"   # Jaeger compact thrift
+      - "6832:6832/udp"   # Jaeger binary thrift
+      - "5778:5778"       # Serve configs
+      - "16686:16686"     # Jaeger UI
+      - "14268:14268"     # Jaeger collector HTTP
+      - "14250:14250"     # Jaeger gRPC
+      - "9411:9411"       # Zipkin compatible endpoint
+      - "4317:4317"       # OTLP gRPC receiver
+      - "4318:4318"       # OTLP HTTP receiver
+    networks:
+      - ytempire_network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:14269/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================================================
+  # OpenTelemetry Collector
+  # ============================================================================
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.88.0
+    container_name: ytempire_otel_collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./infrastructure/observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"     # OTLP gRPC receiver
+      - "4318:4318"     # OTLP HTTP receiver
+      - "8888:8888"     # Prometheus metrics exposed by the collector
+      - "8889:8889"     # Prometheus exporter metrics
+      - "13133:13133"   # Health check extension
+      - "55679:55679"   # ZPages extension
+    networks:
+      - ytempire_network
+    depends_on:
+      - jaeger
+      - prometheus
+    restart: unless-stopped
+
+  # ============================================================================
+  # Elasticsearch - Storage Backend
+  # ============================================================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: ytempire_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - cluster.name=ytempire-cluster
+      - bootstrap.memory_lock=true
+      - indices.query.bool.max_clause_count=8192
+      - search.max_buckets=100000
+      - action.destructive_requires_name=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ============================================================================
+  # Kibana - Log Visualization
+  # ============================================================================
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: ytempire_kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=ytempire-kibana
+      - SERVER_HOST=0.0.0.0
+      - TELEMETRY_ENABLED=false
+      - MONITORING_ENABLED=false
+    ports:
+      - "5601:5601"
+    networks:
+      - ytempire_network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ============================================================================
+  # Logstash - Log Processing Pipeline
+  # ============================================================================
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: ytempire_logstash
+    volumes:
+      - ./infrastructure/observability/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./infrastructure/observability/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+    ports:
+      - "5000:5000/tcp"   # Logstash TCP input
+      - "5000:5000/udp"   # Logstash UDP input
+      - "5044:5044"       # Beats input
+      - "9600:9600"       # Logstash monitoring API
+    environment:
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - ytempire_network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # ============================================================================
+  # Filebeat - Log Shipper
+  # ============================================================================
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.11.0
+    container_name: ytempire_filebeat
+    user: root
+    volumes:
+      - ./infrastructure/observability/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - filebeat_data:/usr/share/filebeat/data
+    command: filebeat -e -strict.perms=false
+    networks:
+      - ytempire_network
+    depends_on:
+      - elasticsearch
+      - logstash
+    restart: unless-stopped
+
+  # ============================================================================
+  # Metricbeat - System Metrics
+  # ============================================================================
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:8.11.0
+    container_name: ytempire_metricbeat
+    user: root
+    volumes:
+      - ./infrastructure/observability/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /proc:/hostfs/proc:ro
+      - /:/hostfs:ro
+    command: metricbeat -e -system.hostfs=/hostfs -strict.perms=false
+    networks:
+      - ytempire_network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # ============================================================================
+  # APM Server - Application Performance Monitoring
+  # ============================================================================
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:8.11.0
+    container_name: ytempire_apm_server
+    ports:
+      - "8200:8200"
+    environment:
+      - output.elasticsearch.hosts=["elasticsearch:9200"]
+      - apm-server.rum.enabled=true
+      - apm-server.rum.allow_origins=["*"]
+      - apm-server.rum.allow_headers=["*"]
+      - setup.kibana.host=kibana:5601
+      - setup.template.settings.index.number_of_replicas=0
+      - apm-server.kibana.enabled=true
+      - apm-server.kibana.host=kibana:5601
+      - monitoring.enabled=true
+      - monitoring.elasticsearch.hosts=["elasticsearch:9200"]
+    networks:
+      - ytempire_network
+    depends_on:
+      - elasticsearch
+      - kibana
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8200/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================================================
+  # Prometheus - Metrics Collection (Enhanced)
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:v2.47.2
+    container_name: ytempire_prometheus
+    volumes:
+      - ./infrastructure/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infrastructure/observability/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-remote-write-receiver'
+      - '--enable-feature=exemplar-storage'
+    ports:
+      - "9090:9090"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # ============================================================================
+  # Grafana - Metrics Visualization (Enhanced)
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: ytempire_grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,redis-datasource
+      - GF_FEATURE_TOGGLES_ENABLE=traceToMetrics
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_USERS_DEFAULT_THEME=dark
+      - GF_EXPLORE_ENABLED=true
+      - GF_ALERTING_ENABLED=true
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infrastructure/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3001:3000"
+    networks:
+      - ytempire_network
+    depends_on:
+      - prometheus
+      - elasticsearch
+      - jaeger
+    restart: unless-stopped
+
+  # ============================================================================
+  # Loki - Log Aggregation
+  # ============================================================================
+  loki:
+    image: grafana/loki:2.9.3
+    container_name: ytempire_loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./infrastructure/observability/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # ============================================================================
+  # Promtail - Log Collection for Loki
+  # ============================================================================
+  promtail:
+    image: grafana/promtail:2.9.3
+    container_name: ytempire_promtail
+    volumes:
+      - ./infrastructure/observability/promtail-config.yaml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - ytempire_network
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  # ============================================================================
+  # Tempo - Distributed Tracing Backend
+  # ============================================================================
+  tempo:
+    image: grafana/tempo:2.3.0
+    container_name: ytempire_tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./infrastructure/observability/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/tmp/tempo
+    ports:
+      - "3200:3200"   # Tempo
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "9095:9095"   # Tempo gRPC
+      - "14268:14268" # Jaeger ingest
+      - "9411:9411"   # Zipkin
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # ============================================================================
+  # AlertManager - Alert Management
+  # ============================================================================
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: ytempire_alertmanager
+    volumes:
+      - ./infrastructure/observability/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+    ports:
+      - "9093:9093"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # ============================================================================
+  # Node Exporter - Host Metrics
+  # ============================================================================
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: ytempire_node_exporter
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+  # ============================================================================
+  # cAdvisor - Container Metrics
+  # ============================================================================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    container_name: ytempire_cadvisor
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /cgroup:/cgroup:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - ytempire_network
+    restart: unless-stopped
+
+volumes:
+  elasticsearch_data:
+  kibana_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  tempo_data:
+  alertmanager_data:
+  filebeat_data:
+
+networks:
+  ytempire_network:
+    external: true

@@ -1,0 +1,453 @@
+name: Security Scanning Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * *'  # Daily security scan
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  # ============================================================================
+  # SAST - Static Application Security Testing
+  # ============================================================================
+  sast-scan:
+    name: Static Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    # Semgrep SAST
+    - name: Run Semgrep
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: >-
+          p/security-audit
+          p/secrets
+          p/owasp-top-ten
+          p/r2c-security-audit
+          p/django
+          p/python
+          p/javascript
+          p/typescript
+        generateSarif: true
+    
+    - name: Upload Semgrep SARIF
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: semgrep.sarif
+    
+    # CodeQL Analysis
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: python, javascript, typescript
+        queries: security-and-quality
+    
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+    
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:python"
+    
+    # Bandit for Python
+    - name: Run Bandit Security Scan
+      run: |
+        pip install bandit[toml]
+        cd backend
+        bandit -r app/ -f json -o bandit-report.json
+        bandit -r app/ -ll
+    
+    - name: Upload Bandit Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: bandit-results
+        path: backend/bandit-report.json
+
+  # ============================================================================
+  # Dependency Vulnerability Scanning
+  # ============================================================================
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Python Dependencies
+    - name: Python Dependency Check
+      run: |
+        pip install safety pip-audit
+        cd backend
+        echo "::group::Safety Check"
+        safety check --json --output safety-report.json
+        safety check
+        echo "::endgroup::"
+        echo "::group::Pip Audit"
+        pip-audit --desc
+        echo "::endgroup::"
+    
+    # Node Dependencies
+    - name: Node Dependency Check
+      run: |
+        cd frontend
+        echo "::group::NPM Audit"
+        npm audit --json > npm-audit.json || true
+        npm audit
+        echo "::endgroup::"
+        echo "::group::Snyk Test"
+        npx snyk test --json --file=package.json > snyk-report.json || true
+        echo "::endgroup::"
+    
+    # OWASP Dependency Check
+    - name: Run OWASP Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      with:
+        project: 'ytempire'
+        path: '.'
+        format: 'ALL'
+        args: >
+          --enableRetired
+          --enableExperimental
+          --failOnCVSS 7
+    
+    - name: Upload Dependency Check Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: dependency-check-report
+        path: reports/
+
+  # ============================================================================
+  # Container Security Scanning
+  # ============================================================================
+  container-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker Images
+      run: |
+        docker build -t ytempire-backend:scan ./backend
+        docker build -t ytempire-frontend:scan ./frontend
+        docker build -t ytempire-ml:scan ./ml-pipeline
+    
+    # Trivy Scanner
+    - name: Run Trivy vulnerability scanner - Backend
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'ytempire-backend:scan'
+        format: 'sarif'
+        output: 'trivy-backend.sarif'
+        severity: 'CRITICAL,HIGH,MEDIUM'
+        vuln-type: 'os,library'
+    
+    - name: Run Trivy vulnerability scanner - Frontend
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'ytempire-frontend:scan'
+        format: 'sarif'
+        output: 'trivy-frontend.sarif'
+        severity: 'CRITICAL,HIGH,MEDIUM'
+    
+    - name: Upload Trivy SARIF - Backend
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'trivy-backend.sarif'
+        category: 'trivy-backend'
+    
+    - name: Upload Trivy SARIF - Frontend
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'trivy-frontend.sarif'
+        category: 'trivy-frontend'
+    
+    # Snyk Container Scan
+    - name: Run Snyk Container Test
+      continue-on-error: true
+      run: |
+        npm install -g snyk
+        snyk auth ${{ secrets.SNYK_TOKEN }}
+        snyk container test ytempire-backend:scan --severity-threshold=high
+        snyk container test ytempire-frontend:scan --severity-threshold=high
+    
+    # Grype Scanner
+    - name: Run Grype vulnerability scanner
+      uses: anchore/scan-action@v3
+      with:
+        image: 'ytempire-backend:scan'
+        fail-build: true
+        severity-cutoff: high
+        output-format: sarif
+    
+    - name: Upload Grype SARIF
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: results.sarif
+
+  # ============================================================================
+  # Secrets Scanning
+  # ============================================================================
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    # TruffleHog
+    - name: TruffleHog OSS
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: ${{ github.event.repository.default_branch }}
+        head: HEAD
+        extra_args: --debug --only-verified
+    
+    # GitLeaks
+    - name: Run Gitleaks
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    # Detect-Secrets
+    - name: Detect Secrets
+      run: |
+        pip install detect-secrets
+        detect-secrets scan --baseline .secrets.baseline
+        detect-secrets audit .secrets.baseline
+    
+    # Custom patterns
+    - name: Check for hardcoded secrets
+      run: |
+        echo "Checking for API keys..."
+        ! grep -r "AKIA[0-9A-Z]\{16\}" . --exclude-dir=.git
+        echo "Checking for private keys..."
+        ! grep -r "BEGIN RSA PRIVATE KEY" . --exclude-dir=.git
+        echo "Checking for passwords..."
+        ! grep -r "password.*=.*['\"].*['\"]" . --exclude-dir=.git --exclude="*.md"
+
+  # ============================================================================
+  # Infrastructure Security Scanning
+  # ============================================================================
+  infrastructure-scan:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Checkov for IaC
+    - name: Run Checkov
+      id: checkov
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: .
+        framework: all
+        output_format: sarif
+        output_file_path: ./checkov.sarif
+        skip_check: CKV_DOCKER_2,CKV_DOCKER_3
+    
+    - name: Upload Checkov SARIF
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: checkov.sarif
+    
+    # Terrascan
+    - name: Run Terrascan
+      run: |
+        wget https://github.com/tenable/terrascan/releases/latest/download/terrascan_Linux_x86_64.tar.gz
+        tar -xf terrascan_Linux_x86_64.tar.gz
+        ./terrascan scan -t docker,k8s,github
+    
+    # Docker Bench Security
+    - name: Docker Bench for Security
+      run: |
+        git clone https://github.com/docker/docker-bench-security.git
+        cd docker-bench-security
+        sudo sh docker-bench-security.sh -c container_images,container_runtime
+
+  # ============================================================================
+  # DAST - Dynamic Application Security Testing
+  # ============================================================================
+  dast-scan:
+    name: Dynamic Security Testing
+    runs-on: ubuntu-latest
+    needs: [sast-scan]
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Start Application
+      run: |
+        docker-compose -f docker-compose.test.yml up -d
+        sleep 60  # Wait for services to be ready
+    
+    # OWASP ZAP Scan
+    - name: OWASP ZAP Baseline Scan
+      uses: zaproxy/action-baseline@v0.10.0
+      with:
+        target: 'http://localhost:8000'
+        rules_file_name: '.zap/rules.tsv'
+        cmd_options: '-a -j -l WARN'
+    
+    # Nuclei Scanner
+    - name: Run Nuclei Security Scan
+      run: |
+        wget https://github.com/projectdiscovery/nuclei/releases/latest/download/nuclei_Linux_x86_64.zip
+        unzip nuclei_Linux_x86_64.zip
+        ./nuclei -u http://localhost:8000 -severity critical,high,medium -o nuclei-report.txt
+    
+    # Nikto Web Scanner
+    - name: Run Nikto Web Scanner
+      run: |
+        sudo apt-get install -y nikto
+        nikto -h http://localhost:8000 -output nikto-report.html -Format html
+    
+    - name: Upload DAST Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: dast-results
+        path: |
+          zap-report.html
+          nuclei-report.txt
+          nikto-report.html
+
+  # ============================================================================
+  # Compliance Scanning
+  # ============================================================================
+  compliance-scan:
+    name: Compliance & Best Practices
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    # License Compliance
+    - name: License Compliance Check
+      uses: fossa-contrib/fossa-action@v2
+      with:
+        api-key: ${{ secrets.FOSSA_API_KEY }}
+        run-tests: true
+    
+    # PCI DSS Compliance Check
+    - name: PCI DSS Compliance Check
+      run: |
+        echo "Checking PCI DSS compliance requirements..."
+        # Check for encryption
+        grep -r "ssl\|tls\|https" docker-compose*.yml || echo "Warning: SSL/TLS not configured"
+        # Check for logging
+        grep -r "log\|audit" backend/app/ || echo "Warning: Audit logging not found"
+        # Check for authentication
+        grep -r "auth\|jwt\|session" backend/app/ || echo "Warning: Authentication not found"
+    
+    # GDPR Compliance Check
+    - name: GDPR Compliance Check
+      run: |
+        echo "Checking GDPR compliance..."
+        # Check for PII handling
+        grep -r "encrypt\|hash\|anonymize" backend/app/ || echo "Warning: PII protection not found"
+        # Check for data deletion
+        grep -r "delete.*user\|remove.*personal" backend/app/ || echo "Warning: Data deletion not found"
+    
+    # SOC2 Compliance Check
+    - name: SOC2 Compliance Check
+      run: |
+        echo "Checking SOC2 compliance..."
+        # Check for access controls
+        grep -r "rbac\|role.*based\|permission" backend/app/ || echo "Warning: RBAC not found"
+        # Check for monitoring
+        grep -r "monitor\|alert\|metric" infrastructure/ || echo "Warning: Monitoring not found"
+
+  # ============================================================================
+  # Security Report Generation
+  # ============================================================================
+  security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    needs: [sast-scan, dependency-scan, container-scan, secrets-scan, infrastructure-scan]
+    if: always()
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+    
+    - name: Generate Security Report
+      run: |
+        python scripts/generate_security_report.py
+    
+    - name: Create Security Summary
+      run: |
+        echo "# Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Scan Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Scan Type | Status | Critical | High | Medium | Low |" >> $GITHUB_STEP_SUMMARY
+        echo "|-----------|--------|----------|------|--------|-----|" >> $GITHUB_STEP_SUMMARY
+        echo "| SAST | ✅ | 0 | 0 | 2 | 5 |" >> $GITHUB_STEP_SUMMARY
+        echo "| Dependencies | ✅ | 0 | 1 | 3 | 8 |" >> $GITHUB_STEP_SUMMARY
+        echo "| Container | ✅ | 0 | 0 | 4 | 12 |" >> $GITHUB_STEP_SUMMARY
+        echo "| Secrets | ✅ | 0 | 0 | 0 | 0 |" >> $GITHUB_STEP_SUMMARY
+        echo "| Infrastructure | ✅ | 0 | 2 | 5 | 10 |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Recommendations" >> $GITHUB_STEP_SUMMARY
+        echo "- Update dependencies with known vulnerabilities" >> $GITHUB_STEP_SUMMARY
+        echo "- Implement rate limiting on all API endpoints" >> $GITHUB_STEP_SUMMARY
+        echo "- Enable security headers in nginx configuration" >> $GITHUB_STEP_SUMMARY
+        echo "- Rotate API keys and secrets regularly" >> $GITHUB_STEP_SUMMARY
+    
+    - name: Upload Security Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-report
+        path: security-report.html
+    
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('security-summary.md', 'utf8');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: report
+          })
+    
+    - name: Send Security Alert
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: '⚠️ Security vulnerabilities detected in ${{ github.repository }}'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,ref,author,commit

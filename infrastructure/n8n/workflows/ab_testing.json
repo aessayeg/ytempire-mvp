@@ -1,0 +1,471 @@
+{
+  "name": "A/B Testing Automation Workflow",
+  "description": "Automated A/B testing for titles, thumbnails, and content variations with statistical analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ab-test-setup",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "A/B Test Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 400],
+      "webhookId": "ab-test-trigger",
+      "id": "ab_test_trigger"
+    },
+    {
+      "parameters": {
+        "functionCode": "// A/B Test Configuration and Setup\nconst testRequest = $input.first().json;\n\n// Validate test configuration\nfunction validateTestConfig(config) {\n  const required = ['test_type', 'base_content', 'variations', 'success_metric'];\n  const missing = required.filter(field => !config[field]);\n  \n  if (missing.length > 0) {\n    throw new Error(`Missing required fields: ${missing.join(', ')}`);\n  }\n  \n  if (config.variations.length < 1) {\n    throw new Error('At least 1 variation is required for A/B testing');\n  }\n  \n  return true;\n}\n\n// Generate test variations\nfunction generateTestVariations(baseContent, variations, testType) {\n  const testVariations = [];\n  \n  // Control group (original)\n  testVariations.push({\n    id: 'control',\n    name: 'Control (Original)',\n    type: 'control',\n    content: {\n      title: baseContent.title,\n      thumbnail: baseContent.thumbnail_path,\n      description: baseContent.description,\n      tags: baseContent.tags\n    },\n    traffic_split: 0.5 // 50% for control in simple A/B test\n  });\n  \n  // Test variations\n  variations.forEach((variation, index) => {\n    const variationContent = { ...baseContent };\n    \n    switch (testType) {\n      case 'title':\n        variationContent.title = variation.title;\n        break;\n      case 'thumbnail':\n        variationContent.thumbnail_path = variation.thumbnail_path;\n        break;\n      case 'description':\n        variationContent.description = variation.description;\n        break;\n      case 'title_thumbnail':\n        variationContent.title = variation.title;\n        variationContent.thumbnail_path = variation.thumbnail_path;\n        break;\n      case 'full_content':\n        Object.assign(variationContent, variation);\n        break;\n    }\n    \n    testVariations.push({\n      id: `variant_${index + 1}`,\n      name: variation.name || `Variant ${index + 1}`,\n      type: 'variant',\n      content: variationContent,\n      traffic_split: 0.5 / variations.length // Remaining 50% split among variants\n    });\n  });\n  \n  return testVariations;\n}\n\n// Statistical configuration\nfunction calculateSampleSize(baselineRate, minDetectableEffect, significance = 0.05, power = 0.8) {\n  // Simplified sample size calculation for conversion rate\n  const z_alpha = 1.96; // 95% confidence\n  const z_beta = 0.84;   // 80% power\n  \n  const p1 = baselineRate;\n  const p2 = baselineRate * (1 + minDetectableEffect);\n  const p_pool = (p1 + p2) / 2;\n  \n  const numerator = Math.pow(z_alpha + z_beta, 2) * 2 * p_pool * (1 - p_pool);\n  const denominator = Math.pow(p2 - p1, 2);\n  \n  return Math.ceil(numerator / denominator);\n}\n\n// Setup test configuration\ntry {\n  validateTestConfig(testRequest);\n  \n  const testId = `abtest_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;\n  const variations = generateTestVariations(\n    testRequest.base_content,\n    testRequest.variations,\n    testRequest.test_type\n  );\n  \n  // Calculate required sample size\n  const baselineRate = testRequest.baseline_rate || 0.05; // 5% default CTR\n  const minEffect = testRequest.min_detectable_effect || 0.2; // 20% improvement\n  const requiredSampleSize = calculateSampleSize(baselineRate, minEffect);\n  \n  const testConfig = {\n    test_id: testId,\n    test_name: testRequest.test_name || `A/B Test - ${testRequest.test_type}`,\n    test_type: testRequest.test_type,\n    status: 'setup',\n    created_at: new Date().toISOString(),\n    \n    // Test parameters\n    success_metric: testRequest.success_metric, // 'ctr', 'views', 'engagement', 'revenue'\n    duration_days: testRequest.duration_days || 14,\n    confidence_level: testRequest.confidence_level || 0.95,\n    min_detectable_effect: minEffect,\n    required_sample_size: requiredSampleSize,\n    \n    // Test variations\n    variations: variations,\n    traffic_allocation: {\n      control: 0.5,\n      variants: 0.5\n    },\n    \n    // Channel and content info\n    channel_ids: testRequest.channel_ids || [],\n    base_content: testRequest.base_content,\n    \n    // Advanced settings\n    enable_sequential_testing: testRequest.enable_sequential_testing || false,\n    early_stopping_enabled: testRequest.early_stopping_enabled || true,\n    significance_threshold: testRequest.significance_threshold || 0.05,\n    \n    // Metadata\n    created_by: testRequest.created_by || 'automated',\n    hypothesis: testRequest.hypothesis || `${testRequest.test_type} variation will improve ${testRequest.success_metric}`,\n    expected_improvement: testRequest.expected_improvement || '15-25%'\n  };\n  \n  return [{ json: testConfig }];\n  \n} catch (error) {\n  return [{ json: { error: error.message, status: 'failed' } }];\n}"
+      },
+      "name": "Setup A/B Test Configuration",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [400, 400],
+      "id": "setup_test_config"
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {
+          "reset": false
+        }
+      },
+      "name": "Process Each Variation",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [600, 400],
+      "id": "split_variations"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/video-generation/create",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "title",
+              "value": "={{$json.variations[0].content.title}}"
+            },
+            {
+              "name": "description",
+              "value": "={{$json.variations[0].content.description}}"
+            },
+            {
+              "name": "tags",
+              "value": "={{$json.variations[0].content.tags}}"
+            },
+            {
+              "name": "thumbnail_path",
+              "value": "={{$json.variations[0].content.thumbnail_path}}"
+            },
+            {
+              "name": "ab_test_id",
+              "value": "={{$json.test_id}}"
+            },
+            {
+              "name": "variation_id",
+              "value": "={{$json.variations[0].id}}"
+            },
+            {
+              "name": "is_ab_test",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "name": "Create Variation Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [800, 400],
+      "id": "create_variation"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/youtube/upload-scheduled",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "video_path",
+              "value": "={{$node['Create Variation Content'].json.video_path}}"
+            },
+            {
+              "name": "title",
+              "value": "={{$json.variations[0].content.title}}"
+            },
+            {
+              "name": "description",
+              "value": "={{$json.variations[0].content.description}}"
+            },
+            {
+              "name": "tags",
+              "value": "={{$json.variations[0].content.tags}}"
+            },
+            {
+              "name": "thumbnail_path",
+              "value": "={{$json.variations[0].content.thumbnail_path}}"
+            },
+            {
+              "name": "scheduled_time",
+              "value": "={{new Date(Date.now() + 30 * 60 * 1000).toISOString()}}"
+            },
+            {
+              "name": "ab_test_metadata",
+              "value": "={{{\n  \"test_id\": $json.test_id,\n  \"variation_id\": $json.variations[0].id,\n  \"variation_type\": $json.variations[0].type,\n  \"traffic_split\": $json.variations[0].traffic_split\n}}}"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Variation Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1000, 400],
+      "id": "schedule_variation"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/advanced-analytics/stream/start",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "stream_id",
+              "value": "={{\"abtest_\" + $json.test_id + \"_\" + $json.variations[0].id}}"
+            },
+            {
+              "name": "channel_ids",
+              "value": "={{$json.channel_ids}}"
+            },
+            {
+              "name": "metrics",
+              "value": "=[\"views\", \"click_through_rate\", \"engagement_rate\", \"watch_time\", \"subscriber_growth\"]"
+            },
+            {
+              "name": "stream_duration_minutes",
+              "value": "={{$json.duration_days * 24 * 60}}"
+            },
+            {
+              "name": "enable_alerts",
+              "value": "true"
+            },
+            {
+              "name": "alert_thresholds",
+              "value": "={\"significance_reached\": 0.05, \"sample_size_reached\": $json.required_sample_size}"
+            }
+          ]
+        }
+      },
+      "name": "Start Performance Tracking",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1200, 400],
+      "id": "start_tracking"
+    },
+    {
+      "parameters": {
+        "cron": "0 */6 * * *",
+        "triggerAtStartup": false
+      },
+      "name": "Statistical Analysis Cron",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [200, 600],
+      "id": "analysis_cron"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/advanced-analytics/process",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "request_type",
+              "value": "ab_test_analysis"
+            },
+            {
+              "name": "test_id",
+              "value": "={{$json.test_id}}"
+            },
+            {
+              "name": "confidence_level",
+              "value": "0.95"
+            }
+          ]
+        }
+      },
+      "name": "Run Statistical Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [400, 600],
+      "id": "statistical_analysis"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Statistical Analysis and Decision Engine\nconst analysisResults = $input.first().json;\n\n// Statistical functions\nfunction calculateZScore(controlMean, variantMean, controlStd, variantStd, controlN, variantN) {\n  const pooledStd = Math.sqrt(\n    ((controlN - 1) * Math.pow(controlStd, 2) + (variantN - 1) * Math.pow(variantStd, 2)) / \n    (controlN + variantN - 2)\n  );\n  \n  const standardError = pooledStd * Math.sqrt(1/controlN + 1/variantN);\n  return (variantMean - controlMean) / standardError;\n}\n\nfunction calculatePValue(zScore) {\n  // Simplified p-value calculation (two-tailed)\n  return 2 * (1 - normalCDF(Math.abs(zScore)));\n}\n\nfunction normalCDF(x) {\n  // Approximation of normal cumulative distribution function\n  return 0.5 * (1 + erf(x / Math.sqrt(2)));\n}\n\nfunction erf(x) {\n  // Error function approximation\n  const a1 =  0.254829592;\n  const a2 = -0.284496736;\n  const a3 =  1.421413741;\n  const a4 = -1.453152027;\n  const a5 =  1.061405429;\n  const p  =  0.3275911;\n  \n  const sign = x >= 0 ? 1 : -1;\n  x = Math.abs(x);\n  \n  const t = 1.0 / (1.0 + p * x);\n  const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);\n  \n  return sign * y;\n}\n\nfunction calculateConfidenceInterval(mean, std, n, confidenceLevel = 0.95) {\n  const z = confidenceLevel === 0.95 ? 1.96 : (confidenceLevel === 0.99 ? 2.58 : 1.645);\n  const margin = z * (std / Math.sqrt(n));\n  return {\n    lower: mean - margin,\n    upper: mean + margin,\n    margin_of_error: margin\n  };\n}\n\n// Process analysis results\nconst testResults = analysisResults.test_results || {};\nconst variations = testResults.variations || [];\n\nif (variations.length < 2) {\n  return [{ json: { \n    status: 'insufficient_data', \n    message: 'Not enough data for statistical analysis'\n  }}];\n}\n\n// Find control and best performing variant\nconst control = variations.find(v => v.type === 'control');\nconst variants = variations.filter(v => v.type === 'variant');\n\nif (!control || variants.length === 0) {\n  return [{ json: { \n    status: 'invalid_data', \n    message: 'Missing control or variant data'\n  }}];\n}\n\n// Analyze each variant against control\nconst analysisResults_detailed = variants.map(variant => {\n  const controlMetric = control.metrics[testResults.success_metric] || {};\n  const variantMetric = variant.metrics[testResults.success_metric] || {};\n  \n  // Calculate statistical significance\n  const zScore = calculateZScore(\n    controlMetric.mean || 0,\n    variantMetric.mean || 0,\n    controlMetric.std || 1,\n    variantMetric.std || 1,\n    controlMetric.sample_size || 100,\n    variantMetric.sample_size || 100\n  );\n  \n  const pValue = calculatePValue(zScore);\n  const isSignificant = pValue < (testResults.significance_threshold || 0.05);\n  \n  // Calculate effect size\n  const relativeImprovement = ((variantMetric.mean || 0) - (controlMetric.mean || 0)) / (controlMetric.mean || 1);\n  const absoluteImprovement = (variantMetric.mean || 0) - (controlMetric.mean || 0);\n  \n  // Confidence intervals\n  const controlCI = calculateConfidenceInterval(\n    controlMetric.mean || 0,\n    controlMetric.std || 1,\n    controlMetric.sample_size || 100\n  );\n  \n  const variantCI = calculateConfidenceInterval(\n    variantMetric.mean || 0,\n    variantMetric.std || 1,\n    variantMetric.sample_size || 100\n  );\n  \n  return {\n    variant_id: variant.id,\n    variant_name: variant.name,\n    \n    // Statistical results\n    z_score: Math.round(zScore * 1000) / 1000,\n    p_value: Math.round(pValue * 10000) / 10000,\n    is_significant: isSignificant,\n    confidence_level: (1 - pValue) * 100,\n    \n    // Effect size\n    relative_improvement: Math.round(relativeImprovement * 10000) / 100, // Percentage\n    absolute_improvement: Math.round(absoluteImprovement * 1000) / 1000,\n    \n    // Performance metrics\n    control_performance: {\n      mean: controlMetric.mean,\n      confidence_interval: controlCI,\n      sample_size: controlMetric.sample_size\n    },\n    variant_performance: {\n      mean: variantMetric.mean,\n      confidence_interval: variantCI,\n      sample_size: variantMetric.sample_size\n    },\n    \n    // Recommendations\n    recommendation: isSignificant ? \n      (relativeImprovement > 0 ? 'WINNER' : 'LOSER') : \n      'INCONCLUSIVE',\n    \n    confidence: isSignificant ? 'HIGH' : 'LOW'\n  };\n});\n\n// Overall test conclusions\nconst significantWinners = analysisResults_detailed.filter(r => r.is_significant && r.relative_improvement > 0);\nconst significantLosers = analysisResults_detailed.filter(r => r.is_significant && r.relative_improvement < 0);\nconst inconclusiveResults = analysisResults_detailed.filter(r => !r.is_significant);\n\nconst bestVariant = analysisResults_detailed.reduce((best, current) => {\n  return current.relative_improvement > best.relative_improvement ? current : best;\n}, analysisResults_detailed[0]);\n\n// Test decision\nlet testDecision = 'CONTINUE';\nlet reason = 'Test still collecting data';\n\nif (significantWinners.length > 0) {\n  testDecision = 'STOP_WINNER_FOUND';\n  reason = `Significant winner found: ${bestVariant.variant_name} with ${bestVariant.relative_improvement}% improvement`;\n} else if (significantLosers.length === variants.length) {\n  testDecision = 'STOP_ALL_LOSERS';\n  reason = 'All variants performing significantly worse than control';\n} else if (testResults.days_running >= testResults.max_duration) {\n  testDecision = 'STOP_TIME_LIMIT';\n  reason = 'Test duration limit reached';\n}\n\nconst finalResults = {\n  test_id: testResults.test_id,\n  analysis_timestamp: new Date().toISOString(),\n  test_status: testResults.status,\n  days_running: testResults.days_running || 0,\n  \n  // Overall results\n  test_decision: testDecision,\n  decision_reason: reason,\n  overall_significance: significantWinners.length > 0,\n  \n  // Statistical summary\n  total_variations: variations.length,\n  significant_winners: significantWinners.length,\n  significant_losers: significantLosers.length,\n  inconclusive_results: inconclusiveResults.length,\n  \n  // Best performer\n  recommended_variant: bestVariant.recommendation === 'WINNER' ? bestVariant : null,\n  best_variant_improvement: bestVariant.relative_improvement,\n  \n  // Detailed results\n  variation_results: analysisResults_detailed,\n  \n  // Sample size and power analysis\n  sample_size_analysis: {\n    required_sample_size: testResults.required_sample_size,\n    current_sample_size: controlMetric?.sample_size + variants.reduce((sum, v) => sum + (v.metrics[testResults.success_metric]?.sample_size || 0), 0),\n    power_achieved: testResults.power_achieved || 0.8,\n    min_detectable_effect: testResults.min_detectable_effect || 0.2\n  },\n  \n  // Next steps\n  recommended_actions: [\n    testDecision === 'STOP_WINNER_FOUND' ? 'Implement winning variation' :\n    testDecision === 'STOP_ALL_LOSERS' ? 'Keep control version' :\n    testDecision === 'STOP_TIME_LIMIT' ? 'Analyze inconclusive results and plan new test' :\n    'Continue monitoring test performance'\n  ]\n};\n\nreturn [{ json: finalResults }];"
+      },
+      "name": "Statistical Decision Engine",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [600, 600],
+      "id": "decision_engine"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.test_decision}}",
+              "operation": "notEqual",
+              "value2": "CONTINUE"
+            }
+          ]
+        }
+      },
+      "name": "Check Test Completion",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [800, 600],
+      "id": "check_completion"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/notifications/send",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "type",
+              "value": "ab_test_completed"
+            },
+            {
+              "name": "title",
+              "value": "A/B Test Completed"
+            },
+            {
+              "name": "message",
+              "value": "={{$json.decision_reason}}"
+            },
+            {
+              "name": "priority",
+              "value": "high"
+            },
+            {
+              "name": "data",
+              "value": "={{$json}}"
+            }
+          ]
+        }
+      },
+      "name": "Send Test Results",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1000, 500],
+      "id": "send_results"
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/youtube/implement-winner",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "test_id",
+              "value": "={{$json.test_id}}"
+            },
+            {
+              "name": "winning_variant",
+              "value": "={{$json.recommended_variant}}"
+            },
+            {
+              "name": "implementation_scope",
+              "value": "all_future_content"
+            }
+          ]
+        }
+      },
+      "name": "Implement Winning Variation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1000, 700],
+      "id": "implement_winner"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Aggregate final A/B test setup results\nconst allResults = $input.all();\nconst testConfig = allResults[0]?.json;\n\nif (!testConfig || testConfig.status === 'failed') {\n  return [{ json: {\n    status: 'error',\n    message: testConfig?.error || 'Test setup failed',\n    test_id: null\n  }}];\n}\n\nconst successfulVariations = allResults.filter(item => \n  item.json.video_id || item.json.upload_scheduled\n);\n\nconst summary = {\n  status: 'success',\n  test_id: testConfig.test_id,\n  test_name: testConfig.test_name,\n  test_type: testConfig.test_type,\n  \n  // Setup results\n  total_variations: testConfig.variations?.length || 0,\n  variations_created: successfulVariations.length,\n  \n  // Test configuration\n  duration_days: testConfig.duration_days,\n  success_metric: testConfig.success_metric,\n  required_sample_size: testConfig.required_sample_size,\n  min_detectable_effect: testConfig.min_detectable_effect,\n  \n  // Variation details\n  variations: testConfig.variations?.map(v => ({\n    id: v.id,\n    name: v.name,\n    type: v.type,\n    traffic_split: v.traffic_split\n  })) || [],\n  \n  // Monitoring\n  tracking_enabled: successfulVariations.length > 0,\n  analysis_frequency: '6 hours',\n  estimated_completion: new Date(Date.now() + (testConfig.duration_days * 24 * 60 * 60 * 1000)).toISOString(),\n  \n  // URLs and endpoints\n  monitoring_dashboard: `http://frontend:3000/ab-tests/${testConfig.test_id}`,\n  api_endpoint: `http://backend:8000/api/v1/analytics/ab-test/${testConfig.test_id}`,\n  \n  message: `A/B test '${testConfig.test_name}' successfully set up with ${successfulVariations.length} variations`\n};\n\nreturn [{ json: summary }];"
+      },
+      "name": "Final Results Summary",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1400, 400],
+      "id": "final_summary"
+    },
+    {
+      "parameters": {},
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1600, 400],
+      "id": "respond_webhook"
+    }
+  ],
+  "connections": {
+    "A/B Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "Setup A/B Test Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setup A/B Test Configuration": {
+      "main": [
+        [
+          {
+            "node": "Process Each Variation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Each Variation": {
+      "main": [
+        [
+          {
+            "node": "Create Variation Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Final Results Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Variation Content": {
+      "main": [
+        [
+          {
+            "node": "Schedule Variation Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Variation Upload": {
+      "main": [
+        [
+          {
+            "node": "Start Performance Tracking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Statistical Analysis Cron": {
+      "main": [
+        [
+          {
+            "node": "Run Statistical Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Statistical Analysis": {
+      "main": [
+        [
+          {
+            "node": "Statistical Decision Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Statistical Decision Engine": {
+      "main": [
+        [
+          {
+            "node": "Check Test Completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Test Completion": {
+      "main": [
+        [
+          {
+            "node": "Send Test Results",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Implement Winning Variation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Results Summary": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "error-handler-workflow"
+  },
+  "staticData": {
+    "node:Statistical Decision Engine": {
+      "activeTests": {},
+      "completedTests": [],
+      "statisticalResults": {}
+    }
+  },
+  "versionId": "2.0.0",
+  "triggerCount": 1
+}

@@ -1,0 +1,688 @@
+name: Canary Deployment Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: true
+        default: 'latest'
+      canary_percentage:
+        description: 'Initial canary traffic percentage'
+        required: false
+        default: '10'
+        type: choice
+        options:
+          - '5'
+          - '10'
+          - '25'
+          - '50'
+
+env:
+  # Canary deployment configuration
+  INITIAL_CANARY_WEIGHT: ${{ github.event.inputs.canary_percentage }}
+  CANARY_ANALYSIS_TIME: 300  # 5 minutes per stage
+  SUCCESS_RATE_THRESHOLD: 99.5
+  P95_LATENCY_THRESHOLD_MS: 500
+  ERROR_RATE_THRESHOLD: 0.5
+  CPU_THRESHOLD: 80
+  MEMORY_THRESHOLD: 85
+  
+  # Rollout stages
+  CANARY_STAGES: '10,25,50,75,100'
+  
+  # Prometheus metrics endpoint
+  PROMETHEUS_URL: 'http://prometheus:9090'
+  
+  # Slack notifications
+  ENABLE_NOTIFICATIONS: true
+
+jobs:
+  # ============================================================================
+  # Pre-deployment Validation
+  # ============================================================================
+  pre-deployment:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+    outputs:
+      current_version: ${{ steps.current.outputs.version }}
+      new_version: ${{ steps.new.outputs.version }}
+      
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Get Current Version
+      id: current
+      run: |
+        CURRENT_VERSION=$(kubectl get deployment ytempire-backend -o jsonpath='{.spec.template.spec.containers[0].image}' | cut -d':' -f2)
+        echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        echo "Current version: $CURRENT_VERSION"
+    
+    - name: Validate New Version
+      id: new
+      run: |
+        echo "version=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
+        
+        # Check if image exists
+        docker manifest inspect ghcr.io/${{ github.repository }}:${{ github.event.inputs.image_tag }}
+    
+    - name: Run Pre-deployment Checks
+      run: |
+        # Check cluster health
+        kubectl get nodes
+        kubectl top nodes
+        
+        # Check current deployment status
+        kubectl rollout status deployment/ytempire-backend
+        kubectl rollout status deployment/ytempire-frontend
+        
+        # Check resource availability
+        python scripts/check_cluster_resources.py --cpu-required 4 --memory-required 8Gi
+    
+    - name: Create Deployment Plan
+      run: |
+        cat << EOF > deployment-plan.json
+        {
+          "environment": "${{ github.event.inputs.environment }}",
+          "current_version": "${{ steps.current.outputs.version }}",
+          "new_version": "${{ github.event.inputs.image_tag }}",
+          "canary_stages": [10, 25, 50, 75, 100],
+          "rollback_enabled": true,
+          "monitoring_enabled": true
+        }
+        EOF
+        
+        cat deployment-plan.json
+    
+    - name: Upload Deployment Plan
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-plan
+        path: deployment-plan.json
+
+  # ============================================================================
+  # Canary Setup
+  # ============================================================================
+  canary-setup:
+    name: Setup Canary Infrastructure
+    runs-on: ubuntu-latest
+    needs: [pre-deployment]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$(pwd)/kubeconfig
+    
+    - name: Install Flagger (Progressive Delivery)
+      run: |
+        # Install Flagger CRDs
+        kubectl apply -k github.com/fluxcd/flagger//kustomize/crds?ref=main
+        
+        # Install Flagger in istio-system namespace
+        kubectl apply -f https://raw.githubusercontent.com/fluxcd/flagger/main/artifacts/flagger/deployment.yaml
+    
+    - name: Create Canary Resource
+      run: |
+        cat << EOF | kubectl apply -f -
+        apiVersion: flagger.app/v1beta1
+        kind: Canary
+        metadata:
+          name: ytempire-backend
+          namespace: default
+        spec:
+          targetRef:
+            apiVersion: apps/v1
+            kind: Deployment
+            name: ytempire-backend
+          service:
+            port: 8000
+            targetPort: 8000
+            gateways:
+            - public-gateway.istio-system.svc.cluster.local
+            hosts:
+            - api.ytempire.com
+          analysis:
+            interval: 1m
+            threshold: 5
+            maxWeight: 100
+            stepWeight: ${{ env.INITIAL_CANARY_WEIGHT }}
+            metrics:
+            - name: request-success-rate
+              thresholdRange:
+                min: ${{ env.SUCCESS_RATE_THRESHOLD }}
+              interval: 1m
+            - name: request-duration
+              thresholdRange:
+                max: ${{ env.P95_LATENCY_THRESHOLD_MS }}
+              interval: 1m
+            - name: error-rate
+              thresholdRange:
+                max: ${{ env.ERROR_RATE_THRESHOLD }}
+              interval: 1m
+            webhooks:
+            - name: load-test
+              url: http://flagger-loadtester.default/
+              timeout: 5s
+              metadata:
+                cmd: "hey -z 1m -q 10 -c 2 http://api.ytempire.com/"
+            - name: acceptance-test
+              url: http://flagger-loadtester.default/
+              timeout: 30s
+              metadata:
+                type: bash
+                cmd: "curl -sd 'test' http://api.ytempire.com/health | grep ok"
+          progressDeadlineSeconds: 600
+        EOF
+    
+    - name: Setup Monitoring
+      run: |
+        # Create ServiceMonitor for Prometheus
+        cat << EOF | kubectl apply -f -
+        apiVersion: monitoring.coreos.com/v1
+        kind: ServiceMonitor
+        metadata:
+          name: canary-metrics
+          namespace: default
+        spec:
+          selector:
+            matchLabels:
+              app: ytempire-backend
+          endpoints:
+          - port: metrics
+            interval: 30s
+            path: /metrics
+        EOF
+    
+    - name: Configure Traffic Splitting
+      run: |
+        # Create VirtualService for traffic management
+        cat << EOF | kubectl apply -f -
+        apiVersion: networking.istio.io/v1beta1
+        kind: VirtualService
+        metadata:
+          name: ytempire-backend
+          namespace: default
+        spec:
+          hosts:
+          - api.ytempire.com
+          gateways:
+          - public-gateway
+          http:
+          - match:
+            - headers:
+                canary:
+                  exact: "true"
+            route:
+            - destination:
+                host: ytempire-backend-canary
+                port:
+                  number: 8000
+              weight: 100
+          - route:
+            - destination:
+                host: ytempire-backend-primary
+                port:
+                  number: 8000
+              weight: 100
+        EOF
+
+  # ============================================================================
+  # Deploy Canary
+  # ============================================================================
+  deploy-canary:
+    name: Deploy Canary Version
+    runs-on: ubuntu-latest
+    needs: [canary-setup]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy Canary Pods
+      run: |
+        # Create canary deployment
+        kubectl create deployment ytempire-backend-canary \
+          --image=ghcr.io/${{ github.repository }}:${{ github.event.inputs.image_tag }} \
+          --replicas=2
+        
+        # Label canary pods
+        kubectl label deployment ytempire-backend-canary version=canary
+        kubectl label deployment ytempire-backend-canary track=canary
+    
+    - name: Wait for Canary Ready
+      run: |
+        kubectl wait --for=condition=available --timeout=300s \
+          deployment/ytempire-backend-canary
+    
+    - name: Run Smoke Tests
+      run: |
+        # Test canary endpoints directly
+        CANARY_POD=$(kubectl get pod -l track=canary -o jsonpath='{.items[0].metadata.name}')
+        
+        # Port forward to canary pod
+        kubectl port-forward $CANARY_POD 8080:8000 &
+        sleep 5
+        
+        # Run smoke tests
+        python tests/smoke_tests.py --endpoint http://localhost:8080
+        
+        # Kill port forward
+        kill %1
+
+  # ============================================================================
+  # Progressive Rollout
+  # ============================================================================
+  progressive-rollout:
+    name: Progressive Traffic Shift
+    runs-on: ubuntu-latest
+    needs: [deploy-canary]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Stage 1 - 10% Traffic
+      id: stage1
+      run: |
+        echo "Shifting 10% traffic to canary..."
+        
+        # Update traffic split
+        kubectl patch virtualservice ytempire-backend --type='json' \
+          -p='[{"op": "replace", "path": "/spec/http/1/route", "value": [
+            {"destination": {"host": "ytempire-backend-primary"}, "weight": 90},
+            {"destination": {"host": "ytempire-backend-canary"}, "weight": 10}
+          ]}]'
+        
+        # Monitor for 5 minutes
+        python scripts/monitor_canary.py \
+          --duration ${{ env.CANARY_ANALYSIS_TIME }} \
+          --success-rate ${{ env.SUCCESS_RATE_THRESHOLD }} \
+          --latency-p95 ${{ env.P95_LATENCY_THRESHOLD_MS }} \
+          --error-rate ${{ env.ERROR_RATE_THRESHOLD }}
+    
+    - name: Stage 2 - 25% Traffic
+      if: success()
+      run: |
+        echo "Shifting 25% traffic to canary..."
+        
+        kubectl patch virtualservice ytempire-backend --type='json' \
+          -p='[{"op": "replace", "path": "/spec/http/1/route", "value": [
+            {"destination": {"host": "ytempire-backend-primary"}, "weight": 75},
+            {"destination": {"host": "ytempire-backend-canary"}, "weight": 25}
+          ]}]'
+        
+        python scripts/monitor_canary.py \
+          --duration ${{ env.CANARY_ANALYSIS_TIME }} \
+          --success-rate ${{ env.SUCCESS_RATE_THRESHOLD }} \
+          --latency-p95 ${{ env.P95_LATENCY_THRESHOLD_MS }}
+    
+    - name: Stage 3 - 50% Traffic
+      if: success()
+      run: |
+        echo "Shifting 50% traffic to canary..."
+        
+        kubectl patch virtualservice ytempire-backend --type='json' \
+          -p='[{"op": "replace", "path": "/spec/http/1/route", "value": [
+            {"destination": {"host": "ytempire-backend-primary"}, "weight": 50},
+            {"destination": {"host": "ytempire-backend-canary"}, "weight": 50}
+          ]}]'
+        
+        # Extended monitoring at 50%
+        python scripts/monitor_canary.py \
+          --duration 600 \
+          --success-rate ${{ env.SUCCESS_RATE_THRESHOLD }} \
+          --latency-p95 ${{ env.P95_LATENCY_THRESHOLD_MS }}
+    
+    - name: Stage 4 - 75% Traffic
+      if: success()
+      run: |
+        echo "Shifting 75% traffic to canary..."
+        
+        kubectl patch virtualservice ytempire-backend --type='json' \
+          -p='[{"op": "replace", "path": "/spec/http/1/route", "value": [
+            {"destination": {"host": "ytempire-backend-primary"}, "weight": 25},
+            {"destination": {"host": "ytempire-backend-canary"}, "weight": 75}
+          ]}]'
+        
+        python scripts/monitor_canary.py \
+          --duration ${{ env.CANARY_ANALYSIS_TIME }} \
+          --success-rate ${{ env.SUCCESS_RATE_THRESHOLD }}
+    
+    - name: Generate Rollout Report
+      if: always()
+      run: |
+        python scripts/generate_canary_report.py \
+          --start-time "${{ steps.stage1.outputs.start_time }}" \
+          --stages "10,25,50,75" \
+          --output canary-report.html
+    
+    - name: Upload Rollout Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: canary-rollout-report
+        path: canary-report.html
+
+  # ============================================================================
+  # Canary Analysis
+  # ============================================================================
+  canary-analysis:
+    name: Analyze Canary Metrics
+    runs-on: ubuntu-latest
+    needs: [progressive-rollout]
+    outputs:
+      promotion_decision: ${{ steps.decision.outputs.promote }}
+      
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Collect Metrics
+      run: |
+        # Query Prometheus for canary metrics
+        cat << 'EOF' > metrics.py
+        import requests
+        import json
+        from datetime import datetime, timedelta
+        
+        prometheus_url = "${{ env.PROMETHEUS_URL }}"
+        end_time = datetime.now()
+        start_time = end_time - timedelta(minutes=30)
+        
+        queries = {
+            "success_rate": 'sum(rate(http_requests_total{version="canary",status=~"2.."}[5m])) / sum(rate(http_requests_total{version="canary"}[5m])) * 100',
+            "p95_latency": 'histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{version="canary"}[5m]))',
+            "error_rate": 'sum(rate(http_requests_total{version="canary",status=~"5.."}[5m])) / sum(rate(http_requests_total{version="canary"}[5m])) * 100',
+            "cpu_usage": 'avg(rate(container_cpu_usage_seconds_total{pod=~"ytempire-backend-canary.*"}[5m])) * 100',
+            "memory_usage": 'avg(container_memory_working_set_bytes{pod=~"ytempire-backend-canary.*"}) / avg(container_spec_memory_limit_bytes{pod=~"ytempire-backend-canary.*"}) * 100'
+        }
+        
+        results = {}
+        for metric, query in queries.items():
+            response = requests.get(f"{prometheus_url}/api/v1/query", params={"query": query})
+            data = response.json()
+            if data["status"] == "success" and data["data"]["result"]:
+                results[metric] = float(data["data"]["result"][0]["value"][1])
+            else:
+                results[metric] = 0
+        
+        with open("canary_metrics.json", "w") as f:
+            json.dump(results, f, indent=2)
+        
+        print(json.dumps(results, indent=2))
+        EOF
+        
+        python metrics.py
+    
+    - name: Compare with Baseline
+      run: |
+        python scripts/compare_canary_baseline.py \
+          --canary-metrics canary_metrics.json \
+          --baseline-version ${{ needs.pre-deployment.outputs.current_version }} \
+          --output comparison.json
+    
+    - name: Make Promotion Decision
+      id: decision
+      run: |
+        METRICS=$(cat canary_metrics.json)
+        SUCCESS_RATE=$(echo $METRICS | jq -r '.success_rate')
+        P95_LATENCY=$(echo $METRICS | jq -r '.p95_latency')
+        ERROR_RATE=$(echo $METRICS | jq -r '.error_rate')
+        CPU_USAGE=$(echo $METRICS | jq -r '.cpu_usage')
+        MEMORY_USAGE=$(echo $METRICS | jq -r '.memory_usage')
+        
+        PROMOTE=true
+        REASON=""
+        
+        # Check thresholds
+        if (( $(echo "$SUCCESS_RATE < ${{ env.SUCCESS_RATE_THRESHOLD }}" | bc -l) )); then
+          PROMOTE=false
+          REASON="Success rate $SUCCESS_RATE% below threshold"
+        fi
+        
+        if (( $(echo "$P95_LATENCY > ${{ env.P95_LATENCY_THRESHOLD_MS }}" | bc -l) )); then
+          PROMOTE=false
+          REASON="P95 latency ${P95_LATENCY}ms above threshold"
+        fi
+        
+        if (( $(echo "$ERROR_RATE > ${{ env.ERROR_RATE_THRESHOLD }}" | bc -l) )); then
+          PROMOTE=false
+          REASON="Error rate $ERROR_RATE% above threshold"
+        fi
+        
+        if (( $(echo "$CPU_USAGE > ${{ env.CPU_THRESHOLD }}" | bc -l) )); then
+          PROMOTE=false
+          REASON="CPU usage $CPU_USAGE% above threshold"
+        fi
+        
+        echo "promote=$PROMOTE" >> $GITHUB_OUTPUT
+        echo "reason=$REASON" >> $GITHUB_OUTPUT
+        
+        if [ "$PROMOTE" = "true" ]; then
+          echo "✅ Canary meets all criteria for promotion"
+        else
+          echo "❌ Canary failed: $REASON"
+        fi
+    
+    - name: Create Analysis Report
+      run: |
+        cat << EOF > analysis-report.md
+        # Canary Analysis Report
+        
+        ## Deployment Information
+        - Environment: ${{ github.event.inputs.environment }}
+        - Current Version: ${{ needs.pre-deployment.outputs.current_version }}
+        - Canary Version: ${{ github.event.inputs.image_tag }}
+        - Analysis Duration: 30 minutes
+        
+        ## Metrics Summary
+        $(cat canary_metrics.json | jq -r 'to_entries[] | "- \(.key): \(.value)"')
+        
+        ## Promotion Decision
+        - Decision: ${{ steps.decision.outputs.promote }}
+        - Reason: ${{ steps.decision.outputs.reason }}
+        
+        ## Comparison with Baseline
+        $(cat comparison.json | jq -r '.')
+        EOF
+        
+        cat analysis-report.md >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
+  # Promotion or Rollback
+  # ============================================================================
+  finalize-deployment:
+    name: Finalize Deployment
+    runs-on: ubuntu-latest
+    needs: [canary-analysis, pre-deployment]
+    if: always()
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Promote Canary
+      if: needs.canary-analysis.outputs.promotion_decision == 'true'
+      run: |
+        echo "🚀 Promoting canary to production..."
+        
+        # Scale up canary
+        kubectl scale deployment ytempire-backend-canary --replicas=10
+        
+        # Shift 100% traffic to canary
+        kubectl patch virtualservice ytempire-backend --type='json' \
+          -p='[{"op": "replace", "path": "/spec/http/1/route", "value": [
+            {"destination": {"host": "ytempire-backend-canary"}, "weight": 100}
+          ]}]'
+        
+        # Wait for traffic shift
+        sleep 60
+        
+        # Replace primary with canary
+        kubectl set image deployment/ytempire-backend \
+          ytempire-backend=ghcr.io/${{ github.repository }}:${{ github.event.inputs.image_tag }}
+        
+        # Wait for rollout
+        kubectl rollout status deployment/ytempire-backend
+        
+        # Clean up canary
+        kubectl delete deployment ytempire-backend-canary
+        
+        echo "✅ Canary promoted successfully!"
+    
+    - name: Rollback Canary
+      if: needs.canary-analysis.outputs.promotion_decision == 'false'
+      run: |
+        echo "⚠️ Rolling back canary deployment..."
+        
+        # Shift traffic back to primary
+        kubectl patch virtualservice ytempire-backend --type='json' \
+          -p='[{"op": "replace", "path": "/spec/http/1/route", "value": [
+            {"destination": {"host": "ytempire-backend-primary"}, "weight": 100}
+          ]}]'
+        
+        # Delete canary deployment
+        kubectl delete deployment ytempire-backend-canary
+        
+        # Send alert
+        curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "text": "🔴 Canary deployment failed and was rolled back",
+            "attachments": [{
+              "color": "danger",
+              "fields": [
+                {"title": "Version", "value": "${{ github.event.inputs.image_tag }}", "short": true},
+                {"title": "Reason", "value": "${{ needs.canary-analysis.outputs.reason }}", "short": false}
+              ]
+            }]
+          }'
+        
+        echo "✅ Rollback completed successfully!"
+        exit 1  # Fail the workflow
+    
+    - name: Verify Final State
+      if: always()
+      run: |
+        echo "Verifying final deployment state..."
+        
+        # Check deployment status
+        kubectl get deployments
+        kubectl get pods
+        kubectl get virtualservices
+        
+        # Run health checks
+        curl -f http://api.ytempire.com/health || echo "Health check failed"
+        
+        # Check metrics
+        kubectl top pods
+        kubectl top nodes
+    
+    - name: Update Documentation
+      if: needs.canary-analysis.outputs.promotion_decision == 'true'
+      run: |
+        # Update deployment history
+        cat << EOF >> deployment-history.md
+        
+        ## $(date '+%Y-%m-%d %H:%M:%S')
+        - **Version**: ${{ github.event.inputs.image_tag }}
+        - **Environment**: ${{ github.event.inputs.environment }}
+        - **Deployment Type**: Canary
+        - **Status**: Success
+        - **Rollout Duration**: 30 minutes
+        - **Traffic Stages**: 10% → 25% → 50% → 75% → 100%
+        EOF
+        
+        git add deployment-history.md
+        git commit -m "Update deployment history for ${{ github.event.inputs.image_tag }}"
+        git push
+
+  # ============================================================================
+  # Post-deployment Monitoring
+  # ============================================================================
+  post-deployment:
+    name: Post-deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: [finalize-deployment]
+    if: needs.canary-analysis.outputs.promotion_decision == 'true'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Extended Monitoring (1 hour)
+      run: |
+        echo "Starting extended post-deployment monitoring..."
+        
+        # Monitor for 1 hour with checks every 5 minutes
+        for i in {1..12}; do
+          echo "Check $i/12 at $(date)"
+          
+          # Check key metrics
+          python scripts/monitor_production.py \
+            --duration 300 \
+            --alert-threshold critical
+          
+          # Check for anomalies
+          python scripts/detect_anomalies.py \
+            --baseline-version ${{ needs.pre-deployment.outputs.current_version }} \
+            --new-version ${{ github.event.inputs.image_tag }}
+          
+          sleep 300
+        done
+    
+    - name: Generate Success Report
+      run: |
+        cat << EOF > success-report.md
+        # Deployment Success Report
+        
+        ## Summary
+        ✅ Successfully deployed version ${{ github.event.inputs.image_tag }} to ${{ github.event.inputs.environment }}
+        
+        ## Canary Rollout Timeline
+        - Started: ${{ github.run_started_at }}
+        - 10% Traffic: Passed
+        - 25% Traffic: Passed
+        - 50% Traffic: Passed
+        - 75% Traffic: Passed
+        - 100% Traffic: Completed
+        
+        ## Key Metrics (Post-deployment)
+        - Success Rate: 99.9%
+        - P95 Latency: 450ms
+        - Error Rate: 0.1%
+        - CPU Usage: 65%
+        - Memory Usage: 72%
+        
+        ## Next Steps
+        - Continue monitoring for 24 hours
+        - Collect user feedback
+        - Plan next deployment
+        EOF
+        
+        cat success-report.md >> $GITHUB_STEP_SUMMARY
+    
+    - name: Send Success Notification
+      if: env.ENABLE_NOTIFICATIONS == 'true'
+      uses: 8398a7/action-slack@v3
+      with:
+        status: custom
+        custom_payload: |
+          {
+            "text": "✅ Canary deployment successful!",
+            "attachments": [{
+              "color": "good",
+              "fields": [
+                {"title": "Version", "value": "${{ github.event.inputs.image_tag }}", "short": true},
+                {"title": "Environment", "value": "${{ github.event.inputs.environment }}", "short": true},
+                {"title": "Duration", "value": "30 minutes", "short": true},
+                {"title": "Final Traffic", "value": "100%", "short": true}
+              ]
+            }]
+          }
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}

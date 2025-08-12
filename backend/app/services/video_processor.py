@@ -924,3 +924,21 @@ class VideoProcessor:
                             
         except Exception as e:
             logger.error(f"Cleanup error: {e}")
+
+
+# Global instances
+video_processor = VideoProcessor()
+
+
+# Convenience functions for backward compatibility
+async def create_video_from_assets(*args, **kwargs):
+    """Backward compatibility function"""
+    return await video_processor.create_video_from_assets(*args, **kwargs)
+
+async def generate_thumbnail(*args, **kwargs):
+    """Backward compatibility function"""
+    return await video_processor.generate_thumbnail(*args, **kwargs)
+
+async def optimize_video(*args, **kwargs):
+    """Backward compatibility function"""
+    return await video_processor.optimize_video(*args, **kwargs)

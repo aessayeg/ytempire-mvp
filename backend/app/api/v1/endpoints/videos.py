@@ -1,17 +1,22 @@
 """
-Video generation and management endpoints
+Enhanced Video Generation and Management Endpoints
+Week 2 Implementation: Optimized with caching, query optimization, and <300ms p95 response time
 """
 from typing import List, Optional, Dict, Any, Annotated
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Query, UploadFile, File
+from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, update
+from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.exc import IntegrityError
 from pydantic import BaseModel, Field, validator
 import asyncio
 import uuid
 import logging
+import orjson
 from celery import Celery
+import redis.asyncio as aioredis
 
 from app.db.session import get_db
 from app.models.video import Video
@@ -25,9 +30,26 @@ from app.services.video_processor import VideoProcessor
 from app.services.cost_tracker import CostTracker
 from app.core.celery_app import celery_app
 from app.core.config import settings
+from app.core.performance_enhanced import (
+    cached, cache, QueryOptimizer, ResponseCompression,
+    api_metrics, BatchProcessor, request_deduplicator
+)
 
 router = APIRouter(prefix="/videos", tags=["videos"])
 logger = logging.getLogger(__name__)
+
+# Initialize Redis for caching
+redis_client = None
+
+async def get_redis():
+    global redis_client
+    if not redis_client:
+        redis_client = await aioredis.from_url(
+            settings.REDIS_URL or "redis://localhost:6379",
+            encoding="utf-8",
+            decode_responses=True
+        )
+    return redis_client
 
 # Initialize services
 ai_config = AIServiceConfig(
@@ -429,7 +451,8 @@ async def publish_video(
         
         return {"message": "Video publishing initiated"}
 
-@router.get("/", response_model=List[VideoResponse])
+@router.get("/", response_model=List[VideoResponse], response_class=ORJSONResponse)
+@cached(prefix="videos:list", ttl=60, key_params=["channel_id", "status", "skip", "limit"])
 async def list_videos(
     channel_id: Optional[str] = None,
     status: Optional[str] = None,
@@ -439,14 +462,31 @@ async def list_videos(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    List videos
+    Optimized List Videos Endpoint
     
-    - Filter by channel and status
+    - Uses query optimization with eager loading
+    - Implements Redis caching for frequent queries
     - Returns videos for user's channels only
-    - Includes performance metrics
+    - Target: <100ms response time
     """
-    # Build query
-    query = select(Video).join(Channel).filter(Channel.owner_id == current_user.id)
+    # Check cache first
+    cache_key = f"videos:list:{current_user.id}:{channel_id}:{status}:{skip}:{limit}"
+    redis = await get_redis()
+    
+    cached_result = await redis.get(cache_key)
+    if cached_result:
+        return orjson.loads(cached_result)
+    
+    # Build optimized query with eager loading
+    query = (
+        select(Video)
+        .join(Channel)
+        .filter(Channel.owner_id == current_user.id)
+        .options(
+            selectinload(Video.channel),
+            selectinload(Video.costs)
+        )
+    )
     
     if channel_id:
         query = query.filter(Video.channel_id == channel_id)
@@ -459,12 +499,18 @@ async def list_videos(
         elif status == "draft":
             query = query.filter(Video.publish_status == "draft")
     
-    query = query.order_by(Video.created_at.desc()).offset(skip).limit(limit)
+    # Add optimized pagination
+    query = QueryOptimizer.add_pagination(
+        query.order_by(Video.created_at.desc()),
+        page=(skip // limit) + 1,
+        page_size=limit
+    )
     
     result = await db.execute(query)
     videos = result.scalars().all()
     
-    return [
+    # Transform to response model
+    response_data = [
         VideoResponse(
             id=str(video.id),
             channel_id=video.channel_id,

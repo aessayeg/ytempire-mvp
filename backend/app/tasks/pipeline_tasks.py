@@ -1,19 +1,25 @@
 """
-Video Processing Pipeline Tasks
+Enhanced Video Processing Pipeline Tasks for 100+ Videos/Day
+Week 2 Implementation: Distributed processing, batch operations, and auto-scaling
 Comprehensive Celery task definitions for video automation
 """
 import os
 import json
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timedelta
 from celery import chain, group, chord, signature
 from celery.result import AsyncResult
+from celery.exceptions import SoftTimeLimitExceeded
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from sqlalchemy import and_, or_
+import redis
 
 from app.core.celery_app import celery_app, TaskPriority
 from app.db.session import get_db
 from app.models.video import Video, VideoStatus
 from app.models.channel import Channel
+from app.models.cost import Cost
 from app.services.ai_services import AIServiceManager
 from app.services.video_processor import VideoProcessor
 from app.services.youtube_multi_account import get_youtube_manager
@@ -22,6 +28,35 @@ from app.services.n8n_integration import get_n8n_integration, WorkflowType
 from app.websocket.manager import websocket_manager
 
 logger = logging.getLogger(__name__)
+
+# Initialize Redis for distributed locking and caching
+redis_client = redis.Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
+
+class PipelineMetrics:
+    """Track pipeline performance metrics for optimization"""
+    
+    @staticmethod
+    def record_metric(metric_name: str, value: float, tags: Dict[str, str] = None):
+        """Record a metric for monitoring"""
+        metric_data = {
+            "metric": metric_name,
+            "value": value,
+            "timestamp": datetime.utcnow().isoformat(),
+            "tags": tags or {}
+        }
+        redis_client.lpush("metrics:pipeline", json.dumps(metric_data))
+        redis_client.ltrim("metrics:pipeline", 0, 10000)  # Keep last 10k metrics
+    
+    @staticmethod
+    def get_throughput() -> float:
+        """Calculate current pipeline throughput (videos/hour)"""
+        hour_ago = datetime.utcnow() - timedelta(hours=1)
+        with next(get_db()) as db:
+            count = db.query(Video).filter(
+                Video.completed_at >= hour_ago,
+                Video.status == VideoStatus.PUBLISHED
+            ).count()
+        return count
 
 
 # Pipeline Stage Tasks
@@ -478,3 +513,273 @@ def get_pipeline_status(pipeline_id: str) -> Dict[str, Any]:
             "state": "UNKNOWN",
             "error": str(e)
         }
+
+
+# Enhanced Batch Processing for 100+ Videos/Day
+
+@celery_app.task(name="pipeline.batch_process_optimized", priority=TaskPriority.HIGH)
+def batch_process_optimized(
+    channel_id: int,
+    video_count: int = 10,
+    parallel_limit: int = 5,
+    style: str = "educational"
+) -> Dict[str, Any]:
+    """
+    Optimized batch processing for high throughput
+    Supports 100+ videos/day with intelligent resource management
+    """
+    start_time = datetime.utcnow()
+    batch_id = f"batch_{channel_id}_{start_time.timestamp()}"
+    
+    try:
+        logger.info(f"Starting optimized batch processing: {batch_id}")
+        
+        # Check current system load
+        current_throughput = PipelineMetrics.get_throughput()
+        queue_depth = redis_client.llen("celery:queue:video_processing")
+        
+        # Adjust parallelism based on system load
+        if queue_depth > 50:
+            parallel_limit = max(2, parallel_limit // 2)
+            logger.info(f"Reducing parallelism to {parallel_limit} due to high queue depth")
+        
+        # Create video records in database
+        video_ids = []
+        with next(get_db()) as db:
+            for i in range(video_count):
+                video = Video(
+                    channel_id=channel_id,
+                    title=f"Batch Video {i+1}",
+                    status=VideoStatus.PENDING,
+                    created_at=datetime.utcnow()
+                )
+                db.add(video)
+            db.commit()
+            
+            # Get IDs
+            videos = db.query(Video).filter(
+                Video.channel_id == channel_id,
+                Video.status == VideoStatus.PENDING
+            ).order_by(Video.created_at.desc()).limit(video_count).all()
+            video_ids = [v.id for v in videos]
+        
+        # Process in parallel batches
+        batches = [video_ids[i:i + parallel_limit] for i in range(0, len(video_ids), parallel_limit)]
+        results = {"successful": [], "failed": [], "batch_id": batch_id}
+        
+        for batch_idx, batch in enumerate(batches):
+            logger.info(f"Processing batch {batch_idx + 1}/{len(batches)}")
+            
+            # Create parallel task group
+            batch_group = group(
+                process_video_with_retry.s(vid, style)
+                for vid in batch
+            )
+            
+            # Execute batch with monitoring
+            batch_result = batch_group.apply_async()
+            
+            # Monitor batch completion
+            for idx, task_result in enumerate(batch_result):
+                try:
+                    result = task_result.get(timeout=1800)  # 30 min timeout
+                    results["successful"].append(result)
+                    
+                    # Update metrics
+                    PipelineMetrics.record_metric(
+                        "batch.video.completed",
+                        1,
+                        {"batch_id": batch_id, "video_id": str(batch[idx])}
+                    )
+                    
+                except Exception as e:
+                    logger.error(f"Video {batch[idx]} failed: {str(e)}")
+                    results["failed"].append({
+                        "video_id": batch[idx],
+                        "error": str(e)
+                    })
+            
+            # Throttle between batches to prevent overload
+            if batch_idx < len(batches) - 1:
+                import time
+                time.sleep(10)  # 10 second delay
+        
+        # Record overall metrics
+        duration = (datetime.utcnow() - start_time).total_seconds()
+        success_rate = len(results["successful"]) / video_count if video_count > 0 else 0
+        
+        PipelineMetrics.record_metric(
+            "batch.completed",
+            video_count,
+            {
+                "batch_id": batch_id,
+                "duration": str(duration),
+                "success_rate": str(success_rate)
+            }
+        )
+        
+        return {
+            "batch_id": batch_id,
+            "total_videos": video_count,
+            "successful": len(results["successful"]),
+            "failed": len(results["failed"]),
+            "duration_seconds": duration,
+            "throughput_per_hour": (video_count / duration) * 3600 if duration > 0 else 0,
+            "results": results
+        }
+        
+    except Exception as e:
+        logger.error(f"Batch processing failed: {str(e)}")
+        raise
+
+
+@celery_app.task(
+    name="pipeline.process_video_with_retry",
+    bind=True,
+    max_retries=3,
+    default_retry_delay=60
+)
+def process_video_with_retry(self, video_id: int, style: str = "educational") -> Dict[str, Any]:
+    """Process single video with retry logic and optimization"""
+    try:
+        # Check if video is already being processed (distributed lock)
+        lock_key = f"video:processing:{video_id}"
+        if not redis_client.set(lock_key, "1", nx=True, ex=3600):
+            logger.warning(f"Video {video_id} already being processed")
+            return {"status": "duplicate", "video_id": video_id}
+        
+        # Execute optimized pipeline
+        result = orchestrate_full_pipeline(
+            channel_id=None,  # Will be fetched from video record
+            video_id=video_id,
+            style=style,
+            auto_upload=True
+        )
+        
+        # Release lock
+        redis_client.delete(lock_key)
+        
+        return result
+        
+    except SoftTimeLimitExceeded:
+        logger.error(f"Video {video_id} processing timed out")
+        self.retry(countdown=120)
+    except Exception as e:
+        logger.error(f"Video {video_id} processing failed: {str(e)}")
+        if self.request.retries < self.max_retries:
+            self.retry(exc=e, countdown=60 * (self.request.retries + 1))
+        raise
+
+
+@celery_app.task(name="pipeline.monitor_throughput")
+def monitor_and_optimize_throughput() -> Dict[str, Any]:
+    """Monitor pipeline throughput and suggest optimizations"""
+    current_throughput = PipelineMetrics.get_throughput()
+    target_throughput = 100 / 24  # 100 videos per day
+    
+    recommendations = []
+    metrics = {}
+    
+    # Check queue depths
+    for queue_name in ["video_processing", "ai_generation", "youtube_upload"]:
+        depth = redis_client.llen(f"celery:queue:{queue_name}")
+        metrics[f"queue_{queue_name}_depth"] = depth
+        
+        if depth > 20:
+            recommendations.append(f"Scale up {queue_name} workers (depth: {depth})")
+    
+    # Check processing times
+    recent_videos = []
+    with next(get_db()) as db:
+        recent_videos = db.query(Video).filter(
+            Video.completed_at.isnot(None),
+            Video.created_at.isnot(None)
+        ).order_by(Video.completed_at.desc()).limit(10).all()
+    
+    if recent_videos:
+        avg_processing_time = sum([
+            (v.completed_at - v.created_at).total_seconds()
+            for v in recent_videos
+        ]) / len(recent_videos)
+        
+        metrics["avg_processing_time_seconds"] = avg_processing_time
+        
+        if avg_processing_time > 600:  # 10 minutes
+            recommendations.append(f"Optimize pipeline stages (avg time: {avg_processing_time:.0f}s)")
+    
+    # Check cost efficiency
+    with next(get_db()) as db:
+        recent_costs = db.query(Cost).filter(
+            Cost.created_at >= datetime.utcnow() - timedelta(hours=1)
+        ).all()
+        
+        if recent_costs:
+            avg_cost = sum([c.amount for c in recent_costs]) / len(recent_costs)
+            metrics["avg_cost_per_video"] = avg_cost
+            
+            if avg_cost > 2.50:
+                recommendations.append(f"Optimize costs (avg: ${avg_cost:.2f}/video)")
+    
+    # Performance assessment
+    if current_throughput < target_throughput:
+        recommendations.append(f"Increase throughput (current: {current_throughput:.1f}, target: {target_throughput:.1f} videos/hour)")
+    
+    return {
+        "current_throughput": current_throughput,
+        "target_throughput": target_throughput,
+        "metrics": metrics,
+        "recommendations": recommendations,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+# Auto-scaling helper tasks
+
+@celery_app.task(name="pipeline.scale_workers")
+def auto_scale_workers() -> Dict[str, Any]:
+    """Auto-scale workers based on queue depth and throughput"""
+    from app.core.celery_app import AutoScalingConfig
+    
+    scaled_queues = []
+    
+    for queue_name, config in AutoScalingConfig.QUEUE_SCALING.items():
+        queue_key = f"celery:queue:{queue_name}"
+        depth = redis_client.llen(queue_key)
+        
+        if depth > config["threshold"]:
+            # Need to scale up
+            scaled_queues.append({
+                "queue": queue_name,
+                "action": "scale_up",
+                "depth": depth,
+                "new_workers": config["max"]
+            })
+            
+            # Record scaling event
+            PipelineMetrics.record_metric(
+                "autoscale.triggered",
+                1,
+                {"queue": queue_name, "action": "scale_up", "depth": str(depth)}
+            )
+    
+    return {
+        "scaled_queues": scaled_queues,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+# Schedule periodic optimization tasks
+celery_app.conf.beat_schedule.update({
+    "monitor-throughput": {
+        "task": "pipeline.monitor_throughput",
+        "schedule": 300.0,  # Every 5 minutes
+    },
+    "auto-scale-workers": {
+        "task": "pipeline.scale_workers",
+        "schedule": 60.0,  # Every minute
+    },
+    "optimize-batch-processing": {
+        "task": "pipeline.monitor_and_optimize_throughput",
+        "schedule": 600.0,  # Every 10 minutes
+    }
+})

@@ -781,6 +781,383 @@ class EnhancedPaymentService:
                     "trial_end": subscription['trial_end']
                 }
             })
+    
+    # Week 2 Enhancement: Subscription Upgrade/Downgrade
+    
+    async def upgrade_downgrade_subscription(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        new_price_id: str,
+        proration_behavior: str = "create_prorations"
+    ) -> Dict[str, Any]:
+        """
+        Upgrade or downgrade subscription with proration
+        
+        Args:
+            user_id: User ID
+            new_price_id: New Stripe price ID
+            proration_behavior: How to handle proration (create_prorations, none, always_invoice)
+        """
+        try:
+            # Get current subscription
+            result = await db.execute(
+                select(Subscription)
+                .where(
+                    and_(
+                        Subscription.user_id == user_id,
+                        Subscription.status == SubscriptionStatus.ACTIVE
+                    )
+                )
+            )
+            subscription = result.scalar_one_or_none()
+            
+            if not subscription:
+                raise ValueError("No active subscription found")
+            
+            # Update Stripe subscription
+            stripe_subscription = stripe.Subscription.modify(
+                subscription.stripe_subscription_id,
+                items=[{
+                    'id': subscription.stripe_subscription_item_id,
+                    'price': new_price_id
+                }],
+                proration_behavior=proration_behavior,
+                metadata={
+                    'user_id': user_id,
+                    'change_type': 'plan_change',
+                    'previous_price': subscription.stripe_price_id
+                }
+            )
+            
+            # Update database
+            subscription.stripe_price_id = new_price_id
+            subscription.plan_name = stripe_subscription['items']['data'][0]['price']['nickname']
+            subscription.plan_amount = stripe_subscription['items']['data'][0]['price']['unit_amount'] / 100
+            subscription.updated_at = datetime.utcnow()
+            
+            await db.commit()
+            
+            # Send notification
+            if self.websocket_manager:
+                await self.websocket_manager.send_to_user(user_id, {
+                    "type": "subscription_updated",
+                    "data": {
+                        "subscription_id": subscription.id,
+                        "new_plan": subscription.plan_name,
+                        "status": "success"
+                    }
+                })
+            
+            return {
+                "subscription_id": subscription.id,
+                "status": stripe_subscription['status'],
+                "new_plan": subscription.plan_name,
+                "proration_amount": self._calculate_proration(stripe_subscription)
+            }
+            
+        except Exception as e:
+            logger.error(f"Subscription upgrade/downgrade failed: {str(e)}")
+            raise
+    
+    async def add_payment_method(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        payment_method_id: str,
+        set_as_default: bool = True
+    ) -> PaymentMethod:
+        """Add new payment method for user"""
+        try:
+            # Get customer
+            result = await db.execute(
+                select(PaymentCustomer).where(PaymentCustomer.user_id == user_id)
+            )
+            customer = result.scalar_one_or_none()
+            
+            if not customer:
+                raise ValueError("Customer not found")
+            
+            # Attach payment method to customer
+            payment_method = stripe.PaymentMethod.attach(
+                payment_method_id,
+                customer=customer.stripe_customer_id
+            )
+            
+            # Set as default if requested
+            if set_as_default:
+                stripe.Customer.modify(
+                    customer.stripe_customer_id,
+                    invoice_settings={
+                        'default_payment_method': payment_method_id
+                    }
+                )
+            
+            # Save to database
+            db_payment_method = PaymentMethod(
+                user_id=user_id,
+                stripe_payment_method_id=payment_method_id,
+                type=payment_method['type'],
+                last4=payment_method['card']['last4'] if payment_method['type'] == 'card' else None,
+                brand=payment_method['card']['brand'] if payment_method['type'] == 'card' else None,
+                exp_month=payment_method['card']['exp_month'] if payment_method['type'] == 'card' else None,
+                exp_year=payment_method['card']['exp_year'] if payment_method['type'] == 'card' else None,
+                is_default=set_as_default
+            )
+            
+            # Update other payment methods if setting as default
+            if set_as_default:
+                await db.execute(
+                    update(PaymentMethod)
+                    .where(PaymentMethod.user_id == user_id)
+                    .values(is_default=False)
+                )
+            
+            db.add(db_payment_method)
+            await db.commit()
+            
+            return db_payment_method
+            
+        except Exception as e:
+            logger.error(f"Add payment method failed: {str(e)}")
+            raise
+    
+    async def remove_payment_method(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        payment_method_id: str
+    ) -> Dict[str, str]:
+        """Remove payment method"""
+        try:
+            # Detach from Stripe
+            stripe.PaymentMethod.detach(payment_method_id)
+            
+            # Remove from database
+            await db.execute(
+                delete(PaymentMethod)
+                .where(
+                    and_(
+                        PaymentMethod.user_id == user_id,
+                        PaymentMethod.stripe_payment_method_id == payment_method_id
+                    )
+                )
+            )
+            await db.commit()
+            
+            return {"status": "success", "message": "Payment method removed"}
+            
+        except Exception as e:
+            logger.error(f"Remove payment method failed: {str(e)}")
+            raise
+    
+    async def generate_invoice(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        items: List[Dict[str, Any]],
+        send_invoice: bool = True
+    ) -> Invoice:
+        """Generate custom invoice for additional charges"""
+        try:
+            # Get customer
+            result = await db.execute(
+                select(PaymentCustomer).where(PaymentCustomer.user_id == user_id)
+            )
+            customer = result.scalar_one_or_none()
+            
+            if not customer:
+                raise ValueError("Customer not found")
+            
+            # Create invoice items
+            total_amount = 0
+            for item in items:
+                stripe.InvoiceItem.create(
+                    customer=customer.stripe_customer_id,
+                    amount=int(item['amount'] * 100),  # Convert to cents
+                    currency=item.get('currency', 'usd'),
+                    description=item['description']
+                )
+                total_amount += item['amount']
+            
+            # Create invoice
+            stripe_invoice = stripe.Invoice.create(
+                customer=customer.stripe_customer_id,
+                auto_advance=send_invoice,  # Auto-finalize and send
+                metadata={
+                    'user_id': user_id,
+                    'type': 'custom_invoice'
+                }
+            )
+            
+            # Save to database
+            db_invoice = Invoice(
+                user_id=user_id,
+                stripe_invoice_id=stripe_invoice['id'],
+                amount_paid=0,
+                amount_due=total_amount,
+                amount_remaining=total_amount,
+                currency=stripe_invoice['currency'],
+                status='draft' if not send_invoice else 'open',
+                invoice_pdf=stripe_invoice.get('invoice_pdf'),
+                hosted_invoice_url=stripe_invoice.get('hosted_invoice_url'),
+                period_start=datetime.fromtimestamp(stripe_invoice['period_start']),
+                period_end=datetime.fromtimestamp(stripe_invoice['period_end'])
+            )
+            
+            db.add(db_invoice)
+            await db.commit()
+            
+            # Send invoice if requested
+            if send_invoice:
+                stripe.Invoice.send_invoice(stripe_invoice['id'])
+            
+            return db_invoice
+            
+        except Exception as e:
+            logger.error(f"Invoice generation failed: {str(e)}")
+            raise
+    
+    async def get_invoice_history(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        limit: int = 10,
+        starting_after: Optional[str] = None
+    ) -> List[Invoice]:
+        """Get invoice history with pagination"""
+        query = select(Invoice).where(
+            Invoice.user_id == user_id
+        ).order_by(desc(Invoice.created_at)).limit(limit)
+        
+        if starting_after:
+            query = query.where(Invoice.id > starting_after)
+        
+        result = await db.execute(query)
+        return result.scalars().all()
+    
+    async def process_usage_overage(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        usage_type: str,
+        overage_amount: float
+    ) -> Dict[str, Any]:
+        """Process usage-based billing for overages"""
+        try:
+            # Get active subscription
+            subscription = await self.get_active_subscription(db, user_id)
+            
+            if not subscription:
+                raise ValueError("No active subscription")
+            
+            # Get overage pricing
+            overage_price = await self._get_usage_unit_price(
+                subscription.plan_tier,
+                usage_type
+            )
+            
+            # Calculate cost
+            overage_cost = overage_amount * float(overage_price)
+            
+            # Create usage record
+            stripe_usage = stripe.SubscriptionItem.create_usage_record(
+                subscription.stripe_subscription_item_id,
+                quantity=int(overage_amount),
+                timestamp=int(datetime.utcnow().timestamp()),
+                action='increment',
+                metadata={
+                    'user_id': user_id,
+                    'usage_type': usage_type,
+                    'overage': 'true'
+                }
+            )
+            
+            # Save to database
+            usage_record = UsageRecord(
+                subscription_id=subscription.id,
+                usage_type=usage_type,
+                quantity=overage_amount,
+                unit_price=overage_price,
+                total_cost=Decimal(str(overage_cost)),
+                metadata={'overage': True}
+            )
+            
+            db.add(usage_record)
+            await db.commit()
+            
+            # Send alert
+            if overage_cost > 10:  # Alert for significant overages
+                await self._create_usage_alert(
+                    db,
+                    subscription.id,
+                    'overage_charge',
+                    f"Usage overage charge of ${overage_cost:.2f} for {usage_type}"
+                )
+            
+            return {
+                "status": "success",
+                "usage_type": usage_type,
+                "overage_amount": overage_amount,
+                "cost": overage_cost,
+                "billed": True
+            }
+            
+        except Exception as e:
+            logger.error(f"Process overage failed: {str(e)}")
+            raise
+    
+    def _calculate_proration(self, subscription: Dict[str, Any]) -> float:
+        """Calculate proration amount from subscription update"""
+        # This would parse the upcoming invoice to get proration amount
+        try:
+            upcoming = stripe.Invoice.upcoming(
+                customer=subscription['customer'],
+                subscription=subscription['id']
+            )
+            
+            proration_amount = 0
+            for line in upcoming['lines']['data']:
+                if line.get('proration'):
+                    proration_amount += line['amount']
+            
+            return proration_amount / 100  # Convert from cents
+        except:
+            return 0.0
+    
+    async def update_billing_address(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        address: Dict[str, str]
+    ) -> Dict[str, str]:
+        """Update customer billing address"""
+        try:
+            # Get customer
+            result = await db.execute(
+                select(PaymentCustomer).where(PaymentCustomer.user_id == user_id)
+            )
+            customer = result.scalar_one_or_none()
+            
+            if not customer:
+                raise ValueError("Customer not found")
+            
+            # Update in Stripe
+            stripe.Customer.modify(
+                customer.stripe_customer_id,
+                address=address
+            )
+            
+            # Update in database
+            customer.address = address
+            customer.updated_at = datetime.utcnow()
+            await db.commit()
+            
+            return {"status": "success", "message": "Billing address updated"}
+            
+        except Exception as e:
+            logger.error(f"Update billing address failed: {str(e)}")
+            raise
 
 
 # Global instance

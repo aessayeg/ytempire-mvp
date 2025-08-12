@@ -1,0 +1,309 @@
+receivers:
+  # OTLP receiver for traces, metrics, and logs
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "http://*"
+            - "https://*"
+  
+  # Prometheus scraping for metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 10s
+          static_configs:
+            - targets: ['localhost:8888']
+        
+        - job_name: 'ytempire-backend'
+          scrape_interval: 15s
+          static_configs:
+            - targets: ['ytempire_backend:8000']
+          metrics_path: '/metrics'
+        
+        - job_name: 'ytempire-frontend'
+          scrape_interval: 15s
+          static_configs:
+            - targets: ['ytempire_frontend:3000']
+          metrics_path: '/metrics'
+        
+        - job_name: 'postgres'
+          scrape_interval: 30s
+          static_configs:
+            - targets: ['postgres_exporter:9187']
+        
+        - job_name: 'redis'
+          scrape_interval: 30s
+          static_configs:
+            - targets: ['redis_exporter:9121']
+        
+        - job_name: 'node'
+          scrape_interval: 30s
+          static_configs:
+            - targets: ['node-exporter:9100']
+        
+        - job_name: 'cadvisor'
+          scrape_interval: 30s
+          static_configs:
+            - targets: ['cadvisor:8080']
+  
+  # Jaeger receiver for backward compatibility
+  jaeger:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:14250
+      thrift_http:
+        endpoint: 0.0.0.0:14268
+      thrift_compact:
+        endpoint: 0.0.0.0:6831
+      thrift_binary:
+        endpoint: 0.0.0.0:6832
+  
+  # Zipkin receiver for compatibility
+  zipkin:
+    endpoint: 0.0.0.0:9411
+  
+  # Host metrics receiver
+  hostmetrics:
+    collection_interval: 30s
+    scrapers:
+      cpu:
+        metrics:
+          system.cpu.utilization:
+            enabled: true
+      memory:
+        metrics:
+          system.memory.utilization:
+            enabled: true
+      disk:
+      filesystem:
+        metrics:
+          system.filesystem.utilization:
+            enabled: true
+      network:
+      load:
+      processes:
+  
+  # Docker stats receiver
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    collection_interval: 10s
+    timeout: 20s
+    api_version: 1.40
+  
+  # File log receiver
+  filelog:
+    include: [ /var/log/**/*.log ]
+    start_at: beginning
+    operators:
+      - type: json_parser
+        timestamp:
+          parse_from: attributes.time
+          layout: '%Y-%m-%d %H:%M:%S'
+
+processors:
+  # Batch processor for efficiency
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+  
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+  
+  # Resource detection
+  resourcedetection:
+    detectors: [docker, system, env]
+    timeout: 5s
+    override: false
+  
+  # Attributes processor for enrichment
+  attributes:
+    actions:
+      - key: environment
+        value: production
+        action: upsert
+      - key: service.namespace
+        value: ytempire
+        action: upsert
+      - key: telemetry.sdk.language
+        value: python
+        action: upsert
+  
+  # Span processor for trace enrichment
+  span:
+    name:
+      from_attributes: ["http.method", "http.route"]
+      separator: " "
+  
+  # Metrics transform processor
+  metricstransform:
+    transforms:
+      - include: '.*'
+        match_type: regexp
+        action: update
+        operations:
+          - action: add_label
+            new_label: cluster
+            new_value: ytempire-prod
+  
+  # Filter processor for reducing noise
+  filter:
+    metrics:
+      exclude:
+        match_type: regexp
+        metric_names:
+          - '.*_bucket'
+          - '.*_created'
+    traces:
+      span:
+        - 'attributes["http.status_code"] >= 400'
+        - 'status.code == 2'
+  
+  # Tail sampling for traces
+  tail_sampling:
+    decision_wait: 10s
+    num_traces: 100000
+    expected_new_traces_per_sec: 1000
+    policies:
+      - name: errors-policy
+        type: status_code
+        status_code:
+          status_codes: [ERROR]
+      - name: latency-policy
+        type: latency
+        latency:
+          threshold_ms: 1000
+      - name: probabilistic-policy
+        type: probabilistic
+        probabilistic:
+          sampling_percentage: 10
+
+exporters:
+  # Jaeger exporter for traces
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+  
+  # OTLP exporter for Tempo
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+  
+  # Prometheus exporter for metrics
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: ytempire
+    const_labels:
+      cluster: prod
+      region: us-west-2
+    enable_open_metrics: true
+  
+  # Prometheus remote write for long-term storage
+  prometheusremotewrite:
+    endpoint: "http://prometheus:9090/api/v1/write"
+    tls:
+      insecure: true
+    retry_on_failure:
+      enabled: true
+      initial_interval: 10s
+      max_interval: 60s
+      max_elapsed_time: 10m
+  
+  # Elasticsearch exporter for logs
+  elasticsearch:
+    endpoints: ["http://elasticsearch:9200"]
+    index: ytempire-logs
+    retry:
+      max_requests: 5
+      initial_interval: 100ms
+      max_interval: 30s
+    flush:
+      bytes: 1048576
+      interval: 5s
+  
+  # Loki exporter for logs
+  loki:
+    endpoint: "http://loki:3100/loki/api/v1/push"
+    labels:
+      attributes:
+        environment: production
+        cluster: ytempire
+  
+  # Debug exporter for troubleshooting
+  debug:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
+  
+  # Health check exporter
+  health_check:
+    endpoint: "0.0.0.0:13133"
+    path: "/health"
+    check_collector_pipeline:
+      enabled: true
+      interval: 5s
+      exporter_failure_threshold: 5
+
+extensions:
+  # Health check extension
+  health_check:
+    endpoint: 0.0.0.0:13133
+    path: /health/status
+    check_collector_pipeline:
+      enabled: true
+      interval: 5s
+      exporter_failure_threshold: 5
+  
+  # Performance profiler
+  pprof:
+    endpoint: 0.0.0.0:1777
+  
+  # zPages for debugging
+  zpages:
+    endpoint: 0.0.0.0:55679
+  
+  # Memory ballast for performance
+  memory_ballast:
+    size_mib: 256
+
+service:
+  extensions: [health_check, pprof, zpages, memory_ballast]
+  
+  pipelines:
+    # Traces pipeline
+    traces:
+      receivers: [otlp, jaeger, zipkin]
+      processors: [memory_limiter, batch, resourcedetection, attributes, span, tail_sampling]
+      exporters: [jaeger, otlp/tempo, debug]
+    
+    # Metrics pipeline
+    metrics:
+      receivers: [otlp, prometheus, hostmetrics, docker_stats]
+      processors: [memory_limiter, batch, resourcedetection, attributes, metricstransform, filter]
+      exporters: [prometheus, prometheusremotewrite, debug]
+    
+    # Logs pipeline
+    logs:
+      receivers: [otlp, filelog]
+      processors: [memory_limiter, batch, resourcedetection, attributes]
+      exporters: [elasticsearch, loki, debug]
+  
+  telemetry:
+    logs:
+      level: info
+      initial_fields:
+        service: otel-collector
+    metrics:
+      level: detailed
+      address: 0.0.0.0:8888

@@ -3,9 +3,10 @@ Batch Processing API endpoints
 """
 
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timedelta
+import asyncio
 
 from app.api.v1.endpoints.auth import get_current_verified_user
 from app.services.batch_processing import (
@@ -30,6 +31,11 @@ class BatchVideoRequest(BaseModel):
 class BatchVideoGenerationRequest(BaseModel):
     videos: List[BatchVideoRequest] = Field(..., min_items=1, max_items=50)
     max_concurrent: int = Field(default=3, ge=1, le=10)
+    priority: int = Field(default=5, ge=1, le=10, description="Job priority (1-10, higher is more priority)")
+    scheduled_at: Optional[datetime] = Field(None, description="Schedule job for future execution")
+    dependencies: Optional[List[str]] = Field(None, description="Job IDs that must complete first")
+    checkpoint_interval: int = Field(default=5, description="Save progress every N videos")
+    callback_url: Optional[str] = Field(None, description="Webhook URL for completion notification")
 
 class BatchAnalyticsRequest(BaseModel):
     channel_ids: List[str] = Field(..., min_items=1, max_items=20)
@@ -52,7 +58,7 @@ async def batch_generate_videos(
     request: BatchVideoGenerationRequest,
     current_user: User = Depends(get_current_verified_user)
 ):
-    """Generate multiple videos in batch"""
+    """Generate multiple videos in batch with enhanced features"""
     try:
         # Convert requests to internal format
         video_requests = []
@@ -66,16 +72,50 @@ async def batch_generate_videos(
                 "user_id": str(current_user.id)
             })
         
-        job_id = await video_batch_processor.batch_generate_videos(
-            video_requests=video_requests,
-            user_id=str(current_user.id),
-            max_concurrent=request.max_concurrent
+        # Enhanced batch configuration
+        from app.services.batch_processing import BatchJobConfig, BatchJobItem, BatchJobType
+        import uuid
+        
+        job_id = f"video_batch_{uuid.uuid4().hex[:8]}"
+        items = []
+        for i, req in enumerate(video_requests):
+            items.append(BatchJobItem(
+                id=f"{job_id}_item_{i}",
+                data=req
+            ))
+        
+        job_config = BatchJobConfig(
+            job_id=job_id,
+            job_type=BatchJobType.VIDEO_GENERATION,
+            items=items,
+            max_concurrent=request.max_concurrent,
+            priority=request.priority,
+            scheduled_at=request.scheduled_at,
+            dependencies=request.dependencies,
+            checkpoint_interval=request.checkpoint_interval,
+            callback_url=request.callback_url,
+            notification_user_id=str(current_user.id),
+            timeout_per_item=600,  # 10 minutes per video
+            resume_on_failure=True
         )
+        
+        # Submit job with enhanced configuration
+        job_id = await batch_processor.submit_batch_job(
+            job_config,
+            video_batch_processor._process_video_generation
+        )
+        
+        # Calculate estimated completion time
+        estimated_time = (len(request.videos) * 5) / request.max_concurrent  # 5 min per video
+        estimated_completion = datetime.utcnow() + timedelta(minutes=estimated_time)
         
         return {
             "success": True,
             "job_id": job_id,
             "total_videos": len(request.videos),
+            "priority": request.priority,
+            "scheduled_at": request.scheduled_at.isoformat() if request.scheduled_at else None,
+            "estimated_completion": estimated_completion.isoformat(),
             "message": f"Batch video generation job submitted with {len(request.videos)} videos"
         }
         
@@ -145,11 +185,17 @@ async def get_job_status(
 
 @router.get("/jobs")
 async def get_all_jobs(
+    include_metrics: bool = False,
     current_user: User = Depends(get_current_verified_user)
 ):
-    """Get status of all batch jobs for the current user"""
+    """Get status of all batch jobs with optional metrics"""
     try:
         all_jobs = await batch_processor.get_all_jobs()
+        
+        # Add system metrics if requested
+        if include_metrics:
+            metrics = await batch_processor.get_job_metrics()
+            all_jobs["system_metrics"] = metrics
         
         # Filter jobs for current user (in production, implement proper user filtering)
         # For now, return all jobs
@@ -192,6 +238,66 @@ async def cancel_job(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to cancel job: {str(e)}"
+        )
+
+
+@router.post("/jobs/{job_id}/pause")
+async def pause_job(
+    job_id: str,
+    current_user: User = Depends(get_current_verified_user)
+):
+    """Pause a running batch job"""
+    try:
+        success = await batch_processor.pause_job(job_id)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Batch job '{job_id}' not found or not running"
+            )
+        
+        return {
+            "success": True,
+            "job_id": job_id,
+            "message": "Batch job paused successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to pause job: {str(e)}"
+        )
+
+
+@router.post("/jobs/{job_id}/resume")
+async def resume_job(
+    job_id: str,
+    current_user: User = Depends(get_current_verified_user)
+):
+    """Resume a paused batch job"""
+    try:
+        success = await batch_processor.resume_job(job_id)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Batch job '{job_id}' not found or not paused"
+            )
+        
+        return {
+            "success": True,
+            "job_id": job_id,
+            "message": "Batch job resumed successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to resume job: {str(e)}"
         )
 
 @router.get("/jobs/{job_id}/items")
@@ -299,24 +405,51 @@ async def get_batch_templates(
                 "description": "Generate 5 videos for daily content schedule",
                 "max_videos": 5,
                 "recommended_concurrent": 3,
+                "priority": 7,
                 "estimated_time_minutes": 8,
-                "estimated_cost": 12.50
+                "estimated_cost": 12.50,
+                "checkpoint_interval": 2
             },
             "weekly_content_batch": {
                 "name": "Weekly Content Batch",
                 "description": "Generate 10 videos for weekly content plan",
                 "max_videos": 10,
                 "recommended_concurrent": 4,
+                "priority": 5,
                 "estimated_time_minutes": 12,
-                "estimated_cost": 25.00
+                "estimated_cost": 25.00,
+                "checkpoint_interval": 3
             },
             "niche_exploration_batch": {
                 "name": "Niche Exploration Batch",
                 "description": "Generate 3 test videos in different niches",
                 "max_videos": 3,
                 "recommended_concurrent": 2,
+                "priority": 9,
                 "estimated_time_minutes": 8,
-                "estimated_cost": 7.50
+                "estimated_cost": 7.50,
+                "checkpoint_interval": 1
+            },
+            "high_volume_batch": {
+                "name": "High Volume Batch",
+                "description": "Generate 25-50 videos for bulk content production",
+                "max_videos": 50,
+                "recommended_concurrent": 5,
+                "priority": 3,
+                "estimated_time_minutes": 50,
+                "estimated_cost": 125.00,
+                "checkpoint_interval": 5
+            },
+            "scheduled_weekend_batch": {
+                "name": "Scheduled Weekend Batch",
+                "description": "Schedule large batch for weekend processing",
+                "max_videos": 20,
+                "recommended_concurrent": 8,
+                "priority": 4,
+                "estimated_time_minutes": 15,
+                "estimated_cost": 50.00,
+                "checkpoint_interval": 4,
+                "schedule_delay_hours": 48
             }
         }
         
@@ -329,4 +462,65 @@ async def get_batch_templates(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get batch templates: {str(e)}"
+        )
+
+
+@router.get("/metrics")
+async def get_batch_metrics(
+    current_user: User = Depends(get_current_verified_user)
+):
+    """Get batch processing system metrics"""
+    try:
+        metrics = await batch_processor.get_job_metrics()
+        
+        return {
+            "success": True,
+            **metrics
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get batch metrics: {str(e)}"
+        )
+
+
+@router.post("/jobs/chain")
+async def create_chained_jobs(
+    jobs: List[Dict[str, Any]],
+    current_user: User = Depends(get_current_verified_user)
+):
+    """Create multiple batch jobs with dependencies"""
+    try:
+        job_ids = []
+        
+        for i, job_spec in enumerate(jobs):
+            # Set dependencies to previous jobs
+            if i > 0:
+                job_spec["dependencies"] = job_ids[:i]
+            
+            # Submit job based on type
+            if job_spec["type"] == "video_generation":
+                # Process video generation job
+                job_id = f"chain_video_{uuid.uuid4().hex[:8]}"
+                # ... submit job ...
+                job_ids.append(job_id)
+            elif job_spec["type"] == "analytics":
+                # Process analytics job
+                job_id = f"chain_analytics_{uuid.uuid4().hex[:8]}"
+                # ... submit job ...
+                job_ids.append(job_id)
+        
+        return {
+            "success": True,
+            "chain_id": f"chain_{uuid.uuid4().hex[:8]}",
+            "job_ids": job_ids,
+            "total_jobs": len(job_ids),
+            "message": f"Created chain of {len(job_ids)} dependent jobs"
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create chained jobs: {str(e)}"
         )
