@@ -82,7 +82,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         
         try {
-          const response = await axios.post(`${API_URL}/api/v1/auth/register`, {
+          await axios.post(`${API_URL}/api/v1/auth/register`, {
             email,
             password,
             full_name: fullName,

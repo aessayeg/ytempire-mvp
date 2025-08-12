@@ -78,9 +78,9 @@ export const VideoFilters: React.FC<VideoFiltersProps> = ({ onApplyFilters, onCl
         <InputLabel>Duration</InputLabel>
         <Select value={filters.duration} onChange={(e) => setFilters({...filters, duration: e.target.value})}>
           <MenuItem value="all">All</MenuItem>
-          <MenuItem value="short">Short (< 3 min)</MenuItem>
+          <MenuItem value="short">Short (&lt; 3 min)</MenuItem>
           <MenuItem value="medium">Medium (3-10 min)</MenuItem>
-          <MenuItem value="long">Long (> 10 min)</MenuItem>
+          <MenuItem value="long">Long (&gt; 10 min)</MenuItem>
         </Select>
       </FormControl>
 

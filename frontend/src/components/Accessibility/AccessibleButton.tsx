@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react';
-import { Button, ButtonProps, Tooltip } from '@mui/material';
+import { Button, Tooltip } from '@mui/material';
+import type { ButtonProps } from '@mui/material';
 import { getAriaProps } from '../../utils/accessibility';
 
 interface AccessibleButtonProps extends ButtonProps {

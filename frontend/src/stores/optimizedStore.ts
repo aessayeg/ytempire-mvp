@@ -285,7 +285,7 @@ export const useOptimizedStore = create<AppState & AppActions>()(
             } catch (error) {
               set((state) => {
                 state.channels.loading = false;
-                state.channels.error = error.message;
+                state.channels.error = error instanceof Error ? error.message : 'An error occurred';
               });
             }
           },
@@ -508,4 +508,4 @@ export const useRealtimeMetrics = () => useOptimizedStore((state) => state.analy
 export const useNotifications = () =>
   useOptimizedStore((state) => state.ui.notifications.filter((n) => !n.read), shallow);
 export const useTheme = () => useOptimizedStore((state) => state.ui.theme);
-export const useWsStatus = () => useOptimizedStore((state) => state.ws, shallow);
+export const useWsStatus = () => useOptimizedStore((state) => state.ws);

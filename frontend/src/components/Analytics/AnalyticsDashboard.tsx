@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import Grid from '@mui/material/Grid2';
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   CardHeader,
   Typography,
   Button,
-  IconButton,
   Select,
   MenuItem,
   FormControl,
@@ -17,7 +16,6 @@ import {
   LinearProgress,
   Tabs,
   Tab,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -27,10 +25,7 @@ import {
   TableSortLabel,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
   useTheme,
-  Divider,
-  Alert,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -39,23 +34,14 @@ import {
   Visibility,
   ThumbUp,
   Comment,
-  Schedule,
   PlayCircle,
-  AccessTime,
-  CalendarToday,
   Download,
   Refresh,
-  FilterList,
   CompareArrows,
   BarChart as BarChartIcon,
   ShowChart,
-  PieChart as PieChartIcon,
   Timeline,
   YouTube,
-  ArrowUpward,
-  ArrowDownward,
-  Info,
-  CheckCircle,
 } from '@mui/icons-material';
 import {
   LineChart,
@@ -144,9 +130,7 @@ export const AnalyticsDashboard: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [timeRange, setTimeRange] = useState('7d');
   const [chartType, setChartType] = useState<'line' | 'bar' | 'area'>('line');
-  const [selectedChannels, setSelectedChannels] = useState<string[]>(['all']);
   const [comparisonMode, setComparisonMode] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   // Mock data - replace with API calls
   const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
@@ -285,7 +269,7 @@ export const AnalyticsDashboard: React.FC = () => {
   const renderRevenueTab = () => (
     <Grid container spacing={3}>
       {/* Summary Cards */}
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -318,7 +302,7 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </Grid>
 
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -341,7 +325,7 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </Grid>
 
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -364,7 +348,7 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </Grid>
 
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -388,7 +372,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Revenue Chart */}
-      <Grid item xs={12} md={8}>
+      <Grid size={{ xs: 12, md: 8 }}>
         <Card>
           <CardHeader
             title="Revenue Trend"
@@ -463,7 +447,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Revenue Breakdown Pie Chart */}
-      <Grid item xs={12} md={4}>
+      <Grid size={{ xs: 12, md: 4 }}>
         <Card>
           <CardHeader title="Revenue Breakdown" />
           <CardContent>
@@ -513,7 +497,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* RPM Trend */}
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Card>
           <CardHeader title="RPM Trend" />
           <CardContent>
@@ -538,7 +522,7 @@ export const AnalyticsDashboard: React.FC = () => {
   const renderVideoPerformanceTab = () => (
     <Grid container spacing={3}>
       {/* Top Performing Videos Table */}
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Card>
           <CardHeader
             title="Video Performance Metrics"
@@ -648,7 +632,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Performance Distribution Charts */}
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardHeader title="Views vs Revenue Correlation" />
           <CardContent>
@@ -674,7 +658,7 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </Grid>
 
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardHeader title="Engagement Metrics Distribution" />
           <CardContent>
@@ -704,7 +688,7 @@ export const AnalyticsDashboard: React.FC = () => {
   const renderChannelComparisonTab = () => (
     <Grid container spacing={3}>
       {/* Channel Comparison Table */}
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Card>
           <CardHeader
             title="Channel Performance Comparison"
@@ -807,7 +791,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Channel Comparison Radar Chart */}
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardHeader title="Channel Performance Radar" />
           <CardContent>
@@ -834,7 +818,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Channel Growth Comparison */}
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardHeader title="Channel Growth Comparison" />
           <CardContent>
@@ -857,7 +841,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Revenue per Channel */}
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Card>
           <CardHeader title="Revenue Distribution by Channel" />
           <CardContent>

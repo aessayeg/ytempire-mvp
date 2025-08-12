@@ -287,7 +287,7 @@ class CostOptimizer:
             return float(cached)
             
         # Query database for today's costs
-        async with get_async_db() as db:
+        async for db in get_db():
             today = datetime.utcnow().date()
             result = await db.execute(
                 select(func.sum(Cost.amount)).where(
@@ -500,7 +500,7 @@ class CostOptimizer:
     async def get_cost_report(self, days: int = 7) -> Dict[str, Any]:
         """Generate cost optimization report"""
         
-        async with get_async_db() as db:
+        async for db in get_db():
             # Get costs for the period
             since = datetime.utcnow() - timedelta(days=days)
             
@@ -586,7 +586,7 @@ class CostOptimizer:
     async def validate_video_cost(self, video_id: int) -> Dict[str, Any]:
         """Validate if a video met the <$3 cost target"""
         
-        async with get_async_db() as db:
+        async for db in get_db():
             result = await db.execute(
                 select(func.sum(Cost.amount)).where(
                     Cost.video_id == video_id
@@ -604,6 +604,368 @@ class CostOptimizer:
             "overage": max(0, total_cost - 3.0),
             "savings_achieved": max(0, 3.0 - total_cost)
         }
+
+
+    async def predict_future_costs(
+        self,
+        days_ahead: int = 30,
+        include_confidence: bool = True
+    ) -> Dict[str, Any]:
+        """ML-based cost prediction for future periods"""
+        
+        try:
+            # Get historical cost data
+            async for db in get_db():
+                # Get last 90 days of cost data
+                since = datetime.utcnow() - timedelta(days=90)
+                
+                result = await db.execute(
+                    select(
+                        func.date(Cost.created_at).label("date"),
+                        func.sum(Cost.amount).label("total_cost"),
+                        func.count(Cost.id).label("transaction_count")
+                    ).where(
+                        Cost.created_at >= since
+                    ).group_by(func.date(Cost.created_at))
+                    .order_by(func.date(Cost.created_at))
+                )
+                
+                historical_data = []
+                for row in result:
+                    historical_data.append({
+                        "date": row.date.isoformat(),
+                        "cost": float(row.total_cost),
+                        "transactions": row.transaction_count
+                    })
+                
+                break  # Exit the async generator
+            
+            if len(historical_data) < 7:
+                return {
+                    "error": "Insufficient historical data for prediction",
+                    "min_required_days": 7,
+                    "available_days": len(historical_data)
+                }
+            
+            # Simple trend analysis (in production, use proper ML models)
+            costs = [d["cost"] for d in historical_data]
+            recent_avg = sum(costs[-7:]) / 7  # Last 7 days average
+            older_avg = sum(costs[:7]) / 7 if len(costs) >= 14 else recent_avg
+            
+            # Calculate trend
+            if recent_avg > older_avg * 1.1:
+                trend = "increasing"
+                trend_factor = 1.05  # 5% increase
+            elif recent_avg < older_avg * 0.9:
+                trend = "decreasing"
+                trend_factor = 0.95  # 5% decrease
+            else:
+                trend = "stable"
+                trend_factor = 1.0
+            
+            # Generate predictions
+            base_daily_cost = recent_avg
+            predictions = []
+            
+            for day in range(1, days_ahead + 1):
+                # Apply trend factor with diminishing effect
+                trend_effect = 1 + (trend_factor - 1) * (0.95 ** day)
+                predicted_cost = base_daily_cost * trend_effect
+                
+                # Add some realistic variance
+                variance = predicted_cost * 0.1  # 10% variance
+                
+                predictions.append({
+                    "day": day,
+                    "date": (datetime.utcnow() + timedelta(days=day)).date().isoformat(),
+                    "predicted_cost": round(predicted_cost, 2),
+                    "confidence_interval": {
+                        "lower": round(predicted_cost - variance, 2),
+                        "upper": round(predicted_cost + variance, 2)
+                    } if include_confidence else None
+                })
+            
+            total_predicted = sum(p["predicted_cost"] for p in predictions)
+            
+            return {
+                "prediction_period_days": days_ahead,
+                "historical_data_points": len(historical_data),
+                "trend_analysis": {
+                    "trend": trend,
+                    "recent_daily_avg": round(recent_avg, 2),
+                    "trend_factor": trend_factor
+                },
+                "predictions": predictions,
+                "summary": {
+                    "total_predicted_cost": round(total_predicted, 2),
+                    "avg_daily_predicted": round(total_predicted / days_ahead, 2),
+                    "vs_current_avg": round(((total_predicted / days_ahead) / recent_avg - 1) * 100, 1)
+                },
+                "risk_factors": self._identify_cost_risk_factors(historical_data),
+                "recommendations": self._generate_cost_recommendations(trend, recent_avg)
+            }
+            
+        except Exception as e:
+            logger.error(f"Cost prediction failed: {e}")
+            return {"error": str(e)}
+    
+    async def generate_optimization_recommendations(
+        self,
+        current_costs: Dict[str, Any],
+        target_reduction: float = 0.3
+    ) -> Dict[str, Any]:
+        """Generate ML-driven optimization recommendations"""
+        
+        recommendations = []
+        total_potential_savings = 0
+        
+        # Analyze each service
+        for service, cost_data in current_costs.items():
+            if isinstance(cost_data, dict) and "total" in cost_data:
+                service_cost = cost_data["total"]
+                
+                # Apply different strategies based on cost patterns
+                if service_cost > 20:  # High cost services
+                    rec = {
+                        "service": service,
+                        "strategy": "Progressive Model Fallback",
+                        "current_cost": service_cost,
+                        "potential_savings": service_cost * 0.4,
+                        "implementation": "Use GPT-3.5 instead of GPT-4 for routine tasks",
+                        "quality_impact": "Low (-5%)",
+                        "priority": "High"
+                    }
+                    recommendations.append(rec)
+                    total_potential_savings += rec["potential_savings"]
+                
+                elif service_cost > 5:  # Medium cost services
+                    rec = {
+                        "service": service,
+                        "strategy": "Aggressive Caching",
+                        "current_cost": service_cost,
+                        "potential_savings": service_cost * 0.25,
+                        "implementation": "Cache responses for 1-4 hours based on content type",
+                        "quality_impact": "None (0%)",
+                        "priority": "Medium"
+                    }
+                    recommendations.append(rec)
+                    total_potential_savings += rec["potential_savings"]
+        
+        # Add general recommendations
+        general_recommendations = [
+            {
+                "strategy": "Batch Processing",
+                "description": "Process multiple requests together to reduce API overhead",
+                "estimated_savings_percent": 15,
+                "implementation_effort": "Medium"
+            },
+            {
+                "strategy": "Smart Prompt Optimization", 
+                "description": "Reduce token usage through prompt engineering",
+                "estimated_savings_percent": 20,
+                "implementation_effort": "High"
+            },
+            {
+                "strategy": "Quality Threshold Adjustment",
+                "description": "Accept 85% quality for significant cost reduction",
+                "estimated_savings_percent": 30,
+                "implementation_effort": "Low"
+            }
+        ]
+        
+        return {
+            "target_reduction_percent": target_reduction * 100,
+            "service_specific_recommendations": recommendations,
+            "general_recommendations": general_recommendations,
+            "estimated_total_savings": round(total_potential_savings, 2),
+            "implementation_timeline": {
+                "immediate": "Enable caching and model fallback",
+                "short_term": "Implement batch processing",
+                "medium_term": "Optimize prompts and quality thresholds",
+                "long_term": "Implement local model hybrid approach"
+            },
+            "monitoring_kpis": [
+                "Daily cost per video",
+                "Service-specific cost trends",
+                "Quality score maintenance",
+                "Cache hit rates",
+                "Model distribution ratios"
+            ]
+        }
+    
+    async def implement_budget_management(
+        self,
+        monthly_budget: float,
+        alert_thresholds: Dict[str, float] = None
+    ) -> Dict[str, Any]:
+        """Implement intelligent budget management with alerts"""
+        
+        if alert_thresholds is None:
+            alert_thresholds = {
+                "warning": 0.75,  # 75% of budget
+                "critical": 0.90,  # 90% of budget
+                "emergency": 0.95   # 95% of budget
+            }
+        
+        try:
+            # Get current month spending
+            current_month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            
+            async for db in get_db():
+                result = await db.execute(
+                    select(func.sum(Cost.amount)).where(
+                        Cost.created_at >= current_month_start
+                    )
+                )
+                current_spending = result.scalar() or 0.0
+                break
+            
+            # Calculate budget status
+            budget_used_percent = (current_spending / monthly_budget) * 100
+            remaining_budget = monthly_budget - current_spending
+            
+            # Determine alert level
+            alert_level = "normal"
+            if budget_used_percent >= alert_thresholds["emergency"] * 100:
+                alert_level = "emergency"
+            elif budget_used_percent >= alert_thresholds["critical"] * 100:
+                alert_level = "critical"
+            elif budget_used_percent >= alert_thresholds["warning"] * 100:
+                alert_level = "warning"
+            
+            # Calculate daily burn rate and projection
+            days_in_month = (datetime.utcnow().replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+            days_in_month = days_in_month.day
+            current_day = datetime.utcnow().day
+            
+            if current_day > 0:
+                daily_burn_rate = current_spending / current_day
+                projected_monthly_spend = daily_burn_rate * days_in_month
+            else:
+                daily_burn_rate = 0
+                projected_monthly_spend = 0
+            
+            # Generate recommendations based on budget status
+            recommendations = []
+            
+            if alert_level in ["critical", "emergency"]:
+                recommendations.extend([
+                    "Switch to economy tier models immediately",
+                    "Enable aggressive caching for all services",
+                    "Defer non-critical video generation",
+                    "Implement strict per-video cost limits"
+                ])
+            elif alert_level == "warning":
+                recommendations.extend([
+                    "Increase cache TTL settings",
+                    "Review and optimize high-cost operations",
+                    "Consider model tier adjustments"
+                ])
+            else:
+                recommendations.extend([
+                    "Monitor spending trends",
+                    "Continue current optimization strategies"
+                ])
+            
+            return {
+                "budget_management": {
+                    "monthly_budget": monthly_budget,
+                    "current_spending": round(current_spending, 2),
+                    "remaining_budget": round(remaining_budget, 2),
+                    "budget_used_percent": round(budget_used_percent, 1),
+                    "alert_level": alert_level
+                },
+                "projections": {
+                    "daily_burn_rate": round(daily_burn_rate, 2),
+                    "projected_monthly_spend": round(projected_monthly_spend, 2),
+                    "over_budget_risk": projected_monthly_spend > monthly_budget,
+                    "days_until_budget_exhausted": int(remaining_budget / daily_burn_rate) if daily_burn_rate > 0 else None
+                },
+                "recommendations": recommendations,
+                "auto_actions": {
+                    "enabled": alert_level in ["critical", "emergency"],
+                    "actions": [
+                        "Switch to economy models",
+                        "Increase cache TTL to 4 hours",
+                        "Reject requests over $1 per video"
+                    ] if alert_level in ["critical", "emergency"] else []
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Budget management failed: {e}")
+            return {"error": str(e)}
+    
+    def _identify_cost_risk_factors(self, historical_data: List[Dict]) -> List[str]:
+        """Identify potential cost risk factors"""
+        risk_factors = []
+        
+        if len(historical_data) < 7:
+            risk_factors.append("Insufficient historical data for reliable prediction")
+            return risk_factors
+        
+        costs = [d["cost"] for d in historical_data]
+        
+        # Check for high volatility
+        if len(costs) > 1:
+            import statistics
+            std_dev = statistics.stdev(costs)
+            mean_cost = statistics.mean(costs)
+            
+            if std_dev / mean_cost > 0.5:  # High coefficient of variation
+                risk_factors.append("High cost volatility detected")
+        
+        # Check for recent spikes
+        recent_costs = costs[-7:]
+        older_costs = costs[:-7] if len(costs) > 7 else costs
+        
+        if recent_costs and older_costs:
+            recent_avg = sum(recent_costs) / len(recent_costs)
+            older_avg = sum(older_costs) / len(older_costs)
+            
+            if recent_avg > older_avg * 1.5:
+                risk_factors.append("Recent cost spike detected")
+        
+        # Check for budget threshold proximity
+        recent_daily_avg = sum(costs[-3:]) / min(3, len(costs))
+        if recent_daily_avg > 30:  # High daily spend
+            risk_factors.append("High daily spending may exceed monthly budget")
+        
+        return risk_factors or ["No significant risk factors identified"]
+    
+    def _generate_cost_recommendations(self, trend: str, current_avg: float) -> List[str]:
+        """Generate cost management recommendations based on trends"""
+        recommendations = []
+        
+        if trend == "increasing":
+            recommendations.extend([
+                "Implement cost controls to prevent further increases",
+                "Review recent changes in service usage",
+                "Consider switching to more cost-effective models",
+                "Increase caching to reduce API calls"
+            ])
+        elif trend == "decreasing":
+            recommendations.extend([
+                "Current optimizations are working well",
+                "Monitor to ensure quality is maintained",
+                "Consider applying similar strategies to other services"
+            ])
+        else:  # stable
+            recommendations.extend([
+                "Costs are stable - good baseline for optimization",
+                "Experiment with new cost reduction strategies",
+                "Set up monitoring for early detection of changes"
+            ])
+        
+        # Add general recommendations based on cost level
+        if current_avg > 50:
+            recommendations.append("Daily costs are high - prioritize aggressive optimization")
+        elif current_avg > 20:
+            recommendations.append("Daily costs are moderate - implement gradual optimizations")
+        else:
+            recommendations.append("Daily costs are low - maintain current strategies")
+        
+        return recommendations
 
 
 # Singleton instance

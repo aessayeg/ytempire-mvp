@@ -13,6 +13,7 @@ from app.db.session import get_db
 from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
 from app.services.gpu_resource_service import gpu_service, TaskPriority
+from app.services.cost_tracking import cost_tracker
 
 logger = logging.getLogger(__name__)
 
@@ -439,3 +440,283 @@ async def gpu_health_check(
             "error": str(e),
             "timestamp": datetime.utcnow().isoformat()
         }
+
+
+@router.post("/optimize")
+async def optimize_gpu_allocation(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Optimize GPU allocation for 30% efficiency improvement
+    """
+    try:
+        optimization_result = await gpu_service.optimize_gpu_allocation(db)
+        
+        return {
+            "success": True,
+            "optimization_analysis": optimization_result,
+            "message": "GPU allocation optimization analysis completed",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to optimize GPU allocation: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to optimize GPU allocation: {str(e)}"
+        )
+
+
+@router.post("/batching/enable")
+async def enable_task_batching(
+    task_types: List[str] = Query(..., description="Task types to enable batching for"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Enable intelligent task batching for improved throughput
+    """
+    try:
+        batching_result = await gpu_service.enable_task_batching(db, task_types)
+        
+        return {
+            "success": True,
+            "batching_enabled": True,
+            "task_types": task_types,
+            "batching_result": batching_result,
+            "message": f"Task batching enabled for {len(task_types)} task types",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to enable task batching: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to enable task batching: {str(e)}"
+        )
+
+
+@router.post("/memory/optimize")
+async def optimize_memory_management(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Implement smart memory management with dynamic allocation
+    """
+    try:
+        memory_optimization = await gpu_service.implement_smart_memory_management(db)
+        
+        return {
+            "success": True,
+            "memory_optimization": memory_optimization,
+            "message": "Smart memory management optimization completed",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to optimize memory management: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to optimize memory management: {str(e)}"
+        )
+
+
+@router.get("/efficiency/analysis")
+async def get_efficiency_analysis(
+    time_window_hours: int = Query(24, ge=1, le=168, description="Time window for analysis"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Get comprehensive GPU efficiency analysis
+    """
+    try:
+        # Get current system state
+        devices = await gpu_service.get_device_status(db)
+        queue = await gpu_service.get_task_queue(db, limit=100)
+        metrics = await gpu_service.get_gpu_metrics(db, hours=time_window_hours)
+        
+        # Calculate efficiency metrics
+        total_devices = len(devices)
+        active_devices = len([d for d in devices if d["status"] in ["busy", "reserved"]])
+        
+        if total_devices > 0:
+            device_utilization = active_devices / total_devices * 100
+            avg_gpu_utilization = sum(d["utilization_gpu"] for d in devices) / total_devices
+            avg_memory_utilization = sum((d["memory_used"] / d["memory_total"]) * 100 for d in devices) / total_devices
+        else:
+            device_utilization = 0
+            avg_gpu_utilization = 0
+            avg_memory_utilization = 0
+        
+        # Analyze efficiency trends
+        efficiency_trend = "stable"
+        if metrics:
+            recent_efficiency = sum(m["efficiency_score"] for m in metrics[-10:]) / min(10, len(metrics))
+            older_efficiency = sum(m["efficiency_score"] for m in metrics[:10]) / min(10, len(metrics))
+            
+            if recent_efficiency > older_efficiency * 1.1:
+                efficiency_trend = "improving"
+            elif recent_efficiency < older_efficiency * 0.9:
+                efficiency_trend = "declining"
+        
+        # Calculate potential improvements
+        optimization_opportunities = []
+        potential_improvement = 0
+        
+        # Check for underutilized devices
+        underutilized = [d for d in devices if d["utilization_gpu"] < 30 and d["status"] == "available"]
+        if underutilized:
+            optimization_opportunities.append({
+                "type": "device_consolidation",
+                "description": f"Consolidate tasks on {len(underutilized)} underutilized devices",
+                "potential_improvement": 15
+            })
+            potential_improvement += 15
+        
+        # Check for batching opportunities
+        pending_tasks = [t for t in queue if t["status"] == "pending"]
+        if len(pending_tasks) > 3:
+            optimization_opportunities.append({
+                "type": "task_batching",
+                "description": f"Batch {len(pending_tasks)} pending tasks for improved throughput",
+                "potential_improvement": min(20, len(pending_tasks) * 2)
+            })
+            potential_improvement += min(20, len(pending_tasks) * 2)
+        
+        # Check memory optimization
+        memory_fragmented = [d for d in devices if (d["memory_total"] - d["memory_used"]) > (2 * 1024 * 1024 * 1024)]
+        if memory_fragmented:
+            optimization_opportunities.append({
+                "type": "memory_optimization",
+                "description": f"Optimize memory allocation on {len(memory_fragmented)} devices",
+                "potential_improvement": 10
+            })
+            potential_improvement += 10
+        
+        return {
+            "success": True,
+            "analysis_window_hours": time_window_hours,
+            "current_efficiency": {
+                "device_utilization_percent": round(device_utilization, 1),
+                "avg_gpu_utilization_percent": round(avg_gpu_utilization, 1),
+                "avg_memory_utilization_percent": round(avg_memory_utilization, 1),
+                "efficiency_trend": efficiency_trend,
+                "overall_efficiency_score": round((device_utilization + avg_gpu_utilization + avg_memory_utilization) / 3, 1)
+            },
+            "optimization_opportunities": optimization_opportunities,
+            "potential_improvement_percent": min(30, potential_improvement),
+            "recommendations": {
+                "immediate_actions": [
+                    action["description"] for action in optimization_opportunities[:2]
+                ],
+                "monitoring_focus": [
+                    "Track task queue length and processing times",
+                    "Monitor device temperature and power consumption",
+                    "Analyze memory fragmentation patterns"
+                ],
+                "optimization_schedule": {
+                    "daily": "Run memory optimization",
+                    "weekly": "Analyze efficiency trends and adjust batching",
+                    "monthly": "Review device allocation strategy"
+                }
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get efficiency analysis: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get efficiency analysis: {str(e)}"
+        )
+
+
+@router.post("/workload/balance")
+async def balance_workload(
+    target_utilization: float = Query(75.0, ge=50.0, le=95.0, description="Target GPU utilization percentage"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Balance workload across GPUs for optimal utilization
+    """
+    try:
+        devices = await gpu_service.get_device_status(db)
+        queue = await gpu_service.get_task_queue(db, limit=100)
+        
+        # Analyze current load distribution
+        load_analysis = {
+            "overloaded_devices": [],
+            "underloaded_devices": [],
+            "balanced_devices": []
+        }
+        
+        for device in devices:
+            utilization = device["utilization_gpu"]
+            
+            if utilization > target_utilization + 10:
+                load_analysis["overloaded_devices"].append({
+                    "device_id": device["device_id"],
+                    "current_utilization": utilization,
+                    "excess_load": utilization - target_utilization
+                })
+            elif utilization < target_utilization - 15:
+                load_analysis["underloaded_devices"].append({
+                    "device_id": device["device_id"],
+                    "current_utilization": utilization,
+                    "available_capacity": target_utilization - utilization
+                })
+            else:
+                load_analysis["balanced_devices"].append({
+                    "device_id": device["device_id"],
+                    "current_utilization": utilization
+                })
+        
+        # Generate rebalancing recommendations
+        rebalancing_plan = []
+        
+        if load_analysis["overloaded_devices"] and load_analysis["underloaded_devices"]:
+            for overloaded in load_analysis["overloaded_devices"]:
+                for underloaded in load_analysis["underloaded_devices"]:
+                    if underloaded["available_capacity"] > 10:  # Only if significant capacity
+                        rebalancing_plan.append({
+                            "action": "migrate_tasks",
+                            "from_device": overloaded["device_id"],
+                            "to_device": underloaded["device_id"],
+                            "estimated_tasks_to_move": min(2, int(overloaded["excess_load"] / 20)),
+                            "expected_improvement": min(15, overloaded["excess_load"] / 2)
+                        })
+                        break
+        
+        # Calculate overall balance score
+        if devices:
+            utilizations = [d["utilization_gpu"] for d in devices]
+            avg_utilization = sum(utilizations) / len(utilizations)
+            variance = sum((u - avg_utilization) ** 2 for u in utilizations) / len(utilizations)
+            balance_score = max(0, 100 - variance)  # Lower variance = higher score
+        else:
+            balance_score = 0
+        
+        return {
+            "success": True,
+            "target_utilization": target_utilization,
+            "current_balance_score": round(balance_score, 1),
+            "load_analysis": load_analysis,
+            "rebalancing_plan": rebalancing_plan,
+            "estimated_improvement": {
+                "balance_improvement": sum(plan["expected_improvement"] for plan in rebalancing_plan),
+                "efficiency_gain_percent": min(20, len(rebalancing_plan) * 5),
+                "tasks_optimized": sum(plan["estimated_tasks_to_move"] for plan in rebalancing_plan)
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to balance workload: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to balance workload: {str(e)}"
+        )

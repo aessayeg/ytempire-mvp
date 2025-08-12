@@ -4,9 +4,10 @@ Handles video quality enhancement, multi-format export, and batch processing
 """
 
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, UploadFile, File, Query
 from pydantic import BaseModel, Field
 from datetime import datetime
+from enum import Enum
 import uuid
 import asyncio
 from pathlib import Path
@@ -19,13 +20,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 
-# Create mock classes for compatibility
-class VideoFormat:
+# Create enum classes for compatibility
+class VideoFormat(str, Enum):
     MP4 = "mp4"
     AVI = "avi"
     MOV = "mov"
 
-class QualityPreset:
+class QualityPreset(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -420,7 +421,7 @@ async def cleanup_processing_files(
 
 @router.post("/benchmark")
 async def run_performance_benchmark(
-    video_count: int = Field(10, ge=1, le=50, description="Number of test videos"),
+    video_count: int = Query(10, ge=1, le=50, description="Number of test videos"),
     current_user: User = Depends(get_current_verified_user)
 ):
     """

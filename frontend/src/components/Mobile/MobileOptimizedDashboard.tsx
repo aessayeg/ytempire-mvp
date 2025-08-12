@@ -436,9 +436,9 @@ const MobileOptimizedDashboard: React.FC = () => {
                     fontSize: '16px'
                   }}
                 >
-                  <option>Short (< 1 min)</option>
+                  <option>Short (&lt; 1 min)</option>
                   <option>Medium (1-5 min)</option>
-                  <option>Long (> 5 min)</option>
+                  <option>Long (&gt; 5 min)</option>
                 </select>
               </div>
               

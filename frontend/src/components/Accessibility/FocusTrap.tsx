@@ -35,7 +35,6 @@ export const FocusTrap: React.FC<FocusTrapProps> = ({
     if (focusableElements.length === 0) return;
 
     const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
 
     // Set initial focus
     if (initialFocus) {

@@ -9,13 +9,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 
-from app.core.database import get_db
+from app.db.session import get_db
 from app.services.realtime_analytics_service import realtime_analytics_service
 from app.services.beta_success_metrics import beta_success_metrics_service
 from app.services.analytics_pipeline import analytics_pipeline
 from app.models.user import User
 from app.models.video import Video
-from app.models.analytics import UserEvent
+from app.models.analytics import Analytics
 from app.api.v1.endpoints.auth import get_current_user, get_current_verified_user
 
 router = APIRouter()

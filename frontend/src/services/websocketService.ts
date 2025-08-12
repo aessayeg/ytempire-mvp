@@ -3,7 +3,7 @@
  * Handles WebSocket connections with automatic reconnection and message handling
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '../utils/EventEmitter';
 
 export interface WebSocketConfig {
   url: string;
@@ -33,8 +33,8 @@ export class WebSocketService extends EventEmitter {
   private ws: WebSocket | null = null;
   private config: Required<WebSocketConfig>;
   private reconnectAttempts = 0;
-  private reconnectTimer: NodeJS.Timeout | null = null;
-  private heartbeatTimer: NodeJS.Timeout | null = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
   private messageQueue: WebSocketMessage[] = [];
   private status: WebSocketStatus = WebSocketStatus.DISCONNECTED;
   private lastPing: number = 0;
@@ -286,7 +286,7 @@ export class WebSocketService extends EventEmitter {
   /**
    * Handle pong response
    */
-  private handlePong(message: WebSocketMessage): void {
+  private handlePong(_message: WebSocketMessage): void {
     if (this.lastPing) {
       this.latency = Date.now() - this.lastPing;
       this.emit('latency', this.latency);

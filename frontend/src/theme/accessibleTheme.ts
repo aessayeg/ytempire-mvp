@@ -1,4 +1,5 @@
-import { createTheme, ThemeOptions } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
+import type { ThemeOptions } from '@mui/material/styles';
 import { meetsWCAGAA } from '../utils/accessibility';
 
 // WCAG AA Compliant Color Palette
@@ -293,7 +294,7 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
   const theme = createTheme(themeOptions);
   
   // Verify contrast in development
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     verifyContrast();
   }
 

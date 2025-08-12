@@ -16,9 +16,9 @@ from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
 from app.services.analytics_pipeline import (
     AdvancedAnalyticsPipeline, analytics_pipeline,
-    StreamProcessor, MetricsAggregator, PredictiveModels,
-    GDPRComplianceManager
+    MetricType, AggregationLevel, DataSource, MetricPoint
 )
+from app.services.cost_tracking import cost_tracker
 from app.db.session import get_db
 
 router = APIRouter()
@@ -450,4 +450,283 @@ async def clear_analytics_cache(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Cache clear failed: {str(e)}"
+        )
+
+
+@router.get("/revenue/analytics")
+async def get_revenue_analytics(
+    channel_ids: List[str] = Query(..., description="Channel IDs to analyze"),
+    start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
+    end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
+    breakdown_by: str = Query("channel", description="channel, video, source, geography"),
+    include_forecasting: bool = Query(False, description="Include revenue forecasting"),
+    current_user: User = Depends(get_current_verified_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get comprehensive revenue analytics with forecasting
+    """
+    try:
+        revenue_data = await analytics_pipeline.revenue_analyzer.get_revenue_analytics(
+            channel_ids=channel_ids,
+            start_date=start_date,
+            end_date=end_date,
+            breakdown_by=breakdown_by,
+            user_id=str(current_user.id)
+        )
+        
+        # Add forecasting if requested
+        forecast_data = None
+        if include_forecasting:
+            forecast_data = await analytics_pipeline.revenue_analyzer.forecast_revenue(
+                channel_ids=channel_ids,
+                historical_data=revenue_data,
+                forecast_days=30
+            )
+        
+        return {
+            "success": True,
+            "date_range": f"{start_date} to {end_date}",
+            "breakdown_by": breakdown_by,
+            "revenue_analytics": revenue_data,
+            "forecast": forecast_data,
+            "summary": {
+                "total_revenue": revenue_data.get("total_revenue", 0),
+                "average_daily_revenue": revenue_data.get("avg_daily_revenue", 0),
+                "top_performing_channel": revenue_data.get("top_channel", {}),
+                "revenue_growth_rate": revenue_data.get("growth_rate", 0),
+                "projected_monthly_revenue": forecast_data.get("monthly_projection", 0) if forecast_data else None
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Revenue analytics failed: {str(e)}"
+        )
+
+
+@router.get("/channels/comparison")
+async def compare_channel_performance(
+    channel_ids: List[str] = Query(..., description="Channel IDs to compare (2-10 channels)"),
+    comparison_period: str = Query("30d", description="7d, 30d, 90d, 1y"),
+    metrics: List[str] = Query(default=["views", "subscribers", "revenue", "engagement"], description="Metrics to compare"),
+    include_benchmarks: bool = Query(True, description="Include industry benchmarks"),
+    current_user: User = Depends(get_current_verified_user)
+):
+    """
+    Compare performance across multiple channels with benchmarking
+    """
+    try:
+        if len(channel_ids) < 2 or len(channel_ids) > 10:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Please provide 2-10 channels for comparison"
+            )
+        
+        comparison_data = await analytics_pipeline.channel_comparator.compare_channels(
+            channel_ids=channel_ids,
+            period=comparison_period,
+            metrics=metrics,
+            user_id=str(current_user.id)
+        )
+        
+        # Add industry benchmarks if requested
+        benchmark_data = None
+        if include_benchmarks:
+            benchmark_data = await analytics_pipeline.benchmark_service.get_industry_benchmarks(
+                channel_ids=channel_ids,
+                metrics=metrics
+            )
+        
+        return {
+            "success": True,
+            "comparison_period": comparison_period,
+            "channels_compared": len(channel_ids),
+            "metrics_analyzed": metrics,
+            "comparison_data": comparison_data,
+            "industry_benchmarks": benchmark_data,
+            "performance_ranking": comparison_data.get("channel_rankings", []),
+            "insights": {
+                "best_performer": comparison_data.get("top_performer", {}),
+                "fastest_growing": comparison_data.get("fastest_growing", {}),
+                "highest_engagement": comparison_data.get("highest_engagement", {}),
+                "improvement_opportunities": comparison_data.get("improvement_suggestions", [])
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Channel comparison failed: {str(e)}"
+        )
+
+
+@router.get("/costs/analysis")
+async def get_cost_analysis(
+    time_period: str = Query("30d", description="7d, 30d, 90d, 1y"),
+    breakdown_by: str = Query("service", description="service, channel, video, date"),
+    include_optimization: bool = Query(True, description="Include cost optimization suggestions"),
+    cost_threshold: float = Query(3.0, description="Cost per video threshold for alerts"),
+    current_user: User = Depends(get_current_verified_user)
+):
+    """
+    Get detailed cost analysis with optimization recommendations
+    """
+    try:
+        cost_data = await analytics_pipeline.cost_analyzer.analyze_costs(
+            user_id=str(current_user.id),
+            time_period=time_period,
+            breakdown_by=breakdown_by,
+            threshold=cost_threshold
+        )
+        
+        # Generate optimization suggestions if requested
+        optimization_suggestions = None
+        if include_optimization:
+            optimization_suggestions = await analytics_pipeline.cost_optimizer.generate_suggestions(
+                cost_data=cost_data,
+                target_reduction=0.3,  # 30% cost reduction target
+                user_id=str(current_user.id)
+            )
+        
+        return {
+            "success": True,
+            "analysis_period": time_period,
+            "breakdown_by": breakdown_by,
+            "cost_analysis": cost_data,
+            "optimization_suggestions": optimization_suggestions,
+            "summary": {
+                "total_costs": cost_data.get("total_costs", 0),
+                "average_cost_per_video": cost_data.get("avg_cost_per_video", 0),
+                "cost_trend": cost_data.get("trend", "stable"),
+                "videos_over_threshold": cost_data.get("videos_over_threshold", 0),
+                "potential_savings": optimization_suggestions.get("total_potential_savings", 0) if optimization_suggestions else 0
+            },
+            "alerts": {
+                "high_cost_videos": cost_data.get("high_cost_alerts", []),
+                "budget_warnings": cost_data.get("budget_warnings", []),
+                "anomalies": cost_data.get("cost_anomalies", [])
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Cost analysis failed: {str(e)}"
+        )
+
+
+@router.get("/predictive/revenue")
+async def get_predictive_revenue_analytics(
+    channel_ids: List[str] = Query(..., description="Channel IDs for prediction"),
+    forecast_period: int = Query(30, ge=7, le=365, description="Days to forecast"),
+    confidence_level: float = Query(0.95, ge=0.8, le=0.99, description="Prediction confidence"),
+    include_scenarios: bool = Query(True, description="Include best/worst case scenarios"),
+    external_factors: Optional[Dict[str, Any]] = None,
+    current_user: User = Depends(get_current_verified_user)
+):
+    """
+    Generate predictive revenue analytics with scenario modeling
+    """
+    try:
+        predictions = await analytics_pipeline.revenue_predictor.generate_revenue_forecast(
+            channel_ids=channel_ids,
+            forecast_days=forecast_period,
+            confidence_level=confidence_level,
+            external_factors=external_factors or {},
+            user_id=str(current_user.id)
+        )
+        
+        # Generate scenarios if requested
+        scenario_data = None
+        if include_scenarios:
+            scenario_data = await analytics_pipeline.scenario_modeler.generate_scenarios(
+                base_prediction=predictions,
+                scenario_types=["optimistic", "pessimistic", "realistic"]
+            )
+        
+        return {
+            "success": True,
+            "forecast_period": f"{forecast_period} days",
+            "confidence_level": confidence_level,
+            "channels_analyzed": len(channel_ids),
+            "revenue_predictions": predictions,
+            "scenario_analysis": scenario_data,
+            "key_insights": {
+                "predicted_total_revenue": predictions.get("total_predicted_revenue", 0),
+                "growth_trajectory": predictions.get("growth_trend", "stable"),
+                "peak_revenue_period": predictions.get("peak_period", {}),
+                "risk_factors": predictions.get("risk_indicators", []),
+                "confidence_score": predictions.get("model_confidence", 0)
+            },
+            "recommendations": {
+                "optimization_opportunities": predictions.get("optimization_suggestions", []),
+                "investment_recommendations": predictions.get("investment_advice", []),
+                "risk_mitigation": predictions.get("risk_mitigation_strategies", [])
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Predictive revenue analytics failed: {str(e)}"
+        )
+
+
+@router.get("/competitive/analysis")
+async def get_competitive_analysis(
+    channel_ids: List[str] = Query(..., description="Your channel IDs"),
+    competitor_keywords: List[str] = Query(..., description="Keywords to find competitors"),
+    analysis_depth: str = Query("standard", description="quick, standard, deep"),
+    include_opportunities: bool = Query(True, description="Include growth opportunities"),
+    current_user: User = Depends(get_current_verified_user)
+):
+    """
+    Perform competitive analysis against similar channels
+    """
+    try:
+        competitive_data = await analytics_pipeline.competitive_analyzer.analyze_competition(
+            user_channel_ids=channel_ids,
+            competitor_keywords=competitor_keywords,
+            analysis_depth=analysis_depth,
+            user_id=str(current_user.id)
+        )
+        
+        # Generate growth opportunities if requested
+        opportunities = None
+        if include_opportunities:
+            opportunities = await analytics_pipeline.opportunity_finder.find_growth_opportunities(
+                user_channels=channel_ids,
+                competitive_landscape=competitive_data,
+                user_id=str(current_user.id)
+            )
+        
+        return {
+            "success": True,
+            "analysis_depth": analysis_depth,
+            "channels_analyzed": len(channel_ids),
+            "competitors_found": len(competitive_data.get("competitors", [])),
+            "competitive_analysis": competitive_data,
+            "growth_opportunities": opportunities,
+            "market_position": {
+                "relative_performance": competitive_data.get("market_position", {}),
+                "competitive_advantages": competitive_data.get("advantages", []),
+                "areas_for_improvement": competitive_data.get("improvement_areas", []),
+                "market_share_estimate": competitive_data.get("market_share", 0)
+            },
+            "strategic_insights": {
+                "content_gaps": opportunities.get("content_opportunities", []) if opportunities else [],
+                "untapped_keywords": opportunities.get("keyword_opportunities", []) if opportunities else [],
+                "audience_insights": competitive_data.get("audience_analysis", {}),
+                "recommended_actions": opportunities.get("action_plan", []) if opportunities else []
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Competitive analysis failed: {str(e)}"
         )

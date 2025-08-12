@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { EventEmitter } from 'events';
+import { EventEmitter } from '../utils/EventEmitter';
 
 export enum WSEventType {
   // Video events
@@ -153,7 +153,7 @@ class WebSocketClient extends EventEmitter {
     // Listen for all custom events
     Object.values(WSEventType).forEach(eventType => {
       if (!['connect', 'disconnect', 'error', 'reconnect'].includes(eventType)) {
-        this.socket?.on(eventType, (data) => {
+        this.socket?.on(eventType, (data: any) => {
           this.handleMessage({ event: eventType, data, timestamp: new Date().toISOString() });
         });
       }
@@ -239,7 +239,7 @@ import { useEffect, useState, useCallback } from 'react';
 
 export function useWebSocket() {
   const [connected, setConnected] = useState(false);
-  const [lastMessage, setLastMessage] = useState<WSMessage | null>(null);
+  const [lastMessage] = useState<WSMessage | null>(null);
   
   useEffect(() => {
     const handleConnect = () => setConnected(true);

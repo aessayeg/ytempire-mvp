@@ -379,7 +379,7 @@ export class AccessibilityAuditor {
 export const accessibilityAuditor = new AccessibilityAuditor();
 
 // Auto-run audit in development
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   // Run audit after page load
   window.addEventListener('load', () => {
     setTimeout(async () => {
