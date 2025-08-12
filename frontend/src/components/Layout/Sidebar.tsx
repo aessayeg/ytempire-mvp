@@ -140,6 +140,13 @@ export const Sidebar: React.FC = () => {
           icon: <TrendingUp />,
           path: '/analytics/trends',
         },
+        {
+          id: 'metrics-dashboard',
+          label: 'Metrics Dashboard',
+          icon: <Dashboard />,
+          path: '/analytics/dashboard',
+          badge: 'NEW',
+        },
       ],
     },
     {

@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import('../pages/Dashboard/Dashboard'))
 const ChannelManagement = lazy(() => import('../pages/Channels/ChannelManagement'))
 const VideoQueue = lazy(() => import('../pages/Videos/VideoQueue'))
 const Analytics = lazy(() => import('../pages/Analytics/Analytics'))
+const AnalyticsDashboard = lazy(() => import('../pages/Analytics/AnalyticsDashboard'))
 const CostTracking = lazy(() => import('../pages/Costs/CostTracking'))
 const AITools = lazy(() => import('../pages/AI/AITools'))
 const Profile = lazy(() => import('../pages/Profile/Profile'))
@@ -99,6 +100,7 @@ const Router: React.FC = () => {
           <Route path="/channels" element={<ChannelManagement />} />
           <Route path="/videos" element={<VideoQueue />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/analytics/dashboard" element={<AnalyticsDashboard />} />
           <Route path="/costs" element={<CostTracking />} />
           <Route path="/ai-tools" element={<AITools />} />
           <Route path="/profile" element={<Profile />} />
