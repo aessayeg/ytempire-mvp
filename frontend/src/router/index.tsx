@@ -11,6 +11,9 @@ const DashboardLayout = lazy(() => import('../layouts/DashboardLayout'))
 const Dashboard = lazy(() => import('../pages/Dashboard/Dashboard'))
 const ChannelManagement = lazy(() => import('../pages/Channels/ChannelManagement'))
 const VideoQueue = lazy(() => import('../pages/Videos/VideoQueue'))
+const VideoEditor = lazy(() => import('../pages/Videos/VideoEditor'))
+const VideoGeneration = lazy(() => import('../pages/Videos/VideoGeneration'))
+const BulkOperations = lazy(() => import('../pages/BulkOperations/BulkOperationsPage'))
 const Analytics = lazy(() => import('../pages/Analytics/Analytics'))
 const AnalyticsDashboard = lazy(() => import('../pages/Analytics/AnalyticsDashboard'))
 const BusinessIntelligence = lazy(() => import('../pages/Analytics/BusinessIntelligence'))
@@ -18,6 +21,10 @@ const CostTracking = lazy(() => import('../pages/Costs/CostTracking'))
 const AITools = lazy(() => import('../pages/AI/AITools'))
 const Profile = lazy(() => import('../pages/Profile/Profile'))
 const Settings = lazy(() => import('../pages/Settings/Settings'))
+const AdvancedAnalytics = lazy(() => import('../pages/Analytics/AdvancedAnalytics'))
+const SystemMonitoring = lazy(() => import('../pages/Monitoring/SystemMonitoring'))
+const MobileDashboard = lazy(() => import('../pages/Dashboard/MobileDashboard'))
+const ChannelDashboard = lazy(() => import('../pages/Channels/ChannelDashboard'))
 
 // Loading component
 const LoadingFallback = () => (
@@ -103,6 +110,9 @@ const Router: React.FC = () => {
           <Route path="/dashboard" element={<RouteErrorBoundary><Dashboard /></RouteErrorBoundary>} />
           <Route path="/channels" element={<RouteErrorBoundary><ChannelManagement /></RouteErrorBoundary>} />
           <Route path="/videos" element={<RouteErrorBoundary><VideoQueue /></RouteErrorBoundary>} />
+          <Route path="/videos/create" element={<RouteErrorBoundary><VideoGeneration /></RouteErrorBoundary>} />
+          <Route path="/videos/editor/:id" element={<RouteErrorBoundary><VideoEditor /></RouteErrorBoundary>} />
+          <Route path="/bulk-operations" element={<RouteErrorBoundary><BulkOperations /></RouteErrorBoundary>} />
           <Route path="/analytics" element={<RouteErrorBoundary><Analytics /></RouteErrorBoundary>} />
           <Route path="/analytics/dashboard" element={<RouteErrorBoundary><AnalyticsDashboard /></RouteErrorBoundary>} />
           <Route path="/analytics/business-intelligence" element={<RouteErrorBoundary><BusinessIntelligence /></RouteErrorBoundary>} />
@@ -110,6 +120,10 @@ const Router: React.FC = () => {
           <Route path="/ai-tools" element={<RouteErrorBoundary><AITools /></RouteErrorBoundary>} />
           <Route path="/profile" element={<RouteErrorBoundary><Profile /></RouteErrorBoundary>} />
           <Route path="/settings" element={<RouteErrorBoundary><Settings /></RouteErrorBoundary>} />
+          <Route path="/analytics/advanced" element={<RouteErrorBoundary><AdvancedAnalytics /></RouteErrorBoundary>} />
+          <Route path="/monitoring" element={<RouteErrorBoundary><SystemMonitoring /></RouteErrorBoundary>} />
+          <Route path="/dashboard/mobile" element={<RouteErrorBoundary><MobileDashboard /></RouteErrorBoundary>} />
+          <Route path="/channels/dashboard" element={<RouteErrorBoundary><ChannelDashboard /></RouteErrorBoundary>} />
         </Route>
 
         {/* 404 */}

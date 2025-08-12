@@ -47,6 +47,10 @@ import {
   Api,
   BugReport,
   ExitToApp,
+  Monitor,
+  MobileFriendly,
+  Assessment,
+  SpaceDashboard,
 } from '@mui/icons-material';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -76,7 +80,21 @@ export const Sidebar: React.FC = () => {
       id: 'dashboard',
       label: 'Dashboard',
       icon: <Dashboard />,
-      path: '/dashboard',
+      children: [
+        {
+          id: 'main-dashboard',
+          label: 'Main Dashboard',
+          icon: <Dashboard />,
+          path: '/dashboard',
+        },
+        {
+          id: 'mobile-dashboard',
+          label: 'Mobile View',
+          icon: <MobileFriendly />,
+          path: '/dashboard/mobile',
+          badge: 'NEW',
+        },
+      ],
     },
     {
       id: 'videos',
@@ -109,14 +127,42 @@ export const Sidebar: React.FC = () => {
           icon: <CloudUpload />,
           path: '/videos/publishing',
         },
+        {
+          id: 'video-editor',
+          label: 'Video Editor',
+          icon: <PlayCircleOutline />,
+          path: '/videos/editor/demo',
+          badge: 'NEW',
+        },
       ],
     },
     {
       id: 'channels',
       label: 'Channels',
       icon: <YouTube />,
-      path: '/channels',
-      badge: `${user?.channels_limit || 0} max`,
+      children: [
+        {
+          id: 'channels-manage',
+          label: 'Manage',
+          icon: <YouTube />,
+          path: '/channels',
+          badge: `${user?.channels_limit || 0} max`,
+        },
+        {
+          id: 'channels-dashboard',
+          label: 'Dashboard',
+          icon: <SpaceDashboard />,
+          path: '/channels/dashboard',
+          badge: 'NEW',
+        },
+      ],
+    },
+    {
+      id: 'bulk-operations',
+      label: 'Bulk Operations',
+      icon: <ViewList />,
+      path: '/bulk-operations',
+      badge: 'NEW',
     },
     {
       id: 'analytics',
@@ -155,6 +201,13 @@ export const Sidebar: React.FC = () => {
           path: '/analytics/business-intelligence',
           badge: 'EXEC',
           requiredTier: 'pro',
+        },
+        {
+          id: 'advanced-analytics',
+          label: 'Advanced Analytics',
+          icon: <Assessment />,
+          path: '/analytics/advanced',
+          badge: 'NEW',
         },
       ],
     },
@@ -227,6 +280,13 @@ export const Sidebar: React.FC = () => {
           requiredTier: 'enterprise',
         },
       ],
+    },
+    {
+      id: 'monitoring',
+      label: 'System Monitoring',
+      icon: <Monitor />,
+      path: '/monitoring',
+      badge: 'NEW',
     },
   ];
 

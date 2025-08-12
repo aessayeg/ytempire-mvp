@@ -1,12 +1,11 @@
 import { BrowserRouter } from 'react-router-dom'
-import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'react-hot-toast'
 
 import Router from './router'
-import { lightAccessibleTheme } from './theme/accessibleTheme'
+import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider } from './contexts/AuthContext'
 import { PWAProvider } from './contexts/PWAContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -29,7 +28,7 @@ function App() {
   return (
     <ErrorBoundary level="page">
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider theme={lightAccessibleTheme}>
+        <ThemeProvider>
           <CssBaseline />
           <BrowserRouter>
             <PWAProvider>
