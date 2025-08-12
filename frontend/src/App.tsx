@@ -6,8 +6,13 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'react-hot-toast'
 
 import Router from './router'
-import { theme } from './theme/materialTheme'
+import { lightAccessibleTheme } from './theme/accessibleTheme'
 import { AuthProvider } from './contexts/AuthContext'
+import { PWAProvider } from './contexts/PWAContext'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { ScreenReaderAnnouncer } from './components/Accessibility/ScreenReaderAnnouncer'
+import { SkipNavigation } from './components/Accessibility/SkipNavigation'
+import { InstallPrompt, OfflineIndicator } from './components/PWA/InstallPrompt'
 import './index.css'
 
 // Create a client
@@ -22,39 +27,49 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <BrowserRouter>
-          <AuthProvider>
-            <Router />
-            <Toaster
-              position="top-right"
-              reverseOrder={false}
-              gutter={8}
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
-                },
-                success: {
-                  style: {
-                    background: '#4caf50',
-                  },
-                },
-                error: {
-                  style: {
-                    background: '#f44336',
-                  },
-                },
-              }}
-            />
-          </AuthProvider>
-        </BrowserRouter>
-      </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <ErrorBoundary level="page">
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider theme={lightAccessibleTheme}>
+          <CssBaseline />
+          <BrowserRouter>
+            <PWAProvider>
+              <AuthProvider>
+                <SkipNavigation />
+                <ScreenReaderAnnouncer />
+                <div id="main-content" tabIndex={-1}>
+                  <Router />
+                </div>
+                <InstallPrompt />
+                <OfflineIndicator />
+                <Toaster
+                  position="top-right"
+                  reverseOrder={false}
+                  gutter={8}
+                  toastOptions={{
+                    duration: 4000,
+                    style: {
+                      background: '#363636',
+                      color: '#fff',
+                    },
+                    success: {
+                      style: {
+                        background: '#2E7D32',
+                      },
+                    },
+                    error: {
+                      style: {
+                        background: '#C62828',
+                      },
+                    },
+                  }}
+                />
+              </AuthProvider>
+            </PWAProvider>
+          </BrowserRouter>
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 

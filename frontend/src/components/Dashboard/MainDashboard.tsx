@@ -20,6 +20,9 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
+import { DashboardSkeleton } from '../Loading/LoadingSkeleton';
+import { ErrorBoundary } from '../ErrorBoundary';
+import { useAnnounce } from '../Accessibility/ScreenReaderAnnouncer';
 import {
   TrendingUp,
   VideoLibrary,
@@ -114,6 +117,7 @@ export const MainDashboard: React.FC = () => {
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const { announce } = useAnnounce();
   
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
@@ -149,6 +153,7 @@ export const MainDashboard: React.FC = () => {
       setRecentActivity(formatActivity(activityRes.data));
       setVideosInQueue(queueRes.data);
       setError(null);
+      announce('Dashboard data loaded successfully', 'polite');
     } catch (error: any) {
       setError('Failed to load dashboard data. Please refresh to try again.');
       console.error('Dashboard error:', error);
@@ -280,23 +285,7 @@ export const MainDashboard: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <Box>
-        <Grid container spacing={3}>
-          {[1, 2, 3, 4].map((i) => (
-            <Grid item xs={12} sm={6} md={3} key={i}>
-              <Skeleton variant="rectangular" height={120} />
-            </Grid>
-          ))}
-          <Grid item xs={12} md={8}>
-            <Skeleton variant="rectangular" height={400} />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Skeleton variant="rectangular" height={400} />
-          </Grid>
-        </Grid>
-      </Box>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error) {

@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { CircularProgress, Box } from '@mui/material'
 import { useAuth } from '../contexts/AuthContext'
+import { RouteErrorBoundary } from '../components/ErrorBoundary/RouteErrorBoundary'
 
 // Lazy load pages
 const Login = lazy(() => import('../pages/Auth/Login'))
@@ -92,19 +93,21 @@ const Router: React.FC = () => {
         <Route
           element={
             <ProtectedRoute>
-              <DashboardLayout />
+              <RouteErrorBoundary>
+                <DashboardLayout />
+              </RouteErrorBoundary>
             </ProtectedRoute>
           }
         >
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/channels" element={<ChannelManagement />} />
-          <Route path="/videos" element={<VideoQueue />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/analytics/dashboard" element={<AnalyticsDashboard />} />
-          <Route path="/costs" element={<CostTracking />} />
-          <Route path="/ai-tools" element={<AITools />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/dashboard" element={<RouteErrorBoundary><Dashboard /></RouteErrorBoundary>} />
+          <Route path="/channels" element={<RouteErrorBoundary><ChannelManagement /></RouteErrorBoundary>} />
+          <Route path="/videos" element={<RouteErrorBoundary><VideoQueue /></RouteErrorBoundary>} />
+          <Route path="/analytics" element={<RouteErrorBoundary><Analytics /></RouteErrorBoundary>} />
+          <Route path="/analytics/dashboard" element={<RouteErrorBoundary><AnalyticsDashboard /></RouteErrorBoundary>} />
+          <Route path="/costs" element={<RouteErrorBoundary><CostTracking /></RouteErrorBoundary>} />
+          <Route path="/ai-tools" element={<RouteErrorBoundary><AITools /></RouteErrorBoundary>} />
+          <Route path="/profile" element={<RouteErrorBoundary><Profile /></RouteErrorBoundary>} />
+          <Route path="/settings" element={<RouteErrorBoundary><Settings /></RouteErrorBoundary>} />
         </Route>
 
         {/* 404 */}

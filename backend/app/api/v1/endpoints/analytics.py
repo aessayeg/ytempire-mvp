@@ -19,6 +19,7 @@ from app.services.analytics_pipeline import (
     DataSource,
     MetricPoint
 )
+from app.services.roi_calculator import roi_calculator, ROIMetric
 
 import logging
 
@@ -493,4 +494,97 @@ async def get_industry_benchmarks(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get benchmarks"
+        )
+
+
+@router.get("/roi/overall")
+async def get_overall_roi(
+    start_date: Optional[date] = Query(None),
+    end_date: Optional[date] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Calculate overall ROI metrics for the platform or user
+    """
+    try:
+        start_datetime = datetime.combine(start_date, datetime.min.time()) if start_date else None
+        end_datetime = datetime.combine(end_date, datetime.max.time()) if end_date else None
+        
+        roi_data = await roi_calculator.calculate_overall_roi(
+            db=db,
+            start_date=start_datetime,
+            end_date=end_datetime,
+            user_id=str(current_user.id)
+        )
+        
+        return roi_data
+        
+    except Exception as e:
+        logger.error(f"Failed to calculate overall ROI: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to calculate ROI"
+        )
+
+
+@router.get("/roi/channel/{channel_id}")
+async def get_channel_roi(
+    channel_id: str,
+    period_days: int = Query(30, ge=1, le=365),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Calculate ROI metrics for a specific channel
+    """
+    try:
+        channel_roi = await roi_calculator.calculate_channel_roi(
+            db=db,
+            channel_id=channel_id,
+            period_days=period_days
+        )
+        
+        return channel_roi.__dict__
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Failed to calculate channel ROI: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to calculate channel ROI"
+        )
+
+
+@router.get("/roi/video/{video_id}")
+async def get_video_roi(
+    video_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_verified_user)
+) -> Dict[str, Any]:
+    """
+    Calculate ROI metrics for a specific video
+    """
+    try:
+        video_roi = await roi_calculator.calculate_video_roi(
+            db=db,
+            video_id=video_id
+        )
+        
+        return video_roi.__dict__
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Failed to calculate video ROI: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to calculate video ROI"
         )
