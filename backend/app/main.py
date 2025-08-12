@@ -76,6 +76,10 @@ app.add_middleware(
     allowed_hosts=settings.ALLOWED_HOSTS
 )
 
+# Compression Middleware - Add before other middleware for best performance
+from app.middleware.compression import CompressionMiddleware
+app.add_middleware(CompressionMiddleware, minimum_size=500, compression_level=6)
+
 # Enhanced performance middleware
 app.add_middleware(FastPerformanceMiddleware, cache_manager=cache_manager)
 
