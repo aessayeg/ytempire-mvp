@@ -170,4 +170,4 @@ victoria_metrics_data/
 _documentation/
 *.nul
 nul
-ffmpeg/
+backend/ffmpeg/*.exe

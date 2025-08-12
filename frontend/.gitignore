@@ -25,3 +25,4 @@ dist-ssr
 *.env
 *.nul
 nul
+backend/ffmpeg/*.exe
