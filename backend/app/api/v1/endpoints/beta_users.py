@@ -14,10 +14,11 @@ import logging
 from app.db.session import get_db
 from app.models.user import User
 from app.core.security import get_password_hash, create_access_token
-from app.services.email_service import send_email
+from app.services.email_service import EmailService
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+email_service = EmailService()
 
 router = APIRouter(prefix="/beta", tags=["beta"])
 
@@ -44,6 +45,12 @@ class BetaUserStats(BaseModel):
     total_videos_generated: int
     average_videos_per_user: float
     top_use_cases: List[str]
+
+class BetaFeedbackRequest(BaseModel):
+    """Beta feedback request"""
+    feedback: str = Field(..., min_length=1, max_length=1000)
+    rating: int = Field(..., ge=1, le=5)
+    user_id: Optional[int] = None
 
 @router.post("/signup", response_model=BetaSignupResponse, status_code=status.HTTP_201_CREATED)
 async def beta_signup(
@@ -185,15 +192,13 @@ async def get_beta_stats(
 
 @router.post("/feedback")
 async def submit_beta_feedback(
-    feedback: str,
-    rating: int = Field(..., ge=1, le=5),
-    user_id: int = None,
+    request: BetaFeedbackRequest,
     db: AsyncSession = Depends(get_db)
 ):
     """Submit beta user feedback"""
     try:
         # Store feedback in database (simplified for now)
-        logger.info(f"Beta feedback received - Rating: {rating}, Feedback: {feedback}")
+        logger.info(f"Beta feedback received - Rating: {request.rating}, Feedback: {request.feedback}")
         
         return {"message": "Thank you for your feedback!", "status": "received"}
         
@@ -261,10 +266,10 @@ async def send_beta_welcome_email(
         The YTEmpire Team
         """
         
-        await send_email(
+        await email_service.send_email(
             to_email=email,
             subject=subject,
-            body=body
+            html_content=body
         )
         
         logger.info(f"Welcome email sent to beta user: {email}")

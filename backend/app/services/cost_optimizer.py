@@ -18,7 +18,7 @@ from sqlalchemy import select, func
 import openai
 from anthropic import Anthropic
 
-from app.db.session import get_async_db
+from app.db.session import get_db
 from app.models.cost import Cost
 from app.models.video import Video
 from app.core.config import settings

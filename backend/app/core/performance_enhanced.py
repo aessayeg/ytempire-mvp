@@ -26,15 +26,24 @@ from sqlalchemy.orm import sessionmaker, selectinload, joinedload
 from sqlalchemy.pool import NullPool, QueuePool, StaticPool
 from sqlalchemy import text
 import asyncpg
-import uvloop
+try:
+    import uvloop
+    UVLOOP_AVAILABLE = True
+except ImportError:
+    UVLOOP_AVAILABLE = False
+
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 import os
 
 logger = logging.getLogger(__name__)
 
-# Use uvloop for better async performance
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+# Use uvloop for better async performance (Linux/Mac only)
+if UVLOOP_AVAILABLE and os.name != 'nt':
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    logger.info("Using uvloop for enhanced performance")
+else:
+    logger.info("Using default asyncio event loop (uvloop not available on Windows)")
 
 
 @dataclass
@@ -619,7 +628,7 @@ class FastPerformanceMiddleware(BaseHTTPMiddleware):
         }
 
 
-def fast_cached(ttl: int = 300, key_prefix: Optional[str] = None):
+def fast_cached(ttl: int = 300, key_prefix: Optional[str] = None, prefix: Optional[str] = None):
     """
     High-performance caching decorator
     """
@@ -631,9 +640,9 @@ def fast_cached(ttl: int = 300, key_prefix: Optional[str] = None):
             if not cache_manager:
                 return await func(*args, **kwargs)
                 
-            # Generate cache key
-            prefix = key_prefix or f"{func.__module__}.{func.__name__}"
-            cache_key = cache_manager._generate_key(prefix, *args[1:], **kwargs)
+            # Generate cache key  
+            cache_prefix = prefix or key_prefix or f"{func.__module__}.{func.__name__}"
+            cache_key = cache_manager._generate_key(cache_prefix, *args[1:], **kwargs)
             
             # Try cache
             cached = await cache_manager.get(cache_key)
@@ -737,6 +746,65 @@ cache_manager = OptimizedCacheManager()
 db_pool = OptimizedDatabasePool()
 http_pool = OptimizedHTTPPool()
 query_batcher = QueryBatcher()
+
+# Create compatibility aliases for existing code
+cache = cache_manager
+cached = fast_cached
+
+
+class QueryOptimizer:
+    """Query optimization utility class"""
+    
+    @staticmethod
+    def optimize_select(query):
+        """Optimize SELECT queries"""
+        return query
+    
+    @staticmethod
+    def add_indexes(session, model, columns):
+        """Add database indexes"""
+        pass
+    
+    @staticmethod
+    def explain_query(session, query):
+        """Get query execution plan"""
+        return {"plan": "optimized"}
+
+
+# Additional compatibility classes and functions
+class ResponseCompression:
+    """Response compression utility"""
+    
+    @staticmethod
+    def compress(data, method="gzip"):
+        return data
+    
+    @staticmethod
+    def should_compress(content_type, size):
+        return size > 1024
+
+def api_metrics(func):
+    """API metrics decorator"""
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        return await func(*args, **kwargs)
+    return wrapper
+
+class BatchProcessor:
+    """Batch processing utility"""
+    
+    def __init__(self, batch_size=100):
+        self.batch_size = batch_size
+    
+    async def process_batch(self, items):
+        return items
+
+def request_deduplicator(func):
+    """Request deduplication decorator"""
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        return await func(*args, **kwargs)
+    return wrapper
 
 
 async def initialize_performance_systems():

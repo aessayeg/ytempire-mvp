@@ -1,0 +1,60 @@
+# WORKING SERVICES (28 services - 56% success rate)
+
+## Currently Working Services:
+- app.services.cost_tracking ✅
+- app.services.youtube_multi_account ✅ 
+- app.services.analytics_service ✅
+- app.services.quality_metrics ✅
+- app.services.analytics_connector ✅
+- app.services.analytics_pipeline ✅
+- app.services.cost_aggregation ✅
+- app.services.feature_store ✅
+- app.services.notification_service ✅
+- app.services.api_optimization ✅
+- app.services.batch_processing ✅
+- app.services.storage_service ✅
+- app.services.thumbnail_generator ✅
+- app.services.stock_footage ✅
+- app.services.quick_video_generator ✅
+- app.services.rate_limiter ✅
+- app.services.websocket_manager ✅
+- app.services.defect_tracking ✅
+- app.services.model_monitoring ✅
+- app.services.metrics_aggregation ✅
+- app.services.n8n_integration ✅
+- app.services.optimized_queries ✅
+- app.services.prompt_engineering ✅
+- app.services.reporting ✅
+- app.services.video_processor ✅
+- app.services.websocket_events ✅
+- app.services.cost_verification ✅
+- app.services.mock_video_generator ✅
+
+## Broken Services (22 services - need fixes):
+### Missing Dependencies:
+- gpu_resource_service (missing logger)
+- data_lake_service (missing aioboto3)  
+- gpu_resource_manager (missing pynvml)
+- automated_reporting (missing weasyprint)
+- vector_database (missing chromadb)
+- advanced_caching (missing aiomcache)
+- feature_engineering (missing textblob)
+- metrics_pipeline (missing aiokafka)
+
+### Missing app.core.cache:
+- revenue_tracking
+- export_service
+- inference_pipeline
+- training_data_service
+- user_behavior_analytics
+- roi_calculator
+- performance_monitoring
+- ab_testing_service
+
+### Import/Config Issues:
+- alert_service (syntax error in celery_app.py)
+- video_generation_orchestrator (import error)
+- error_handlers (missing misc.error_handling_framework)
+- webhook_service (SQLAlchemy metadata error)
+- cost_optimizer (missing get_async_db)
+- video_generation_pipeline (missing app.services.cost_tracker)

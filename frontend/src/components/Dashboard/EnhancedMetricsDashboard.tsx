@@ -214,15 +214,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
   const { analytics, channels, addNotification } = useOptimizedStore();
 
   // Real-time data hook
-  const realtime = useRealtimeData('analytics', {
-    onUpdate: (data: any) => {
-      setRealtimeMetrics(data);
-      if (autoRefresh) {
-        fetchDashboardData();
-      }
-    },
-    interval: 30000, // 30 seconds
-  });
+  const realtime = useRealtimeData('/ws/analytics');
 
   // Memoized calculations
   const processedChartData = useMemo(() => {
@@ -417,6 +409,16 @@ export const EnhancedMetricsDashboard: React.FC = () => {
     const interval = setInterval(fetchDashboardData, 60000); // Refresh every minute
     return () => clearInterval(interval);
   }, [autoRefresh, fetchDashboardData]);
+
+  // Real-time updates effect
+  useEffect(() => {
+    if (realtime.lastMessage && realtime.lastMessage.type === 'dashboard_update') {
+      setRealtimeMetrics(realtime.lastMessage.data);
+      if (autoRefresh) {
+        fetchDashboardData();
+      }
+    }
+  }, [realtime.lastMessage, autoRefresh, fetchDashboardData]);
 
   // Render metric card
   const renderMetricCard = (metric: MetricCard) => {

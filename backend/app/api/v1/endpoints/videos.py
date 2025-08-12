@@ -27,7 +27,7 @@ from app.api.v1.endpoints.auth import get_current_verified_user
 from app.services.ai_services import AIServiceOrchestrator, AIServiceConfig
 from app.services.youtube_service import YouTubeService
 from app.services.video_processor import VideoProcessor
-from app.services.cost_tracker import CostTracker
+from app.services.cost_tracking import cost_tracker
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.core.performance_enhanced import (
@@ -51,15 +51,15 @@ async def get_redis():
         )
     return redis_client
 
-# Initialize services
+# Initialize services - delay AI service to avoid import issues
 ai_config = AIServiceConfig(
     openai_api_key=settings.OPENAI_API_KEY or "",
     elevenlabs_api_key=settings.ELEVENLABS_API_KEY or ""
 )
-ai_service = AIServiceOrchestrator(ai_config)
+ai_service = None  # Initialize when needed to avoid import-time errors
 youtube_service = YouTubeService()
 video_processor = VideoProcessor()
-cost_tracker = CostTracker()
+# cost_tracker is imported from app.services.cost_tracking
 
 # Pydantic models
 class VideoGenerateRequest(BaseModel):
@@ -452,7 +452,7 @@ async def publish_video(
         return {"message": "Video publishing initiated"}
 
 @router.get("/", response_model=List[VideoResponse], response_class=ORJSONResponse)
-@cached(prefix="videos:list", ttl=60, key_params=["channel_id", "status", "skip", "limit"])
+@cached(prefix="videos:list", ttl=60)
 async def list_videos(
     channel_id: Optional[str] = None,
     status: Optional[str] = None,

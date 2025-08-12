@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 
 from app.db.session import get_async_db
-from app.core.auth import get_current_user
+from app.api.v1.endpoints.auth import get_current_user, get_current_verified_user
 from app.models.user import User
 from app.services.youtube_multi_account import get_youtube_manager, OperationType
 

@@ -95,7 +95,7 @@ celery_app.conf.update(
             "rate_limit": "100/m",
             "max_retries": 5
         }
-    }
+    },
     
     # Result backend settings
     result_expires=3600,  # Results expire after 1 hour

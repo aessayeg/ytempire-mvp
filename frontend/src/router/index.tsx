@@ -13,6 +13,7 @@ const ChannelManagement = lazy(() => import('../pages/Channels/ChannelManagement
 const VideoQueue = lazy(() => import('../pages/Videos/VideoQueue'))
 const Analytics = lazy(() => import('../pages/Analytics/Analytics'))
 const AnalyticsDashboard = lazy(() => import('../pages/Analytics/AnalyticsDashboard'))
+const BusinessIntelligence = lazy(() => import('../pages/Analytics/BusinessIntelligence'))
 const CostTracking = lazy(() => import('../pages/Costs/CostTracking'))
 const AITools = lazy(() => import('../pages/AI/AITools'))
 const Profile = lazy(() => import('../pages/Profile/Profile'))
@@ -104,6 +105,7 @@ const Router: React.FC = () => {
           <Route path="/videos" element={<RouteErrorBoundary><VideoQueue /></RouteErrorBoundary>} />
           <Route path="/analytics" element={<RouteErrorBoundary><Analytics /></RouteErrorBoundary>} />
           <Route path="/analytics/dashboard" element={<RouteErrorBoundary><AnalyticsDashboard /></RouteErrorBoundary>} />
+          <Route path="/analytics/business-intelligence" element={<RouteErrorBoundary><BusinessIntelligence /></RouteErrorBoundary>} />
           <Route path="/costs" element={<RouteErrorBoundary><CostTracking /></RouteErrorBoundary>} />
           <Route path="/ai-tools" element={<RouteErrorBoundary><AITools /></RouteErrorBoundary>} />
           <Route path="/profile" element={<RouteErrorBoundary><Profile /></RouteErrorBoundary>} />

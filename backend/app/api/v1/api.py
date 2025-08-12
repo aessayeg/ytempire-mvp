@@ -7,7 +7,8 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, channels, youtube_accounts, script_generation,
     payment, dashboard, video_queue, webhooks, analytics, notifications, batch, api_optimization, data_quality,
-    videos, users, test_generation, video_generation, cost_optimization, beta_users, revenue, collaboration, video_processing, advanced_analytics
+    videos, users, test_generation, video_generation, cost_optimization, beta_users, revenue, collaboration, video_processing, advanced_analytics, business_intelligence, system_monitoring,
+    behavior_analytics, channels_optimized, experiments, gpu_resources, quality_dashboard, youtube_oauth
 )
 from app.api.v1 import cost_tracking
 
@@ -156,6 +157,55 @@ api_router.include_router(
     advanced_analytics.router,
     prefix="/advanced-analytics",
     tags=["advanced-analytics"]
+)
+
+api_router.include_router(
+    business_intelligence.router,
+    prefix="/bi",
+    tags=["business-intelligence"]
+)
+
+api_router.include_router(
+    system_monitoring.router,
+    prefix="/system",
+    tags=["system-monitoring"]
+)
+
+# Missing endpoint routers - now registered
+api_router.include_router(
+    behavior_analytics.router,
+    prefix="/behavior-analytics",
+    tags=["behavior-analytics"]
+)
+
+api_router.include_router(
+    channels_optimized.router,
+    prefix="/channels-optimized",
+    tags=["channels-optimization"]
+)
+
+api_router.include_router(
+    experiments.router,
+    prefix="/experiments",
+    tags=["experiments"]
+)
+
+api_router.include_router(
+    gpu_resources.router,
+    prefix="/gpu-resources",
+    tags=["gpu-resources"]
+)
+
+api_router.include_router(
+    quality_dashboard.router,
+    prefix="/quality",
+    tags=["quality-dashboard"]
+)
+
+api_router.include_router(
+    youtube_oauth.router,
+    prefix="/youtube-oauth",
+    tags=["youtube-oauth"]
 )
 
 # Health check endpoint

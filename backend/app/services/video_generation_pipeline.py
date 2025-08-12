@@ -17,7 +17,7 @@ from app.services.ai_services import OpenAIService, ElevenLabsService, GoogleTTS
 from app.services.youtube_service import YouTubeService, YouTubeConfig
 from app.services.video_processor import VideoProcessor
 from app.services.thumbnail_generator import ThumbnailGenerator
-from app.services.cost_tracker import cost_tracker
+from app.services.cost_tracking import cost_tracker
 from app.db.session import AsyncSessionLocal
 from app.models.video import Video, VideoStatus
 from app.models.cost import Cost

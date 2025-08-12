@@ -16,7 +16,7 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import WebSocket
 
-from app.services.youtube_multi_account import youtube_account_manager
+from app.services.youtube_multi_account import get_youtube_manager
 from app.services.video_pipeline import VideoPipelineOrchestrator, PipelineStage
 from app.services.cost_tracking import cost_tracker
 from app.services.websocket_manager import ConnectionManager

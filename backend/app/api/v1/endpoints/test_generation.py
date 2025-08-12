@@ -9,7 +9,7 @@ import logging
 
 from app.db.session import get_db
 from app.services.video_generation_orchestrator import video_orchestrator
-from app.services.youtube_multi_account import youtube_account_manager
+from app.services.youtube_multi_account import get_youtube_manager
 from app.services.cost_tracking import cost_tracker
 from app.models.channel import Channel
 from app.api.v1.endpoints.auth import get_current_verified_user
@@ -33,7 +33,7 @@ async def test_video_generation(
     """
     try:
         # Initialize services
-        await youtube_account_manager.initialize(db)
+        await get_youtube_manager().initialize(db)
         
         # Use first available channel if not specified
         if not channel_id:
@@ -138,7 +138,7 @@ async def test_generation_websocket(
     
     try:
         # Initialize services
-        await youtube_account_manager.initialize(db)
+        await get_youtube_manager().initialize(db)
         
         # Start video generation with WebSocket updates
         result = await video_orchestrator.generate_video(
@@ -175,7 +175,7 @@ async def get_generation_status(
     active_generations = video_orchestrator.get_active_generations()
     
     # Get YouTube account status
-    quota_status = await youtube_account_manager.check_quota_limits()
+    quota_status = await get_youtube_manager().check_quota_limits()
     
     # Get cost tracker status
     # Use global cost_tracker instance
@@ -215,7 +215,7 @@ async def test_batch_generation(
         raise HTTPException(status_code=400, detail="Maximum 10 videos for batch generation")
     
     # Initialize services
-    await youtube_account_manager.initialize(db)
+    await get_youtube_manager().initialize(db)
     
     # Get user's channels
     result = await db.execute(

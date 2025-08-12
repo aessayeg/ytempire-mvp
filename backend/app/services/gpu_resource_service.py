@@ -17,7 +17,7 @@ try:
     NVIDIA_AVAILABLE = True
 except ImportError:
     NVIDIA_AVAILABLE = False
-    logger.warning("pynvml not available - GPU management disabled")
+    # Note: Will log after logger is initialized
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete, and_, or_, func, desc
@@ -35,6 +35,10 @@ from app.services.websocket_manager import ConnectionManager
 from app.core.celery_app import celery_app
 
 logger = logging.getLogger(__name__)
+
+# Log pynvml availability
+if not NVIDIA_AVAILABLE:
+    logger.warning("pynvml not available - GPU management will be limited")
 
 
 class GPUStatus:

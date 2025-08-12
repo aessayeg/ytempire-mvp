@@ -64,7 +64,7 @@ class VideoQueueService:
         scheduled_time: Optional[datetime] = None,
         priority: int = Priority.NORMAL,
         tags: List[str] = None,
-        metadata: Dict[str, Any] = None
+        queue_metadata: Dict[str, Any] = None
     ) -> VideoQueue:
         """
         Add video to generation queue
@@ -74,7 +74,7 @@ class VideoQueueService:
             estimated_cost = self._calculate_cost(
                 duration_minutes=duration_minutes,
                 style=style,
-                metadata=metadata or {}
+                queue_metadata=queue_metadata or {}
             )
             
             processing_time = self._estimate_processing_time(
@@ -97,7 +97,7 @@ class VideoQueueService:
                 scheduled_time=scheduled_time,
                 estimated_cost=estimated_cost,
                 processing_time_estimate=processing_time,
-                metadata=metadata or {}
+                queue_metadata=queue_metadata or {}
             )
             
             db.add(queue_item)
@@ -222,9 +222,9 @@ class VideoQueueService:
                 return False
                 
             # Cancel Celery task if exists
-            if queue_item.metadata and 'task_id' in queue_item.metadata:
+            if queue_item.queue_metadata and 'task_id' in queue_item.queue_metadata:
                 celery_app.control.revoke(
-                    queue_item.metadata['task_id'], 
+                    queue_item.queue_metadata['task_id'], 
                     terminate=True
                 )
                 
@@ -540,9 +540,9 @@ class VideoQueueService:
             )
             
             # Store task ID in metadata
-            if not queue_item.metadata:
-                queue_item.metadata = {}
-            queue_item.metadata['task_id'] = task.id
+            if not queue_item.queue_metadata:
+                queue_item.queue_metadata = {}
+            queue_item.queue_metadata['task_id'] = task.id
             
         except Exception as e:
             logger.error(f"Failed to schedule Celery task: {e}")
@@ -580,7 +580,7 @@ class VideoQueueService:
         self,
         duration_minutes: int,
         style: str,
-        metadata: Dict[str, Any]
+        queue_metadata: Dict[str, Any]
     ) -> float:
         """Calculate estimated cost"""
         base_cost = 0.10  # Base cost
@@ -598,11 +598,11 @@ class VideoQueueService:
         base_cost *= style_multipliers.get(style, 1.0)
         
         # Add-on costs
-        if metadata.get('voice_style') == 'elevenlabs':
+        if queue_metadata.get('voice_style') == 'elevenlabs':
             base_cost += 0.20
-        if metadata.get('thumbnail_style'):
+        if queue_metadata.get('thumbnail_style'):
             base_cost += 0.05
-        if metadata.get('auto_publish'):
+        if queue_metadata.get('auto_publish'):
             base_cost += 0.02
             
         return round(base_cost, 2)

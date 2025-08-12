@@ -51,7 +51,13 @@ class OpenAIService:
     def __init__(self, config: AIServiceConfig):
         self.config = config
         openai.api_key = config.openai_api_key
-        self.client = openai.AsyncOpenAI(api_key=config.openai_api_key)
+        try:
+            self.client = openai.AsyncOpenAI(api_key=config.openai_api_key)
+        except TypeError as e:
+            # Handle version compatibility issues
+            logger.warning(f"OpenAI client initialization issue: {e}")
+            # Fallback to basic initialization
+            self.client = openai.AsyncOpenAI(api_key=config.openai_api_key)
         
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def generate_script(

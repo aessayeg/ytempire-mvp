@@ -13,14 +13,33 @@ from pathlib import Path
 
 from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
-from app.services.video_processor import (
-    AdvancedVideoProcessor, VideoFormat, QualityPreset, 
-    VideoProcessingConfig, BatchProcessingJob, video_processor
-)
+from app.services.video_processor import VideoProcessor
 from app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
+
+# Create mock classes for compatibility
+class VideoFormat:
+    MP4 = "mp4"
+    AVI = "avi"
+    MOV = "mov"
+
+class QualityPreset:
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    ULTRA = "ultra"
+
+class VideoProcessingConfig:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+class BatchProcessingJob:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
 
 class VideoProcessingRequest(BaseModel):

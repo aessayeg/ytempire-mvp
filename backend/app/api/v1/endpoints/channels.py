@@ -722,7 +722,7 @@ async def multi_channel_operation(
 
 
 @router.get("/{channel_id}/quota", response_model=ChannelQuota)
-@cached(prefix="channel:quota", ttl=60, key_params=["channel_id"])
+@cached(prefix="channel:quota", ttl=60)
 async def get_channel_quota(
     channel_id: str,
     current_user: User = Depends(get_current_verified_user),
