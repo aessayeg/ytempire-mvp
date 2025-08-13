@@ -45,6 +45,10 @@ from app.services.enhanced_video_generation import enhanced_orchestrator
 from app.services.training_pipeline_service import training_service
 from app.services.etl_pipeline_service import etl_service
 
+# Week 2 P2 Advanced Services (Nice to Have)
+from app.services.advanced_error_recovery import advanced_recovery
+from app.services.third_party_integrations import third_party_service
+
 # Services with async initialize (working)
 from app.services.analytics_connector import analytics_connector
 from app.services.analytics_pipeline import analytics_pipeline
@@ -250,6 +254,16 @@ async def lifespan(app: FastAPI):
         await etl_service.initialize()
         logger.info("- ETL pipeline service ready with dimension tables")
         
+        # Initialize Week 2 P2 Advanced Services
+        await advanced_recovery.initialize()
+        logger.info("- Advanced error recovery service ready")
+        
+        await third_party_service.initialize()
+        logger.info("- Third-party integrations service ready")
+        
+        # Advanced caching is already integrated via cache_manager
+        logger.info("- Advanced caching service ready (multi-tier)")
+        
     except Exception as e:
         logger.error(f"Failed to initialize infrastructure services: {e}")
         # Don't fail startup, but log the error
@@ -284,7 +298,7 @@ async def lifespan(app: FastAPI):
         working_services_with_shutdown = [
             analytics_connector, analytics_pipeline, cost_aggregator, feature_store,
             export_service, inference_pipeline, training_data_service,
-            training_service, etl_service
+            training_service, etl_service, advanced_recovery, third_party_service
         ]
         
         for service in working_services_with_shutdown:

@@ -9,7 +9,7 @@ from app.api.v1.endpoints import (
     payment, dashboard, video_queue, webhooks, analytics, notifications, batch, api_optimization, data_quality,
     videos, users, test_generation, video_generation, cost_optimization, beta_users, revenue, collaboration, video_processing, advanced_analytics, business_intelligence, system_monitoring,
     behavior_analytics, channels_optimized, experiments, gpu_resources, quality_dashboard, youtube_oauth, youtube_advanced, content_library, cost_intelligence, ai_multi_provider,
-    ml_features, training, etl
+    ml_features, training, etl, error_recovery, integrations, caching
 )
 from app.api.v1 import cost_tracking
 
@@ -249,6 +249,25 @@ api_router.include_router(
     etl.router,
     prefix="/etl",
     tags=["etl-pipeline"]
+)
+
+# Week 2 P2 Features - Advanced Backend Capabilities
+api_router.include_router(
+    error_recovery.router,
+    prefix="/error-recovery",
+    tags=["error-recovery"]
+)
+
+api_router.include_router(
+    integrations.router,
+    prefix="/integrations",
+    tags=["third-party-integrations"]
+)
+
+api_router.include_router(
+    caching.router,
+    prefix="/cache",
+    tags=["advanced-caching"]
 )
 
 # Health check endpoint
