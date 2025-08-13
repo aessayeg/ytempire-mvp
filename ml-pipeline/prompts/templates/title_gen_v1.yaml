@@ -1,0 +1,58 @@
+constraints:
+  include_keywords: true
+  max_length: 60
+  min_options: 5
+examples: []
+id: title_gen_v1
+metadata:
+  category: metadata_generation
+name: Video Title Generation
+performance_metrics: {}
+template: 'Generate 5 compelling YouTube video titles for: {topic}
+
+
+  Video Style: {style}
+
+  Target Keywords: {keywords}
+
+  Competitor Titles: {competitor_titles}
+
+
+  Requirements:
+
+  - Maximum 60 characters
+
+  - Include power words
+
+  - Create curiosity gap
+
+  - SEO optimized
+
+  - Avoid clickbait
+
+  - Use numbers when relevant
+
+  - Consider emotional triggers
+
+
+  Successful title patterns:
+
+  - "How to [achieve desirable outcome] in [timeframe]"
+
+  - "[Number] [adjective] Ways to [solve problem]"
+
+  - "Why [counterintuitive statement] (And How to [solution])"
+
+  - "The [superlative] Guide to [topic]"
+
+  - "[Celebrity/Authority] Reveals [secret/method]"
+
+
+  Generate titles that will maximize CTR while maintaining authenticity.'
+type: title_generation
+variables:
+- topic
+- style
+- keywords
+- competitor_titles
+version: 1.0.0

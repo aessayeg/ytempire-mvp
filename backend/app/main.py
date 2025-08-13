@@ -37,6 +37,14 @@ from app.services.quality_metrics import quality_monitor
 from app.services.revenue_tracking import revenue_tracking_service
 from app.services.video_generation_orchestrator import video_orchestrator
 
+# ML services (new)
+from app.services.ml_integration_service import ml_service
+from app.services.enhanced_video_generation import enhanced_orchestrator
+
+# Data pipeline services (new)
+from app.services.training_pipeline_service import training_service
+from app.services.etl_pipeline_service import etl_service
+
 # Services with async initialize (working)
 from app.services.analytics_connector import analytics_connector
 from app.services.analytics_pipeline import analytics_pipeline
@@ -152,6 +160,19 @@ async def lifespan(app: FastAPI):
         logger.info("Revenue tracking service ready")
         logger.info("Video generation orchestrator ready")
         
+        # Initialize ML services
+        if settings.ML_ENABLED:
+            logger.info("ML Integration service ready")
+            logger.info("Enhanced video generation orchestrator ready")
+            # Check if models need retraining
+            retrain_status = await ml_service.check_retraining_needed()
+            if retrain_status["automl_needs_retraining"]:
+                logger.info("AutoML model needs retraining - will retrain on first request")
+            if retrain_status["personalization_needs_update"]:
+                logger.info("Personalization profiles need updating")
+        else:
+            logger.info("ML services disabled by configuration")
+        
     except Exception as e:
         logger.error(f"Failed to initialize business services: {e}")
         # Don't fail startup, but log the error
@@ -222,6 +243,13 @@ async def lifespan(app: FastAPI):
         logger.info("- Dashboard service ready")
         logger.info("- Health monitoring service ready")
         
+        # Initialize data pipeline services
+        await training_service.initialize()
+        logger.info("- Training pipeline service ready")
+        
+        await etl_service.initialize()
+        logger.info("- ETL pipeline service ready with dimension tables")
+        
     except Exception as e:
         logger.error(f"Failed to initialize infrastructure services: {e}")
         # Don't fail startup, but log the error
@@ -255,7 +283,8 @@ async def lifespan(app: FastAPI):
         # Services with async shutdown (working ones only)
         working_services_with_shutdown = [
             analytics_connector, analytics_pipeline, cost_aggregator, feature_store,
-            export_service, inference_pipeline, training_data_service
+            export_service, inference_pipeline, training_data_service,
+            training_service, etl_service
         ]
         
         for service in working_services_with_shutdown:

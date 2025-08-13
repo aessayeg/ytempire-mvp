@@ -8,7 +8,8 @@ from app.api.v1.endpoints import (
     auth, channels, youtube_accounts, script_generation,
     payment, dashboard, video_queue, webhooks, analytics, notifications, batch, api_optimization, data_quality,
     videos, users, test_generation, video_generation, cost_optimization, beta_users, revenue, collaboration, video_processing, advanced_analytics, business_intelligence, system_monitoring,
-    behavior_analytics, channels_optimized, experiments, gpu_resources, quality_dashboard, youtube_oauth, youtube_advanced, content_library, cost_intelligence, ai_multi_provider
+    behavior_analytics, channels_optimized, experiments, gpu_resources, quality_dashboard, youtube_oauth, youtube_advanced, content_library, cost_intelligence, ai_multi_provider,
+    ml_features, training, etl
 )
 from app.api.v1 import cost_tracking
 
@@ -230,6 +231,24 @@ api_router.include_router(
     ai_multi_provider.router,
     prefix="/ai-providers",
     tags=["ai-multi-provider"]
+)
+
+api_router.include_router(
+    ml_features.router,
+    prefix="/ml",
+    tags=["ml-features"]
+)
+
+api_router.include_router(
+    training.router,
+    prefix="/training",
+    tags=["training-pipeline"]
+)
+
+api_router.include_router(
+    etl.router,
+    prefix="/etl",
+    tags=["etl-pipeline"]
 )
 
 # Health check endpoint

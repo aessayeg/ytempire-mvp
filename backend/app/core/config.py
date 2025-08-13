@@ -151,10 +151,17 @@ class Settings(BaseSettings):
     STRIPE_PUBLISHABLE_KEY: Optional[str] = None
     STRIPE_WEBHOOK_SECRET: Optional[str] = None
     
+    # ML Configuration
+    ML_MODELS_PATH: str = "models"
+    AUTOML_RETRAIN_DAYS: int = 7
+    PERSONALIZATION_UPDATE_DAYS: int = 3
+    ML_ENABLED: bool = True
+    
     class Config:
         case_sensitive = True
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"  # Ignore extra fields in .env file
 
 
 settings = Settings()

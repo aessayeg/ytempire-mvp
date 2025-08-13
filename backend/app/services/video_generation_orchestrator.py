@@ -26,33 +26,44 @@ from app.models.cost import Cost as CostRecord
 from app.db.session import get_db
 from app.core.config import settings
 
-# Import ML services (commented out until ml_pipeline is set up)
-# from ml_pipeline.src.trend_detection_model import TrendDetector
-# from ml_pipeline.src.script_generation import ScriptGenerator
-# from ml_pipeline.src.voice_synthesis import VoiceSynthesizer
-# from ml_pipeline.src.thumbnail_generation import ThumbnailGenerator
-# from ml_pipeline.src.content_quality_scorer import QualityScorer
+# Import ML services
+from app.services.ml_integration_service import (
+    ml_service,
+    get_personalized_video_content,
+    predict_video_performance,
+    update_channel_ml_profile
+)
 
-# Placeholder classes until ML pipeline is ready
-class TrendDetector:
-    async def detect_trends(self, *args, **kwargs):
-        return {"topics": ["AI", "Technology"], "scores": [0.9, 0.85]}
+# Import existing ML pipeline services (if available)
+try:
+    from ml_pipeline.src.trend_detection_model import TrendDetector
+    from ml_pipeline.src.script_generation import ScriptGenerator
+    from ml_pipeline.src.voice_synthesis import VoiceSynthesizer
+    from ml_pipeline.src.thumbnail_generation import ThumbnailGenerator
+    from ml_pipeline.src.content_quality_scorer import QualityScorer
+    ML_PIPELINE_AVAILABLE = True
+except ImportError:
+    ML_PIPELINE_AVAILABLE = False
+    # Fallback classes
+    class TrendDetector:
+        async def detect_trends(self, *args, **kwargs):
+            return {"topics": ["AI", "Technology"], "scores": [0.9, 0.85]}
 
-class ScriptGenerator:
-    async def generate_script(self, *args, **kwargs):
-        return {"script": "Sample script content", "title": "Sample Title"}
+    class ScriptGenerator:
+        async def generate_script(self, *args, **kwargs):
+            return {"script": "Sample script content", "title": "Sample Title"}
 
-class VoiceSynthesizer:
-    async def synthesize(self, *args, **kwargs):
-        return {"audio_path": "/tmp/audio.mp3"}
+    class VoiceSynthesizer:
+        async def synthesize(self, *args, **kwargs):
+            return {"audio_path": "/tmp/audio.mp3"}
 
-class ThumbnailGenerator:
-    async def generate(self, *args, **kwargs):
-        return {"thumbnail_path": "/tmp/thumbnail.jpg"}
+    class ThumbnailGenerator:
+        async def generate(self, *args, **kwargs):
+            return {"thumbnail_path": "/tmp/thumbnail.jpg"}
 
-class QualityScorer:
-    async def score(self, *args, **kwargs):
-        return {"score": 85.0}
+    class QualityScorer:
+        async def score(self, *args, **kwargs):
+            return {"score": 85.0}
 
 logger = logging.getLogger(__name__)
 

@@ -17,7 +17,12 @@ from app.services.video_generation_pipeline import (
     VideoGenerationPipeline,
     VideoGenerationConfig
 )
+from app.services.enhanced_video_generation import (
+    enhanced_orchestrator,
+    generate_personalized_video
+)
 from app.services.websocket_manager import ConnectionManager
+from app.core.config import settings
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
@@ -41,6 +46,8 @@ class VideoGenerationRequest(BaseModel):
     optimize_for_cost: bool = Field(default=True, description="Optimize for cost vs quality")
     max_cost: float = Field(default=3.00, description="Maximum cost per video")
     quality_threshold: float = Field(default=0.7, description="Minimum quality score (0-1)")
+    use_ml_personalization: bool = Field(default=True, description="Use ML-powered personalization")
+    use_performance_prediction: bool = Field(default=True, description="Use ML to predict performance")
 
 
 class VideoGenerationResponse(BaseModel):
@@ -109,23 +116,30 @@ async def generate_video(
             detail=f"Monthly budget limit reached (${current_user.monthly_budget_limit})"
         )
         
-    # Create video generation config
-    config = VideoGenerationConfig(
-        channel_id=request.channel_id,
-        user_id=current_user.id,
-        topic=request.topic,
-        style=request.style,
-        length=request.length,
-        target_audience=request.target_audience,
-        keywords=request.keywords,
-        voice_provider=request.voice_provider,
-        voice_id=request.voice_id,
-        thumbnail_style=request.thumbnail_style,
-        auto_publish=request.auto_publish,
-        optimize_for_cost=request.optimize_for_cost,
-        max_cost=request.max_cost,
-        quality_threshold=request.quality_threshold
-    )
+    # Create video generation config with ML parameters
+    config_dict = {
+        "channel_id": request.channel_id,
+        "user_id": current_user.id,
+        "topic": request.topic,
+        "style": request.style,
+        "length": request.length,
+        "target_audience": request.target_audience,
+        "keywords": request.keywords,
+        "voice_provider": request.voice_provider,
+        "voice_id": request.voice_id,
+        "thumbnail_style": request.thumbnail_style,
+        "auto_publish": request.auto_publish,
+        "optimize_for_cost": request.optimize_for_cost,
+        "max_cost": request.max_cost,
+        "quality_threshold": request.quality_threshold
+    }
+    
+    # Add ML parameters if available
+    if settings.ML_ENABLED:
+        config_dict["use_ml_personalization"] = request.use_ml_personalization
+        config_dict["use_performance_prediction"] = request.use_performance_prediction
+    
+    config = VideoGenerationConfig(**config_dict)
     
     # Create initial video record
     video = Video(
@@ -306,25 +320,41 @@ async def get_generation_history(
 async def run_video_generation(video_id: str, config: VideoGenerationConfig, user_id: str):
     """Background task to run video generation"""
     try:
-        # Initialize pipeline
-        pipeline = VideoGenerationPipeline()
-        
         # Send WebSocket update
         await ws_manager.send_personal_message(
             f"Video generation started for: {config.topic}",
             user_id
         )
         
-        # Run generation
-        result = await pipeline.generate_video(config)
+        # Check if ML features are enabled and requested
+        use_ml = (
+            settings.ML_ENABLED and 
+            hasattr(config, 'use_ml_personalization') and 
+            config.use_ml_personalization
+        )
+        
+        if use_ml:
+            # Use ML-enhanced generation
+            from app.db.session import async_session
+            async with async_session() as session:
+                result = await generate_personalized_video(
+                    channel_id=config.channel_id,
+                    topic=config.topic,
+                    db=session
+                )
+        else:
+            # Use standard pipeline
+            pipeline = VideoGenerationPipeline()
+            result = await pipeline.generate_video(config)
         
         # Send completion notification
+        total_cost = result.get('metrics', {}).get('total_cost', 0) if use_ml else result.get('total_cost', 0)
         await ws_manager.send_personal_message(
-            f"Video generation completed! Cost: ${result['total_cost']:.2f}",
+            f"Video generation completed! Cost: ${total_cost:.2f}",
             user_id
         )
         
-        logger.info(f"Video generation completed: {video_id}")
+        logger.info(f"Video generation completed: {video_id} (ML: {use_ml})")
         
     except Exception as e:
         logger.error(f"Video generation failed for {video_id}: {e}")
