@@ -1,0 +1,20 @@
+# Optional dependencies for Platform Ops P2 components
+# Install with: pip install -r infrastructure/requirements-optional.txt
+
+# For service mesh evaluation
+docker>=6.0.0
+
+# For advanced dashboards
+grafana-api>=1.0.3
+
+# For chaos engineering
+chaostoolkit>=1.0.0
+chaostoolkit-kubernetes>=0.26.0
+
+# For monitoring
+prometheus-client>=0.16.0
+
+# For cloud deployments
+boto3>=1.26.0  # AWS
+google-cloud-compute>=1.13.0  # GCP
+azure-mgmt-compute>=29.0.0  # Azure

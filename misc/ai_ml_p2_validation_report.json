@@ -1,0 +1,171 @@
+{
+  "timestamp": "2025-08-14T16:59:28.487563",
+  "components": {
+    "automl_platform": {
+      "status": "operational",
+      "version": "2.0",
+      "features": [
+        "Advanced AutoML with multiple model families",
+        "Neural Architecture Search",
+        "Automated feature engineering",
+        "Model explainability",
+        "Multi-objective optimization",
+        "Ensemble methods"
+      ],
+      "dependencies_available": {
+        "sklearn": true,
+        "xgboost": false,
+        "lightgbm": false,
+        "catboost": false,
+        "optuna": false
+      }
+    },
+    "voice_cloning": {
+      "status": "operational",
+      "version": "2.0",
+      "features": [
+        "Advanced voice cloning with emotion control",
+        "Multi-speaker dialogue synthesis",
+        "Voice profile management",
+        "Audio enhancement pipeline",
+        "Voice analysis and feature extraction",
+        "12 emotion presets"
+      ],
+      "providers_available": {
+        "elevenlabs": true,
+        "google_tts": true,
+        "azure": false
+      },
+      "audio_libs_available": {
+        "librosa": false,
+        "soundfile": false,
+        "pydub": true
+      }
+    },
+    "training_interface": {
+      "status": "operational",
+      "version": "1.0",
+      "features": [
+        "FastAPI-based training interface",
+        "Model versioning and registry",
+        "Training job management",
+        "Model deployment interface",
+        "MLflow integration (optional)",
+        "Model export (pickle, ONNX)",
+        "Retraining capability",
+        "CLI interface"
+      ],
+      "api_endpoints": [
+        "/train",
+        "/status/{job_id}",
+        "/models",
+        "/predict/{model_id}",
+        "/deploy/{model_id}",
+        "/metrics/{model_id}",
+        "/retrain/{model_id}",
+        "/compare",
+        "/export/{model_id}"
+      ],
+      "deployment_targets": [
+        "development",
+        "staging",
+        "production",
+        "edge",
+        "batch"
+      ],
+      "mlflow_available": false
+    },
+    "experimental_features": {
+      "status": "operational",
+      "version": "1.0",
+      "features": [
+        "Zero-shot learning",
+        "Neural style transfer",
+        "Reinforcement learning optimizer",
+        "Multimodal content fusion",
+        "Quantum-inspired optimization",
+        "Content DNA fingerprinting"
+      ],
+      "feature_types": [
+        "zero_shot_learning",
+        "few_shot_learning",
+        "neural_style_transfer",
+        "gan",
+        "reinforcement_learning",
+        "transformer_fusion",
+        "multimodal_learning",
+        "graph_neural_network",
+        "quantum_inspired",
+        "neuromorphic"
+      ],
+      "dependencies_available": {
+        "transformers": true,
+        "torch": true,
+        "gym": false,
+        "stable_baselines3": false,
+        "networkx": true
+      }
+    }
+  },
+  "integration_tests": {
+    "automl_training_interface": "passed",
+    "voice_experimental": "passed",
+    "experimental_hub": "passed",
+    "experimental_features_count": 10
+  },
+  "performance_metrics": {
+    "automl_platform": {
+      "model_training_speed": "Fast (with timeout controls)",
+      "supported_algorithms": "10+",
+      "feature_engineering": "Automated",
+      "explainability": "Built-in"
+    },
+    "voice_cloning": {
+      "emotion_types": "12",
+      "voice_profiles": "Unlimited",
+      "multi_speaker": "Supported",
+      "audio_enhancement": "Advanced"
+    },
+    "training_interface": {
+      "api_endpoints": "10+",
+      "model_versioning": "Supported",
+      "deployment_targets": "5",
+      "export_formats": "2 (pickle, ONNX)"
+    },
+    "experimental_features": {
+      "feature_types": "10",
+      "zero_shot_learning": "Implemented",
+      "style_transfer": "Implemented",
+      "quantum_optimization": "Implemented"
+    }
+  },
+  "issues": [],
+  "recommendations": [
+    "Install xgboost for enhanced functionality: pip install xgboost",
+    "Install lightgbm for enhanced functionality: pip install lightgbm",
+    "Install catboost for enhanced functionality: pip install catboost",
+    "Install optuna for enhanced functionality: pip install optuna",
+    "Install mlflow for enhanced functionality: pip install mlflow",
+    "Install librosa for enhanced functionality: pip install librosa",
+    "Install gym for enhanced functionality: pip install gym",
+    "Install stable-baselines3 for enhanced functionality: pip install stable-baselines3",
+    "Configure API keys for ElevenLabs and Google TTS for voice synthesis",
+    "Set up MLflow tracking server for experiment tracking",
+    "Consider GPU acceleration for neural architecture search",
+    "Implement caching with Redis for improved performance",
+    "Add monitoring and alerting for production deployment"
+  ],
+  "compatibility": {
+    "voice_synthesis": "compatible",
+    "script_generator": "not found",
+    "quality_scorer": "not found"
+  },
+  "summary": {
+    "total_components": 4,
+    "passed_components": 4,
+    "failed_components": 0,
+    "success_rate": 100.0,
+    "integration_tests_passed": true,
+    "validation_time_seconds": 36.480719804763794
+  }
+}

@@ -1,0 +1,415 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "ytempire-business",
+    "title": "YTEmpire - Business Metrics & KPIs",
+    "tags": ["ytempire", "business", "kpi", "revenue"],
+    "style": "dark",
+    "timezone": "browser",
+    "editable": true,
+    "graphTooltip": 0,
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+    },
+    "refresh": "1m",
+    "schemaVersion": 30,
+    "version": 1,
+    "panels": [
+      {
+        "id": 1,
+        "title": "💰 Total Revenue",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(revenue_total_dollars)",
+            "legendFormat": "Total Revenue",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 2,
+            "color": {"mode": "palette-classic"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 1000},
+                {"color": "green", "value": 5000},
+                {"color": "blue", "value": 10000}
+              ]
+            },
+            "mappings": []
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        }
+      },
+      {
+        "id": 2,
+        "title": "🎬 Videos Generated Today",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "increase(videos_generated_total[24h])",
+            "legendFormat": "Videos Today",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 5},
+                {"color": "green", "value": 10},
+                {"color": "blue", "value": 20}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        }
+      },
+      {
+        "id": 3,
+        "title": "💸 Cost per Video",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "avg(cost_per_video_dollars)",
+            "legendFormat": "Avg Cost",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 2,
+            "color": {"mode": "palette-classic"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 2.0},
+                {"color": "orange", "value": 2.5},
+                {"color": "red", "value": 3.0}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area"
+        }
+      },
+      {
+        "id": 4,
+        "title": "📺 Active Channels",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "count(channels_active == 1)",
+            "legendFormat": "Active Channels",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 1},
+                {"color": "green", "value": 3},
+                {"color": "blue", "value": 5}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "📈 Revenue Trend (7 days)",
+        "type": "timeseries",
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "sum(increase(revenue_total_dollars[1h]))",
+            "legendFormat": "Hourly Revenue",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(increase(revenue_total_dollars[24h]))",
+            "legendFormat": "Daily Revenue",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "barAlignment": 0,
+              "lineWidth": 2,
+              "fillOpacity": 20,
+              "gradientMode": "opacity",
+              "spanNulls": false,
+              "insertNulls": false,
+              "showPoints": "auto",
+              "pointSize": 5
+            },
+            "color": {"mode": "palette-classic"},
+            "unit": "currencyUSD"
+          }
+        },
+        "options": {
+          "tooltip": {"mode": "single", "sort": "none"},
+          "legend": {"displayMode": "list", "placement": "bottom"}
+        }
+      },
+      {
+        "id": 6,
+        "title": "🎯 Video Generation Rate",
+        "type": "timeseries",
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "rate(videos_generated_total[5m]) * 60",
+            "legendFormat": "Videos per hour",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 30,
+              "gradientMode": "opacity"
+            },
+            "color": {"mode": "palette-classic"},
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "💰 Cost Breakdown by Service",
+        "type": "piechart",
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 18},
+        "targets": [
+          {
+            "expr": "sum by (service) (service_cost_dollars)",
+            "legendFormat": "{{service}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "hideFrom": {"legend": false, "tooltip": false, "vis": false}
+            },
+            "mappings": [],
+            "unit": "currencyUSD"
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          },
+          "pieType": "pie",
+          "tooltip": {"mode": "single", "sort": "none"},
+          "legend": {"displayMode": "list", "placement": "right", "values": ["value", "percent"]},
+          "displayLabels": ["name", "value"]
+        }
+      },
+      {
+        "id": 8,
+        "title": "📊 Channel Performance Matrix",
+        "type": "table",
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 18},
+        "targets": [
+          {
+            "expr": "sum by (channel_id) (channel_revenue_dollars)",
+            "legendFormat": "Revenue",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          },
+          {
+            "expr": "sum by (channel_id) (increase(channel_videos_generated_total[24h]))",
+            "legendFormat": "Videos Today",
+            "refId": "B",
+            "format": "table",
+            "instant": true
+          },
+          {
+            "expr": "sum by (channel_id) (channel_subscribers_count)",
+            "legendFormat": "Subscribers",
+            "refId": "C",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Revenue"},
+              "properties": [
+                {"id": "unit", "value": "currencyUSD"},
+                {"id": "custom.displayMode", "value": "color-background"},
+                {"id": "color", "value": {"mode": "continuous-GrYlRd"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Subscribers"},
+              "properties": [
+                {"id": "unit", "value": "short"},
+                {"id": "custom.displayMode", "value": "color-background"},
+                {"id": "color", "value": {"mode": "continuous-BlPu"}}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": [{"desc": true, "displayName": "Revenue"}]
+        }
+      },
+      {
+        "id": 9,
+        "title": "🎯 Key Performance Indicators",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 28},
+        "targets": [
+          {
+            "expr": "avg(video_quality_score)",
+            "legendFormat": "Quality Score",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(video_views_total[24h]))",
+            "legendFormat": "Daily Views",
+            "refId": "B"
+          },
+          {
+            "expr": "avg(customer_satisfaction_score)",
+            "legendFormat": "Satisfaction",
+            "refId": "C"
+          },
+          {
+            "expr": "sum(increase(revenue_total_dollars[24h])) / sum(increase(videos_generated_total[24h]))",
+            "legendFormat": "Revenue per Video",
+            "refId": "D"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 50},
+                {"color": "green", "value": 80}
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Revenue per Video"},
+              "properties": [{"id": "unit", "value": "currencyUSD"}]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Daily Views"},
+              "properties": [{"id": "unit", "value": "short"}]
+            }
+          ]
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "center",
+          "orientation": "horizontal"
+        }
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "name": "Business Events",
+          "datasource": "prometheus",
+          "enable": true,
+          "expr": "business_event",
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "step": 60
+        }
+      ]
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "time_range",
+          "type": "interval",
+          "query": "1h,6h,12h,1d,2d,7d,30d",
+          "current": {"text": "1d", "value": "1d"},
+          "options": [
+            {"text": "1h", "value": "1h"},
+            {"text": "6h", "value": "6h"},
+            {"text": "12h", "value": "12h"},
+            {"text": "1d", "value": "1d", "selected": true},
+            {"text": "2d", "value": "2d"},
+            {"text": "7d", "value": "7d"},
+            {"text": "30d", "value": "30d"}
+          ]
+        },
+        {
+          "name": "channel",
+          "type": "query",
+          "datasource": "prometheus",
+          "query": "label_values(channel_revenue_dollars, channel_id)",
+          "refresh": 1,
+          "includeAll": true,
+          "allValue": ".*",
+          "current": {"text": "All", "value": "$__all"},
+          "multi": true
+        }
+      ]
+    }
+  }
+}
