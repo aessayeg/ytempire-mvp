@@ -316,13 +316,16 @@ const newCompetitor: Competitor = {,
   // Remove competitor
   const removeCompetitor = (id: string) => {
     setCompetitors(competitors.filter(c => c.id !== id));
-    setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id))};
+    setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id));
+  };
 
   // Toggle competitor selection
   const toggleCompetitorSelection = (id: string) => {
     if (selectedCompetitors.includes(id)) {
-      setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id))} else {
-      setSelectedCompetitors([...selectedCompetitors, id])}
+      setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id));
+    } else {
+      setSelectedCompetitors([...selectedCompetitors, id]);
+    }
   };
 
   // Refresh data
@@ -330,7 +333,8 @@ const newCompetitor: Competitor = {,
     setIsLoading(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false)};
+    setIsLoading(false);
+  };
 
   // Export data
   const exportData = () => {
@@ -447,7 +451,7 @@ const newCompetitor: Competitor = {,
       </Grid>
 
       {/* Tabs */}
-      <Tabs value={currentTab} onChange={() => toggleCompetitorSelection(competitor.id)} sx={{ mb: 3 }>
+      <Tabs value={currentTab} onChange={(e, newValue) => setCurrentTab(newValue)} sx={{ mb: 3 }}>
         <Tab label="Competitors" />
         <Tab label="Comparison" />
         <Tab label="Market Insights" />
@@ -465,7 +469,7 @@ const newCompetitor: Competitor = {,
                 fullWidth
                 placeholder="Enter YouTube channel URL or ID"
                 value={newCompetitorUrl}
-                onChange={() => toggleCompetitorSelection(competitor.id)}
+                onChange={(e) => setNewCompetitorUrl(e.target.value)}
                 size="small"
               />
               <Button
@@ -801,7 +805,7 @@ const newCompetitor: Competitor = {,
                   <InputLabel>Time Range</InputLabel>
                   <Select
                     value={timeRange}
-                    onChange={() => toggleCompetitorSelection(competitor.id)}
+                    onChange={(e) => setTimeRange(e.target.value)}
                     label="Time Range"
                   >
                     <MenuItem value="7 d">Last 7 Days</MenuItem>
