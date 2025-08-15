@@ -166,11 +166,17 @@ WORKDIR /app
 
 # Copy requirements and install
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir \
-    opencv-python-headless \
-    torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# First upgrade pip
+RUN pip install --no-cache-dir --upgrade pip
+
+# Install requirements from default PyPI
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install opencv-python-headless separately from default PyPI
+RUN pip install --no-cache-dir opencv-python-headless
+
+# Install PyTorch packages from PyTorch CUDA index (overrides any CPU versions)
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 --force-reinstall
 
 # Copy application
 COPY --chown=1000:1000 . .
