@@ -21,7 +21,7 @@ from app.models.video import Video, VideoStatus
 from app.models.channel import Channel
 from app.models.cost import Cost
 from app.services.ai_services import AIServiceManager
-from app.services.video_processor import VideoProcessor
+from app.services.video_generation_pipeline import VideoProcessor
 from app.services.youtube_multi_account import get_youtube_manager
 from app.services.cost_optimizer import get_cost_optimizer, ServiceType
 from app.services.n8n_integration import get_n8n_integration, WorkflowType

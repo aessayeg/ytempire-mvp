@@ -124,7 +124,8 @@ class TrainingDataService:
     """Service for managing training data with versioning and lineage"""
     
     def __init__(self):
-        self.storage_base = Path(settings.DATA_STORAGE_PATH) / "training_data"
+        # Use ML_MODELS_PATH or UPLOAD_DIR as storage base
+        self.storage_base = Path(getattr(settings, 'DATA_STORAGE_PATH', settings.ML_MODELS_PATH)) / "training_data"
         self.storage_base.mkdir(parents=True, exist_ok=True)
         self.redis_client: Optional[redis.Redis] = None
         self.version_prefix = "v"

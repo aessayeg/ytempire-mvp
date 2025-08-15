@@ -10,21 +10,22 @@ YTEmpire MVP is an AI-powered YouTube content automation platform built with Fas
 
 ### Backend (FastAPI + Python 3.11)
 - **Main App**: `backend/app/main.py` - FastAPI application with WebSocket support
-- **API Structure**: RESTful API at `/api/v1/` with endpoints for auth, channels, videos, analytics
-- **Database**: PostgreSQL 15 with SQLAlchemy async + Alembic migrations
-- **Queue System**: Redis + Celery for async video processing tasks
-- **AI Services**: OpenAI, Anthropic, ElevenLabs integration in `backend/app/services/`
+- **API Structure**: RESTful API at `/api/v1/` with 42 endpoint files, 397 routes total
+- **Database**: PostgreSQL 15 with SQLAlchemy async + Alembic migrations (39 models)
+- **Queue System**: Redis + Celery with 9 task files, 59 async tasks
+- **Services**: 60 consolidated services (from 82) in `backend/app/services/`
 
 ### Frontend (React 18 + TypeScript + Vite)
 - **Framework**: React with TypeScript, Vite build system
 - **State Management**: Zustand stores in `frontend/src/stores/`
 - **Styling**: Tailwind CSS with Material-UI components
 - **Real-time**: WebSocket integration for live updates
+- **Components**: 87 components + 25 pages organized by feature
 
 ### ML Pipeline
 - **Configuration**: `ml-pipeline/config.yaml` defines model settings, cost limits, performance targets
 - **Services**: Script generation, voice synthesis, thumbnail generation, video assembly
-- **Cost Target**: <$3 per video with quality thresholds
+- **Cost Target**: <$3 per video (achieved), optimization goal $0.50 per video
 
 ## Development Commands
 
@@ -248,3 +249,106 @@ npm test -- --testNamePattern="VideoCard"
 - For [INFRASTRUCTURE/PLATFORM] related tasks, check the documentation first located in the _documentation/Platform OPS TL
 - For [DATA/ANALYTICS] related tasks, check the documentation first located in the _documentation/DATA TL
 - you are operating in a Windows environment
+
+## Current Project Structure (Post-Consolidation) - IMPORTANT
+
+### Backend Services Directory (`backend/app/services/`) - 60 SERVICES TOTAL
+
+#### CONSOLIDATED CORE SERVICES (Use these for new features!)
+
+**Video Generation (CONSOLIDATED into 1 main service)**
+- `video_generation_pipeline.py` - **PRIMARY**: Add ALL new video features here
+- `video_generation_orchestrator.py` - High-level orchestration only
+- `enhanced_video_generation.py` - ML-enhanced features
+- `video_processor.py` - Video processing utilities
+- `video_queue_service.py` - Queue management
+
+**Analytics (CONSOLIDATED into 2 services)**  
+- `analytics_service.py` - **PRIMARY**: Add general analytics, metrics, reports here
+- `realtime_analytics_service.py` - Real-time/WebSocket analytics only
+
+**Cost Management (CONSOLIDATED into 1 service)**
+- `cost_tracking.py` - **PRIMARY**: Add ALL cost/budget/revenue features here
+- `cost_optimizer.py` - Optimization strategies only
+
+#### OTHER ESSENTIAL SERVICES (Do not duplicate!)
+
+**Payment & Subscription**
+- `payment_service_enhanced.py` - Payment processing
+- `subscription_service.py` - Subscription management  
+- `invoice_generator.py` - Invoice generation
+
+**AI/ML Services**
+- `ai_services.py` - Core AI integrations
+- `ml_integration_service.py` - ML model management
+- `multi_provider_ai.py` - Multi-provider orchestration
+- `prompt_engineering.py` - Prompt optimization
+- `thumbnail_generator.py` - Thumbnail generation
+
+**YouTube & Channel**
+- `youtube_multi_account.py` - 15-account rotation
+- `youtube_service.py` - YouTube API
+- `youtube_oauth_service.py` - OAuth handling
+- `channel_manager.py` - Channel operations
+
+**Data & Storage**
+- `data_lake_service.py` - Data lake + ETL
+- `data_marketplace_integration.py` - External data
+- `data_quality.py` - Data validation
+- `vector_database.py` - Vector storage
+- `feature_store.py` - ML features
+- `training_data_service.py` - Training data
+
+**Infrastructure**
+- `websocket_manager.py` - WebSocket connections
+- `batch_processing.py` - Batch jobs
+- `scaling_optimizer.py` - Auto-scaling
+- `performance_monitoring.py` - Performance metrics
+- `alert_service.py` - Alerts/notifications
+
+### WHERE TO ADD NEW FEATURES - CRITICAL GUIDELINES
+
+**⚠️ NEVER CREATE NEW FILES FOR:**
+- Video generation → Add to `video_generation_pipeline.py`
+- Analytics → Add to `analytics_service.py` or `realtime_analytics_service.py`
+- Cost tracking → Add to `cost_tracking.py`
+- Payment features → Add to `payment_service_enhanced.py`
+- YouTube features → Add to appropriate youtube_*.py file
+
+**✅ WHEN TO CREATE NEW FILES:**
+- Completely new domain (e.g., Discord integration)
+- New third-party service integration
+- New infrastructure component
+
+### API Endpoints (`backend/app/api/v1/endpoints/`)
+42 files with 397 routes. Key endpoints:
+- `videos.py` - Video CRUD
+- `channels.py` - Channel management
+- `analytics.py` - Analytics access
+- `batch.py` - Batch processing
+- `revenue.py` - Revenue tracking
+
+### Celery Tasks (`backend/app/tasks/`)
+9 task files with 59 tasks:
+- `video_tasks.py` - Video generation
+- `ai_tasks.py` - AI operations
+- `analytics_tasks.py` - Analytics
+- `batch_tasks.py` - Batch processing
+- `youtube_tasks.py` - YouTube uploads
+
+### Database Models (`backend/app/models/`)
+39 models including:
+- `user.py` - User auth
+- `channel.py` - YouTube channels
+- `video.py` - Video metadata
+- `analytics.py` - Analytics data
+- `cost.py` - Cost tracking
+- `subscription.py` - Subscriptions
+
+### Integration Status
+- **Health Score**: 100%
+- **Services**: 60 (reduced from 82)
+- **API Routes**: 397 across 42 files
+- **Celery Tasks**: 59 across 9 files
+- **Database Models**: 39
+- **WebSocket**: 2 endpoints with room support

@@ -10,7 +10,7 @@ import json
 from fastapi import APIRouter, HTTPException, Query, Depends, BackgroundTasks
 from pydantic import BaseModel, Field
 
-from app.services.quality_metrics import (
+from app.services.analytics_service import (
     metrics_collector,
     quality_dashboard, 
     quality_monitor,
@@ -18,7 +18,7 @@ from app.services.quality_metrics import (
     MetricCategory,
     QUALITY_METRICS
 )
-from app.services.defect_tracking import defect_tracker, DefectSeverity, DefectStatus
+# Removed defect_tracking (unrelated) import defect_tracker, DefectSeverity, DefectStatus
 from app.services.automated_reporting import setup_automated_reporting
 from app.core.deps import get_current_user
 

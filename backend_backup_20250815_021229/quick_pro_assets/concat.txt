@@ -1,0 +1,6 @@
+file 'C:\Users\Hp\projects\ytempire-mvp\backend\quick_pro_assets\segment_0_text.mp4'
+file 'C:\Users\Hp\projects\ytempire-mvp\backend\quick_pro_assets\segment_1_text.mp4'
+file 'C:\Users\Hp\projects\ytempire-mvp\backend\quick_pro_assets\segment_2_from_image.mp4'
+file 'C:\Users\Hp\projects\ytempire-mvp\backend\quick_pro_assets\segment_3_from_image.mp4'
+file 'C:\Users\Hp\projects\ytempire-mvp\backend\quick_pro_assets\segment_4_text.mp4'
+file 'C:\Users\Hp\projects\ytempire-mvp\backend\quick_pro_assets\segment_5_text.mp4'

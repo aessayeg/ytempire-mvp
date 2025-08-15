@@ -1,0 +1,55 @@
+{
+  "timestamp": "2025-08-15T02:15:44.346530",
+  "recommendations": {
+    "video_generation": {
+      "keep": "inference_pipeline.py",
+      "merge": [],
+      "delete": [
+        "mock_video_generator.py",
+        "quick_video_generator.py"
+      ],
+      "reason": "Best file has score 70 with 0 functions and 7 classes"
+    },
+    "analytics": {
+      "keep": "automated_reporting.py",
+      "merge": [],
+      "delete": [
+        "metrics_aggregation.py",
+        "reporting_infrastructure.py",
+        "analytics_report.py"
+      ],
+      "reason": "Best file has score 67 with 1 functions and 8 classes"
+    },
+    "cost_tracking": {
+      "keep": "cost_optimizer.py",
+      "merge": [],
+      "delete": [
+        "revenue_tracking.py"
+      ],
+      "reason": "Best file has score 72 with 1 functions and 5 classes"
+    },
+    "payment": {
+      "keep": "payment_service_enhanced.py",
+      "merge": [],
+      "delete": [],
+      "reason": "Best file has score 65 with 0 functions and 4 classes"
+    }
+  },
+  "import_dependencies": {
+    "mock_video_generator.py": [
+      "app\\main.py",
+      "app\\services\\video_generation_pipeline.py",
+      "app\\services\\video_processor.py"
+    ],
+    "quick_video_generator.py": [
+      "app\\main.py"
+    ],
+    "metrics_aggregation.py": [
+      "app\\main.py"
+    ],
+    "revenue_tracking.py": [
+      "app\\main.py",
+      "app\\api\\v1\\endpoints\\revenue.py"
+    ]
+  }
+}

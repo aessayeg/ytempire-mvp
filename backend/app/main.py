@@ -33,8 +33,8 @@ from app.services.alert_service import alert_service
 
 # Core business services (working)
 from app.services.analytics_service import analytics_service
-from app.services.quality_metrics import quality_monitor
-from app.services.revenue_tracking import revenue_tracking_service
+from app.services.analytics_service import analytics_service as quality_monitor
+from app.services.cost_tracking import cost_tracker as revenue_tracking_service
 from app.services.video_generation_orchestrator import video_orchestrator
 
 # ML services (new)
@@ -42,20 +42,23 @@ from app.services.ml_integration_service import ml_service
 from app.services.enhanced_video_generation import enhanced_orchestrator
 
 # Data pipeline services (new)
-from app.services.training_pipeline_service import training_service
-from app.services.etl_pipeline_service import etl_service
+from app.services.training_data_service import training_data_service as training_service
+# ETL service consolidated - using data processing services
+from app.services.data_lake_service import DataLakeService
+etl_service = DataLakeService()  # ETL functionality
 
 # Week 2 P2 Advanced Services (Nice to Have)
 from app.services.advanced_error_recovery import advanced_recovery
 from app.services.third_party_integrations import third_party_service
 
 # Services with async initialize (working)
-from app.services.analytics_connector import analytics_connector
-from app.services.analytics_pipeline import analytics_pipeline
-from app.services.cost_aggregation import cost_aggregator
+from app.services.analytics_service import analytics_service as analytics_connector
+from app.services.realtime_analytics_service import realtime_analytics_service as analytics_pipeline
+from app.services.cost_tracking import cost_tracker as cost_aggregator
 from app.services.feature_store import feature_store
 from app.services.export_service import export_service
-from app.services.inference_pipeline import inference_pipeline
+from app.services.video_generation_pipeline import VideoGenerationPipeline
+inference_pipeline = VideoGenerationPipeline()  # Inference merged into main pipeline
 from app.services.training_data_service import training_data_service
 
 # Utility services (working)
@@ -63,28 +66,36 @@ from app.services.notification_service import notification_service
 from app.services.api_optimization import api_optimizer
 from app.services.batch_processing import batch_processor
 from app.services.storage_service import storage_service
-from app.services.thumbnail_generator import thumbnail_service
+from app.services.thumbnail_generator import ThumbnailGenerator
+thumbnail_service = ThumbnailGenerator()
 from app.services.stock_footage import stock_footage_service
-from app.services.quick_video_generator import quick_generator
+from app.services.video_generation_pipeline import VideoGenerationPipeline
+quick_generator = VideoGenerationPipeline()  # Alias for quick generator
 from app.services.rate_limiter import rate_limiter
-from app.services.websocket_manager import ws_manager as websocket_service
-from app.services.defect_tracking import defect_tracker
+from app.services.websocket_manager import ConnectionManager
+websocket_service = ConnectionManager()  # WebSocket service instance
+# Removed defect_tracking (unrelated) import defect_tracker
 from app.services.model_monitoring import model_monitor
-from app.services.metrics_aggregation import metrics_aggregator
-from app.services.n8n_integration import n8n_service
-from app.services.optimized_queries import query_optimizer
-from app.services.prompt_engineering import prompt_engineer
-from app.services.reporting import report_generator
+from app.services.analytics_service import analytics_service as metrics_aggregator
+from app.services.n8n_integration import N8NIntegration
+n8n_service = N8NIntegration()
+from app.services.optimized_queries import OptimizedQueryService
+query_optimizer = OptimizedQueryService()
+from app.services.prompt_engineering import PromptEngineer
+prompt_engineer = PromptEngineer()
+from app.services.analytics_service import analytics_service as report_generator
 from app.services.video_processor import video_processor
 from app.services.websocket_events import websocket_events
-from app.services.cost_verification import cost_verifier
-from app.services.mock_video_generator import mock_generator
+from app.services.cost_tracking import cost_tracker as cost_verifier
+from app.services.video_generation_pipeline import VideoGenerationPipeline
+video_pipeline = VideoGenerationPipeline() as mock_generator
 from app.services.user_behavior_analytics import behavior_analytics
 from app.services.roi_calculator import roi_calculator
 from app.services.performance_monitoring import performance_monitor
 from app.services.ab_testing_service import ab_testing
 from app.services.cost_optimizer import cost_optimizer
-from app.services.video_generation_pipeline import video_pipeline
+from app.services.video_generation_pipeline import VideoGenerationPipeline
+video_pipeline = VideoGenerationPipeline()
 
 # Additional working services (completing integration)
 from app.services.payment_service_enhanced import payment_service

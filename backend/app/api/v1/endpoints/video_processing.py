@@ -14,7 +14,7 @@ from pathlib import Path
 
 from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
-from app.services.video_processor import VideoProcessor
+from app.services.video_generation_pipeline import VideoProcessor
 from app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -12,7 +12,7 @@ from enum import Enum
 from app.db.session import get_db
 from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
-from app.services.analytics_pipeline import (
+from app.services.analytics_service import (
     analytics_pipeline,
     MetricType,
     AggregationLevel,

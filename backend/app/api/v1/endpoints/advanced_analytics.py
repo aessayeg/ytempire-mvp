@@ -14,7 +14,7 @@ import asyncio
 
 from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
-from app.services.analytics_pipeline import (
+from app.services.analytics_service import (
     AdvancedAnalyticsPipeline, analytics_pipeline,
     MetricType, AggregationLevel, DataSource, MetricPoint
 )

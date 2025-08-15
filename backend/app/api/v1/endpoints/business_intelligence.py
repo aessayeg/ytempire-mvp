@@ -12,7 +12,7 @@ from sqlalchemy import select, func, and_, or_
 from app.db.session import get_db
 from app.services.realtime_analytics_service import realtime_analytics_service
 from app.services.beta_success_metrics import beta_success_metrics_service
-from app.services.analytics_pipeline import analytics_pipeline
+from app.services.analytics_service import analytics_pipeline
 from app.models.user import User
 from app.models.video import Video
 from app.models.analytics import Analytics

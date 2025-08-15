@@ -26,7 +26,7 @@ from app.models.cost import Cost
 from app.api.v1.endpoints.auth import get_current_verified_user
 from app.services.ai_services import AIServiceOrchestrator, AIServiceConfig
 from app.services.youtube_service import YouTubeService
-from app.services.video_processor import VideoProcessor
+from app.services.video_generation_pipeline import VideoProcessor
 from app.services.cost_tracking import cost_tracker
 from app.core.celery_app import celery_app
 from app.core.config import settings

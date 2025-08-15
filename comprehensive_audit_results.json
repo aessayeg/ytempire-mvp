@@ -1,0 +1,4095 @@
+{
+  "timestamp": "2025-08-15T02:00:37.044001",
+  "backend_services": {
+    "Video Generation": [
+      {
+        "name": "analytics_pipeline",
+        "size": 52577,
+        "info": {
+          "classes": 10,
+          "functions": 46,
+          "async_functions": 36,
+          "class_names": [
+            "MetricType",
+            "AggregationLevel",
+            "DataSource"
+          ],
+          "main_functions": [
+            "initialize",
+            "real_time_streaming_processor",
+            "stream_analytics",
+            "predictive_model_trainer",
+            "run_predictions"
+          ]
+        }
+      },
+      {
+        "name": "enhanced_video_generation",
+        "size": 16798,
+        "info": {
+          "classes": 1,
+          "functions": 6,
+          "async_functions": 6,
+          "class_names": [
+            "EnhancedVideoGenerationOrchestrator"
+          ],
+          "main_functions": [
+            "generate_video_with_ml",
+            "batch_generate_with_ml",
+            "generate_personalized_video",
+            "generate_batch_videos_with_ml"
+          ]
+        }
+      },
+      {
+        "name": "etl_pipeline_service",
+        "size": 23806,
+        "info": {
+          "classes": 1,
+          "functions": 12,
+          "async_functions": 7,
+          "class_names": [
+            "ETLPipelineService"
+          ],
+          "main_functions": [
+            "initialize",
+            "run_video_performance_etl",
+            "run_generation_metrics_etl",
+            "run_channel_analytics_etl",
+            "schedule_etl_pipeline"
+          ]
+        }
+      },
+      {
+        "name": "inference_pipeline",
+        "size": 25860,
+        "info": {
+          "classes": 7,
+          "functions": 23,
+          "async_functions": 15,
+          "class_names": [
+            "ModelType",
+            "InferenceStatus",
+            "class"
+          ],
+          "main_functions": [
+            "initialize",
+            "predict",
+            "predict_batch",
+            "register_model",
+            "update_model"
+          ]
+        }
+      },
+      {
+        "name": "metrics_pipeline",
+        "size": 25044,
+        "info": {
+          "classes": 4,
+          "functions": 23,
+          "async_functions": 19,
+          "class_names": [
+            "MetricType",
+            "class",
+            "class"
+          ],
+          "main_functions": [
+            "start",
+            "stop",
+            "record_metric",
+            "record_video_generation",
+            "record_api_request"
+          ]
+        }
+      },
+      {
+        "name": "metrics_pipeline_operational",
+        "size": 25808,
+        "info": {
+          "classes": 6,
+          "functions": 34,
+          "async_functions": 24,
+          "class_names": [
+            "import",
+            "MetricType",
+            "AggregationType"
+          ],
+          "main_functions": [
+            "track_metric",
+            "query_metrics",
+            "get_dashboard_metrics",
+            "aggregate"
+          ]
+        }
+      },
+      {
+        "name": "mock_video_generator",
+        "size": 7014,
+        "info": {
+          "classes": 1,
+          "functions": 4,
+          "async_functions": 3,
+          "class_names": [
+            "MockVideoGenerator"
+          ],
+          "main_functions": [
+            "create_mock_video",
+            "create_mock_audio",
+            "create_mock_thumbnail"
+          ]
+        }
+      },
+      {
+        "name": "quick_video_generator",
+        "size": 13575,
+        "info": {
+          "classes": 1,
+          "functions": 6,
+          "async_functions": 2,
+          "class_names": [
+            "QuickProVideoCreator"
+          ],
+          "main_functions": [
+            "download_pexels_video",
+            "download_pexels_image",
+            "add_text_to_video",
+            "create_video",
+            "main"
+          ]
+        }
+      },
+      {
+        "name": "training_pipeline_service",
+        "size": 15546,
+        "info": {
+          "classes": 1,
+          "functions": 13,
+          "async_functions": 9,
+          "class_names": [
+            "TrainingPipelineService"
+          ],
+          "main_functions": [
+            "initialize",
+            "train_video_performance_model",
+            "train_content_quality_model",
+            "schedule_periodic_training",
+            "trigger_model_retraining"
+          ]
+        }
+      },
+      {
+        "name": "video_generation_orchestrator",
+        "size": 18683,
+        "info": {
+          "classes": 8,
+          "functions": 16,
+          "async_functions": 12,
+          "class_names": [
+            "TrendDetector",
+            "ScriptGenerator",
+            "VoiceSynthesizer"
+          ],
+          "main_functions": [
+            "detect_trends",
+            "generate_script",
+            "synthesize",
+            "generate",
+            "score"
+          ]
+        }
+      },
+      {
+        "name": "video_generation_pipeline",
+        "size": 21123,
+        "info": {
+          "classes": 2,
+          "functions": 13,
+          "async_functions": 12,
+          "class_names": [
+            "class",
+            "VideoGenerationPipeline"
+          ],
+          "main_functions": [
+            "generate_video"
+          ]
+        }
+      },
+      {
+        "name": "video_pipeline",
+        "size": 3789,
+        "info": {
+          "classes": 4,
+          "functions": 7,
+          "async_functions": 3,
+          "class_names": [
+            "logger",
+            "PipelineStage",
+            "class"
+          ],
+          "main_functions": [
+            "start_pipeline",
+            "update_pipeline_stage",
+            "complete_pipeline",
+            "get_pipeline_status",
+            "get_active_pipelines"
+          ]
+        }
+      },
+      {
+        "name": "video_processor",
+        "size": 33934,
+        "info": {
+          "classes": 1,
+          "functions": 22,
+          "async_functions": 18,
+          "class_names": [
+            "VideoProcessor"
+          ],
+          "main_functions": [
+            "create_video_from_assets",
+            "generate_thumbnail",
+            "add_subtitles",
+            "extract_frames",
+            "create_video_with_audio"
+          ]
+        }
+      },
+      {
+        "name": "video_queue_service",
+        "size": 20651,
+        "info": {
+          "classes": 3,
+          "functions": 18,
+          "async_functions": 15,
+          "class_names": [
+            "QueueStatus",
+            "Priority",
+            "VideoQueueService"
+          ],
+          "main_functions": [
+            "add_to_queue",
+            "get_queue",
+            "update_queue_item",
+            "cancel_queue_item",
+            "retry_failed_item"
+          ]
+        }
+      }
+    ],
+    "YouTube/Channel": [
+      {
+        "name": "channel_manager",
+        "size": 17359,
+        "info": {
+          "classes": 1,
+          "functions": 12,
+          "async_functions": 7,
+          "class_names": [
+            "ChannelManager"
+          ],
+          "main_functions": [
+            "create_channel",
+            "get_channel_health",
+            "allocate_channel_for_video",
+            "rotate_channels",
+            "pause_unhealthy_channels"
+          ]
+        }
+      },
+      {
+        "name": "youtube_multi_account",
+        "size": 42029,
+        "info": {
+          "classes": 4,
+          "functions": 35,
+          "async_functions": 8,
+          "class_names": [
+            "AccountStatus",
+            "OperationType",
+            "class"
+          ],
+          "main_functions": [
+            "to_dict",
+            "from_dict",
+            "load_accounts",
+            "save_account",
+            "get_best_account"
+          ]
+        }
+      },
+      {
+        "name": "youtube_oauth_service",
+        "size": 11598,
+        "info": {
+          "classes": 1,
+          "functions": 10,
+          "async_functions": 0,
+          "class_names": [
+            "YouTubeOAuthService"
+          ],
+          "main_functions": [
+            "load_accounts",
+            "save_accounts",
+            "get_auth_url",
+            "handle_callback",
+            "get_credentials"
+          ]
+        }
+      },
+      {
+        "name": "youtube_service",
+        "size": 33309,
+        "info": {
+          "classes": 4,
+          "functions": 26,
+          "async_functions": 16,
+          "class_names": [
+            "import",
+            "class",
+            "YouTubeService"
+          ],
+          "main_functions": [
+            "initialize_api_client",
+            "authenticate_oauth",
+            "search_videos",
+            "get_video_details",
+            "get_channel_details"
+          ]
+        }
+      }
+    ],
+    "Analytics": [
+      {
+        "name": "analytics_connector",
+        "size": 10028,
+        "info": {
+          "classes": 1,
+          "functions": 11,
+          "async_functions": 10,
+          "class_names": [
+            "AnalyticsConnector"
+          ],
+          "main_functions": [
+            "initialize",
+            "start_processing",
+            "process_ml_events",
+            "transform_and_ingest",
+            "check_alerts"
+          ]
+        }
+      },
+      {
+        "name": "analytics_report",
+        "size": 5503,
+        "info": {
+          "classes": 0,
+          "functions": 2,
+          "async_functions": 0,
+          "class_names": [],
+          "main_functions": [
+            "check_file",
+            "main"
+          ]
+        }
+      },
+      {
+        "name": "analytics_service",
+        "size": 13725,
+        "info": {
+          "classes": 1,
+          "functions": 8,
+          "async_functions": 6,
+          "class_names": [
+            "AnalyticsService"
+          ],
+          "main_functions": [
+            "fetch_channel_analytics",
+            "fetch_video_analytics",
+            "calculate_engagement_rate",
+            "get_trending_topics",
+            "analyze_competition"
+          ]
+        }
+      },
+      {
+        "name": "automated_reporting",
+        "size": 34831,
+        "info": {
+          "classes": 9,
+          "functions": 29,
+          "async_functions": 12,
+          "class_names": [
+            "import",
+            "ReportType",
+            "ReportFormat"
+          ],
+          "main_functions": [
+            "generate_daily_summary",
+            "generate_weekly_quality_report",
+            "generate_monthly_executive_report",
+            "deliver_report",
+            "add_schedule"
+          ]
+        }
+      },
+      {
+        "name": "beta_success_metrics",
+        "size": 45110,
+        "info": {
+          "classes": 6,
+          "functions": 32,
+          "async_functions": 21,
+          "class_names": [
+            "SuccessStage",
+            "RiskLevel",
+            "class"
+          ],
+          "main_functions": [
+            "initialize",
+            "get_user_success_profile",
+            "get_success_summary",
+            "get_kpis",
+            "add_beta_user"
+          ]
+        }
+      },
+      {
+        "name": "custom_report_builder",
+        "size": 31203,
+        "info": {
+          "classes": 7,
+          "functions": 20,
+          "async_functions": 7,
+          "class_names": [
+            "ReportType",
+            "ReportFormat",
+            "ReportFrequency"
+          ],
+          "main_functions": [
+            "create_report",
+            "schedule_report",
+            "create_custom_template",
+            "get_templates",
+            "get_scheduled_reports"
+          ]
+        }
+      },
+      {
+        "name": "metrics_aggregation",
+        "size": 23197,
+        "info": {
+          "classes": 1,
+          "functions": 23,
+          "async_functions": 7,
+          "class_names": [
+            "MetricsAggregator"
+          ],
+          "main_functions": [
+            "aggregate_channel_performance",
+            "aggregate_user_metrics",
+            "aggregate_cost_metrics",
+            "aggregate_revenue_metrics",
+            "aggregate_performance_trends"
+          ]
+        }
+      },
+      {
+        "name": "quality_metrics",
+        "size": 32470,
+        "info": {
+          "classes": 9,
+          "functions": 23,
+          "async_functions": 13,
+          "class_names": [
+            "MetricType",
+            "MetricCategory",
+            "MetricStatus"
+          ],
+          "main_functions": [
+            "collect_metric",
+            "get_latest_metrics",
+            "get_metric_history",
+            "generate_quality_overview",
+            "generate_trend_analysis"
+          ]
+        }
+      },
+      {
+        "name": "realtime_analytics_service",
+        "size": 31387,
+        "info": {
+          "classes": 4,
+          "functions": 30,
+          "async_functions": 26,
+          "class_names": [
+            "class",
+            "class",
+            "class"
+          ],
+          "main_functions": [
+            "initialize",
+            "add_beta_user",
+            "track_event",
+            "track_metric",
+            "get_realtime_metrics"
+          ]
+        }
+      },
+      {
+        "name": "reporting",
+        "size": 23350,
+        "info": {
+          "classes": 6,
+          "functions": 28,
+          "async_functions": 21,
+          "class_names": [
+            "from",
+            "ReportType",
+            "ReportFormat"
+          ],
+          "main_functions": [
+            "generate_report"
+          ]
+        }
+      },
+      {
+        "name": "reporting_infrastructure",
+        "size": 6563,
+        "info": {
+          "classes": 1,
+          "functions": 5,
+          "async_functions": 3,
+          "class_names": [
+            "ReportGenerator"
+          ],
+          "main_functions": [
+            "generate_performance_report",
+            "generate_scheduled_reports"
+          ]
+        }
+      },
+      {
+        "name": "reporting_service",
+        "size": 39732,
+        "info": {
+          "classes": 6,
+          "functions": 38,
+          "async_functions": 21,
+          "class_names": [
+            "ReportType",
+            "ReportFormat",
+            "DeliveryMethod"
+          ],
+          "main_functions": [
+            "generate_report",
+            "get_report_status"
+          ]
+        }
+      },
+      {
+        "name": "user_behavior_analytics",
+        "size": 26824,
+        "info": {
+          "classes": 2,
+          "functions": 14,
+          "async_functions": 13,
+          "class_names": [
+            "EventType",
+            "UserBehaviorAnalyticsService"
+          ],
+          "main_functions": [
+            "track_event",
+            "get_behavior_overview",
+            "get_conversion_funnels",
+            "get_cohort_analysis",
+            "get_feature_heatmap"
+          ]
+        }
+      }
+    ],
+    "Payment/Billing": [
+      {
+        "name": "invoice_generator",
+        "size": 16399,
+        "info": {
+          "classes": 1,
+          "functions": 10,
+          "async_functions": 7,
+          "class_names": [
+            "InvoiceGenerator"
+          ],
+          "main_functions": [
+            "generate_invoice",
+            "get_invoice",
+            "list_user_invoices",
+            "mark_invoice_paid"
+          ]
+        }
+      },
+      {
+        "name": "payment_service_enhanced",
+        "size": 41997,
+        "info": {
+          "classes": 4,
+          "functions": 30,
+          "async_functions": 27,
+          "class_names": [
+            "PlanLimits",
+            "PaymentStatus",
+            "SubscriptionStatus"
+          ],
+          "main_functions": [
+            "get_or_create_customer",
+            "create_checkout_session",
+            "create_subscription",
+            "cancel_subscription",
+            "track_usage"
+          ]
+        }
+      },
+      {
+        "name": "subscription_service",
+        "size": 22388,
+        "info": {
+          "classes": 1,
+          "functions": 8,
+          "async_functions": 7,
+          "class_names": [
+            "SubscriptionService"
+          ],
+          "main_functions": [
+            "create_subscription",
+            "cancel_subscription",
+            "upgrade_subscription",
+            "check_usage_limits",
+            "process_billing_cycle"
+          ]
+        }
+      }
+    ],
+    "AI/ML": [
+      {
+        "name": "ai_services",
+        "size": 25630,
+        "info": {
+          "classes": 6,
+          "functions": 20,
+          "async_functions": 11,
+          "class_names": [
+            "import",
+            "class",
+            "OpenAIService"
+          ],
+          "main_functions": [
+            "generate_script",
+            "generate_title",
+            "generate_description",
+            "generate_thumbnail_prompt",
+            "text_to_speech"
+          ]
+        }
+      },
+      {
+        "name": "email_service",
+        "size": 12668,
+        "info": {
+          "classes": 1,
+          "functions": 5,
+          "async_functions": 4,
+          "class_names": [
+            "EmailService"
+          ],
+          "main_functions": [
+            "send_email",
+            "send_verification_email",
+            "send_password_reset_email",
+            "send_welcome_email"
+          ]
+        }
+      },
+      {
+        "name": "multi_provider_ai",
+        "size": 24684,
+        "info": {
+          "classes": 6,
+          "functions": 22,
+          "async_functions": 15,
+          "class_names": [
+            "import",
+            "AIProvider",
+            "ServiceType"
+          ],
+          "main_functions": [
+            "generate_text",
+            "synthesize_speech",
+            "generate_image",
+            "translate_text",
+            "summarize_text"
+          ]
+        }
+      },
+      {
+        "name": "thumbnail_generator",
+        "size": 12288,
+        "info": {
+          "classes": 1,
+          "functions": 11,
+          "async_functions": 3,
+          "class_names": [
+            "ThumbnailGenerator"
+          ],
+          "main_functions": [
+            "generate"
+          ]
+        }
+      },
+      {
+        "name": "training_data_service",
+        "size": 28978,
+        "info": {
+          "classes": 8,
+          "functions": 23,
+          "async_functions": 17,
+          "class_names": [
+            "DatasetType",
+            "DatasetStatus",
+            "ValidationStatus"
+          ],
+          "main_functions": [
+            "initialize",
+            "create_dataset",
+            "create_version",
+            "validate_data",
+            "calculate_statistics"
+          ]
+        }
+      }
+    ],
+    "Notification": [
+      {
+        "name": "alert_service",
+        "size": 11849,
+        "info": {
+          "classes": 1,
+          "functions": 10,
+          "async_functions": 7,
+          "class_names": [
+            "AlertService"
+          ],
+          "main_functions": [
+            "initialize",
+            "send_threshold_alert",
+            "cleanup",
+            "send_cost_alert_task"
+          ]
+        }
+      },
+      {
+        "name": "notification_service",
+        "size": 15300,
+        "info": {
+          "classes": 6,
+          "functions": 15,
+          "async_functions": 12,
+          "class_names": [
+            "NotificationType",
+            "NotificationPriority",
+            "NotificationStatus"
+          ],
+          "main_functions": [
+            "send_notification",
+            "send_template_notification",
+            "send_bulk_notification",
+            "get_templates",
+            "schedule_notification"
+          ]
+        }
+      }
+    ],
+    "Cost Tracking": [
+      {
+        "name": "cost_aggregation",
+        "size": 30812,
+        "info": {
+          "classes": 8,
+          "functions": 26,
+          "async_functions": 21,
+          "class_names": [
+            "CostCategory",
+            "BillingPeriod",
+            "AlertType"
+          ],
+          "main_functions": [
+            "initialize",
+            "track_cost",
+            "store_cost_item",
+            "calculate_api_cost",
+            "aggregate_costs"
+          ]
+        }
+      },
+      {
+        "name": "cost_optimizer",
+        "size": 36805,
+        "info": {
+          "classes": 5,
+          "functions": 23,
+          "async_functions": 15,
+          "class_names": [
+            "ModelTier",
+            "ServiceType",
+            "class"
+          ],
+          "main_functions": [
+            "get_optimal_model",
+            "estimate_cost",
+            "check_budget_available",
+            "get_daily_spending",
+            "get_cache_key"
+          ]
+        }
+      },
+      {
+        "name": "cost_tracking",
+        "size": 19259,
+        "info": {
+          "classes": 2,
+          "functions": 14,
+          "async_functions": 11,
+          "class_names": [
+            "CostMetrics",
+            "CostTracker"
+          ],
+          "main_functions": [
+            "initialize",
+            "track_api_call",
+            "track_infrastructure_usage",
+            "get_video_cost",
+            "get_real_time_costs"
+          ]
+        }
+      },
+      {
+        "name": "cost_verification",
+        "size": 23997,
+        "info": {
+          "classes": 5,
+          "functions": 11,
+          "async_functions": 0,
+          "class_names": [
+            "ServiceType",
+            "class",
+            "class"
+          ],
+          "main_functions": [
+            "calculate_cost",
+            "should_use_fallback",
+            "record_cost",
+            "get_daily_cost",
+            "get_video_cost"
+          ]
+        }
+      },
+      {
+        "name": "defect_tracking",
+        "size": 26130,
+        "info": {
+          "classes": 8,
+          "functions": 17,
+          "async_functions": 11,
+          "class_names": [
+            "DefectSeverity",
+            "DefectPriority",
+            "DefectStatus"
+          ],
+          "main_functions": [
+            "create_defect",
+            "update_defect",
+            "get_defect",
+            "add_comment",
+            "get_defects"
+          ]
+        }
+      },
+      {
+        "name": "realtime_cost_tracking",
+        "size": 17920,
+        "info": {
+          "classes": 1,
+          "functions": 12,
+          "async_functions": 10,
+          "class_names": [
+            "RealtimeCostTracker"
+          ],
+          "main_functions": [
+            "track_cost_realtime",
+            "get_current_totals",
+            "check_budget_alerts",
+            "send_budget_alert",
+            "send_cost_update"
+          ]
+        }
+      },
+      {
+        "name": "revenue_tracking",
+        "size": 23836,
+        "info": {
+          "classes": 1,
+          "functions": 15,
+          "async_functions": 13,
+          "class_names": [
+            "RevenueTrackingService"
+          ],
+          "main_functions": [
+            "get_revenue_overview",
+            "get_channel_revenue",
+            "get_revenue_trends",
+            "get_revenue_forecast",
+            "get_revenue_breakdown"
+          ]
+        }
+      }
+    ],
+    "Authentication": [],
+    "Data Processing": [
+      {
+        "name": "advanced_data_visualization",
+        "size": 22243,
+        "info": {
+          "classes": 4,
+          "functions": 27,
+          "async_functions": 9,
+          "class_names": [
+            "VisualizationType",
+            "class",
+            "class"
+          ],
+          "main_functions": [
+            "register_visualization",
+            "create_visualization",
+            "create_dashboard",
+            "export_visualization",
+            "get_visualization_list"
+          ]
+        }
+      },
+      {
+        "name": "data_lake_service",
+        "size": 31578,
+        "info": {
+          "classes": 8,
+          "functions": 30,
+          "async_functions": 23,
+          "class_names": [
+            "StorageTier",
+            "DataFormat",
+            "PartitionStrategy"
+          ],
+          "main_functions": [
+            "initialize",
+            "ingest_data",
+            "query_data",
+            "create_external_table",
+            "optimize_storage"
+          ]
+        }
+      },
+      {
+        "name": "data_marketplace_integration",
+        "size": 32162,
+        "info": {
+          "classes": 7,
+          "functions": 20,
+          "async_functions": 10,
+          "class_names": [
+            "MarketplaceProvider",
+            "DataCategory",
+            "DataFormat"
+          ],
+          "main_functions": [
+            "register_product",
+            "browse_products",
+            "subscribe_to_product",
+            "fetch_data",
+            "sync_to_warehouse"
+          ]
+        }
+      },
+      {
+        "name": "data_quality",
+        "size": 32118,
+        "info": {
+          "classes": 8,
+          "functions": 26,
+          "async_functions": 10,
+          "class_names": [
+            "QualityLevel",
+            "ValidationSeverity",
+            "class"
+          ],
+          "main_functions": [
+            "validate_dataset",
+            "calculate_quality_metrics",
+            "generate_quality_report",
+            "process_batch_quality_check",
+            "batch_data_cleanup"
+          ]
+        }
+      },
+      {
+        "name": "vector_database",
+        "size": 23629,
+        "info": {
+          "classes": 3,
+          "functions": 15,
+          "async_functions": 10,
+          "class_names": [
+            "import",
+            "class",
+            "VectorDatabaseService"
+          ],
+          "main_functions": [
+            "add_document",
+            "search",
+            "find_similar_videos",
+            "recommend_content",
+            "cluster_topics"
+          ]
+        }
+      },
+      {
+        "name": "vector_database_deployed",
+        "size": 19915,
+        "info": {
+          "classes": 3,
+          "functions": 22,
+          "async_functions": 11,
+          "class_names": [
+            "import",
+            "class",
+            "VectorDatabase"
+          ],
+          "main_functions": [
+            "embed_text",
+            "index_video",
+            "search_similar_videos",
+            "find_trending_topics",
+            "recommend_content"
+          ]
+        }
+      }
+    ],
+    "WebSocket/Realtime": [
+      {
+        "name": "room_manager",
+        "size": 14137,
+        "info": {
+          "classes": 2,
+          "functions": 23,
+          "async_functions": 15,
+          "class_names": [
+            "Room",
+            "RoomManager"
+          ],
+          "main_functions": [
+            "add_user",
+            "remove_user",
+            "get_user_count",
+            "add_message",
+            "to_dict"
+          ]
+        }
+      },
+      {
+        "name": "websocket_events",
+        "size": 12886,
+        "info": {
+          "classes": 8,
+          "functions": 18,
+          "async_functions": 14,
+          "class_names": [
+            "EventType",
+            "WebSocketMessage",
+            "VideoGenerationEvent"
+          ],
+          "main_functions": [
+            "emit_video_generation_started",
+            "emit_video_generation_progress",
+            "emit_video_generation_completed",
+            "emit_video_generation_failed",
+            "emit_channel_metrics_update"
+          ]
+        }
+      },
+      {
+        "name": "websocket_manager",
+        "size": 23547,
+        "info": {
+          "classes": 3,
+          "functions": 29,
+          "async_functions": 22,
+          "class_names": [
+            "MessageType",
+            "ConnectionManager",
+            "WebSocketEndpoint"
+          ],
+          "main_functions": [
+            "connect",
+            "disconnect",
+            "send_personal_message",
+            "broadcast",
+            "send_to_room"
+          ]
+        }
+      }
+    ],
+    "Batch Processing": [
+      {
+        "name": "batch_processing",
+        "size": 26843,
+        "info": {
+          "classes": 7,
+          "functions": 21,
+          "async_functions": 18,
+          "class_names": [
+            "BatchJobStatus",
+            "BatchJobType",
+            "class"
+          ],
+          "main_functions": [
+            "submit_batch_job",
+            "get_job_status",
+            "cancel_job",
+            "get_all_jobs",
+            "pause_job"
+          ]
+        }
+      }
+    ],
+    "Other": [
+      {
+        "name": "ab_testing_service",
+        "size": 23256,
+        "info": {
+          "classes": 6,
+          "functions": 17,
+          "async_functions": 10,
+          "class_names": [
+            "from",
+            "ExperimentStatus",
+            "VariantAssignmentMethod"
+          ],
+          "main_functions": [
+            "create_experiment",
+            "start_experiment",
+            "get_variant_assignment",
+            "track_conversion",
+            "get_experiment_results"
+          ]
+        }
+      },
+      {
+        "name": "advanced_caching",
+        "size": 25724,
+        "info": {
+          "classes": 9,
+          "functions": 51,
+          "async_functions": 39,
+          "class_names": [
+            "class",
+            "class",
+            "CacheTier"
+          ],
+          "main_functions": [
+            "get",
+            "set",
+            "delete",
+            "exists",
+            "clear"
+          ]
+        }
+      },
+      {
+        "name": "advanced_error_recovery",
+        "size": 24555,
+        "info": {
+          "classes": 7,
+          "functions": 31,
+          "async_functions": 20,
+          "class_names": [
+            "RecoveryStrategy",
+            "CircuitState",
+            "class"
+          ],
+          "main_functions": [
+            "call",
+            "call",
+            "initialize",
+            "shutdown",
+            "register_circuit_breaker"
+          ]
+        }
+      },
+      {
+        "name": "advanced_forecasting_models",
+        "size": 39008,
+        "info": {
+          "classes": 5,
+          "functions": 22,
+          "async_functions": 10,
+          "class_names": [
+            "ForecastModel",
+            "ForecastMetric",
+            "class"
+          ],
+          "main_functions": [
+            "create_forecast",
+            "compare_models",
+            "get_model_recommendations"
+          ]
+        }
+      },
+      {
+        "name": "api_optimization",
+        "size": 20762,
+        "info": {
+          "classes": 5,
+          "functions": 19,
+          "async_functions": 12,
+          "class_names": [
+            "APIProvider",
+            "CacheStrategy",
+            "class"
+          ],
+          "main_functions": [
+            "make_optimized_request",
+            "get_optimization_stats",
+            "clear_cache",
+            "update_rate_limits",
+            "close_sessions"
+          ]
+        }
+      },
+      {
+        "name": "error_handlers",
+        "size": 18756,
+        "info": {
+          "classes": 4,
+          "functions": 19,
+          "async_functions": 14,
+          "class_names": [
+            "AIServiceErrorHandler",
+            "YouTubeServiceErrorHandler",
+            "PaymentServiceErrorHandler"
+          ],
+          "main_functions": [
+            "handle_openai_error",
+            "call_openai_with_fallback",
+            "handle_youtube_error",
+            "upload_video_with_rotation",
+            "handle_payment_error"
+          ]
+        }
+      },
+      {
+        "name": "export_service",
+        "size": 29085,
+        "info": {
+          "classes": 6,
+          "functions": 29,
+          "async_functions": 24,
+          "class_names": [
+            "ExportFormat",
+            "ExportStatus",
+            "DataType"
+          ],
+          "main_functions": [
+            "initialize",
+            "create_export",
+            "process_export",
+            "stream_export",
+            "create_scheduled_export"
+          ]
+        }
+      },
+      {
+        "name": "feature_engineering",
+        "size": 19851,
+        "info": {
+          "classes": 3,
+          "functions": 21,
+          "async_functions": 10,
+          "class_names": [
+            "FeatureExtractor",
+            "FeatureTransformer",
+            "FeatureStore"
+          ],
+          "main_functions": [
+            "extract_video_features",
+            "extract_channel_features",
+            "extract_trend_features",
+            "extract_cost_features",
+            "extract_performance_features"
+          ]
+        }
+      },
+      {
+        "name": "feature_store",
+        "size": 17700,
+        "info": {
+          "classes": 5,
+          "functions": 20,
+          "async_functions": 13,
+          "class_names": [
+            "FeatureType",
+            "FeatureSource",
+            "class"
+          ],
+          "main_functions": [
+            "initialize",
+            "register_feature",
+            "get_online_features",
+            "get_offline_features",
+            "write_features"
+          ]
+        }
+      },
+      {
+        "name": "gpu_resource_manager",
+        "size": 22449,
+        "info": {
+          "classes": 5,
+          "functions": 23,
+          "async_functions": 22,
+          "class_names": [
+            "GPUStatus",
+            "TaskPriority",
+            "class"
+          ],
+          "main_functions": [
+            "initialize",
+            "discover_devices",
+            "monitor_devices",
+            "update_device_status",
+            "allocate_gpu"
+          ]
+        }
+      },
+      {
+        "name": "gpu_resource_service",
+        "size": 48091,
+        "info": {
+          "classes": 6,
+          "functions": 32,
+          "async_functions": 21,
+          "class_names": [
+            "from",
+            "GPUStatus",
+            "TaskStatus"
+          ],
+          "main_functions": [
+            "initialize",
+            "discover_and_register_devices",
+            "get_gpu_info",
+            "allocate_gpu",
+            "release_gpu"
+          ]
+        }
+      },
+      {
+        "name": "ml_integration_service",
+        "size": 20100,
+        "info": {
+          "classes": 7,
+          "functions": 15,
+          "async_functions": 10,
+          "class_names": [
+            "Video",
+            "VideoStatus",
+            "Channel"
+          ],
+          "main_functions": [
+            "track_cost",
+            "get_personalized_content_recommendation",
+            "predict_video_performance",
+            "train_performance_model",
+            "update_channel_profile"
+          ]
+        }
+      },
+      {
+        "name": "model_monitoring",
+        "size": 28516,
+        "info": {
+          "classes": 10,
+          "functions": 28,
+          "async_functions": 9,
+          "class_names": [
+            "ModelType",
+            "DriftType",
+            "AlertSeverity"
+          ],
+          "main_functions": [
+            "register_model",
+            "record_prediction",
+            "evaluate_model",
+            "detect_drift",
+            "get_model_health"
+          ]
+        }
+      },
+      {
+        "name": "n8n_integration",
+        "size": 10562,
+        "info": {
+          "classes": 2,
+          "functions": 12,
+          "async_functions": 9,
+          "class_names": [
+            "WorkflowType",
+            "N8NIntegration"
+          ],
+          "main_functions": [
+            "trigger_workflow",
+            "trigger_video_automation",
+            "trigger_trend_analysis",
+            "trigger_quality_check",
+            "trigger_channel_optimization"
+          ]
+        }
+      },
+      {
+        "name": "optimized_queries",
+        "size": 7790,
+        "info": {
+          "classes": 1,
+          "functions": 8,
+          "async_functions": 8,
+          "class_names": [
+            "OptimizedQueryService"
+          ],
+          "main_functions": [
+            "get_user_with_channels",
+            "get_channels_with_videos",
+            "get_channel_with_all_relations",
+            "get_videos_with_analytics",
+            "get_dashboard_data"
+          ]
+        }
+      },
+      {
+        "name": "performance_monitoring",
+        "size": 17277,
+        "info": {
+          "classes": 1,
+          "functions": 27,
+          "async_functions": 24,
+          "class_names": [
+            "PerformanceMonitoringService"
+          ],
+          "main_functions": [
+            "get_performance_overview",
+            "get_endpoint_metrics",
+            "get_database_metrics",
+            "get_cache_metrics",
+            "analyze_performance_trends"
+          ]
+        }
+      },
+      {
+        "name": "prompt_engineering",
+        "size": 27401,
+        "info": {
+          "classes": 6,
+          "functions": 25,
+          "async_functions": 5,
+          "class_names": [
+            "PromptType",
+            "VideoStyle",
+            "TargetAudience"
+          ],
+          "main_functions": [
+            "register_template",
+            "generate_prompt",
+            "optimize_prompt",
+            "test_prompt_variation",
+            "auto_improve_template"
+          ]
+        }
+      },
+      {
+        "name": "rate_limiter",
+        "size": 8406,
+        "info": {
+          "classes": 1,
+          "functions": 9,
+          "async_functions": 7,
+          "class_names": [
+            "RateLimiter"
+          ],
+          "main_functions": [
+            "check_rate_limit",
+            "log_failed_attempt",
+            "reset_limit",
+            "get_remaining_attempts",
+            "get_ttl"
+          ]
+        }
+      },
+      {
+        "name": "roi_calculator",
+        "size": 20781,
+        "info": {
+          "classes": 5,
+          "functions": 19,
+          "async_functions": 10,
+          "class_names": [
+            "ROIMetric",
+            "class",
+            "class"
+          ],
+          "main_functions": [
+            "calculate_overall_roi",
+            "calculate_channel_roi",
+            "calculate_video_roi"
+          ]
+        }
+      },
+      {
+        "name": "scaling_optimizer",
+        "size": 32460,
+        "info": {
+          "classes": 6,
+          "functions": 36,
+          "async_functions": 29,
+          "class_names": [
+            "ScalingMode",
+            "class",
+            "class"
+          ],
+          "main_functions": [
+            "call",
+            "get",
+            "set",
+            "cleanup_expired",
+            "initialize"
+          ]
+        }
+      },
+      {
+        "name": "stock_footage",
+        "size": 14283,
+        "info": {
+          "classes": 1,
+          "functions": 14,
+          "async_functions": 5,
+          "class_names": [
+            "StockFootageService"
+          ],
+          "main_functions": [
+            "generate_visual_sequence",
+            "extract_visual_keywords",
+            "find_footage",
+            "apply_motion_effects",
+            "download_footage"
+          ]
+        }
+      },
+      {
+        "name": "storage_service",
+        "size": 9270,
+        "info": {
+          "classes": 1,
+          "functions": 11,
+          "async_functions": 8,
+          "class_names": [
+            "StorageService"
+          ],
+          "main_functions": [
+            "save_avatar",
+            "save_video",
+            "save_thumbnail",
+            "delete_file",
+            "get_file_url"
+          ]
+        }
+      },
+      {
+        "name": "third_party_integrations",
+        "size": 23967,
+        "info": {
+          "classes": 6,
+          "functions": 23,
+          "async_functions": 16,
+          "class_names": [
+            "IntegrationType",
+            "IntegrationStatus",
+            "class"
+          ],
+          "main_functions": [
+            "initialize",
+            "shutdown",
+            "register_integration",
+            "call_api",
+            "make_request"
+          ]
+        }
+      },
+      {
+        "name": "webhook_service",
+        "size": 22655,
+        "info": {
+          "classes": 3,
+          "functions": 22,
+          "async_functions": 17,
+          "class_names": [
+            "WebhookEvents",
+            "WebhookStatus",
+            "WebhookService"
+          ],
+          "main_functions": [
+            "create_webhook",
+            "update_webhook",
+            "delete_webhook",
+            "get_webhooks",
+            "trigger_event"
+          ]
+        }
+      }
+    ]
+  },
+  "frontend_components": {
+    "Accessibility": [
+      "Accessibility\\AccessibleButton.tsx",
+      "Accessibility\\FocusTrap.tsx",
+      "Accessibility\\index.tsx",
+      "Accessibility\\ScreenReaderAnnouncer.tsx",
+      "Accessibility\\SkipNavigation.tsx"
+    ],
+    "Analytics": [
+      "Analytics\\AnalyticsDashboard.tsx",
+      "Analytics\\CompetitiveAnalysisDashboard.tsx",
+      "Analytics\\UserBehaviorDashboard.tsx"
+    ],
+    "Animations": [
+      "Animations\\AdvancedAnimations.tsx"
+    ],
+    "Auth": [
+      "Auth\\EmailVerification.tsx",
+      "Auth\\ForgotPasswordForm.tsx",
+      "Auth\\LoginForm.tsx",
+      "Auth\\RegisterForm.tsx",
+      "Auth\\TwoFactorAuth.tsx"
+    ],
+    "BulkOperations": [
+      "BulkOperations\\EnhancedBulkOperations.tsx"
+    ],
+    "Channels": [
+      "Channels\\BulkOperations.tsx",
+      "Channels\\ChannelDashboard.tsx",
+      "Channels\\ChannelHealthDashboard.tsx",
+      "Channels\\ChannelList.tsx",
+      "Channels\\ChannelTemplates.tsx"
+    ],
+    "Charts": [
+      "Charts\\AdvancedCharts.tsx",
+      "Charts\\ChannelPerformanceCharts.tsx",
+      "Charts\\ChartComponents.tsx",
+      "Charts\\index.tsx"
+    ],
+    "Common": [
+      "Common\\ErrorMessage.tsx",
+      "Common\\HelpTooltip.tsx",
+      "Common\\InlineHelp.tsx"
+    ],
+    "CostTracking": [
+      "CostTracking\\CostVisualization.tsx"
+    ],
+    "Dashboard": [
+      "Dashboard\\BusinessIntelligenceDashboard.tsx",
+      "Dashboard\\CostBreakdown.tsx",
+      "Dashboard\\CustomizableWidgets.tsx",
+      "Dashboard\\DashboardHeader.tsx",
+      "Dashboard\\DashboardLayout.tsx",
+      "Dashboard\\EnhancedMetricsDashboard.tsx",
+      "Dashboard\\MainDashboard.tsx",
+      "Dashboard\\MetricCard.tsx",
+      "Dashboard\\MetricsDashboard.tsx",
+      "Dashboard\\RealTimeMetrics.tsx",
+      "Dashboard\\RecentActivity.tsx",
+      "Dashboard\\RevenueDashboard.tsx",
+      "Dashboard\\VideoQueue.tsx"
+    ],
+    "ErrorBoundary": [
+      "ErrorBoundary\\ErrorBoundary.tsx",
+      "ErrorBoundary\\ErrorFallback.tsx",
+      "ErrorBoundary\\index.tsx",
+      "ErrorBoundary\\RouteErrorBoundary.tsx",
+      "ErrorBoundary\\useErrorHandler.tsx"
+    ],
+    "Experiments": [
+      "Experiments\\ABTestDashboard.tsx"
+    ],
+    "Export": [
+      "Export\\UniversalExportManager.tsx"
+    ],
+    "Layout": [
+      "Layout\\Header.tsx",
+      "Layout\\Sidebar.tsx"
+    ],
+    "Loading": [
+      "Loading\\index.tsx",
+      "Loading\\LoadingButton.tsx",
+      "Loading\\LoadingOverlay.tsx",
+      "Loading\\LoadingSkeleton.tsx"
+    ],
+    "Mobile": [
+      "Mobile\\MobileOptimizedDashboard.tsx",
+      "Mobile\\MobileResponsiveSystem.tsx"
+    ],
+    "Monitoring": [
+      "Monitoring\\CostTrackingDashboard.tsx",
+      "Monitoring\\LiveVideoGenerationMonitor.tsx",
+      "Monitoring\\SystemHealthMonitors.tsx"
+    ],
+    "Navigation": [
+      "Navigation\\EnhancedNavigation.tsx"
+    ],
+    "Onboarding": [
+      "Onboarding\\OnboardingFlow.tsx"
+    ],
+    "PWA": [
+      "PWA\\InstallPrompt.tsx"
+    ],
+    "Performance": [
+      "Performance\\PerformanceDashboard.tsx"
+    ],
+    "Reports": [
+      "Reports\\CustomReports.tsx"
+    ],
+    "Root": [
+      "Button.tsx",
+      "Card.tsx",
+      "Input.tsx"
+    ],
+    "ThemeToggle": [
+      "ThemeToggle\\ThemeToggle.tsx"
+    ],
+    "UILibrary": [
+      "UILibrary\\ComponentLibrary.tsx"
+    ],
+    "UserJourney": [
+      "UserJourney\\BetaUserJourneyOptimizer.tsx"
+    ],
+    "VideoEditor": [
+      "VideoEditor\\VideoEditor.tsx"
+    ],
+    "VideoQueue": [
+      "VideoQueue\\VideoQueueInterface.tsx"
+    ],
+    "Videos": [
+      "Videos\\GenerationProgress.tsx",
+      "Videos\\PublishingControls.tsx",
+      "Videos\\VideoApproval.tsx",
+      "Videos\\VideoCard.tsx",
+      "Videos\\VideoEngagementStats.tsx",
+      "Videos\\VideoFilters.tsx",
+      "Videos\\VideoGenerationForm.tsx",
+      "Videos\\VideoList.tsx",
+      "Videos\\VideoMetrics.tsx",
+      "Videos\\VideoPerformanceChart.tsx",
+      "Videos\\VideoPlayer.tsx",
+      "Videos\\VideoPreview.tsx",
+      "Videos\\VideoSearch.tsx",
+      "Videos\\VideoUploadProgress.tsx",
+      "Videos\\YouTubeUploadStatus.tsx"
+    ],
+    "Pages": [
+      "BetaSignup.tsx",
+      "AI\\AITools.tsx",
+      "Analytics\\AdvancedAnalytics.tsx",
+      "Analytics\\Analytics.tsx",
+      "Analytics\\AnalyticsDashboard.tsx",
+      "Analytics\\BusinessIntelligence.tsx",
+      "Auth\\Login.tsx",
+      "Auth\\LoginPage.tsx",
+      "Auth\\Register.tsx",
+      "BulkOperations\\BulkOperationsPage.tsx",
+      "Channels\\ChannelDashboard.tsx",
+      "Channels\\ChannelManagement.tsx",
+      "Costs\\CostTracking.tsx",
+      "Dashboard\\Dashboard.tsx",
+      "Dashboard\\DashboardRealtime.tsx",
+      "Dashboard\\MobileDashboard.tsx",
+      "Monitoring\\SystemMonitoring.tsx",
+      "Profile\\Profile.tsx",
+      "Settings\\Settings.tsx",
+      "Settings\\UserSettings.tsx",
+      "Videos\\VideoDetail.tsx",
+      "Videos\\VideoEditor.tsx",
+      "Videos\\VideoGeneration.tsx",
+      "Videos\\VideoGenerator.tsx",
+      "Videos\\VideoQueue.tsx"
+    ]
+  },
+  "api_endpoints": {
+    "advanced_analytics": {
+      "file": "advanced_analytics.py",
+      "routes": [
+        [
+          "post",
+          "/process"
+        ],
+        [
+          "post",
+          "/stream/start"
+        ],
+        [
+          "post",
+          "/stream/stop/{stream_id}"
+        ],
+        [
+          "post",
+          "/predict"
+        ],
+        [
+          "get",
+          "/anomalies"
+        ],
+        [
+          "get",
+          "/metrics/aggregated"
+        ],
+        [
+          "post",
+          "/gdpr/request"
+        ],
+        [
+          "get",
+          "/performance/stats"
+        ],
+        [
+          "get",
+          "/streams/active"
+        ],
+        [
+          "delete",
+          "/cache/clear"
+        ],
+        [
+          "get",
+          "/revenue/analytics"
+        ],
+        [
+          "get",
+          "/channels/comparison"
+        ],
+        [
+          "get",
+          "/costs/analysis"
+        ],
+        [
+          "get",
+          "/predictive/revenue"
+        ],
+        [
+          "get",
+          "/competitive/analysis"
+        ]
+      ],
+      "count": 15
+    },
+    "ai_multi_provider": {
+      "file": "ai_multi_provider.py",
+      "routes": [
+        [
+          "post",
+          "/text/generate"
+        ],
+        [
+          "post",
+          "/speech/synthesize"
+        ],
+        [
+          "post",
+          "/images/generate"
+        ],
+        [
+          "post",
+          "/text/translate"
+        ],
+        [
+          "post",
+          "/text/summarize"
+        ],
+        [
+          "post",
+          "/text/sentiment"
+        ],
+        [
+          "post",
+          "/batch/process"
+        ],
+        [
+          "get",
+          "/providers/status"
+        ],
+        [
+          "post",
+          "/providers/{provider_name}/test"
+        ],
+        [
+          "get",
+          "/providers/costs"
+        ]
+      ],
+      "count": 10
+    },
+    "analytics": {
+      "file": "analytics.py",
+      "routes": [
+        [
+          "post",
+          "/ingest"
+        ],
+        [
+          "post",
+          "/ingest/batch"
+        ],
+        [
+          "post",
+          "/query"
+        ],
+        [
+          "get",
+          "/channels/{channel_id}"
+        ],
+        [
+          "get",
+          "/videos/{video_id}/performance"
+        ],
+        [
+          "get",
+          "/realtime"
+        ],
+        [
+          "get",
+          "/reports"
+        ],
+        [
+          "get",
+          "/reports/{report_id}"
+        ],
+        [
+          "get",
+          "/export"
+        ],
+        [
+          "get",
+          "/benchmarks"
+        ],
+        [
+          "get",
+          "/roi/overall"
+        ],
+        [
+          "get",
+          "/roi/channel/{channel_id}"
+        ],
+        [
+          "get",
+          "/roi/video/{video_id}"
+        ]
+      ],
+      "count": 13
+    },
+    "api_optimization": {
+      "file": "api_optimization.py",
+      "routes": [
+        [
+          "get",
+          "/stats"
+        ],
+        [
+          "get",
+          "/providers"
+        ],
+        [
+          "post",
+          "/cache/control"
+        ],
+        [
+          "post",
+          "/rate-limits/update"
+        ],
+        [
+          "get",
+          "/circuit-breakers"
+        ],
+        [
+          "post",
+          "/circuit-breakers/{provider}/reset"
+        ],
+        [
+          "get",
+          "/test/{provider}"
+        ],
+        [
+          "get",
+          "/recommendations"
+        ],
+        [
+          "post",
+          "/test-request"
+        ]
+      ],
+      "count": 9
+    },
+    "auth": {
+      "file": "auth.py",
+      "routes": [
+        [
+          "post",
+          "/register"
+        ],
+        [
+          "post",
+          "/login"
+        ],
+        [
+          "post",
+          "/refresh"
+        ],
+        [
+          "get",
+          "/me"
+        ],
+        [
+          "post",
+          "/verify-email"
+        ],
+        [
+          "post",
+          "/password-reset"
+        ],
+        [
+          "post",
+          "/password-reset-confirm"
+        ],
+        [
+          "post",
+          "/logout"
+        ],
+        [
+          "delete",
+          "/account"
+        ]
+      ],
+      "count": 9
+    },
+    "batch": {
+      "file": "batch.py",
+      "routes": [
+        [
+          "post",
+          "/videos/generate"
+        ],
+        [
+          "post",
+          "/analytics/process"
+        ],
+        [
+          "get",
+          "/jobs/{job_id}"
+        ],
+        [
+          "get",
+          "/jobs"
+        ],
+        [
+          "post",
+          "/jobs/{job_id}/cancel"
+        ],
+        [
+          "post",
+          "/jobs/{job_id}/pause"
+        ],
+        [
+          "post",
+          "/jobs/{job_id}/resume"
+        ],
+        [
+          "get",
+          "/jobs/{job_id}/items"
+        ],
+        [
+          "post",
+          "/videos/validate"
+        ],
+        [
+          "get",
+          "/templates"
+        ],
+        [
+          "get",
+          "/metrics"
+        ],
+        [
+          "post",
+          "/jobs/chain"
+        ]
+      ],
+      "count": 12
+    },
+    "behavior_analytics": {
+      "file": "behavior_analytics.py",
+      "routes": [
+        [
+          "post",
+          "/events"
+        ],
+        [
+          "post",
+          "/events/batch"
+        ],
+        [
+          "get",
+          "/behavior/overview"
+        ],
+        [
+          "post",
+          "/funnels"
+        ],
+        [
+          "get",
+          "/cohorts"
+        ],
+        [
+          "get",
+          "/heatmaps"
+        ],
+        [
+          "post",
+          "/segments"
+        ],
+        [
+          "get",
+          "/sessions/{session_id}"
+        ]
+      ],
+      "count": 8
+    },
+    "beta_users": {
+      "file": "beta_users.py",
+      "routes": [
+        [
+          "post",
+          "/signup"
+        ],
+        [
+          "get",
+          "/stats"
+        ],
+        [
+          "post",
+          "/feedback"
+        ],
+        [
+          "get",
+          "/waitlist/count"
+        ]
+      ],
+      "count": 4
+    },
+    "business_intelligence": {
+      "file": "business_intelligence.py",
+      "routes": [
+        [
+          "get",
+          "/executive-metrics"
+        ],
+        [
+          "get",
+          "/business-kpis"
+        ],
+        [
+          "get",
+          "/financial-performance"
+        ],
+        [
+          "get",
+          "/user-segments"
+        ],
+        [
+          "get",
+          "/competitive-analysis"
+        ],
+        [
+          "get",
+          "/alerts"
+        ],
+        [
+          "get",
+          "/insights"
+        ],
+        [
+          "get",
+          "/revenue-forecast"
+        ],
+        [
+          "get",
+          "/cohort-analysis"
+        ],
+        [
+          "get",
+          "/conversion-funnels"
+        ]
+      ],
+      "count": 10
+    },
+    "caching": {
+      "file": "caching.py",
+      "routes": [
+        [
+          "get",
+          "/stats"
+        ],
+        [
+          "post",
+          "/set"
+        ],
+        [
+          "get",
+          "/get/{key}"
+        ],
+        [
+          "delete",
+          "/delete/{key}"
+        ],
+        [
+          "post",
+          "/batch/get"
+        ],
+        [
+          "post",
+          "/batch/set"
+        ],
+        [
+          "post",
+          "/invalidate/tag"
+        ],
+        [
+          "post",
+          "/invalidate/pattern"
+        ],
+        [
+          "post",
+          "/warm"
+        ],
+        [
+          "delete",
+          "/clear"
+        ],
+        [
+          "get",
+          "/cdn/status"
+        ],
+        [
+          "post",
+          "/cdn/purge"
+        ],
+        [
+          "get",
+          "/video-cache/stats"
+        ]
+      ],
+      "count": 13
+    },
+    "channels": {
+      "file": "channels.py",
+      "routes": [
+        [
+          "post",
+          "/"
+        ],
+        [
+          "get",
+          "/"
+        ],
+        [
+          "get",
+          "/{channel_id}"
+        ],
+        [
+          "put",
+          "/{channel_id}"
+        ],
+        [
+          "delete",
+          "/{channel_id}"
+        ],
+        [
+          "post",
+          "/{channel_id}/connect-youtube"
+        ],
+        [
+          "get",
+          "/{channel_id}/stats"
+        ],
+        [
+          "post",
+          "/multi/operation"
+        ],
+        [
+          "get",
+          "/{channel_id}/quota"
+        ],
+        [
+          "put",
+          "/{channel_id}/quota"
+        ],
+        [
+          "post",
+          "/{channel_id}/isolate"
+        ],
+        [
+          "get",
+          "/compare"
+        ]
+      ],
+      "count": 12
+    },
+    "channels_optimized": {
+      "file": "channels_optimized.py",
+      "routes": [
+        [
+          "get",
+          "/optimized/channels"
+        ],
+        [
+          "get",
+          "/optimized/dashboard"
+        ],
+        [
+          "get",
+          "/optimized/channel/{channel_id}/performance"
+        ]
+      ],
+      "count": 3
+    },
+    "collaboration": {
+      "file": "collaboration.py",
+      "routes": [
+        [
+          "post",
+          "/sessions"
+        ],
+        [
+          "post",
+          "/sessions/{session_id}/join"
+        ],
+        [
+          "post",
+          "/sessions/{session_id}/action"
+        ],
+        [
+          "post",
+          "/rooms/{room_id}/join"
+        ],
+        [
+          "post",
+          "/rooms/{room_id}/leave"
+        ],
+        [
+          "post",
+          "/rooms/{room_id}/message"
+        ],
+        [
+          "post",
+          "/presence/update"
+        ],
+        [
+          "get",
+          "/presence/online"
+        ],
+        [
+          "get",
+          "/rooms"
+        ],
+        [
+          "get",
+          "/stats"
+        ],
+        [
+          "post",
+          "/typing/{room_id}"
+        ],
+        [
+          "post",
+          "/cursor/update"
+        ]
+      ],
+      "count": 12
+    },
+    "content_library": {
+      "file": "content_library.py",
+      "routes": [
+        [
+          "post",
+          "/templates"
+        ],
+        [
+          "get",
+          "/templates"
+        ],
+        [
+          "get",
+          "/templates/{template_id}"
+        ],
+        [
+          "put",
+          "/templates/{template_id}"
+        ],
+        [
+          "delete",
+          "/templates/{template_id}"
+        ],
+        [
+          "post",
+          "/templates/{template_id}/use"
+        ],
+        [
+          "post",
+          "/voice-presets"
+        ],
+        [
+          "get",
+          "/voice-presets"
+        ],
+        [
+          "get",
+          "/voice-presets/providers"
+        ],
+        [
+          "post",
+          "/voice-presets/{preset_id}/test"
+        ],
+        [
+          "get",
+          "/script-library/suggestions"
+        ]
+      ],
+      "count": 11
+    },
+    "cost_intelligence": {
+      "file": "cost_intelligence.py",
+      "routes": [
+        [
+          "get",
+          "/predict"
+        ],
+        [
+          "post",
+          "/optimize/recommendations"
+        ],
+        [
+          "post",
+          "/budget/manage"
+        ]
+      ],
+      "count": 3
+    },
+    "cost_optimization": {
+      "file": "cost_optimization.py",
+      "routes": [
+        [
+          "post",
+          "/estimate"
+        ],
+        [
+          "post",
+          "/optimal-model"
+        ],
+        [
+          "get",
+          "/report"
+        ],
+        [
+          "get",
+          "/validate/{video_id}"
+        ],
+        [
+          "get",
+          "/strategies"
+        ],
+        [
+          "get",
+          "/daily-spending"
+        ],
+        [
+          "post",
+          "/optimize-prompt"
+        ],
+        [
+          "get",
+          "/cache-stats"
+        ]
+      ],
+      "count": 8
+    },
+    "dashboard": {
+      "file": "dashboard.py",
+      "routes": [
+        [
+          "get",
+          "/overview"
+        ],
+        [
+          "get",
+          "/performance"
+        ],
+        [
+          "get",
+          "/channels"
+        ],
+        [
+          "get",
+          "/video-queue"
+        ],
+        [
+          "get",
+          "/analytics-summary"
+        ],
+        [
+          "get",
+          "/user-preferences"
+        ],
+        [
+          "post",
+          "/user-preferences"
+        ],
+        [
+          "get",
+          "/realtime-stats"
+        ],
+        [
+          "get",
+          "/notifications"
+        ],
+        [
+          "post",
+          "/notifications/{notification_id}/mark-read"
+        ]
+      ],
+      "count": 10
+    },
+    "data_analytics": {
+      "file": "data_analytics.py",
+      "routes": [
+        [
+          "get",
+          "/visualizations"
+        ],
+        [
+          "post",
+          "/visualizations/create"
+        ],
+        [
+          "post",
+          "/visualizations/register"
+        ],
+        [
+          "post",
+          "/dashboards/create"
+        ],
+        [
+          "get",
+          "/reports/templates"
+        ],
+        [
+          "post",
+          "/reports/generate"
+        ],
+        [
+          "post",
+          "/reports/schedule"
+        ],
+        [
+          "get",
+          "/reports/scheduled"
+        ],
+        [
+          "post",
+          "/reports/custom-template"
+        ],
+        [
+          "get",
+          "/marketplace/products"
+        ],
+        [
+          "post",
+          "/marketplace/subscribe"
+        ],
+        [
+          "post",
+          "/marketplace/fetch"
+        ],
+        [
+          "get",
+          "/marketplace/subscriptions/{subscription_id}/status"
+        ],
+        [
+          "get",
+          "/marketplace/analytics"
+        ],
+        [
+          "post",
+          "/forecast/create"
+        ],
+        [
+          "post",
+          "/forecast/compare"
+        ],
+        [
+          "get",
+          "/forecast/recommendations"
+        ],
+        [
+          "get",
+          "/analytics/overview"
+        ]
+      ],
+      "count": 18
+    },
+    "data_quality": {
+      "file": "data_quality.py",
+      "routes": [
+        [
+          "get",
+          "/health"
+        ],
+        [
+          "get",
+          "/report/{dataset_name}"
+        ],
+        [
+          "get",
+          "/metrics/summary"
+        ],
+        [
+          "get",
+          "/validation-rules"
+        ],
+        [
+          "post",
+          "/batch/quality-check"
+        ],
+        [
+          "post",
+          "/batch/cleanup/{dataset_name}"
+        ],
+        [
+          "get",
+          "/trends/{dataset_name}"
+        ],
+        [
+          "get",
+          "/alerts"
+        ],
+        [
+          "post",
+          "/monitoring/schedule"
+        ]
+      ],
+      "count": 9
+    },
+    "error_recovery": {
+      "file": "error_recovery.py",
+      "routes": [
+        [
+          "post",
+          "/register/circuit-breaker"
+        ],
+        [
+          "post",
+          "/register/bulkhead"
+        ],
+        [
+          "get",
+          "/status/circuit-breakers"
+        ],
+        [
+          "get",
+          "/status/bulkheads"
+        ],
+        [
+          "post",
+          "/test/retry"
+        ],
+        [
+          "post",
+          "/test/circuit-breaker"
+        ],
+        [
+          "post",
+          "/test/bulkhead"
+        ],
+        [
+          "post",
+          "/configure/fallback-chain"
+        ],
+        [
+          "get",
+          "/metrics"
+        ],
+        [
+          "post",
+          "/cache/set"
+        ],
+        [
+          "get",
+          "/cache/get/{key}"
+        ]
+      ],
+      "count": 11
+    },
+    "etl": {
+      "file": "etl.py",
+      "routes": [
+        [
+          "post",
+          "/run/video-performance"
+        ],
+        [
+          "post",
+          "/run/generation-metrics"
+        ],
+        [
+          "post",
+          "/run/channel-analytics"
+        ],
+        [
+          "post",
+          "/schedule"
+        ],
+        [
+          "get",
+          "/job/{job_id}"
+        ],
+        [
+          "get",
+          "/quality-report"
+        ],
+        [
+          "get",
+          "/pipelines"
+        ],
+        [
+          "get",
+          "/dimensions"
+        ],
+        [
+          "get",
+          "/facts"
+        ],
+        [
+          "get",
+          "/status"
+        ]
+      ],
+      "count": 10
+    },
+    "experiments": {
+      "file": "experiments.py",
+      "routes": [
+        [
+          "post",
+          "/"
+        ],
+        [
+          "post",
+          "/{experiment_id}/start"
+        ],
+        [
+          "get",
+          "/assignment/{experiment_id}"
+        ],
+        [
+          "post",
+          "/track-conversion"
+        ],
+        [
+          "get",
+          "/{experiment_id}/results"
+        ],
+        [
+          "post",
+          "/{experiment_id}/conclude"
+        ],
+        [
+          "get",
+          "/active"
+        ],
+        [
+          "get",
+          "/"
+        ],
+        [
+          "get",
+          "/{experiment_id}"
+        ]
+      ],
+      "count": 9
+    },
+    "gpu_resources": {
+      "file": "gpu_resources.py",
+      "routes": [
+        [
+          "post",
+          "/allocate"
+        ],
+        [
+          "post",
+          "/release"
+        ],
+        [
+          "get",
+          "/devices"
+        ],
+        [
+          "get",
+          "/queue"
+        ],
+        [
+          "get",
+          "/metrics"
+        ],
+        [
+          "get",
+          "/stats"
+        ],
+        [
+          "post",
+          "/reserve/{device_id}"
+        ],
+        [
+          "delete",
+          "/reserve/{reservation_id}"
+        ],
+        [
+          "get",
+          "/health"
+        ],
+        [
+          "post",
+          "/optimize"
+        ],
+        [
+          "post",
+          "/batching/enable"
+        ],
+        [
+          "post",
+          "/memory/optimize"
+        ],
+        [
+          "get",
+          "/efficiency/analysis"
+        ],
+        [
+          "post",
+          "/workload/balance"
+        ]
+      ],
+      "count": 14
+    },
+    "integrations": {
+      "file": "integrations.py",
+      "routes": [
+        [
+          "get",
+          "/status"
+        ],
+        [
+          "post",
+          "/register"
+        ],
+        [
+          "post",
+          "/webhook/send"
+        ],
+        [
+          "post",
+          "/webhook/receive/{integration_name}"
+        ],
+        [
+          "post",
+          "/slack/message"
+        ],
+        [
+          "post",
+          "/discord/message"
+        ],
+        [
+          "post",
+          "/airtable/sync"
+        ],
+        [
+          "post",
+          "/google-sheets/sync"
+        ],
+        [
+          "post",
+          "/notion/page"
+        ],
+        [
+          "post",
+          "/trello/card"
+        ],
+        [
+          "post",
+          "/hubspot/contact"
+        ],
+        [
+          "post",
+          "/mailchimp/subscribe"
+        ],
+        [
+          "post",
+          "/api/call"
+        ],
+        [
+          "post",
+          "/batch/notifications"
+        ]
+      ],
+      "count": 14
+    },
+    "ml_features": {
+      "file": "ml_features.py",
+      "routes": [
+        [
+          "post",
+          "/personalize"
+        ],
+        [
+          "post",
+          "/predict-performance"
+        ],
+        [
+          "get",
+          "/channel-insights/{channel_id}"
+        ],
+        [
+          "post",
+          "/train-model"
+        ],
+        [
+          "get",
+          "/model-status"
+        ],
+        [
+          "post",
+          "/generate-video"
+        ],
+        [
+          "post",
+          "/batch-generate"
+        ],
+        [
+          "post",
+          "/update-profile/{channel_id}"
+        ],
+        [
+          "get",
+          "/recommendations/{channel_id}"
+        ]
+      ],
+      "count": 9
+    },
+    "notifications": {
+      "file": "notifications.py",
+      "routes": [
+        [
+          "post",
+          "/send"
+        ],
+        [
+          "post",
+          "/send-template"
+        ],
+        [
+          "post",
+          "/send-bulk"
+        ],
+        [
+          "post",
+          "/schedule"
+        ],
+        [
+          "get",
+          "/templates"
+        ],
+        [
+          "get",
+          "/test/{notification_type}"
+        ],
+        [
+          "post",
+          "/video-generation-complete"
+        ],
+        [
+          "post",
+          "/cost-alert"
+        ]
+      ],
+      "count": 8
+    },
+    "payment": {
+      "file": "payment.py",
+      "routes": [
+        [
+          "post",
+          "/checkout-session"
+        ],
+        [
+          "post",
+          "/subscription"
+        ],
+        [
+          "get",
+          "/subscription"
+        ],
+        [
+          "put",
+          "/subscription/upgrade-downgrade"
+        ],
+        [
+          "post",
+          "/subscription/cancel"
+        ],
+        [
+          "post",
+          "/usage/track"
+        ],
+        [
+          "get",
+          "/usage/summary"
+        ],
+        [
+          "get",
+          "/billing/history"
+        ],
+        [
+          "post",
+          "/invoices/generate"
+        ],
+        [
+          "get",
+          "/invoices"
+        ],
+        [
+          "post",
+          "/usage/overage"
+        ],
+        [
+          "post",
+          "/webhook"
+        ],
+        [
+          "get",
+          "/plans"
+        ],
+        [
+          "post",
+          "/subscription"
+        ],
+        [
+          "get",
+          "/subscription"
+        ],
+        [
+          "post",
+          "/subscription/cancel"
+        ],
+        [
+          "post",
+          "/subscription/resume"
+        ],
+        [
+          "post",
+          "/payment-methods"
+        ],
+        [
+          "delete",
+          "/payment-methods/{payment_method_id}"
+        ],
+        [
+          "get",
+          "/payment-methods"
+        ],
+        [
+          "post",
+          "/webhook"
+        ],
+        [
+          "get",
+          "/plans"
+        ]
+      ],
+      "count": 22
+    },
+    "quality_dashboard": {
+      "file": "quality_dashboard.py",
+      "routes": [
+        [
+          "get",
+          "/overview"
+        ],
+        [
+          "get",
+          "/metrics"
+        ],
+        [
+          "post",
+          "/metrics"
+        ],
+        [
+          "get",
+          "/metrics/{metric_id}/history"
+        ],
+        [
+          "get",
+          "/trends"
+        ],
+        [
+          "get",
+          "/defects"
+        ],
+        [
+          "get",
+          "/defects/statistics"
+        ],
+        [
+          "get",
+          "/defects/{defect_id}"
+        ],
+        [
+          "get",
+          "/dashboard"
+        ],
+        [
+          "get",
+          "/reports"
+        ],
+        [
+          "post",
+          "/reports/{report_type}/generate"
+        ],
+        [
+          "get",
+          "/health"
+        ],
+        [
+          "post",
+          "/monitoring/start"
+        ],
+        [
+          "post",
+          "/monitoring/stop"
+        ]
+      ],
+      "count": 14
+    },
+    "revenue": {
+      "file": "revenue.py",
+      "routes": [
+        [
+          "get",
+          "/overview"
+        ],
+        [
+          "get",
+          "/channels/{channel_id}"
+        ],
+        [
+          "get",
+          "/trends"
+        ],
+        [
+          "get",
+          "/forecast"
+        ],
+        [
+          "get",
+          "/breakdown"
+        ],
+        [
+          "get",
+          "/export"
+        ],
+        [
+          "post",
+          "/recalculate"
+        ]
+      ],
+      "count": 7
+    },
+    "script_generation": {
+      "file": "script_generation.py",
+      "routes": [
+        [
+          "post",
+          "/generate"
+        ],
+        [
+          "post",
+          "/generate-variations"
+        ],
+        [
+          "post",
+          "/optimize"
+        ],
+        [
+          "get",
+          "/styles"
+        ],
+        [
+          "get",
+          "/cost-estimate"
+        ]
+      ],
+      "count": 5
+    },
+    "system_monitoring": {
+      "file": "system_monitoring.py",
+      "routes": [
+        [
+          "get",
+          "/system-status"
+        ],
+        [
+          "get",
+          "/performance-metrics"
+        ],
+        [
+          "get",
+          "/scaling-info"
+        ],
+        [
+          "post",
+          "/force-scaling-mode"
+        ],
+        [
+          "get",
+          "/realtime-dashboard"
+        ],
+        [
+          "get",
+          "/health-check"
+        ],
+        [
+          "get",
+          "/capacity-planning"
+        ],
+        [
+          "get",
+          "/service-dependencies"
+        ]
+      ],
+      "count": 8
+    },
+    "test_generation": {
+      "file": "test_generation.py",
+      "routes": [
+        [
+          "post",
+          "/test-video-generation"
+        ],
+        [
+          "get",
+          "/test-generation-status"
+        ],
+        [
+          "post",
+          "/test-batch-generation"
+        ]
+      ],
+      "count": 3
+    },
+    "training": {
+      "file": "training.py",
+      "routes": [
+        [
+          "post",
+          "/train-performance-model"
+        ],
+        [
+          "post",
+          "/train-quality-model"
+        ],
+        [
+          "post",
+          "/schedule"
+        ],
+        [
+          "post",
+          "/trigger-retraining"
+        ],
+        [
+          "post",
+          "/monitor"
+        ],
+        [
+          "get",
+          "/history"
+        ],
+        [
+          "get",
+          "/scheduled"
+        ],
+        [
+          "get",
+          "/models"
+        ],
+        [
+          "get",
+          "/status"
+        ]
+      ],
+      "count": 9
+    },
+    "users": {
+      "file": "users.py",
+      "routes": [
+        [
+          "get",
+          "/profile"
+        ],
+        [
+          "put",
+          "/profile"
+        ],
+        [
+          "post",
+          "/avatar"
+        ],
+        [
+          "get",
+          "/preferences"
+        ],
+        [
+          "put",
+          "/preferences"
+        ],
+        [
+          "post",
+          "/subscription/upgrade"
+        ],
+        [
+          "get",
+          "/stats"
+        ],
+        [
+          "delete",
+          "/account"
+        ]
+      ],
+      "count": 8
+    },
+    "videos": {
+      "file": "videos.py",
+      "routes": [
+        [
+          "post",
+          "/generate"
+        ],
+        [
+          "get",
+          "/{video_id}/status"
+        ],
+        [
+          "post",
+          "/{video_id}/publish"
+        ],
+        [
+          "get",
+          "/"
+        ],
+        [
+          "get",
+          "/{video_id}"
+        ],
+        [
+          "put",
+          "/{video_id}"
+        ],
+        [
+          "delete",
+          "/{video_id}"
+        ],
+        [
+          "post",
+          "/bulk-generate"
+        ],
+        [
+          "get",
+          "/{video_id}/analytics"
+        ]
+      ],
+      "count": 9
+    },
+    "video_generation": {
+      "file": "video_generation.py",
+      "routes": [
+        [
+          "post",
+          "/generate"
+        ],
+        [
+          "get",
+          "/status/{video_id}"
+        ],
+        [
+          "post",
+          "/cancel/{video_id}"
+        ],
+        [
+          "get",
+          "/history"
+        ]
+      ],
+      "count": 4
+    },
+    "video_processing": {
+      "file": "video_processing.py",
+      "routes": [
+        [
+          "post",
+          "/process"
+        ],
+        [
+          "post",
+          "/export-multiple-formats"
+        ],
+        [
+          "post",
+          "/batch-process"
+        ],
+        [
+          "post",
+          "/enhance-quality"
+        ],
+        [
+          "get",
+          "/stats"
+        ],
+        [
+          "get",
+          "/formats"
+        ],
+        [
+          "post",
+          "/upload-and-process"
+        ],
+        [
+          "delete",
+          "/cleanup/{job_id}"
+        ],
+        [
+          "post",
+          "/benchmark"
+        ]
+      ],
+      "count": 9
+    },
+    "video_queue": {
+      "file": "video_queue.py",
+      "routes": [
+        [
+          "post",
+          "/add"
+        ],
+        [
+          "post",
+          "/batch"
+        ],
+        [
+          "get",
+          "/list"
+        ],
+        [
+          "get",
+          "/{queue_id}"
+        ],
+        [
+          "patch",
+          "/{queue_id}"
+        ],
+        [
+          "delete",
+          "/{queue_id}"
+        ],
+        [
+          "post",
+          "/{queue_id}/retry"
+        ],
+        [
+          "get",
+          "/stats/summary"
+        ],
+        [
+          "post",
+          "/pause-all"
+        ],
+        [
+          "post",
+          "/resume-all"
+        ]
+      ],
+      "count": 10
+    },
+    "webhooks": {
+      "file": "webhooks.py",
+      "routes": [
+        [
+          "post",
+          "/"
+        ],
+        [
+          "get",
+          "/"
+        ],
+        [
+          "get",
+          "/{webhook_id}"
+        ],
+        [
+          "put",
+          "/{webhook_id}"
+        ],
+        [
+          "delete",
+          "/{webhook_id}"
+        ],
+        [
+          "post",
+          "/{webhook_id}/test"
+        ],
+        [
+          "get",
+          "/{webhook_id}/deliveries"
+        ],
+        [
+          "post",
+          "/{webhook_id}/toggle"
+        ],
+        [
+          "post",
+          "/trigger/{event}"
+        ]
+      ],
+      "count": 9
+    },
+    "youtube_accounts": {
+      "file": "youtube_accounts.py",
+      "routes": [
+        [
+          "get",
+          "/stats"
+        ],
+        [
+          "get",
+          "/accounts"
+        ],
+        [
+          "get",
+          "/accounts/{account_id}"
+        ],
+        [
+          "post",
+          "/oauth/setup"
+        ],
+        [
+          "post",
+          "/oauth/complete"
+        ],
+        [
+          "post",
+          "/upload"
+        ],
+        [
+          "post",
+          "/accounts/{account_id}/reset-quota"
+        ],
+        [
+          "get",
+          "/best-account"
+        ]
+      ],
+      "count": 8
+    },
+    "youtube_advanced": {
+      "file": "youtube_advanced.py",
+      "routes": [
+        [
+          "post",
+          "/analytics/query"
+        ],
+        [
+          "get",
+          "/analytics/metrics/available"
+        ],
+        [
+          "post",
+          "/playlists"
+        ],
+        [
+          "post",
+          "/playlists/add-video"
+        ],
+        [
+          "get",
+          "/videos/{video_id}/comments"
+        ],
+        [
+          "post",
+          "/comments/moderate"
+        ],
+        [
+          "get",
+          "/videos/{video_id}/thumbnails"
+        ],
+        [
+          "post",
+          "/videos/thumbnails/select"
+        ],
+        [
+          "get",
+          "/quota/status"
+        ],
+        [
+          "get",
+          "/trending/analyze"
+        ]
+      ],
+      "count": 10
+    },
+    "youtube_oauth": {
+      "file": "youtube_oauth.py",
+      "routes": [
+        [
+          "get",
+          "/oauth/authorize/{account_id}"
+        ],
+        [
+          "get",
+          "/oauth/callback"
+        ],
+        [
+          "get",
+          "/accounts/authorized"
+        ],
+        [
+          "post",
+          "/accounts/{account_id}/health"
+        ],
+        [
+          "post",
+          "/accounts/authorize-all"
+        ]
+      ],
+      "count": 5
+    }
+  },
+  "tasks_completed": {
+    "Backend P0": {
+      "Multi-Channel Architecture": {
+        "completion": 100.0,
+        "found": [
+          "backend/app/services/youtube_multi_account.py",
+          "backend/app/services/channel_manager.py",
+          "backend/app/models/channel.py"
+        ],
+        "missing": []
+      },
+      "Batch Processing (50-100 videos/day)": {
+        "completion": 100.0,
+        "found": [
+          "backend/app/services/batch_processing.py",
+          "backend/app/tasks/batch_tasks.py",
+          "backend/app/api/v1/endpoints/batch.py"
+        ],
+        "missing": []
+      },
+      "Subscription System": {
+        "completion": 100.0,
+        "found": [
+          "backend/app/services/subscription_service.py",
+          "backend\\app\\services\\payment_service_enhanced.py",
+          "backend/app/models/subscription.py"
+        ],
+        "missing": []
+      },
+      "WebSocket Real-time": {
+        "completion": 100.0,
+        "found": [
+          "backend/app/services/websocket_manager.py",
+          "backend/app/websocket"
+        ],
+        "missing": []
+      },
+      "Cost Optimization (<$2/video)": {
+        "completion": 100.0,
+        "found": [
+          "backend/app/services/cost_tracking.py",
+          "backend/app/services/realtime_cost_tracking.py"
+        ],
+        "missing": []
+      },
+      "Database Optimization (200 connections)": {
+        "completion": 100.0,
+        "found": [
+          "backend/app/core/database.py"
+        ],
+        "missing": []
+      }
+    },
+    "Frontend P0": {
+      "Channel Dashboard": {
+        "completion": 100.0,
+        "found": [
+          "frontend/src/components/Dashboard",
+          "frontend/src/components/Channels",
+          "frontend/src/pages/Dashboard"
+        ],
+        "missing": []
+      },
+      "Real-time Monitoring": {
+        "completion": 50.0,
+        "found": [
+          "frontend/src/components/Monitoring"
+        ],
+        "missing": [
+          "frontend/src/components/Analytics/RealtimeAnalytics"
+        ]
+      },
+      "Mobile Responsive": {
+        "completion": 0,
+        "found": [],
+        "missing": []
+      },
+      "Beta User Onboarding": {
+        "completion": 50.0,
+        "found": [
+          "frontend/src/components/Onboarding"
+        ],
+        "missing": [
+          "frontend/src/pages/Onboarding"
+        ]
+      }
+    },
+    "AI/ML P0": {
+      "Multi-Model Orchestration": {
+        "completion": 100.0,
+        "found": [
+          "backend/app/services/ai_services.py",
+          "ml-pipeline/services"
+        ],
+        "missing": []
+      },
+      "Cost Optimization": {
+        "completion": 0,
+        "found": [],
+        "missing": []
+      },
+      "Personalization Engine": {
+        "completion": 0.0,
+        "found": [],
+        "missing": [
+          "backend/app/services/personalization",
+          "ml-pipeline/models/personalization"
+        ]
+      }
+    },
+    "Data P0": {
+      "Real-time Analytics Pipeline": {
+        "completion": 100.0,
+        "found": [
+          "backend/app/services/analytics_pipeline.py",
+          "backend/app/services/realtime_analytics_service.py"
+        ],
+        "missing": []
+      },
+      "Beta User Analytics": {
+        "completion": 100.0,
+        "found": [
+          "backend/app/services/analytics_service.py"
+        ],
+        "missing": []
+      }
+    },
+    "Platform Ops P0": {
+      "Production Deployment": {
+        "completion": 100.0,
+        "found": [
+          "docker-compose.yml",
+          "infrastructure/kubernetes",
+          ".github/workflows"
+        ],
+        "missing": []
+      },
+      "Monitoring": {
+        "completion": 100.0,
+        "found": [
+          "infrastructure/monitoring",
+          "docker-compose.gpu.yml",
+          "docker-compose.full.yml",
+          "docker-compose.override.yml"
+        ],
+        "missing": []
+      },
+      "Security Hardening": {
+        "completion": 100.0,
+        "found": [
+          "backend/app/core/security.py",
+          "infrastructure/security"
+        ],
+        "missing": []
+      }
+    }
+  },
+  "duplicates": {
+    "backend_video_generation": [
+      "analytics_pipeline",
+      "enhanced_video_generation",
+      "etl_pipeline_service",
+      "inference_pipeline",
+      "metrics_pipeline",
+      "metrics_pipeline_operational",
+      "mock_video_generator",
+      "quick_video_generator",
+      "training_pipeline_service",
+      "video_generation_orchestrator",
+      "video_generation_pipeline",
+      "video_pipeline",
+      "video_processor",
+      "video_queue_service"
+    ],
+    "backend_analytics": [
+      "analytics_connector",
+      "analytics_report",
+      "analytics_service",
+      "automated_reporting",
+      "beta_success_metrics",
+      "custom_report_builder",
+      "metrics_aggregation",
+      "quality_metrics",
+      "realtime_analytics_service",
+      "reporting",
+      "reporting_infrastructure",
+      "reporting_service",
+      "user_behavior_analytics"
+    ],
+    "backend_payment": [
+      "invoice_generator",
+      "payment_service_enhanced",
+      "subscription_service"
+    ],
+    "backend_cost_tracking": [
+      "cost_aggregation",
+      "cost_optimizer",
+      "cost_tracking",
+      "cost_verification",
+      "defect_tracking",
+      "realtime_cost_tracking",
+      "revenue_tracking"
+    ]
+  },
+  "missing_features": [],
+  "recommendations": [],
+  "celery_tasks": {
+    "ai_tasks": {
+      "file": "ai_tasks.py",
+      "task_count": 5,
+      "size": 9630
+    },
+    "analytics_tasks": {
+      "file": "analytics_tasks.py",
+      "task_count": 5,
+      "size": 13596
+    },
+    "batch_tasks": {
+      "file": "batch_tasks.py",
+      "task_count": 6,
+      "size": 14309
+    },
+    "ml_pipeline_tasks": {
+      "file": "ml_pipeline_tasks.py",
+      "task_count": 4,
+      "size": 21480
+    },
+    "pipeline_tasks": {
+      "file": "pipeline_tasks.py",
+      "task_count": 15,
+      "size": 26808
+    },
+    "video_generation": {
+      "file": "video_generation.py",
+      "task_count": 8,
+      "size": 7369
+    },
+    "video_tasks": {
+      "file": "video_tasks.py",
+      "task_count": 5,
+      "size": 14474
+    },
+    "webhook_tasks": {
+      "file": "webhook_tasks.py",
+      "task_count": 5,
+      "size": 10794
+    },
+    "youtube_tasks": {
+      "file": "youtube_tasks.py",
+      "task_count": 6,
+      "size": 14460
+    }
+  },
+  "database_models": {
+    "analytics": {
+      "file": "analytics.py",
+      "models": [
+        "Analytics"
+      ],
+      "count": 1
+    },
+    "api_key": {
+      "file": "api_key.py",
+      "models": [
+        "APIKey"
+      ],
+      "count": 1
+    },
+    "batch": {
+      "file": "batch.py",
+      "models": [
+        "BatchJob",
+        "BatchJobItem",
+        "BatchTemplate",
+        "BatchSchedule"
+      ],
+      "count": 4
+    },
+    "channel": {
+      "file": "channel.py",
+      "models": [
+        "Channel"
+      ],
+      "count": 1
+    },
+    "cost": {
+      "file": "cost.py",
+      "models": [
+        "Cost",
+        "CostThreshold",
+        "CostAggregation",
+        "CostBudget"
+      ],
+      "count": 4
+    },
+    "cost_budget": {
+      "file": "cost_budget.py",
+      "models": [
+        "CostBudget"
+      ],
+      "count": 1
+    },
+    "experiment": {
+      "file": "experiment.py",
+      "models": [
+        "Experiment",
+        "ExperimentAssignment",
+        "ExperimentEvent"
+      ],
+      "count": 3
+    },
+    "gpu_resources": {
+      "file": "gpu_resources.py",
+      "models": [
+        "GPUDevice",
+        "GPUTask",
+        "GPUMetrics",
+        "GPUResourcePool",
+        "GPUAllocation"
+      ],
+      "count": 5
+    },
+    "payments": {
+      "file": "payments.py",
+      "models": [
+        "PaymentCustomer",
+        "Subscription",
+        "Payment",
+        "Invoice",
+        "PaymentMethod",
+        "UsageRecord",
+        "BillingAlert"
+      ],
+      "count": 7
+    },
+    "subscription": {
+      "file": "subscription.py",
+      "models": [
+        "Subscription"
+      ],
+      "count": 1
+    },
+    "user": {
+      "file": "user.py",
+      "models": [
+        "User"
+      ],
+      "count": 1
+    },
+    "user_event": {
+      "file": "user_event.py",
+      "models": [
+        "UserEvent"
+      ],
+      "count": 1
+    },
+    "user_session": {
+      "file": "user_session.py",
+      "models": [
+        "UserSession"
+      ],
+      "count": 1
+    },
+    "video": {
+      "file": "video.py",
+      "models": [
+        "Video"
+      ],
+      "count": 1
+    },
+    "video_queue": {
+      "file": "video_queue.py",
+      "models": [
+        "VideoQueue",
+        "QueueWorkerStatus",
+        "QueueMetrics"
+      ],
+      "count": 3
+    },
+    "webhook": {
+      "file": "webhook.py",
+      "models": [
+        "Webhook",
+        "WebhookDelivery",
+        "WebhookEvent",
+        "WebhookRateLimit"
+      ],
+      "count": 4
+    }
+  }
+}

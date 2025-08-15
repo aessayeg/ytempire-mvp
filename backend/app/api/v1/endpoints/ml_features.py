@@ -13,7 +13,7 @@ from app.db.session import get_db
 from app.api.v1.endpoints.auth import get_current_verified_user as get_current_user
 from app.models.user import User
 from app.services.ml_integration_service import ml_service
-from app.services.enhanced_video_generation import (
+from app.services.video_generation_pipeline import (
     generate_personalized_video,
     generate_batch_videos_with_ml
 )

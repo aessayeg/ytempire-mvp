@@ -1,0 +1,157 @@
+{
+  "version": "1.0",
+  "created_at": "2025-01-10T09:00:00",
+  "rotation_strategy": "health_weighted",
+  "accounts": [
+    {
+      "account_id": "youtube_account_01",
+      "email": "ytempire.account01@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_01.json",
+      "credentials_file": "config/youtube_credentials/credentials_01.json",
+      "api_key": "${YOUTUBE_API_KEY_01}",
+      "quota_limit": 10000,
+      "description": "Primary account for trending content"
+    },
+    {
+      "account_id": "youtube_account_02", 
+      "email": "ytempire.account02@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_02.json",
+      "credentials_file": "config/youtube_credentials/credentials_02.json",
+      "api_key": "${YOUTUBE_API_KEY_02}",
+      "quota_limit": 10000,
+      "description": "Tech niche content"
+    },
+    {
+      "account_id": "youtube_account_03",
+      "email": "ytempire.account03@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_03.json",
+      "credentials_file": "config/youtube_credentials/credentials_03.json",
+      "api_key": "${YOUTUBE_API_KEY_03}",
+      "quota_limit": 10000,
+      "description": "Gaming content"
+    },
+    {
+      "account_id": "youtube_account_04",
+      "email": "ytempire.account04@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_04.json",
+      "credentials_file": "config/youtube_credentials/credentials_04.json",
+      "api_key": "${YOUTUBE_API_KEY_04}",
+      "quota_limit": 10000,
+      "description": "Educational content"
+    },
+    {
+      "account_id": "youtube_account_05",
+      "email": "ytempire.account05@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_05.json",
+      "credentials_file": "config/youtube_credentials/credentials_05.json",
+      "api_key": "${YOUTUBE_API_KEY_05}",
+      "quota_limit": 10000,
+      "description": "Entertainment content"
+    },
+    {
+      "account_id": "youtube_account_06",
+      "email": "ytempire.account06@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_06.json",
+      "credentials_file": "config/youtube_credentials/credentials_06.json",
+      "api_key": "${YOUTUBE_API_KEY_06}",
+      "quota_limit": 10000,
+      "description": "Music content"
+    },
+    {
+      "account_id": "youtube_account_07",
+      "email": "ytempire.account07@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_07.json",
+      "credentials_file": "config/youtube_credentials/credentials_07.json",
+      "api_key": "${YOUTUBE_API_KEY_07}",
+      "quota_limit": 10000,
+      "description": "Sports content"
+    },
+    {
+      "account_id": "youtube_account_08",
+      "email": "ytempire.account08@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_08.json",
+      "credentials_file": "config/youtube_credentials/credentials_08.json",
+      "api_key": "${YOUTUBE_API_KEY_08}",
+      "quota_limit": 10000,
+      "description": "News & Politics"
+    },
+    {
+      "account_id": "youtube_account_09",
+      "email": "ytempire.account09@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_09.json",
+      "credentials_file": "config/youtube_credentials/credentials_09.json",
+      "api_key": "${YOUTUBE_API_KEY_09}",
+      "quota_limit": 10000,
+      "description": "Science & Technology"
+    },
+    {
+      "account_id": "youtube_account_10",
+      "email": "ytempire.account10@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_10.json",
+      "credentials_file": "config/youtube_credentials/credentials_10.json",
+      "api_key": "${YOUTUBE_API_KEY_10}",
+      "quota_limit": 10000,
+      "description": "Travel & Events"
+    },
+    {
+      "account_id": "youtube_account_11",
+      "email": "ytempire.account11@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_11.json",
+      "credentials_file": "config/youtube_credentials/credentials_11.json",
+      "api_key": "${YOUTUBE_API_KEY_11}",
+      "quota_limit": 10000,
+      "description": "How-to & Style"
+    },
+    {
+      "account_id": "youtube_account_12",
+      "email": "ytempire.account12@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_12.json",
+      "credentials_file": "config/youtube_credentials/credentials_12.json",
+      "api_key": "${YOUTUBE_API_KEY_12}",
+      "quota_limit": 10000,
+      "description": "Film & Animation"
+    },
+    {
+      "account_id": "youtube_account_13",
+      "email": "ytempire.account13@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_13.json",
+      "credentials_file": "config/youtube_credentials/credentials_13.json",
+      "api_key": "${YOUTUBE_API_KEY_13}",
+      "quota_limit": 10000,
+      "description": "Autos & Vehicles"
+    },
+    {
+      "account_id": "youtube_account_14",
+      "email": "ytempire.account14@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_14.json",
+      "credentials_file": "config/youtube_credentials/credentials_14.json",
+      "api_key": "${YOUTUBE_API_KEY_14}",
+      "quota_limit": 10000,
+      "description": "Pets & Animals"
+    },
+    {
+      "account_id": "youtube_account_15",
+      "email": "ytempire.account15@gmail.com",
+      "channel_id": null,
+      "client_secrets_file": "config/youtube_secrets/client_secret_15.json",
+      "credentials_file": "config/youtube_credentials/credentials_15.json",
+      "api_key": "${YOUTUBE_API_KEY_15}",
+      "quota_limit": 10000,
+      "description": "Comedy content"
+    }
+  ]
+}

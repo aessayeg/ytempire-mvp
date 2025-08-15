@@ -16,7 +16,7 @@ from app.db.session import get_db
 from app.models.video import Video, VideoStatus
 from app.models.cost import Cost
 from app.services.ai_services import AIServiceManager
-from app.services.video_processor import VideoProcessor
+from app.services.video_generation_pipeline import VideoProcessor
 from app.services.youtube_service import YouTubeService
 from app.services.cost_tracker import CostTracker
 from app.websocket.manager import websocket_manager

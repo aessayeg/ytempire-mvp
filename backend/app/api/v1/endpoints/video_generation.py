@@ -17,7 +17,7 @@ from app.services.video_generation_pipeline import (
     VideoGenerationPipeline,
     VideoGenerationConfig
 )
-from app.services.enhanced_video_generation import (
+from app.services.video_generation_pipeline import (
     enhanced_orchestrator,
     generate_personalized_video
 )

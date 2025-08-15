@@ -12,7 +12,7 @@ import logging
 from app.db.session import get_db
 from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
-from app.services.revenue_tracking import revenue_tracking_service
+from app.services.cost_tracking import cost_tracker as revenue_tracking_service
 
 logger = logging.getLogger(__name__)
 

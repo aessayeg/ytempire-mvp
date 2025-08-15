@@ -1,0 +1,102 @@
+{
+  "timestamp": "2025-08-15T02:12:31.119678",
+  "services_before": 82,
+  "services_after": 60,
+  "services_deleted": 22,
+  "size_saved": 504671,
+  "changes": [
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\mock_video_generator.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\quick_video_generator.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\video_pipeline.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\analytics_pipeline.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\etl_pipeline_service.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\inference_pipeline.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\metrics_pipeline.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\metrics_pipeline_operational.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\training_pipeline_service.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\analytics_connector.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\analytics_report.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\metrics_aggregation.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\reporting_infrastructure.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\automated_reporting.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\custom_report_builder.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\quality_metrics.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\reporting.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\reporting_service.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\cost_aggregation.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\cost_verification.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\revenue_tracking.py"
+    },
+    {
+      "action": "delete",
+      "file": "backend\\app\\services\\defect_tracking.py"
+    },
+    {
+      "action": "update",
+      "file": "main.py",
+      "changes": 15
+    }
+  ]
+}

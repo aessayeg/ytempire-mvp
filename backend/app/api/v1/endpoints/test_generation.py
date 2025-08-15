@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional
 import logging
 
 from app.db.session import get_db
-from app.services.video_generation_orchestrator import video_orchestrator
+from app.services.video_generation_pipeline import video_orchestrator
 from app.services.youtube_multi_account import get_youtube_manager
 from app.services.cost_tracking import cost_tracker
 from app.models.channel import Channel

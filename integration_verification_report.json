@@ -1,0 +1,1139 @@
+{
+  "timestamp": "2025-08-15T09:44:32.696633",
+  "integration_status": {
+    "main_imports": {
+      "total": 59,
+      "successful": 52,
+      "failed": 7,
+      "aliased": 0,
+      "success_rate": "88.1%"
+    },
+    "configuration": {
+      "docker_compose": true,
+      "backend_env": true,
+      "frontend_env": true,
+      "alembic": true,
+      "pytest": true,
+      "requirements": true,
+      "package_json": true
+    },
+    "import_tests": {
+      "app.core.config": "SUCCESS",
+      "app.core.database": "SUCCESS",
+      "app.db.session": "SUCCESS",
+      "app.services.video_generation_pipeline": "SUCCESS",
+      "app.services.analytics_service": "SUCCESS",
+      "app.services.cost_tracking": "SUCCESS"
+    }
+  },
+  "service_connections": {
+    "api_optimization": [
+      "cost_tracking"
+    ],
+    "batch_processing": [
+      "notification_service",
+      "cost_tracking",
+      "websocket_manager"
+    ],
+    "channel_manager": [
+      "notification_service",
+      "youtube_multi_account"
+    ],
+    "enhanced_video_generation": [
+      "video_generation_orchestrator",
+      "cost_tracking",
+      "ml_integration_service"
+    ],
+    "error_handlers": [
+      "ai_services",
+      "youtube_multi_account",
+      "payment_service_enhanced"
+    ],
+    "gpu_resource_service": [
+      "websocket_manager"
+    ],
+    "ml_integration_service": [
+      "cost_tracking"
+    ],
+    "multi_provider_ai": [
+      "cost_tracking"
+    ],
+    "notification_service": [
+      "email_service",
+      "websocket_manager"
+    ],
+    "payment_service_enhanced": [
+      "websocket_manager",
+      "webhook_service"
+    ],
+    "room_manager": [
+      "websocket_manager"
+    ],
+    "subscription_service": [
+      "notification_service",
+      "invoice_generator",
+      "payment_service_enhanced"
+    ],
+    "third_party_integrations": [
+      "advanced_error_recovery"
+    ],
+    "video_generation_orchestrator": [
+      "video_generation_pipeline",
+      "websocket_manager",
+      "ml_integration_service",
+      "youtube_multi_account",
+      "cost_tracking"
+    ],
+    "video_generation_pipeline": [
+      "ai_services",
+      "mock_video_generator",
+      "youtube_service",
+      "video_processor",
+      "thumbnail_generator",
+      "stock_footage",
+      "cost_tracking"
+    ],
+    "video_processor": [
+      "mock_video_generator"
+    ],
+    "video_queue_service": [
+      "websocket_manager"
+    ],
+    "webhook_service": [
+      "websocket_manager"
+    ]
+  },
+  "api_mappings": {
+    "advanced_analytics": {
+      "services": [
+        "analytics_service",
+        "cost_tracking"
+      ],
+      "routes": [
+        "POST /process",
+        "POST /stream/start",
+        "POST /stream/stop/{stream_id}",
+        "POST /predict",
+        "GET /anomalies",
+        "GET /metrics/aggregated",
+        "POST /gdpr/request",
+        "GET /performance/stats",
+        "GET /streams/active",
+        "DELETE /cache/clear",
+        "GET /revenue/analytics",
+        "GET /channels/comparison",
+        "GET /costs/analysis",
+        "GET /predictive/revenue",
+        "GET /competitive/analysis"
+      ],
+      "route_count": 15
+    },
+    "ai_multi_provider": {
+      "services": [
+        "cost_tracking",
+        "multi_provider_ai"
+      ],
+      "routes": [
+        "POST /text/generate",
+        "POST /speech/synthesize",
+        "POST /images/generate",
+        "POST /text/translate",
+        "POST /text/summarize",
+        "POST /text/sentiment",
+        "POST /batch/process",
+        "GET /providers/status",
+        "POST /providers/{provider_name}/test",
+        "GET /providers/costs"
+      ],
+      "route_count": 10
+    },
+    "analytics": {
+      "services": [
+        "roi_calculator",
+        "analytics_service"
+      ],
+      "routes": [
+        "POST /ingest",
+        "POST /ingest/batch",
+        "POST /query",
+        "GET /channels/{channel_id}",
+        "GET /videos/{video_id}/performance",
+        "GET /realtime",
+        "GET /reports",
+        "GET /reports/{report_id}",
+        "GET /export",
+        "GET /benchmarks",
+        "GET /roi/overall",
+        "GET /roi/channel/{channel_id}",
+        "GET /roi/video/{video_id}"
+      ],
+      "route_count": 13
+    },
+    "api_optimization": {
+      "services": [
+        "api_optimization"
+      ],
+      "routes": [
+        "GET /stats",
+        "GET /providers",
+        "POST /cache/control",
+        "POST /rate-limits/update",
+        "GET /circuit-breakers",
+        "POST /circuit-breakers/{provider}/reset",
+        "GET /test/{provider}",
+        "GET /recommendations",
+        "POST /test-request"
+      ],
+      "route_count": 9
+    },
+    "auth": {
+      "services": [
+        "rate_limiter",
+        "email_service"
+      ],
+      "routes": [
+        "POST /register",
+        "POST /login",
+        "POST /refresh",
+        "GET /me",
+        "POST /verify-email",
+        "POST /password-reset",
+        "POST /password-reset-confirm",
+        "POST /logout",
+        "DELETE /account"
+      ],
+      "route_count": 9
+    },
+    "batch": {
+      "services": [
+        "batch_processing"
+      ],
+      "routes": [
+        "POST /videos/generate",
+        "POST /analytics/process",
+        "GET /jobs/{job_id}",
+        "GET /jobs",
+        "POST /jobs/{job_id}/cancel",
+        "POST /jobs/{job_id}/pause",
+        "POST /jobs/{job_id}/resume",
+        "GET /jobs/{job_id}/items",
+        "POST /videos/validate",
+        "GET /templates",
+        "GET /metrics",
+        "POST /jobs/chain"
+      ],
+      "route_count": 12
+    },
+    "behavior_analytics": {
+      "services": [
+        "user_behavior_analytics"
+      ],
+      "routes": [
+        "POST /events",
+        "POST /events/batch",
+        "GET /behavior/overview",
+        "POST /funnels",
+        "GET /cohorts",
+        "GET /heatmaps",
+        "POST /segments",
+        "GET /sessions/{session_id}"
+      ],
+      "route_count": 8
+    },
+    "beta_users": {
+      "services": [
+        "email_service"
+      ],
+      "routes": [
+        "POST /signup",
+        "GET /stats",
+        "POST /feedback",
+        "GET /waitlist/count"
+      ],
+      "route_count": 4
+    },
+    "business_intelligence": {
+      "services": [
+        "analytics_service",
+        "realtime_analytics_service",
+        "beta_success_metrics"
+      ],
+      "routes": [
+        "GET /executive-metrics",
+        "GET /business-kpis",
+        "GET /financial-performance",
+        "GET /user-segments",
+        "GET /competitive-analysis",
+        "GET /alerts",
+        "GET /insights",
+        "GET /revenue-forecast",
+        "GET /cohort-analysis",
+        "GET /conversion-funnels"
+      ],
+      "route_count": 10
+    },
+    "caching": {
+      "services": [
+        "advanced_caching"
+      ],
+      "routes": [
+        "GET /stats",
+        "POST /set",
+        "GET /get/{key}",
+        "DELETE /delete/{key}",
+        "POST /batch/get",
+        "POST /batch/set",
+        "POST /invalidate/tag",
+        "POST /invalidate/pattern",
+        "POST /warm",
+        "DELETE /clear",
+        "GET /cdn/status",
+        "POST /cdn/purge",
+        "GET /video-cache/stats"
+      ],
+      "route_count": 13
+    },
+    "channels": {
+      "services": [
+        "youtube_service",
+        "analytics_service"
+      ],
+      "routes": [
+        "GET /{channel_id}",
+        "PUT /{channel_id}",
+        "DELETE /{channel_id}",
+        "POST /{channel_id}/connect-youtube",
+        "GET /{channel_id}/stats",
+        "POST /multi/operation",
+        "GET /{channel_id}/quota",
+        "PUT /{channel_id}/quota",
+        "POST /{channel_id}/isolate",
+        "GET /compare"
+      ],
+      "route_count": 10
+    },
+    "channels_optimized": {
+      "services": [
+        "optimized_queries"
+      ],
+      "routes": [
+        "GET /optimized/channels",
+        "GET /optimized/dashboard",
+        "GET /optimized/channel/{channel_id}/performance"
+      ],
+      "route_count": 3
+    },
+    "collaboration": {
+      "services": [
+        "websocket_manager"
+      ],
+      "routes": [
+        "POST /sessions",
+        "POST /sessions/{session_id}/join",
+        "POST /sessions/{session_id}/action",
+        "POST /rooms/{room_id}/join",
+        "POST /rooms/{room_id}/leave",
+        "POST /rooms/{room_id}/message",
+        "POST /presence/update",
+        "GET /presence/online",
+        "GET /rooms",
+        "GET /stats",
+        "POST /typing/{room_id}",
+        "POST /cursor/update"
+      ],
+      "route_count": 12
+    },
+    "content_library": {
+      "services": [
+        "cost_tracking"
+      ],
+      "routes": [
+        "POST /templates",
+        "GET /templates",
+        "GET /templates/{template_id}",
+        "PUT /templates/{template_id}",
+        "DELETE /templates/{template_id}",
+        "POST /templates/{template_id}/use",
+        "POST /voice-presets",
+        "GET /voice-presets",
+        "GET /voice-presets/providers",
+        "POST /voice-presets/{preset_id}/test",
+        "GET /script-library/suggestions"
+      ],
+      "route_count": 11
+    },
+    "cost_intelligence": {
+      "services": [
+        "cost_optimizer",
+        "cost_tracking"
+      ],
+      "routes": [
+        "GET /predict",
+        "POST /optimize/recommendations",
+        "POST /budget/manage"
+      ],
+      "route_count": 3
+    },
+    "cost_optimization": {
+      "services": [
+        "cost_optimizer"
+      ],
+      "routes": [
+        "POST /estimate",
+        "POST /optimal-model",
+        "GET /report",
+        "GET /validate/{video_id}",
+        "GET /strategies",
+        "GET /daily-spending",
+        "POST /optimize-prompt",
+        "GET /cache-stats"
+      ],
+      "route_count": 8
+    },
+    "dashboard": {
+      "services": [],
+      "routes": [
+        "GET /overview",
+        "GET /performance",
+        "GET /channels",
+        "GET /video-queue",
+        "GET /analytics-summary",
+        "GET /user-preferences",
+        "POST /user-preferences",
+        "GET /realtime-stats",
+        "GET /notifications",
+        "POST /notifications/{notification_id}/mark-read"
+      ],
+      "route_count": 10
+    },
+    "data_analytics": {
+      "services": [
+        "advanced_forecasting_models",
+        "custom_report_builder",
+        "advanced_data_visualization",
+        "data_marketplace_integration"
+      ],
+      "routes": [
+        "GET /visualizations",
+        "POST /visualizations/create",
+        "POST /visualizations/register",
+        "POST /dashboards/create",
+        "GET /reports/templates",
+        "POST /reports/generate",
+        "POST /reports/schedule",
+        "GET /reports/scheduled",
+        "POST /reports/custom-template",
+        "GET /marketplace/products",
+        "POST /marketplace/subscribe",
+        "POST /marketplace/fetch",
+        "GET /marketplace/subscriptions/{subscription_id}/status",
+        "GET /marketplace/analytics",
+        "POST /forecast/create",
+        "POST /forecast/compare",
+        "GET /forecast/recommendations",
+        "GET /analytics/overview"
+      ],
+      "route_count": 18
+    },
+    "data_quality": {
+      "services": [
+        "data_quality"
+      ],
+      "routes": [
+        "GET /health",
+        "GET /report/{dataset_name}",
+        "GET /metrics/summary",
+        "GET /validation-rules",
+        "POST /batch/quality-check",
+        "POST /batch/cleanup/{dataset_name}",
+        "GET /trends/{dataset_name}",
+        "GET /alerts",
+        "POST /monitoring/schedule"
+      ],
+      "route_count": 9
+    },
+    "error_recovery": {
+      "services": [
+        "advanced_error_recovery"
+      ],
+      "routes": [
+        "POST /register/circuit-breaker",
+        "POST /register/bulkhead",
+        "GET /status/circuit-breakers",
+        "GET /status/bulkheads",
+        "POST /test/retry",
+        "POST /test/circuit-breaker",
+        "POST /test/bulkhead",
+        "POST /configure/fallback-chain",
+        "GET /metrics",
+        "POST /cache/set",
+        "GET /cache/get/{key}"
+      ],
+      "route_count": 11
+    },
+    "etl": {
+      "services": [
+        "etl_pipeline_service"
+      ],
+      "routes": [
+        "POST /run/video-performance",
+        "POST /run/generation-metrics",
+        "POST /run/channel-analytics",
+        "POST /schedule",
+        "GET /job/{job_id}",
+        "GET /quality-report",
+        "GET /pipelines",
+        "GET /dimensions",
+        "GET /facts",
+        "GET /status"
+      ],
+      "route_count": 10
+    },
+    "experiments": {
+      "services": [
+        "ab_testing_service"
+      ],
+      "routes": [
+        "POST /{experiment_id}/start",
+        "GET /assignment/{experiment_id}",
+        "POST /track-conversion",
+        "GET /{experiment_id}/results",
+        "POST /{experiment_id}/conclude",
+        "GET /active",
+        "GET /{experiment_id}"
+      ],
+      "route_count": 7
+    },
+    "gpu_resources": {
+      "services": [
+        "gpu_resource_service",
+        "cost_tracking"
+      ],
+      "routes": [
+        "POST /allocate",
+        "POST /release",
+        "GET /devices",
+        "GET /queue",
+        "GET /metrics",
+        "GET /stats",
+        "POST /reserve/{device_id}",
+        "DELETE /reserve/{reservation_id}",
+        "GET /health",
+        "POST /optimize",
+        "POST /batching/enable",
+        "POST /memory/optimize",
+        "GET /efficiency/analysis",
+        "POST /workload/balance"
+      ],
+      "route_count": 14
+    },
+    "integrations": {
+      "services": [
+        "third_party_integrations"
+      ],
+      "routes": [
+        "GET /status",
+        "POST /register",
+        "POST /webhook/send",
+        "POST /webhook/receive/{integration_name}",
+        "POST /slack/message",
+        "POST /discord/message",
+        "POST /airtable/sync",
+        "POST /google-sheets/sync",
+        "POST /notion/page",
+        "POST /trello/card",
+        "POST /hubspot/contact",
+        "POST /mailchimp/subscribe",
+        "POST /api/call",
+        "POST /batch/notifications"
+      ],
+      "route_count": 14
+    },
+    "ml_features": {
+      "services": [
+        "video_generation_pipeline",
+        "ml_integration_service"
+      ],
+      "routes": [
+        "POST /personalize",
+        "POST /predict-performance",
+        "GET /channel-insights/{channel_id}",
+        "POST /train-model",
+        "GET /model-status",
+        "POST /generate-video",
+        "POST /batch-generate",
+        "POST /update-profile/{channel_id}",
+        "GET /recommendations/{channel_id}"
+      ],
+      "route_count": 9
+    },
+    "notifications": {
+      "services": [
+        "notification_service"
+      ],
+      "routes": [
+        "POST /send",
+        "POST /send-template",
+        "POST /send-bulk",
+        "POST /schedule",
+        "GET /templates",
+        "GET /test/{notification_type}",
+        "POST /video-generation-complete",
+        "POST /cost-alert"
+      ],
+      "route_count": 8
+    },
+    "payment": {
+      "services": [
+        "payment_service_enhanced"
+      ],
+      "routes": [
+        "POST /checkout-session",
+        "POST /subscription",
+        "GET /subscription",
+        "PUT /subscription/upgrade-downgrade",
+        "POST /subscription/cancel",
+        "POST /usage/track",
+        "GET /usage/summary",
+        "GET /billing/history",
+        "POST /invoices/generate",
+        "GET /invoices",
+        "POST /usage/overage",
+        "POST /webhook",
+        "GET /plans",
+        "POST /subscription",
+        "GET /subscription",
+        "POST /subscription/cancel",
+        "POST /subscription/resume",
+        "POST /payment-methods",
+        "DELETE /payment-methods/{payment_method_id}",
+        "GET /payment-methods",
+        "POST /webhook",
+        "GET /plans"
+      ],
+      "route_count": 22
+    },
+    "quality_dashboard": {
+      "services": [
+        "automated_reporting",
+        "analytics_service"
+      ],
+      "routes": [
+        "GET /overview",
+        "GET /metrics",
+        "POST /metrics",
+        "GET /metrics/{metric_id}/history",
+        "GET /trends",
+        "GET /defects",
+        "GET /defects/statistics",
+        "GET /defects/{defect_id}",
+        "GET /dashboard",
+        "GET /reports",
+        "POST /reports/{report_type}/generate",
+        "GET /health",
+        "POST /monitoring/start",
+        "POST /monitoring/stop"
+      ],
+      "route_count": 14
+    },
+    "revenue": {
+      "services": [
+        "cost_tracking"
+      ],
+      "routes": [
+        "GET /overview",
+        "GET /channels/{channel_id}",
+        "GET /trends",
+        "GET /forecast",
+        "GET /breakdown",
+        "GET /export",
+        "POST /recalculate"
+      ],
+      "route_count": 7
+    },
+    "script_generation": {
+      "services": [
+        "cost_tracking"
+      ],
+      "routes": [
+        "POST /generate",
+        "POST /generate-variations",
+        "POST /optimize",
+        "GET /styles",
+        "GET /cost-estimate"
+      ],
+      "route_count": 5
+    },
+    "system_monitoring": {
+      "services": [
+        "scaling_optimizer",
+        "realtime_analytics_service",
+        "beta_success_metrics"
+      ],
+      "routes": [
+        "GET /system-status",
+        "GET /performance-metrics",
+        "GET /scaling-info",
+        "POST /force-scaling-mode",
+        "GET /realtime-dashboard",
+        "GET /health-check",
+        "GET /capacity-planning",
+        "GET /service-dependencies"
+      ],
+      "route_count": 8
+    },
+    "test_generation": {
+      "services": [
+        "video_generation_pipeline",
+        "youtube_multi_account",
+        "cost_tracking"
+      ],
+      "routes": [
+        "POST /test-video-generation",
+        "GET /test-generation-status",
+        "POST /test-batch-generation"
+      ],
+      "route_count": 3
+    },
+    "training": {
+      "services": [
+        "training_pipeline_service"
+      ],
+      "routes": [
+        "POST /train-performance-model",
+        "POST /train-quality-model",
+        "POST /schedule",
+        "POST /trigger-retraining",
+        "POST /monitor",
+        "GET /history",
+        "GET /scheduled",
+        "GET /models",
+        "GET /status"
+      ],
+      "route_count": 9
+    },
+    "users": {
+      "services": [
+        "storage_service"
+      ],
+      "routes": [
+        "GET /profile",
+        "PUT /profile",
+        "POST /avatar",
+        "GET /preferences",
+        "PUT /preferences",
+        "POST /subscription/upgrade",
+        "GET /stats",
+        "DELETE /account"
+      ],
+      "route_count": 8
+    },
+    "videos": {
+      "services": [
+        "ai_services",
+        "youtube_service",
+        "cost_tracking",
+        "video_generation_pipeline"
+      ],
+      "routes": [
+        "POST /generate",
+        "GET /{video_id}/status",
+        "POST /{video_id}/publish",
+        "GET /{video_id}",
+        "PUT /{video_id}",
+        "DELETE /{video_id}",
+        "POST /bulk-generate",
+        "GET /{video_id}/analytics"
+      ],
+      "route_count": 8
+    },
+    "video_generation": {
+      "services": [
+        "video_generation_pipeline",
+        "websocket_manager"
+      ],
+      "routes": [
+        "POST /generate",
+        "GET /status/{video_id}",
+        "POST /cancel/{video_id}",
+        "GET /history"
+      ],
+      "route_count": 4
+    },
+    "video_processing": {
+      "services": [
+        "video_generation_pipeline"
+      ],
+      "routes": [
+        "POST /process",
+        "POST /export-multiple-formats",
+        "POST /batch-process",
+        "POST /enhance-quality",
+        "GET /stats",
+        "GET /formats",
+        "POST /upload-and-process",
+        "DELETE /cleanup/{job_id}",
+        "POST /benchmark"
+      ],
+      "route_count": 9
+    },
+    "video_queue": {
+      "services": [
+        "video_queue_service"
+      ],
+      "routes": [
+        "POST /add",
+        "POST /batch",
+        "GET /list",
+        "GET /{queue_id}",
+        "PATCH /{queue_id}",
+        "DELETE /{queue_id}",
+        "POST /{queue_id}/retry",
+        "GET /stats/summary",
+        "POST /pause-all",
+        "POST /resume-all"
+      ],
+      "route_count": 10
+    },
+    "webhooks": {
+      "services": [
+        "webhook_service"
+      ],
+      "routes": [
+        "GET /{webhook_id}",
+        "PUT /{webhook_id}",
+        "DELETE /{webhook_id}",
+        "POST /{webhook_id}/test",
+        "GET /{webhook_id}/deliveries",
+        "POST /{webhook_id}/toggle",
+        "POST /trigger/{event}"
+      ],
+      "route_count": 7
+    },
+    "youtube_accounts": {
+      "services": [
+        "youtube_multi_account"
+      ],
+      "routes": [
+        "GET /stats",
+        "GET /accounts",
+        "GET /accounts/{account_id}",
+        "POST /oauth/setup",
+        "POST /oauth/complete",
+        "POST /upload",
+        "POST /accounts/{account_id}/reset-quota",
+        "GET /best-account"
+      ],
+      "route_count": 8
+    },
+    "youtube_advanced": {
+      "services": [
+        "youtube_service",
+        "cost_tracking"
+      ],
+      "routes": [
+        "POST /analytics/query",
+        "GET /analytics/metrics/available",
+        "POST /playlists",
+        "POST /playlists/add-video",
+        "GET /videos/{video_id}/comments",
+        "POST /comments/moderate",
+        "GET /videos/{video_id}/thumbnails",
+        "POST /videos/thumbnails/select",
+        "GET /quota/status",
+        "GET /trending/analyze"
+      ],
+      "route_count": 10
+    },
+    "youtube_oauth": {
+      "services": [
+        "youtube_oauth_service"
+      ],
+      "routes": [
+        "GET /oauth/authorize/{account_id}",
+        "GET /oauth/callback",
+        "GET /accounts/authorized",
+        "POST /accounts/{account_id}/health",
+        "POST /accounts/authorize-all"
+      ],
+      "route_count": 5
+    }
+  },
+  "websocket_connections": {
+    "manager_exists": true,
+    "endpoints": [
+      "/ws/{client_id}",
+      "/ws/video-updates/{channel_id}"
+    ],
+    "room_support": true,
+    "broadcast_support": true
+  },
+  "celery_tasks": {
+    "ai_tasks": {
+      "tasks": [
+        "generate_video_script",
+        "synthesize_voice",
+        "generate_thumbnail",
+        "optimize_content_for_seo",
+        "optimize_ai_models"
+      ],
+      "task_count": 5,
+      "services_used": [
+        "ai_services",
+        "thumbnail_generator",
+        "cost_tracking",
+        "script_generation"
+      ]
+    },
+    "analytics_tasks": {
+      "tasks": [
+        "sync_youtube_analytics",
+        "aggregate_costs",
+        "calculate_channel_roi",
+        "generate_analytics_report",
+        "cleanup_old_analytics_data"
+      ],
+      "task_count": 5,
+      "services_used": [
+        "youtube_service",
+        "realtime_analytics_service",
+        "analytics_service",
+        "cost_tracking"
+      ]
+    },
+    "batch_tasks": {
+      "tasks": [
+        "batch_process_videos",
+        "process_single_video",
+        "bulk_update_videos",
+        "bulk_delete_videos",
+        "batch_aggregate_analytics",
+        "cleanup_old_batch_jobs"
+      ],
+      "task_count": 6,
+      "services_used": [
+        "video_generation_pipeline",
+        "batch_processing",
+        "notification_service"
+      ]
+    },
+    "ml_pipeline_tasks": {
+      "tasks": [
+        "train_model_task",
+        "batch_prediction_task",
+        "retrain_all_models_task",
+        "monitor_model_drift_task"
+      ],
+      "task_count": 4,
+      "services_used": [
+        "training_data_service",
+        "inference_pipeline",
+        "model_monitoring",
+        "feature_engineering"
+      ]
+    },
+    "pipeline_tasks": {
+      "tasks": [
+        "analyze_trends",
+        "select_topic",
+        "generate_script_task",
+        "generate_voice_task",
+        "generate_visuals_task",
+        "create_video_task",
+        "quality_check_task",
+        "upload_youtube_task",
+        "orchestrate_full_pipeline",
+        "batch_generate_videos",
+        "get_pipeline_status",
+        "batch_process_optimized",
+        "process_video_with_retry",
+        "monitor_and_optimize_throughput",
+        "auto_scale_workers"
+      ],
+      "task_count": 15,
+      "services_used": [
+        "ai_services",
+        "video_generation_pipeline",
+        "n8n_integration",
+        "cost_optimizer",
+        "youtube_multi_account"
+      ]
+    },
+    "video_generation": {
+      "tasks": [
+        "generate_video",
+        "generate_script",
+        "generate_voice",
+        "generate_visuals",
+        "assemble_video",
+        "generate_thumbnail",
+        "calculate_video_cost",
+        "check_pending_videos"
+      ],
+      "task_count": 8,
+      "services_used": [
+        "cost_service",
+        "video_service",
+        "ai_service"
+      ]
+    },
+    "video_tasks": {
+      "tasks": [
+        "generate_video",
+        "upload_to_youtube",
+        "cleanup_old_videos",
+        "check_stuck_videos",
+        "batch_generate_videos"
+      ],
+      "task_count": 5,
+      "services_used": [
+        "ai_services",
+        "video_generation_pipeline",
+        "youtube_service",
+        "cost_tracker"
+      ]
+    },
+    "webhook_tasks": {
+      "tasks": [
+        "deliver_webhook",
+        "send_verification",
+        "cleanup_old_deliveries",
+        "process_webhook_event_batch",
+        "update_webhook_stats"
+      ],
+      "task_count": 5,
+      "services_used": [
+        "webhook_service"
+      ]
+    },
+    "youtube_tasks": {
+      "tasks": [
+        "upload_video_to_youtube",
+        "update_video_metadata",
+        "delete_video_from_youtube",
+        "check_upload_status",
+        "sync_channel_videos",
+        "schedule_video_publish"
+      ],
+      "task_count": 6,
+      "services_used": [
+        "youtube_service",
+        "youtube_multi_account",
+        "notification_service"
+      ]
+    }
+  },
+  "database_connections": {
+    "total_models": 39,
+    "services_using_models": 50,
+    "model_usage": {
+      "payment_service_enhanced": [
+        "PaymentCustomer",
+        "Subscription",
+        "Payment",
+        "Invoice",
+        "PaymentMethod",
+        "UsageRecord",
+        "BillingAlert",
+        "Subscription",
+        "User",
+        "Webhook",
+        "WebhookEvent"
+      ],
+      "subscription_service": [
+        "Channel",
+        "Cost",
+        "Subscription",
+        "Payment",
+        "Invoice",
+        "PaymentMethod",
+        "Subscription",
+        "User"
+      ],
+      "invoice_generator": [
+        "Cost",
+        "Subscription",
+        "Payment",
+        "Invoice",
+        "Subscription",
+        "User",
+        "Video"
+      ],
+      "video_queue_service": [
+        "Channel",
+        "User",
+        "Video",
+        "VideoQueue",
+        "QueueWorkerStatus",
+        "QueueMetrics"
+      ],
+      "data_marketplace_integration": [
+        "Analytics",
+        "Channel",
+        "Subscription",
+        "Subscription",
+        "Video"
+      ],
+      "gpu_resource_service": [
+        "GPUDevice",
+        "GPUTask",
+        "GPUMetrics",
+        "GPUResourcePool",
+        "GPUAllocation"
+      ],
+      "optimized_queries": [
+        "Analytics",
+        "Channel",
+        "Cost",
+        "User",
+        "Video"
+      ],
+      "webhook_service": [
+        "User",
+        "Webhook",
+        "WebhookDelivery",
+        "WebhookEvent",
+        "WebhookRateLimit"
+      ],
+      "ab_testing_service": [
+        "Experiment",
+        "ExperimentAssignment",
+        "ExperimentEvent",
+        "User"
+      ],
+      "batch_processing": [
+        "BatchJob",
+        "BatchJobItem",
+        "Video",
+        "Webhook"
+      ]
+    }
+  },
+  "frontend_backend_links": {
+    "total_api_files": 142,
+    "total_api_calls": 0,
+    "unique_endpoints": []
+  },
+  "errors": [
+    "Failed import: websocket_events.websocket_events",
+    "Failed import: video_validation (file missing)",
+    "Failed import: automation_service (file missing)",
+    "Failed import: pricing_calculator (file missing)",
+    "Failed import: user_analytics (file missing)"
+  ],
+  "warnings": [],
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "action": "Fix import errors in main.py",
+      "details": "Found 5 import errors that need fixing"
+    }
+  ],
+  "summary": {
+    "health_score": "100.0%",
+    "total_checks": 6,
+    "passed_checks": 6,
+    "total_errors": 5,
+    "total_warnings": 0
+  }
+}
