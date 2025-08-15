@@ -261,3 +261,159 @@ async def setup_budget_management(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to setup budget management: {str(e)}"
         )
+
+
+# Helper functions
+
+def _filter_recommendations_by_level(
+    recommendations: Dict[str, Any],
+    level: OptimizationLevel,
+    quality_threshold: float
+) -> Dict[str, Any]:
+    """Filter recommendations based on optimization level and quality threshold"""
+    filtered = {
+        "recommendations": [],
+        "estimated_total_savings": 0
+    }
+    
+    # Define aggressiveness thresholds
+    thresholds = {
+        OptimizationLevel.CONSERVATIVE: 0.2,  # 20% max reduction
+        OptimizationLevel.MODERATE: 0.35,      # 35% max reduction
+        OptimizationLevel.AGGRESSIVE: 0.5      # 50% max reduction
+    }
+    
+    max_reduction = thresholds[level]
+    
+    # Filter recommendations
+    if "recommendations" in recommendations:
+        for rec in recommendations.get("recommendations", []):
+            # Check if recommendation meets criteria
+            if rec.get("quality_impact", 100) >= quality_threshold:
+                if rec.get("savings_percent", 0) <= max_reduction * 100:
+                    filtered["recommendations"].append(rec)
+                    filtered["estimated_total_savings"] += rec.get("estimated_savings", 0)
+    
+    return filtered
+
+
+def _generate_implementation_roadmap(recommendations: Dict[str, Any]) -> Dict[str, Any]:
+    """Generate implementation roadmap for recommendations"""
+    roadmap = {
+        "phases": [],
+        "total_duration_days": 0,
+        "priority_order": []
+    }
+    
+    # Phase 1: Quick wins (immediate)
+    quick_wins = [r for r in recommendations.get("recommendations", []) 
+                  if r.get("implementation_effort", "low") == "low"]
+    if quick_wins:
+        roadmap["phases"].append({
+            "phase": 1,
+            "name": "Quick Wins",
+            "duration_days": 7,
+            "recommendations": quick_wins,
+            "expected_savings": sum(r.get("estimated_savings", 0) for r in quick_wins)
+        })
+        roadmap["total_duration_days"] += 7
+    
+    # Phase 2: Medium effort optimizations
+    medium_effort = [r for r in recommendations.get("recommendations", [])
+                     if r.get("implementation_effort", "low") == "medium"]
+    if medium_effort:
+        roadmap["phases"].append({
+            "phase": 2,
+            "name": "Core Optimizations",
+            "duration_days": 14,
+            "recommendations": medium_effort,
+            "expected_savings": sum(r.get("estimated_savings", 0) for r in medium_effort)
+        })
+        roadmap["total_duration_days"] += 14
+    
+    # Phase 3: High effort transformations
+    high_effort = [r for r in recommendations.get("recommendations", [])
+                   if r.get("implementation_effort", "low") == "high"]
+    if high_effort:
+        roadmap["phases"].append({
+            "phase": 3,
+            "name": "Strategic Transformations",
+            "duration_days": 30,
+            "recommendations": high_effort,
+            "expected_savings": sum(r.get("estimated_savings", 0) for r in high_effort)
+        })
+        roadmap["total_duration_days"] += 30
+    
+    # Priority order
+    roadmap["priority_order"] = [
+        r.get("service", "unknown") 
+        for r in sorted(recommendations.get("recommendations", []), 
+                       key=lambda x: x.get("estimated_savings", 0), 
+                       reverse=True)
+    ]
+    
+    return roadmap
+
+
+def _assess_implementation_effort(recommendations: Dict[str, Any]) -> str:
+    """Assess overall implementation effort"""
+    effort_counts = {"low": 0, "medium": 0, "high": 0}
+    
+    for rec in recommendations.get("recommendations", []):
+        effort = rec.get("implementation_effort", "medium")
+        effort_counts[effort] = effort_counts.get(effort, 0) + 1
+    
+    total = sum(effort_counts.values())
+    if total == 0:
+        return "minimal"
+    
+    # Calculate weighted effort
+    weighted_score = (
+        effort_counts["low"] * 1 +
+        effort_counts["medium"] * 2 +
+        effort_counts["high"] * 3
+    ) / total
+    
+    if weighted_score <= 1.5:
+        return "Low - Can be implemented within a week"
+    elif weighted_score <= 2.5:
+        return "Medium - Requires 2-3 weeks of implementation"
+    else:
+        return "High - Strategic initiative requiring 1+ months"
+
+
+def _generate_budget_insights(budget_analysis: Dict[str, Any], request: BudgetManagementRequest) -> Dict[str, Any]:
+    """Generate insights for budget management"""
+    insights = {
+        "current_utilization": budget_analysis.get("current_utilization", 0),
+        "projected_overrun_risk": "low",
+        "optimization_opportunities": [],
+        "recommendations": []
+    }
+    
+    # Calculate utilization percentage
+    if "current_spend" in budget_analysis and request.budget_amount > 0:
+        utilization = (budget_analysis["current_spend"] / request.budget_amount) * 100
+        insights["current_utilization"] = utilization
+        
+        # Assess overrun risk
+        if utilization > 90:
+            insights["projected_overrun_risk"] = "high"
+            insights["recommendations"].append("Immediate cost reduction required")
+        elif utilization > 75:
+            insights["projected_overrun_risk"] = "medium"
+            insights["recommendations"].append("Consider implementing cost optimization")
+        else:
+            insights["projected_overrun_risk"] = "low"
+            insights["recommendations"].append("Budget is healthy")
+    
+    # Identify optimization opportunities
+    if "top_services" in budget_analysis:
+        for service in budget_analysis["top_services"][:3]:
+            insights["optimization_opportunities"].append({
+                "service": service["name"],
+                "current_cost": service["cost"],
+                "potential_savings": service["cost"] * 0.3  # 30% potential
+            })
+    
+    return insights

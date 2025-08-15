@@ -365,8 +365,8 @@ async def delete_template(
 @router.post("/templates/{template_id}/use")
 async def use_template(
     template_id: str,
-    variables: Dict[str, str] = {},
     background_tasks: BackgroundTasks,
+    variables: Dict[str, str] = {},
     current_user: User = Depends(get_current_verified_user)
 ) -> Dict[str, Any]:
     """

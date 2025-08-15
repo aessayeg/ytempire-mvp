@@ -6,6 +6,7 @@ Provides real-time quality metrics and dashboards
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Any, Optional
 import json
+from enum import Enum
 
 from fastapi import APIRouter, HTTPException, Query, Depends, BackgroundTasks
 from pydantic import BaseModel, Field
@@ -23,6 +24,23 @@ from app.services.automated_reporting import setup_automated_reporting
 from app.core.deps import get_current_user
 
 router = APIRouter()
+
+# Define missing enums
+class DefectSeverity(str, Enum):
+    """Defect severity levels"""
+    CRITICAL = "critical"
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+    TRIVIAL = "trivial"
+
+class DefectStatus(str, Enum):
+    """Defect status"""
+    OPEN = "open"
+    IN_PROGRESS = "in_progress"
+    RESOLVED = "resolved"
+    CLOSED = "closed"
+    REOPENED = "reopened"
 
 # ============================================================================
 # Request/Response Models

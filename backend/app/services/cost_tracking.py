@@ -283,28 +283,28 @@ class CostTracker:
         """Get aggregated cost data"""
         # Determine grouping
         if granularity == 'hour':
-            date_trunc = func.date_trunc('hour', CostRecord.timestamp)
+            date_trunc = func.date_trunc('hour', Cost.timestamp)
         elif granularity == 'day':
-            date_trunc = func.date_trunc('day', CostRecord.timestamp)
+            date_trunc = func.date_trunc('day', Cost.timestamp)
         elif granularity == 'week':
-            date_trunc = func.date_trunc('week', CostRecord.timestamp)
+            date_trunc = func.date_trunc('week', Cost.timestamp)
         else:  # month
-            date_trunc = func.date_trunc('month', CostRecord.timestamp)
+            date_trunc = func.date_trunc('month', Cost.timestamp)
             
         # Query aggregated data
         result = await db.execute(
             select(
                 date_trunc.label('period'),
-                CostRecord.service,
-                func.sum(CostRecord.total_cost).label('total_cost'),
-                func.count(CostRecord.id).label('operation_count'),
-                func.avg(CostRecord.total_cost).label('avg_cost')
+                Cost.service,
+                func.sum(Cost.total_cost).label('total_cost'),
+                func.count(Cost.id).label('operation_count'),
+                func.avg(Cost.total_cost).label('avg_cost')
             ).where(
                 and_(
-                    CostRecord.timestamp >= start_date,
-                    CostRecord.timestamp <= end_date
+                    Cost.timestamp >= start_date,
+                    Cost.timestamp <= end_date
                 )
-            ).group_by(date_trunc, CostRecord.service)
+            ).group_by(date_trunc, Cost.service)
             .order_by(date_trunc)
         )
         
