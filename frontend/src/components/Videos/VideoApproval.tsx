@@ -3,8 +3,8 @@ import { Box, Paper, Typography, Button, TextField, Rating, FormControl, RadioGr
 import { CheckCircle, Cancel, Edit } from '@mui/icons-material';
 
 interface VideoApprovalProps {
-  video: any;
-  onApprove: (feedback: any) => void;
+  video: unknown;
+  onApprove: (feedback: unknown) => void;
   onReject: (reason: string) => void;
   onRequestChanges: (changes: string) => void;
 }

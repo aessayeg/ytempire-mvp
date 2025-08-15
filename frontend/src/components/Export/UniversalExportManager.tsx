@@ -68,7 +68,7 @@ export interface ExportConfig {
   includeHeaders: boolean;
   includeMetadata: boolean;
   dateRange?: [Date, Date];
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
   columns?: string[];
   customTemplate?: string;
   compression?: boolean;
@@ -78,11 +78,11 @@ export interface ExportConfig {
 
 export interface ExportData {
   title: string;
-  data: any[];
+  data: unknown[];
   columns?: { key: string; label: string; type?: string }[];
-  metadata?: Record<string, any>;
-  charts?: { type: string; data: any }[];
-  summary?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+  charts?: { type: string; data: unknown }[];
+  summary?: Record<string, unknown>;
 }
 
 interface ExportManagerProps {
@@ -191,7 +191,7 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
     
     // Main data sheet
     const mainData = data.data.map(row => {
-      const exportRow: any = {};
+      const exportRow: unknown = {};
       exportConfig.columns?.forEach(col => {
         const column = data.columns?.find(c => c.key === col);
         exportRow[column?.label || col] = row[col];
@@ -282,11 +282,11 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
 
   // Export to JSON
   const exportToJSON = useCallback(() => {
-    const exportData: any = {
+    const exportData: unknown = {
       title: data.title,
       exportDate: new Date().toISOString(),
       data: data.data.map(row => {
-        const exportRow: any = {};
+        const exportRow: unknown = {};
         exportConfig.columns?.forEach(col => {
           exportRow[col] = row[col];
         });
@@ -309,10 +309,10 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
 
   // Export to XML
   const exportToXML = useCallback(() => {
-    const jsonToXml = (obj: any, rootName: string = 'root'): string => {
+    const jsonToXml = (obj: unknown, rootName: string = 'root'): string => {
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<${rootName}>`;
       
-      const convertToXml = (data: any, indent: string = '  '): string => {
+      const convertToXml = (data: unknown, indent: string = '  '): string => {
         let result = '';
         
         if (Array.isArray(data)) {
@@ -341,11 +341,11 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
       return xml;
     };
     
-    const exportData: any = {
+    const exportData: unknown = {
       title: data.title,
       exportDate: new Date().toISOString(),
       data: data.data.map(row => {
-        const exportRow: any = {};
+        const exportRow: unknown = {};
         exportConfig.columns?.forEach(col => {
           exportRow[col] = row[col];
         });
@@ -410,7 +410,7 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
         setExportProgress(0);
       }, 1500);
       
-    } catch (error) {
+    } catch (_error) {
       setExportError(error instanceof Error ? error.message : 'Export failed');
     } finally {
       setIsExporting(false);
@@ -430,7 +430,7 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
   // Get preview data
   const getPreviewData = () => {
     return data.data.slice(0, 5).map(row => {
-      const previewRow: any = {};
+      const previewRow: unknown = {};
       exportConfig.columns?.forEach(col => {
         const column = data.columns?.find(c => c.key === col);
         previewRow[column?.label || col] = row[col];

@@ -150,7 +150,7 @@ export const VideoQueueInterface: React.FC = () => {
       setStats(statsResponse.data);
       
       setLoading(false);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch queue:', error);
       addNotification({
         type: 'error',
@@ -230,7 +230,7 @@ export const VideoQueueInterface: React.FC = () => {
       await api.patch(`/queue/${reorderedItem.id}`, {
         priority: updatedItems.find((i) => i.id === reorderedItem.id)?.priority,
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to update priority:', error);
     }
   };
@@ -244,7 +244,7 @@ export const VideoQueueInterface: React.FC = () => {
         type: 'success',
         message: 'Video paused',
       });
-    } catch (error) {
+    } catch (_error) {
       addNotification({
         type: 'error',
         message: 'Failed to pause video',
@@ -260,7 +260,7 @@ export const VideoQueueInterface: React.FC = () => {
         type: 'success',
         message: 'Video resumed',
       });
-    } catch (error) {
+    } catch (_error) {
       addNotification({
         type: 'error',
         message: 'Failed to resume video',
@@ -276,7 +276,7 @@ export const VideoQueueInterface: React.FC = () => {
         type: 'success',
         message: 'Video queued for retry',
       });
-    } catch (error) {
+    } catch (_error) {
       addNotification({
         type: 'error',
         message: 'Failed to retry video',
@@ -292,7 +292,7 @@ export const VideoQueueInterface: React.FC = () => {
         type: 'success',
         message: 'Video removed from queue',
       });
-    } catch (error) {
+    } catch (_error) {
       addNotification({
         type: 'error',
         message: 'Failed to remove video',
@@ -308,7 +308,7 @@ export const VideoQueueInterface: React.FC = () => {
         type: 'success',
         message: 'All videos paused',
       });
-    } catch (error) {
+    } catch (_error) {
       addNotification({
         type: 'error',
         message: 'Failed to pause all videos',
@@ -324,7 +324,7 @@ export const VideoQueueInterface: React.FC = () => {
         type: 'success',
         message: 'All videos resumed',
       });
-    } catch (error) {
+    } catch (_error) {
       addNotification({
         type: 'error',
         message: 'Failed to resume all videos',

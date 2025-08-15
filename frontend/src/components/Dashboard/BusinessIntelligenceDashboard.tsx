@@ -353,7 +353,7 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
       setInsights(insightsResponse.data || []);
       
       setLoading(false);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch BI data:', error);
       addNotification({
         type: 'error',

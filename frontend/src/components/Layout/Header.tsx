@@ -95,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
+  const handleOpenUserMenu = (_event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
 
@@ -103,7 +103,7 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
     setAnchorElUser(null);
   };
 
-  const handleOpenNotifications = (event: React.MouseEvent<HTMLElement>) => {
+  const handleOpenNotifications = (_event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNotif(event.currentTarget);
   };
 
@@ -121,7 +121,7 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
     navigate('/auth/login');
   };
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (_e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);

@@ -16,7 +16,7 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  error: string | null;
+  _error: string | null;
   
   // Actions
   login: (email: string, password: string) => Promise<void>;
@@ -35,10 +35,10 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
       isLoading: false,
-      error: null,
+      _error: null,
       
       login: async (email: string, password: string) => {
-        set({ isLoading: true, error: null });
+        set({ isLoading: true, _error: null });
         
         try {
           const response = await axios.post(`${API_URL}/api/v1/auth/login`, {
@@ -56,12 +56,15 @@ export const useAuthStore = create<AuthState>()(
             token: access_token,
             isAuthenticated: true,
             isLoading: false,
-            error: null,
+            _error: null,
           });
-        } catch (error: any) {
+        } catch (_error: unknown) {
+          const errorMessage = error && typeof error === 'object' && 'response' in error 
+            ? (error as any).response?.data?.detail || 'Login failed'
+            : 'Login failed';
           set({
             isLoading: false,
-            error: error.response?.data?.detail || 'Login failed',
+            _error: errorMessage,
             isAuthenticated: false,
           });
           throw error;
@@ -74,12 +77,12 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           token: null,
           isAuthenticated: false,
-          error: null,
+          _error: null,
         });
       },
       
       register: async (email: string, password: string, fullName: string) => {
-        set({ isLoading: true, error: null });
+        set({ isLoading: true, _error: null });
         
         try {
           await axios.post(`${API_URL}/api/v1/auth/register`, {
@@ -90,10 +93,13 @@ export const useAuthStore = create<AuthState>()(
           
           // Auto-login after registration
           await get().login(email, password);
-        } catch (error: any) {
+        } catch (_error: unknown) {
+          const errorMessage = error && typeof error === 'object' && 'response' in error 
+            ? (error as any).response?.data?.detail || 'Registration failed'
+            : 'Registration failed';
           set({
             isLoading: false,
-            error: error.response?.data?.detail || 'Registration failed',
+            _error: errorMessage,
           });
           throw error;
         }
@@ -113,12 +119,12 @@ export const useAuthStore = create<AuthState>()(
           axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
           
           set({ token: access_token });
-        } catch (error) {
+        } catch (_error) {
           get().logout();
         }
       },
       
-      clearError: () => set({ error: null }),
+      clearError: () => set({ _error: null }),
     }),
     {
       name: 'auth-storage',
@@ -135,7 +141,7 @@ export const useAuthStore = create<AuthState>()(
 // Initialize axios interceptor for token refresh
 axios.interceptors.response.use(
   (response) => response,
-  async (error) => {
+  async (_error) => {
     const originalRequest = error.config;
     
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -144,13 +150,13 @@ axios.interceptors.response.use(
       try {
         await useAuthStore.getState().refreshToken();
         return axios(originalRequest);
-      } catch (refreshError) {
+      } catch (_refreshError) {
         useAuthStore.getState().logout();
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
     
-    return Promise.reject(error);
+    return Promise.reject(_error);
   }
 );

@@ -59,7 +59,7 @@ import { authStore } from '../../stores/authStore';
 interface Variant {
   name: string;
   allocation: number;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   is_control: boolean;
 }
 
@@ -68,7 +68,7 @@ interface Experiment {
   name: string;
   description: string;
   status: string;
-  variants: any[];
+  variants: unknown[];
   target_metric: string;
   start_date: string | null;
   end_date: string | null;
@@ -150,7 +150,7 @@ export const ABTestDashboard: React.FC = () => {
         const data = await response.json();
         setExperiments(data);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching experiments:', error);
     } finally {
       setLoading(false);
@@ -172,7 +172,7 @@ export const ABTestDashboard: React.FC = () => {
         const data = await response.json();
         setSelectedExperiment(data);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching experiment results:', error);
     }
   };
@@ -195,7 +195,7 @@ export const ABTestDashboard: React.FC = () => {
         setCreateDialogOpen(false);
         fetchExperiments();
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error creating experiment:', error);
     }
   };
@@ -215,7 +215,7 @@ export const ABTestDashboard: React.FC = () => {
       if (response.ok) {
         fetchExperiments();
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error starting experiment:', error);
     }
   };
@@ -237,7 +237,7 @@ export const ABTestDashboard: React.FC = () => {
       if (response.ok) {
         fetchExperiments();
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error concluding experiment:', error);
     }
   };

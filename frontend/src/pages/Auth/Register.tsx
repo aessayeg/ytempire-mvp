@@ -113,7 +113,7 @@ export const Register: React.FC = () => {
     return { score, feedback, color };
   };
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (_event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormData(prev => ({
       ...prev,
@@ -181,7 +181,7 @@ export const Register: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (_event: React.FormEvent) => {
     event.preventDefault();
     
     if (!validateForm()) {
@@ -191,7 +191,7 @@ export const Register: React.FC = () => {
     try {
       await register(formData.email, formData.username, formData.password, formData.full_name);
       // Navigation will be handled by useEffect when isAuthenticated changes
-    } catch (error) {
+    } catch (_error) {
       // Error is handled by the store
     }
   };

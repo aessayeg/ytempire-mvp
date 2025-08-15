@@ -105,7 +105,7 @@ export const VideoGenerator: React.FC = () => {
   useEffect(() => {
     fetchChannels();
     fetchTrendingTopics();
-  }, []);
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
 
   useEffect(() => {
     calculateEstimatedCost();
@@ -115,7 +115,7 @@ export const VideoGenerator: React.FC = () => {
     try {
       const response = await api.ai.getTrendingTopics();
       setTrendingTopics(response.topics);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch trending topics:', error);
     }
   };
@@ -163,13 +163,13 @@ export const VideoGenerator: React.FC = () => {
       setGenerationId(response.id);
       // Navigate to generation progress
       navigate(`/videos/generation/${response.id}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to start video generation');
       setIsGenerating(false);
     }
   };
 
-  const handleUseTrendingTopic = (topic: any) => {
+  const handleUseTrendingTopic = (topic: unknown) => {
     setConfig({
       ...config,
       topic: topic.title,

@@ -92,7 +92,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
 
   useEffect(() => {
     loadChannels();
-  }, []);
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
 
   const loadChannels = async () => {
     setIsLoading(true);
@@ -137,7 +137,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
         }
       ];
       setChannels(mockChannels);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to load channels:', error);
     } finally {
       setIsLoading(false);

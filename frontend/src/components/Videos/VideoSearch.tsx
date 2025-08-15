@@ -3,7 +3,7 @@ import { Box, TextField, InputAdornment, IconButton, Menu, MenuItem, Chip, Butto
 import { Search, FilterList, Clear, CalendarToday, Sort } from '@mui/icons-material';
 
 interface VideoSearchProps {
-  onSearch: (query: string, filters: any) => void;
+  onSearch: (query: string, filters: unknown) => void;
   onClear: () => void;
 }
 

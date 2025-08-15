@@ -35,8 +35,9 @@ export const useVideoStore = create<VideoStore>((set) => ({
     try {
       const data = await videosApi.getAll()
       set({ videos: data, loading: false })
-    } catch (error: any) {
-      set({ error: error.message, loading: false })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch videos';
+      set({ error: errorMessage, loading: false })
     }
   },
 
@@ -48,8 +49,9 @@ export const useVideoStore = create<VideoStore>((set) => ({
         videos: [...state.videos, newVideo],
         loading: false,
       }))
-    } catch (error: any) {
-      set({ error: error.message, loading: false })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create video';
+      set({ error: errorMessage, loading: false })
     }
   },
 

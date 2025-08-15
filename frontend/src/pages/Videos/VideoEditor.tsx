@@ -8,7 +8,7 @@ const VideoEditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const handleSave = (editedVideo: any) => {
+  const handleSave = (editedVideo: unknown) => {
     console.log('Saving edited video:', editedVideo);
     // TODO: Implement API call to save edited video
     navigate(`/videos/${id}`);

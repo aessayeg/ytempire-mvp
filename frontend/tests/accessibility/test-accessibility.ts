@@ -32,7 +32,7 @@ class AccessibilityTester {
 
   async runFullTest(): Promise<void> {
     console.log('🔍 Starting WCAG 2.1 AA Compliance Test Suite');
-    console.log('=''.repeat(50));
+    console.log('='.repeat(50));
 
     for (const page of TEST_PAGES) {
       await this.testPage(page);

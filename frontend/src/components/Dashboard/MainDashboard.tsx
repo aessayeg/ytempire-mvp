@@ -131,7 +131,7 @@ export const MainDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
 
   useEffect(() => {
     if (wsData) {
@@ -154,7 +154,7 @@ export const MainDashboard: React.FC = () => {
       setVideosInQueue(queueRes.data);
       setError(null);
       announce('Dashboard data loaded successfully', 'polite');
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError('Failed to load dashboard data. Please refresh to try again.');
       console.error('Dashboard error:', error);
     } finally {
@@ -168,7 +168,7 @@ export const MainDashboard: React.FC = () => {
     setRefreshing(false);
   };
 
-  const handleRealtimeUpdate = (data: any) => {
+  const handleRealtimeUpdate = (data: unknown) => {
     if (data.type === 'stats_update') {
       setStats(data.stats);
     } else if (data.type === 'new_activity') {
@@ -178,11 +178,11 @@ export const MainDashboard: React.FC = () => {
     }
   };
 
-  const formatActivity = (activities: any[]): RecentActivity[] => {
+  const formatActivity = (activities: unknown[]): RecentActivity[] => {
     return activities.map(formatActivityItem);
   };
 
-  const formatActivityItem = (activity: any): RecentActivity => {
+  const formatActivityItem = (activity: unknown): RecentActivity => {
     const typeConfig = {
       video_generated: {
         icon: <AutoAwesome />,

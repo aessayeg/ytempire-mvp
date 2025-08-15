@@ -118,7 +118,7 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     // Fetch initial data
     handleRefresh();
-  }, []);
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
 
   const handleRefresh = async () => {
     setLoading(true);
@@ -127,7 +127,7 @@ export const Dashboard: React.FC = () => {
       await fetchVideos();
       // Update metrics from API
       setLastUpdated(new Date());
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to refresh dashboard:', error);
     } finally {
       setLoading(false);

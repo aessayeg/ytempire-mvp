@@ -30,7 +30,7 @@ const COLORS = ['#667eea', '#764ba2', '#f093fb', '#fda085', '#84fab0', '#8fd3f4'
 
 interface ChartProps {
   title?: string;
-  data: any[];
+  data: unknown[];
   height?: number;
 }
 
@@ -215,7 +215,7 @@ export const MetricsRadar: React.FC<ChartProps> = ({ title = 'Performance Metric
 export const ContentTreemap: React.FC<ChartProps> = ({ title = 'Content Categories', data, height = 300 }) => {
   const theme = useTheme();
   
-  const CustomContent = (props: any) => {
+  const CustomContent = (props: unknown) => {
     const { root, depth, x, y, width, height, index, colors, name, value } = props;
     
     return (
@@ -275,7 +275,7 @@ export const ContentTreemap: React.FC<ChartProps> = ({ title = 'Content Categori
   );
 };
 
-export const RealTimeMetrics: React.FC<{ data: any[] }> = ({ data }) => {
+export const RealTimeMetrics: React.FC<{ data: unknown[] }> = ({ data }) => {
   const theme = useTheme();
   
   return (
@@ -311,7 +311,7 @@ export const RealTimeMetrics: React.FC<{ data: any[] }> = ({ data }) => {
 };
 
 // Composite dashboard component
-export const DashboardCharts: React.FC<{ metrics: any }> = ({ metrics }) => {
+export const DashboardCharts: React.FC<{ metrics: unknown }> = ({ metrics }) => {
   return (
     <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))' }}>
       <ViewsLineChart data={metrics.viewsData} />

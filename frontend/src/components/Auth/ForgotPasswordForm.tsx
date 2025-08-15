@@ -94,8 +94,9 @@ export const ForgotPasswordForm: React.FC = () => {
       
       setSuccess('Reset code sent to your email!');
       setActiveStep(1);
-    } catch (error: any) {
-      setError(error.response?.data?.detail || 'Failed to send reset code');
+    } catch (error: unknown) {
+      const axiosError = error && typeof error === 'object' && 'response' in error ? error as { response?: { data?: { detail?: string } } } : null;
+      setError(axiosError?.response?.data?.detail || 'Failed to send reset code');
     } finally {
       setIsLoading(false);
     }
@@ -115,8 +116,9 @@ export const ForgotPasswordForm: React.FC = () => {
       
       setSuccess('Code verified successfully!');
       setActiveStep(2);
-    } catch (error: any) {
-      setError(error.response?.data?.detail || 'Invalid or expired reset code');
+    } catch (error: unknown) {
+      const axiosError = error && typeof error === 'object' && 'response' in error ? error as { response?: { data?: { detail?: string } } } : null;
+      setError(axiosError?.response?.data?.detail || 'Invalid or expired reset code');
     } finally {
       setIsLoading(false);
     }
@@ -139,14 +141,15 @@ export const ForgotPasswordForm: React.FC = () => {
       setTimeout(() => {
         navigate('/auth/login');
       }, 2000);
-    } catch (error: any) {
-      setError(error.response?.data?.detail || 'Failed to reset password');
+    } catch (error: unknown) {
+      const axiosError = error && typeof error === 'object' && 'response' in error ? error as { response?: { data?: { detail?: string } } } : null;
+      setError(axiosError?.response?.data?.detail || 'Failed to reset password');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     

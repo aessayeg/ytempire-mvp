@@ -20,24 +20,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   Alert,
   Checkbox,
-  FormControlLabel,
-  Stepper,
-  Step,
-  StepLabel,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Tooltip,
-  CircularProgress,
-  Badge
 } from '@mui/material';
 import {
   PlayArrow as PlayIcon,
@@ -73,12 +58,10 @@ interface BatchJob {
 
 interface BatchOperationsProps {
   maxConcurrent?: number;
-  onJobComplete?: (job: BatchJob) => void;
 }
 
 const BatchOperations: React.FC<BatchOperationsProps> = ({ 
   maxConcurrent = 10,
-  onJobComplete 
 }) => {
   const [jobs, setJobs] = useState<BatchJob[]>([]);
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
@@ -359,7 +342,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
               <TableCell padding="checkbox">
                 <Checkbox
                   checked={selectedJobs.length === jobs.length}
-                  onChange={(e) => {
+                  onChange={(_e) => {
                     if (e.target.checked) {
                       setSelectedJobs(jobs.map(j => j.id));
                     } else {
@@ -383,7 +366,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 <TableCell padding="checkbox">
                   <Checkbox
                     checked={selectedJobs.includes(job.id)}
-                    onChange={(e) => {
+                    onChange={(_e) => {
                       if (e.target.checked) {
                         setSelectedJobs([...selectedJobs, job.id]);
                       } else {
@@ -508,7 +491,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
               <TextField
                 label="Batch Name"
                 value={newBatch.name}
-                onChange={(e) => setNewBatch({ ...newBatch, name: e.target.value })}
+                onChange={(_e) => setNewBatch({ ...newBatch, name: e.target.value })}
                 fullWidth
                 margin="normal"
               />
@@ -516,7 +499,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 <InputLabel>Batch Type</InputLabel>
                 <Select
                   value={newBatch.type}
-                  onChange={(e) => setNewBatch({ ...newBatch, type: e.target.value })}
+                  onChange={(_e) => setNewBatch({ ...newBatch, type: e.target.value })}
                   label="Batch Type"
                 >
                   <MenuItem value="video_generation">Video Generation</MenuItem>
@@ -529,7 +512,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 label="Number of Items"
                 type="number"
                 value={newBatch.videoCount}
-                onChange={(e) => setNewBatch({ ...newBatch, videoCount: parseInt(e.target.value) })}
+                onChange={(_e) => setNewBatch({ ...newBatch, videoCount: parseInt(e.target.value) })}
                 fullWidth
                 margin="normal"
                 helperText="Maximum 100 items per batch"
@@ -545,7 +528,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 control={
                   <Checkbox
                     checked={newBatch.options.generateThumbnails}
-                    onChange={(e) => setNewBatch({
+                    onChange={(_e) => setNewBatch({
                       ...newBatch,
                       options: { ...newBatch.options, generateThumbnails: e.target.checked }
                     })}
@@ -557,7 +540,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 control={
                   <Checkbox
                     checked={newBatch.options.autoUpload}
-                    onChange={(e) => setNewBatch({
+                    onChange={(_e) => setNewBatch({
                       ...newBatch,
                       options: { ...newBatch.options, autoUpload: e.target.checked }
                     })}
@@ -569,7 +552,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 control={
                   <Checkbox
                     checked={newBatch.options.qualityCheck}
-                    onChange={(e) => setNewBatch({
+                    onChange={(_e) => setNewBatch({
                       ...newBatch,
                       options: { ...newBatch.options, qualityCheck: e.target.checked }
                     })}
@@ -581,7 +564,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 control={
                   <Checkbox
                     checked={newBatch.options.costOptimization}
-                    onChange={(e) => setNewBatch({
+                    onChange={(_e) => setNewBatch({
                       ...newBatch,
                       options: { ...newBatch.options, costOptimization: e.target.checked }
                     })}
@@ -593,7 +576,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 <InputLabel>Priority</InputLabel>
                 <Select
                   value={newBatch.priority}
-                  onChange={(e) => setNewBatch({ ...newBatch, priority: e.target.value })}
+                  onChange={(_e) => setNewBatch({ ...newBatch, priority: e.target.value })}
                   label="Priority"
                 >
                   <MenuItem value="low">Low</MenuItem>
@@ -617,7 +600,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                     <ListItemIcon>
                       <Checkbox
                         checked={newBatch.channels.includes(channel)}
-                        onChange={(e) => {
+                        onChange={(_e) => {
                           if (e.target.checked) {
                             setNewBatch({ ...newBatch, channels: [...newBatch.channels, channel] });
                           } else {

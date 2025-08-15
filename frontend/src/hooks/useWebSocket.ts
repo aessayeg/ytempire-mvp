@@ -14,8 +14,8 @@ interface WebSocketOptions {
 interface WebSocketState {
   connected: boolean;
   error: Error | null;
-  lastMessage: any;
-  messageHistory: any[];
+  lastMessage: unknown;
+  messageHistory: unknown[];
 }
 
 export const useWebSocket = (
@@ -59,13 +59,13 @@ export const useWebSocket = (
       setState(prev => ({ ...prev, connected: false }));
     });
 
-    socket.on('error', (error: Error) => {
+    socket.on('error', (_error: Error) => {
       console.error('WebSocket error:', error);
       setState(prev => ({ ...prev, error }));
     });
 
     // Listen for channel-specific messages
-    socket.on(channel, (message: any) => {
+    socket.on(channel, (message: unknown) => {
       setState(prev => ({
         ...prev,
         lastMessage: message,
@@ -74,7 +74,7 @@ export const useWebSocket = (
     });
 
     // Listen for broadcast messages
-    socket.on('broadcast', (message: any) => {
+    socket.on('broadcast', (message: unknown) => {
       if (message.channel === channel || message.channel === 'all') {
         setState(prev => ({
           ...prev,
@@ -95,7 +95,7 @@ export const useWebSocket = (
     }
   }, []);
 
-  const sendMessage = useCallback((event: string, data: any) => {
+  const sendMessage = useCallback((event: string, data: unknown) => {
     if (socketRef.current?.connected) {
       socketRef.current.emit(event, { channel, ...data });
     } else {
@@ -103,7 +103,7 @@ export const useWebSocket = (
     }
   }, [channel]);
 
-  const subscribe = useCallback((event: string, handler: (data: any) => void) => {
+  const subscribe = useCallback((event: string, handler: (data: unknown) => void) => {
     if (socketRef.current) {
       socketRef.current.on(event, handler);
       return () => {

@@ -67,7 +67,7 @@ interface ReportMetric {
 interface ReportFilter {
   field: string;
   operator: 'equals' | 'contains' | 'greater' | 'less' | 'between';
-  value: any;
+  value: unknown;
 }
 
 interface ReportSchedule {
@@ -93,11 +93,11 @@ interface ReportData {
   metrics: Record<string, number>;
   charts: {
     type: 'line' | 'bar' | 'pie';
-    data: any[];
+    data: unknown[];
   }[];
   tables: {
     headers: string[];
-    rows: any[][];
+    rows: unknown[][];
   }[];
 }
 

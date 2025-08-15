@@ -152,18 +152,18 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
     try {
       const response = await api.videos.getGenerationStatus(generationId);
       updateProgress(response);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch generation status:', error);
     }
   };
 
-  const handleWebSocketUpdate = (data: any) => {
+  const handleWebSocketUpdate = (data: unknown) => {
     if (data.generationId === generationId) {
       updateProgress(data);
     }
   };
 
-  const updateProgress = (data: any) => {
+  const updateProgress = (data: unknown) => {
     // Update overall progress
     setOverallProgress(data.progress || 0);
     
@@ -220,7 +220,7 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
       await api.videos.cancelGeneration(generationId);
       setStatus('cancelled');
       navigate('/videos');
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to cancel generation:', error);
     }
   };

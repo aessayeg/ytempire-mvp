@@ -68,7 +68,7 @@ export const VideoList: React.FC<VideoListProps> = ({
       });
       setVideos(response.data);
       setTotalCount(response.total);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to load videos');
     } finally {
       setIsLoading(false);
@@ -80,12 +80,12 @@ export const VideoList: React.FC<VideoListProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleItemsPerPageChange = (event: any) => {
+  const handleItemsPerPageChange = (_event: unknown) => {
     setItemsPerPage(event.target.value);
     setPage(1);
   };
 
-  const handleSortChange = (event: any) => {
+  const handleSortChange = (_event: unknown) => {
     setSortBy(event.target.value);
     setPage(1);
   };
@@ -159,7 +159,7 @@ export const VideoList: React.FC<VideoListProps> = ({
   );
 
   // List view component
-  const VideoListItem = ({ video }: { video: any }) => (
+  const VideoListItem = ({ video }: { video: unknown }) => (
     <Paper
       sx={{
         p: 2,

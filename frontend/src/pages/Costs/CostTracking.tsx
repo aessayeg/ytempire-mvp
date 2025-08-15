@@ -294,7 +294,7 @@ export const CostTracking: React.FC = () => {
     return change > 0 ? <TrendingUp /> : change < 0 ? <TrendingDown /> : null;
   };
 
-  const handleEditBudget = (category: any) => {
+  const handleEditBudget = (category: unknown) => {
     setEditingCategory(category);
     setBudgetDialogOpen(true);
   };
@@ -446,7 +446,7 @@ export const CostTracking: React.FC = () => {
                 <YAxis />
                 <RechartsTooltip 
                   labelFormatter={(value) => format(new Date(value), 'PPP')}
-                  formatter={(value: any, name: string) => [formatCurrency(value), name]}
+                  formatter={(value: unknown, name: string) => [formatCurrency(value), name]}
                 />
                 <Legend />
                 {viewMode === 'categories' ? (
@@ -501,7 +501,7 @@ export const CostTracking: React.FC = () => {
                     } />
                   ))}
                 </Pie>
-                <RechartsTooltip formatter={(value: any) => formatCurrency(value)} />
+                <RechartsTooltip formatter={(value: unknown) => formatCurrency(value)} />
               </PieChart>
             </ResponsiveContainer>
           </Paper>

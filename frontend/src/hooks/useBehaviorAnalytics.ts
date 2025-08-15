@@ -78,7 +78,7 @@ interface UserSegments {
     };
   };
   total_users: number;
-  criteria: any;
+  criteria: unknown;
 }
 
 interface UseBehaviorAnalyticsProps {
@@ -129,7 +129,7 @@ export const useBehaviorAnalytics = ({
 
     try {
       // Prepare query parameters
-      const params: any = {};
+      const params: unknown = {};
       if (userId) {
         params.user_id = userId;
       }
@@ -172,7 +172,7 @@ export const useBehaviorAnalytics = ({
           headers: { Authorization: `Bearer ${token}` },
         });
         setCohortData(cohortResponse.data);
-      } catch (err) {
+      } catch (_err) {
         console.warn('Cohort analysis not available:', err);
       }
 
@@ -194,11 +194,11 @@ export const useBehaviorAnalytics = ({
           }
         );
         setSegments(segmentsResponse.data);
-      } catch (err) {
+      } catch (_err) {
         console.warn('User segments not available:', err);
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching behavior analytics:', err);
       setError(err.response?.data?.detail || 'Failed to fetch analytics data');
     } finally {

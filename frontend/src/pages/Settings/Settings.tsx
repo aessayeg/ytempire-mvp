@@ -190,7 +190,7 @@ export const Settings: React.FC = () => {
     setActiveTab(newValue);
   };
 
-  const handleSettingChange = (section: string, key: string, value: any) => {
+  const handleSettingChange = (section: string, key: string, value: unknown) => {
     setSettings(prev => ({
       ...prev,
       [section]: {
@@ -213,7 +213,7 @@ export const Settings: React.FC = () => {
     setShowApiDialog(true);
   };
 
-  const handleEditApiKey = (api: any) => {
+  const handleEditApiKey = (api: unknown) => {
     setSelectedApi(api);
     setShowApiDialog(true);
   };

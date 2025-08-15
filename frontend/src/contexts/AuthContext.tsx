@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const userData = await authApi.getCurrentUser(storedToken)
           setUser(userData)
           setToken(storedToken)
-        } catch (error) {
+        } catch (_error) {
           console.error('Token validation failed:', error)
           localStorage.removeItem('token')
           setToken(null)
@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       toast.success('Login successful!')
       navigate('/dashboard')
-    } catch (error: any) {
+    } catch (error: unknown) {
       const message = error.response?.data?.detail || 'Login failed'
       toast.error(message)
       throw error
@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       toast.success('Registration successful! Please login.')
       navigate('/login')
-    } catch (error: any) {
+    } catch (error: unknown) {
       const message = error.response?.data?.detail || 'Registration failed'
       toast.error(message)
       throw error

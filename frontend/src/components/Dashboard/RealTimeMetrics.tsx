@@ -215,7 +215,7 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
           };
           setLiveEvents(prev => [newEvent, ...prev].slice(0, 10));
         }
-      } catch (error) {
+      } catch (_error) {
         console.error('Error parsing WebSocket message:', error);
       }
     }

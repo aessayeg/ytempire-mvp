@@ -44,7 +44,7 @@ export const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<any>({});
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -52,12 +52,12 @@ export const LoginPage: React.FC = () => {
     }));
     // Clear validation error for this field
     if (validationErrors[name]) {
-      setValidationErrors((prev: any) => ({ ...prev, [name]: '' }));
+      setValidationErrors((prev: unknown) => ({ ...prev, [name]: '' }));
     }
   };
 
   const validateForm = () => {
-    const errors: any = {};
+    const errors: unknown = {};
     
     if (!formData.email) {
       errors.email = 'Email is required';
@@ -75,7 +75,7 @@ export const LoginPage: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (_e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -83,7 +83,7 @@ export const LoginPage: React.FC = () => {
     try {
       await login(formData.email, formData.password, formData.rememberMe);
       navigate('/dashboard');
-    } catch (err) {
+    } catch (_err) {
       console.error('Login failed:', err);
     }
   };
@@ -92,7 +92,7 @@ export const LoginPage: React.FC = () => {
     try {
       await loginWithGoogle();
       navigate('/dashboard');
-    } catch (err) {
+    } catch (_err) {
       console.error('Google login failed:', err);
     }
   };
@@ -106,7 +106,7 @@ export const LoginPage: React.FC = () => {
     try {
       await login('demo@ytempire.com', 'demo123', false);
       navigate('/dashboard');
-    } catch (err) {
+    } catch (_err) {
       console.error('Demo login failed:', err);
     }
   };

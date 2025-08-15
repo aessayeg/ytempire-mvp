@@ -39,7 +39,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -48,7 +48,7 @@ const Login: React.FC = () => {
     setError('');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (_e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
@@ -57,7 +57,7 @@ const Login: React.FC = () => {
       const response = await authService.login(formData.email, formData.password);
       login(response.user, response.token, formData.rememberMe);
       navigate('/dashboard');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
@@ -67,7 +67,7 @@ const Login: React.FC = () => {
   const handleGoogleLogin = async () => {
     try {
       window.location.href = '/api/v1/auth/google';
-    } catch (err) {
+    } catch (_err) {
       setError('Google login failed. Please try again.');
     }
   };
@@ -75,7 +75,7 @@ const Login: React.FC = () => {
   const handleYouTubeLogin = async () => {
     try {
       window.location.href = '/api/v1/auth/youtube';
-    } catch (err) {
+    } catch (_err) {
       setError('YouTube login failed. Please try again.');
     }
   };

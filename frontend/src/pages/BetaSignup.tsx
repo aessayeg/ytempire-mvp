@@ -57,7 +57,7 @@ const BetaSignup: React.FC = () => {
     'Other'
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (_e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -66,14 +66,14 @@ const BetaSignup: React.FC = () => {
       const response = await api.post('/beta/signup', formData);
       setSuccess(true);
       setApiKey(response.data.api_key);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.detail || 'Failed to submit application');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value

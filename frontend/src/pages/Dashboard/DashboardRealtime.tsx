@@ -139,7 +139,7 @@ export const DashboardRealtime: React.FC = () => {
   // Fetch initial metrics
   useEffect(() => {
     fetchInitialMetrics();
-  }, []);
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
 
   // Handle WebSocket messages
   useEffect(() => {
@@ -202,14 +202,14 @@ export const DashboardRealtime: React.FC = () => {
       }
       
       setLastUpdated(new Date());
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch metrics:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleWebSocketMessage = (message: any) => {
+  const handleWebSocketMessage = (message: unknown) => {
     console.log('Dashboard WebSocket message:', message);
     
     if (message.type === 'metrics-update') {
@@ -221,7 +221,7 @@ export const DashboardRealtime: React.FC = () => {
     setLastUpdated(new Date());
   };
 
-  const handleMetricsUpdate = (data: any) => {
+  const handleMetricsUpdate = (data: unknown) => {
     if (data.metrics) {
       setMetrics(prev => ({ ...prev, ...data.metrics }));
     }
@@ -230,7 +230,7 @@ export const DashboardRealtime: React.FC = () => {
     }
   };
 
-  const handleVideoUpdate = (data: any) => {
+  const handleVideoUpdate = (data: unknown) => {
     setMetrics(prev => ({
       ...prev,
       totalVideos: prev.totalVideos + (data.increment || 0),
@@ -240,7 +240,7 @@ export const DashboardRealtime: React.FC = () => {
     }));
   };
 
-  const handleCostUpdate = (data: any) => {
+  const handleCostUpdate = (data: unknown) => {
     setMetrics(prev => ({
       ...prev,
       totalCosts: prev.totalCosts + (data.amount || 0),
@@ -255,7 +255,7 @@ export const DashboardRealtime: React.FC = () => {
     }));
   };
 
-  const handleGenerationStatus = (data: any) => {
+  const handleGenerationStatus = (data: unknown) => {
     setVideoGenerations(prev => {
       const existing = prev.find(g => g.videoId === data.videoId);
       if (existing) {

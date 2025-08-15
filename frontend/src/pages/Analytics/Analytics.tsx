@@ -397,7 +397,7 @@ export const Analytics: React.FC = () => {
                 <YAxis yAxisId="right" orientation="right" />
                 <RechartsTooltip 
                   labelFormatter={(value) => format(new Date(value), 'PPP')}
-                  formatter={(value: any, name: string) => [
+                  formatter={(value: unknown, name: string) => [
                     name === 'revenue' ? formatCurrency(value) : formatNumber(value),
                     name.charAt(0).toUpperCase() + name.slice(1)
                   ]}

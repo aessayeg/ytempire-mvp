@@ -31,7 +31,7 @@ interface YTEmpireDB extends DBSchema {
       id: string;
       date: Date;
       type: string;
-      data: any;
+      data: unknown;
       synced: boolean;
     };
   };
@@ -42,7 +42,7 @@ interface YTEmpireDB extends DBSchema {
       action: string;
       endpoint: string;
       method: string;
-      data: any;
+      data: unknown;
       timestamp: Date;
       retries: number;
     };
@@ -235,7 +235,7 @@ class OfflineStorage {
         } else {
           await this.incrementRetries(action.id);
         }
-      } catch (error) {
+      } catch (_error) {
         console.error('Sync error:', error);
         await this.incrementRetries(action.id);
       }

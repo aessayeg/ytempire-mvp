@@ -3,7 +3,7 @@
  * Provides insights into competitor performance and market positioning
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Paper,
@@ -13,7 +13,6 @@ import {
   Card,
   CardContent,
   Button,
-  TextField,
   IconButton,
   Chip,
   Avatar,
@@ -23,26 +22,12 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  LinearProgress,
   Rating,
-  Tooltip,
   Alert,
   AlertTitle,
   Tabs,
   Tab,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
-  Stack,
-  Badge,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
-  ListItemSecondaryAction,
-  Divider,
-  CircularProgress
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -51,24 +36,12 @@ import {
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
   Info as InfoIcon,
-  YouTube as YouTubeIcon,
   Speed as SpeedIcon,
-  AttachMoney as MoneyIcon,
   Group as GroupIcon,
-  VideoLibrary as VideoIcon,
-  Visibility as ViewIcon,
-  ThumbUp as LikeIcon,
-  Comment as CommentIcon,
-  Share as ShareIcon,
   Analytics as AnalyticsIcon,
-  Warning as WarningIcon,
-  CheckCircle as CheckIcon,
-  Search as SearchIcon,
   Download as DownloadIcon
 } from '@mui/icons-material';
 import {
-  LineChart,
-  Line,
   BarChart,
   Bar,
   RadarChart,
@@ -76,15 +49,12 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-  ScatterChart,
-  Scatter,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip as ChartTooltip,
   Legend,
   ResponsiveContainer,
-  Cell,
   Area,
   AreaChart
 } from 'recharts';
@@ -187,7 +157,6 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [timeRange, setTimeRange] = useState('30d');
   const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [newCompetitorUrl, setNewCompetitorUrl] = useState('');
 
   // Mock data generation
@@ -273,7 +242,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
   const radarData = useMemo(() => {
     const metrics = ['Content Quality', 'Upload Frequency', 'Engagement', 'Growth Rate', 'Revenue', 'Retention'];
     return metrics.map(metric => {
-      const dataPoint: any = { metric };
+      const dataPoint: Record<string, number | string> = { metric };
       selectedCompetitors.forEach(compId => {
         const comp = competitors.find(c => c.id === compId);
         const compMetrics = competitorMetrics[compId];
@@ -308,7 +277,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
   const trendData = useMemo(() => {
     return Array.from({ length: 30 }, (_, i) => {
       const date = subDays(new Date(), 30 - i);
-      const dataPoint: any = { date: format(date, 'MMM dd') };
+      const dataPoint: Record<string, string | number> = { date: format(date, 'MMM dd') };
       
       selectedCompetitors.forEach(compId => {
         const comp = competitors.find(c => c.id === compId);
@@ -502,7 +471,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                 fullWidth
                 placeholder="Enter YouTube channel URL or ID"
                 value={newCompetitorUrl}
-                onChange={(e) => setNewCompetitorUrl(e.target.value)}
+                onChange={(_e) => setNewCompetitorUrl(_e.target.value)}
                 size="small"
               />
               <Button
@@ -528,8 +497,8 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                         selectedCompetitors.length < competitors.length
                       }
                       checked={selectedCompetitors.length === competitors.length}
-                      onChange={(e) => {
-                        if (e.target.checked) {
+                      onChange={(_e) => {
+                        if (_e.target.checked) {
                           setSelectedCompetitors(competitors.map(c => c.id));
                         } else {
                           setSelectedCompetitors([]);
@@ -846,7 +815,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                   <InputLabel>Time Range</InputLabel>
                   <Select
                     value={timeRange}
-                    onChange={(e) => setTimeRange(e.target.value)}
+                    onChange={(_e) => setTimeRange(_e.target.value)}
                     label="Time Range"
                   >
                     <MenuItem value="7d">Last 7 Days</MenuItem>

@@ -213,7 +213,7 @@ export const CostVisualization: React.FC = () => {
 
       // Fetch budgets
       const budgetsResponse = await api.get('/costs/budgets');
-      setBudgets(budgetsResponse.data.map((b: any) => ({
+      setBudgets(budgetsResponse.data.map((b: unknown) => ({
         ...b,
         spent: Math.random() * b.amount, // Mock spent amount
         remaining: b.amount - (Math.random() * b.amount),
@@ -258,7 +258,7 @@ export const CostVisualization: React.FC = () => {
       setAlerts(alertsResponse.data || []);
 
       setLoading(false);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch cost data:', error);
       addNotification({
         type: 'error',
@@ -306,7 +306,7 @@ export const CostVisualization: React.FC = () => {
         type: 'success',
         message: selectedBudget ? 'Budget updated' : 'Budget created',
       });
-    } catch (error) {
+    } catch (_error) {
       addNotification({
         type: 'error',
         message: 'Failed to save budget',

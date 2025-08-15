@@ -10,7 +10,7 @@ const MAX_RETRY_COUNT = 3;
 const RETRY_DELAY = 1000;
 
 interface ImportCallbackModule {
-  default: ComponentType<any>;
+  default: ComponentType<unknown>;
 }
 
 type ImportCallback = () => Promise<ImportCallbackModule>;
@@ -25,7 +25,7 @@ const retryStates = new Map<string, RetryState>();
 export function lazyWithRetry(
   importCallback: ImportCallback,
   componentName?: string
-): React.LazyExoticComponent<ComponentType<any>> {
+): React.LazyExoticComponent<ComponentType<unknown>> {
   const key = componentName || importCallback.toString();
   
   return lazy(async () => {
@@ -58,7 +58,7 @@ export function lazyWithRetry(
         retryStates.delete(key);
         sessionStorage.removeItem(`reload_attempted_${key}`);
         return module;
-      } catch (retryError) {
+      } catch (_retryError) {
         return retry(retryError as Error);
       }
     };
@@ -69,7 +69,7 @@ export function lazyWithRetry(
       retryStates.delete(key);
       sessionStorage.removeItem(`reload_attempted_${key}`);
       return module;
-    } catch (error) {
+    } catch (_error) {
       console.warn(`Failed to load component, attempting retry:`, error);
       return retry(error as Error);
     }

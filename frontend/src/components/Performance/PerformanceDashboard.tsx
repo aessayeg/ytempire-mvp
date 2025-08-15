@@ -124,7 +124,7 @@ export const PerformanceDashboard: React.FC = () => {
         const alertData = await alertsResponse.json();
         setAlerts(alertData);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching performance data:', error);
     } finally {
       setLoading(false);

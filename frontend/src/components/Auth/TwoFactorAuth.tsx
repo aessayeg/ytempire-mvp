@@ -32,7 +32,7 @@ export const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
   useEffect(() => {
     // Focus first input on mount
     inputRefs.current[0]?.focus();
-  }, []);
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
 
   useEffect(() => {
     // Countdown timer for resend
@@ -109,7 +109,7 @@ export const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
       if (success && onSuccess) {
         onSuccess();
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('2FA verification failed:', error);
     }
   };

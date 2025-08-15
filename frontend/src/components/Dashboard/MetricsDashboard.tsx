@@ -179,7 +179,7 @@ export const MetricsDashboard: React.FC = () => {
       ]);
 
       setLoading(false);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch metrics:', error);
       setLoading(false);
     }

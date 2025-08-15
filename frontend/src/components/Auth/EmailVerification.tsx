@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
   Box,
@@ -19,6 +19,27 @@ export const EmailVerification: React.FC = () => {
   
   const token = searchParams.get('token');
 
+  const verifyEmail = useCallback(async (verificationToken: string) => {
+    try {
+      await authApi.verifyEmail(verificationToken);
+      setStatus('success');
+      setMessage('Your email has been successfully verified!');
+      
+      // Redirect to login after 3 seconds
+      setTimeout(() => {
+        navigate('/auth/login');
+      }, 3000);
+    } catch (error: unknown) {
+      setStatus('error');
+      const axiosError = error && typeof error === 'object' && 'response' in error ? error as { response?: { status?: number } } : null;
+      if (axiosError?.response?.status === 404) {
+        setMessage('Invalid or expired verification token.');
+      } else {
+        setMessage('An error occurred during verification. Please try again.');
+      }
+    }
+  }, [navigate]);
+
   useEffect(() => {
     if (!token) {
       setStatus('error');
@@ -27,27 +48,7 @@ export const EmailVerification: React.FC = () => {
     }
 
     verifyEmail(token);
-  }, [token]);
-
-  const verifyEmail = async (verificationToken: string) => {
-    try {
-      const response = await authApi.verifyEmail(verificationToken);
-      setStatus('success');
-      setMessage('Your email has been successfully verified!');
-      
-      // Redirect to login after 3 seconds
-      setTimeout(() => {
-        navigate('/auth/login');
-      }, 3000);
-    } catch (error: any) {
-      setStatus('error');
-      if (error.response?.status === 404) {
-        setMessage('Invalid or expired verification token.');
-      } else {
-        setMessage('An error occurred during verification. Please try again.');
-      }
-    }
-  };
+  }, [token, verifyEmail]);
 
   const resendVerification = async () => {
     setStatus('loading');
@@ -56,7 +57,7 @@ export const EmailVerification: React.FC = () => {
       // You might want to add an input field for this
       setMessage('A new verification email has been sent.');
       setStatus('success');
-    } catch (error) {
+    } catch (_error) {
       setStatus('error');
       setMessage('Failed to resend verification email.');
     }

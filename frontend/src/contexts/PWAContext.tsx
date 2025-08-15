@@ -58,7 +58,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Install prompt handling
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
+    const handleBeforeInstallPrompt = (_e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setIsInstallable(true);

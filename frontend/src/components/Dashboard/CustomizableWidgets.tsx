@@ -70,7 +70,7 @@ export interface Widget {
   title: string;
   size: 'small' | 'medium' | 'large' | 'full';
   position: { x: number; y: number };
-  config: any;
+  config: unknown;
   locked?: boolean;
   visible?: boolean;
   refreshInterval?: number;
@@ -83,7 +83,7 @@ interface WidgetLibraryItem {
   title: string;
   description: string;
   icon: React.ReactNode;
-  defaultConfig: any;
+  defaultConfig: unknown;
   sizes: Widget['size'][];
 }
 
@@ -165,7 +165,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
   const [menuWidget, setMenuWidget] = useState<string | null>(null);
 
   // Handle drag and drop
-  const handleDragEnd = (result: any) => {
+  const handleDragEnd = (result: unknown) => {
     if (!result.destination) return;
 
     const items = Array.from(widgets);

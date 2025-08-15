@@ -72,7 +72,7 @@ export const Login: React.FC = () => {
     clearError();
   }, [clearError]);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (_event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormData(prev => ({
       ...prev,
@@ -107,7 +107,7 @@ export const Login: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (_event: React.FormEvent) => {
     event.preventDefault();
     
     if (!validateForm()) {
@@ -117,7 +117,7 @@ export const Login: React.FC = () => {
     try {
       await login(formData.email, formData.password);
       // Navigation will be handled by useEffect when isAuthenticated changes
-    } catch (error) {
+    } catch (_error) {
       // Error is handled by the store
     }
   };

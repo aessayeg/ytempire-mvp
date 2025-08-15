@@ -289,7 +289,7 @@ export const AITools: React.FC = () => {
     setActiveTab(newValue);
   };
 
-  const handleToolClick = (tool: any) => {
+  const handleToolClick = (tool: unknown) => {
     setSelectedTool(tool);
     setToolDialogOpen(true);
   };

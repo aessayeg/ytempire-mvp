@@ -140,7 +140,7 @@ export const EnhancedThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   // Listen for system theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
+    const handleChange = (_e: MediaQueryListEvent) => {
       setSystemPrefersDark(e.matches);
     };
     
@@ -151,7 +151,7 @@ export const EnhancedThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   // Listen for reduced motion preference
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleChange = (e: MediaQueryListEvent) => {
+    const handleChange = (_e: MediaQueryListEvent) => {
       if (e.matches) {
         setThemeConfig(prev => ({ ...prev, reducedMotion: true }));
       }

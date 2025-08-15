@@ -16,7 +16,7 @@ export interface WebSocketConfig {
 
 export interface WebSocketMessage {
   type: string;
-  data: any;
+  data: unknown;
   timestamp: number;
   id?: string;
 }
@@ -73,8 +73,8 @@ export class WebSocketService extends EventEmitter {
 
       this.ws = new WebSocket(url);
       this.setupEventHandlers();
-    } catch (error) {
-      this.handleError(error);
+    } catch (_error) {
+      this.handleError(_error);
     }
   }
 
@@ -96,8 +96,8 @@ export class WebSocketService extends EventEmitter {
   /**
    * Send message through WebSocket
    */
-  public send(type: string, data: any): void {
-    const message: WebSocketMessage = {
+  public send(type: string, data: unknown): void {
+    const _message: WebSocketMessage = {
       type,
       data,
       timestamp: Date.now(),
@@ -105,20 +105,20 @@ export class WebSocketService extends EventEmitter {
     };
 
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(message));
-      this.emit('sent', message);
+      this.ws.send(JSON.stringify(_message));
+      this.emit('sent', _message);
     } else {
       // Queue message for later sending
-      this.messageQueue.push(message);
-      this.log('Message queued (not connected):', message);
+      this.messageQueue.push(_message);
+      this.log('Message queued (not connected):', _message);
     }
   }
 
   /**
    * Subscribe to specific message types
    */
-  public subscribe(type: string, callback: (data: any) => void): () => void {
-    const handler = (message: WebSocketMessage) => {
+  public subscribe(type: string, callback: (data: unknown) => void): () => void {
+    const handler = (_message: WebSocketMessage) => {
       if (message.type === type) {
         callback(message.data);
       }
@@ -181,7 +181,7 @@ export class WebSocketService extends EventEmitter {
   /**
    * Handle WebSocket close event
    */
-  private handleClose(event: CloseEvent): void {
+  private handleClose(_event: CloseEvent): void {
     this.log('WebSocket closed:', event.code, event.reason);
     
     this.ws = null;
@@ -201,25 +201,25 @@ export class WebSocketService extends EventEmitter {
   /**
    * Handle WebSocket error event
    */
-  private handleError(error: any): void {
-    this.log('WebSocket error:', error);
+  private handleError(_error: Event): void {
+    this.log('WebSocket _error:', _error);
     
     this.status = WebSocketStatus.ERROR;
     this.emit('status', this.status);
-    this.emit('error', error);
+    this.emit('error', _error);
   }
 
   /**
    * Handle incoming WebSocket message
    */
-  private handleMessage(event: MessageEvent): void {
+  private handleMessage(_event: MessageEvent): void {
     try {
       const message = JSON.parse(event.data) as WebSocketMessage;
       
       // Handle different message types
       switch (message.type) {
         case 'pong':
-          this.handlePong(message);
+          this.handlePong(_message);
           break;
         
         case 'error':
@@ -227,14 +227,14 @@ export class WebSocketService extends EventEmitter {
           break;
         
         default:
-          this.emit('message', message);
-          this.emit(`message:${message.type}`, message.data);
+          this.emit('message', _message);
+          this.emit(`_message:${message.type}`, message.data);
           break;
       }
 
-      this.log('Received message:', message);
-    } catch (error) {
-      this.log('Failed to parse message:', event.data, error);
+      this.log('Received _message:', _message);
+    } catch (_error) {
+      this.log('Failed to parse _message:', event.data, _error);
     }
   }
 
@@ -314,7 +314,7 @@ export class WebSocketService extends EventEmitter {
   private flushMessageQueue(): void {
     while (this.messageQueue.length > 0) {
       const message = this.messageQueue.shift();
-      if (message) {
+      if (_message) {
         this.send(message.type, message.data);
       }
     }
@@ -330,7 +330,7 @@ export class WebSocketService extends EventEmitter {
   /**
    * Log debug messages
    */
-  private log(...args: any[]): void {
+  private log(...args: unknown[]): void {
     if (this.config.debug) {
       console.log('[WebSocket]', ...args);
     }

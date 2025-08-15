@@ -43,7 +43,7 @@ import { format } from 'date-fns';
 interface ChartProps {
   title: string;
   subtitle?: string;
-  data: any[];
+  data: unknown[];
   height?: number;
   onRefresh?: () => void;
   onExport?: () => void;
@@ -233,7 +233,7 @@ export const TreemapVisualization: React.FC<ChartProps> = ({
     '#E68B3C',
   ];
 
-  const CustomizedContent = (props: any) => {
+  const CustomizedContent = (props: unknown) => {
     const { root, depth, x, y, width, height, index, colors, name, value } = props;
 
     return (
@@ -378,7 +378,7 @@ export const BubbleChart: React.FC<ChartProps & {
 }) => {
   const theme = useTheme();
 
-  const renderTooltip = (props: any) => {
+  const renderTooltip = (props: unknown) => {
     const { active, payload } = props;
     if (active && payload && payload.length) {
       const data = payload[0].payload;

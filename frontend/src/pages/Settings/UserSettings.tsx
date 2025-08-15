@@ -175,14 +175,14 @@ const UserSettings: React.FC = () => {
   useEffect(() => {
     fetchUserSettings();
     fetchApiKeys();
-  }, []);
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
 
   const fetchUserSettings = async () => {
     try {
       setLoading(true);
       const response = await api.get('/user/settings');
       reset(response.data);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load settings');
     } finally {
       setLoading(false);
@@ -193,12 +193,12 @@ const UserSettings: React.FC = () => {
     try {
       const response = await api.get('/user/api-keys');
       setApiKeys(response.data);
-    } catch (err) {
+    } catch (_err) {
       console.error('Failed to fetch API keys:', err);
     }
   };
 
-  const onSubmitProfile = async (data: any) => {
+  const onSubmitProfile = async (data: unknown) => {
     try {
       setLoading(true);
       await api.patch('/user/profile', {
@@ -211,14 +211,14 @@ const UserSettings: React.FC = () => {
       });
       setSuccess('Profile updated successfully');
       updateUser(data);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to update profile');
     } finally {
       setLoading(false);
     }
   };
 
-  const onSubmitPassword = async (data: any) => {
+  const onSubmitPassword = async (data: unknown) => {
     if (data.newPassword !== data.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -232,19 +232,19 @@ const UserSettings: React.FC = () => {
       });
       setSuccess('Password changed successfully');
       reset({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to change password');
     } finally {
       setLoading(false);
     }
   };
 
-  const onSubmitNotifications = async (data: any) => {
+  const onSubmitNotifications = async (data: unknown) => {
     try {
       setLoading(true);
       await api.patch('/user/notifications', data.notifications);
       setSuccess('Notification preferences updated');
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to update notifications');
     } finally {
       setLoading(false);
@@ -257,7 +257,7 @@ const UserSettings: React.FC = () => {
       // Show QR code dialog
       setTwoFactorEnabled(true);
       setSuccess('Two-factor authentication enabled');
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to enable 2FA');
     }
   };
@@ -267,7 +267,7 @@ const UserSettings: React.FC = () => {
       await api.post('/user/2fa/disable');
       setTwoFactorEnabled(false);
       setSuccess('Two-factor authentication disabled');
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to disable 2FA');
     }
   };
@@ -277,7 +277,7 @@ const UserSettings: React.FC = () => {
       const response = await api.post('/user/api-keys', { name, permissions });
       setNewApiKey(response.data.key);
       fetchApiKeys();
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to create API key');
     }
   };
@@ -287,7 +287,7 @@ const UserSettings: React.FC = () => {
       await api.delete(`/user/api-keys/${keyId}`);
       fetchApiKeys();
       setSuccess('API key deleted');
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to delete API key');
     }
   };
@@ -297,7 +297,7 @@ const UserSettings: React.FC = () => {
       await api.delete('/user/account');
       // Logout and redirect
       navigate('/');
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to delete account');
     }
   };

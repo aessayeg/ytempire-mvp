@@ -19,7 +19,7 @@ export const VideoEngagementStats: React.FC<VideoEngagementStatsProps> = ({ stat
     { name: 'Dislikes', value: 100 - (stats.likeRatio || 85), color: '#F44336' }
   ];
 
-  const StatItem = ({ label, value, max = 100, color = 'primary' }: any) => (
+  const StatItem = ({ label, value, max = 100, color = 'primary' }: unknown) => (
     <Box mb={2}>
       <Box display="flex" justifyContent="space-between" mb={1}>
         <Typography variant="body2">{label}</Typography>

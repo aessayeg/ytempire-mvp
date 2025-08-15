@@ -18,23 +18,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
-  TextField,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
   Alert,
   LinearProgress,
-  CircularProgress,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
   Table,
   TableHead,
   TableBody,
@@ -43,21 +29,11 @@ import {
   TableContainer,
   TablePagination,
   Paper,
-  Tooltip,
-  Badge,
   Avatar,
-  Divider,
-  Collapse,
-  Stack,
   Fade,
   ButtonGroup,
   ToggleButton,
   ToggleButtonGroup,
-  ListItemButton,
-  FormControlLabel,
-  Switch,
-  Radio,
-  RadioGroup,
   InputAdornment,
   Snackbar,
   SpeedDial,
@@ -108,7 +84,7 @@ interface BulkItem {
   status: 'active' | 'paused' | 'archived' | 'processing';
   selected?: boolean;
   thumbnail?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   tags?: string[];
   starred?: boolean;
   createdAt: Date;
@@ -133,7 +109,7 @@ interface OperationProgress {
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
   startTime?: Date;
   endTime?: Date;
-  errors?: Array<{ itemId: string; error: string }>;
+  errors?: Array<{ itemId: string; _error: string }>;
 }
 
 interface BulkOperationsProps {
@@ -172,9 +148,9 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
   const [operationProgress, setOperationProgress] = useState<OperationProgress | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
-    message: string;
+    _message: string;
     severity: 'success' | 'error' | 'warning' | 'info';
-  }>({ open: false, message: '', severity: 'info' });
+  }>({ open: false, _message: '', severity: 'info' });
   const [speedDialOpen, setSpeedDialOpen] = useState(false);
   const [history, setHistory] = useState<Array<{ action: string; items: string[]; timestamp: Date }>>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -258,7 +234,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
     });
   }, []);
 
-  const handleSelectRange = useCallback((startId: string, endId: string, event: React.MouseEvent) => {
+  const handleSelectRange = useCallback((startId: string, endId: string, _event: React.MouseEvent) => {
     if (!event.shiftKey) return;
 
     const startIndex = filteredItems.findIndex(item => item.id === startId);
@@ -282,7 +258,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
     if (selectedIds.size === 0) {
       setSnackbar({
         open: true,
-        message: 'No items selected',
+        _message: 'No items selected',
         severity: 'warning'
       });
       return;
@@ -292,7 +268,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
       setConfirmDialog({
         open: true,
         operation,
-        message: `Are you sure you want to ${operation.name.toLowerCase()} ${selectedIds.size} item(s)?`
+        _message: `Are you sure you want to ${operation.name.toLowerCase()} ${selectedIds.size} item(s)?`
       });
       return;
     }
@@ -345,7 +321,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
     // Show success message
     setSnackbar({
       open: true,
-      message: `Successfully ${operation.name.toLowerCase()}d ${selectedIds.size} item(s)`,
+      _message: `Successfully ${operation.name.toLowerCase()}d ${selectedIds.size} item(s)`,
       severity: 'success'
     });
 
@@ -366,7 +342,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
       setHistoryIndex(prev => prev - 1);
       setSnackbar({
         open: true,
-        message: `Undid: ${previousAction.action}`,
+        _message: `Undid: ${previousAction.action}`,
         severity: 'info'
       });
     }
@@ -379,7 +355,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
       setHistoryIndex(prev => prev + 1);
       setSnackbar({
         open: true,
-        message: `Redid: ${nextAction.action}`,
+        _message: `Redid: ${nextAction.action}`,
         severity: 'info'
       });
     }
@@ -466,17 +442,17 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
               key={item.id}
               hover
               selected={selectedIds.has(item.id)}
-              onClick={(e) => handleSelectRange(
+              onClick={(_e) => handleSelectRange(
                 index > 0 ? paginatedItems[index - 1].id : item.id,
                 item.id,
-                e
+                _e
               )}
             >
               <TableCell padding="checkbox">
                 <Checkbox
                   checked={selectedIds.has(item.id)}
                   onChange={() => handleSelectItem(item.id)}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(_e) => _e.stopPropagation()}
                 />
               </TableCell>
               <TableCell>
@@ -517,8 +493,8 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
                 </Typography>
               </TableCell>
               <TableCell align="right">
-                <IconButton size="small" onClick={(e) => {
-                  e.stopPropagation();
+                <IconButton size="small" onClick={(_e) => {
+                  _e.stopPropagation();
                   // Action menu would be implemented here
                 }}>
                   <MoreVertIcon />
@@ -534,8 +510,8 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
         page={page}
         onPageChange={(e, newPage) => setPage(newPage)}
         rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(parseInt(e.target.value, 10));
+        onRowsPerPageChange={(_e) => {
+          setRowsPerPage(parseInt(_e.target.value, 10));
           setPage(0);
         }}
       />
@@ -567,7 +543,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
               <Checkbox
                 checked={selectedIds.has(item.id)}
                 onChange={() => handleSelectItem(item.id)}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(_e) => _e.stopPropagation()}
                 sx={{
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',
                   borderRadius: 1
@@ -651,7 +627,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
               size="small"
               placeholder="Search items..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(_e) => setSearchQuery(_e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -667,7 +643,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
               <InputLabel>Type</InputLabel>
               <Select
                 value={filterType}
-                onChange={(e) => setFilterType(e.target.value as any)}
+                onChange={(_e) => setFilterType(_e.target.value as any)}
                 label="Type"
               >
                 <MenuItem value="all">All Types</MenuItem>
@@ -684,7 +660,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({
               <InputLabel>Sort By</InputLabel>
               <Select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(_e) => setSortBy(_e.target.value as any)}
                 label="Sort By"
               >
                 <MenuItem value="name">Name</MenuItem>

@@ -18,7 +18,7 @@ interface UseWebSocketOptions {
   debug?: boolean;
   onConnect?: () => void;
   onDisconnect?: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
   onMessage?: (message: WebSocketMessage) => void;
 }
 
@@ -27,8 +27,8 @@ interface UseWebSocketReturn {
   latency: number;
   connect: () => void;
   disconnect: () => void;
-  send: (type: string, data: any) => void;
-  subscribe: (type: string, callback: (data: any) => void) => () => void;
+  send: (type: string, data: unknown) => void;
+  subscribe: (type: string, callback: (data: unknown) => void) => () => void;
 }
 
 export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketReturn {
@@ -80,7 +80,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
       options.onDisconnect?.();
     };
 
-    const handleError = (error: any) => {
+    const handleError = (_error: unknown) => {
       console.error('WebSocket error:', error);
       addNotification({
         type: 'error',
@@ -152,12 +152,12 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
   }, []);
 
   // Send message function
-  const send = useCallback((type: string, data: any) => {
+  const send = useCallback((type: string, data: unknown) => {
     wsRef.current?.send(type, data);
   }, []);
 
   // Subscribe to message type
-  const subscribe = useCallback((type: string, callback: (data: any) => void) => {
+  const subscribe = useCallback((type: string, callback: (data: unknown) => void) => {
     if (!wsRef.current) {
       console.warn('WebSocket not initialized');
       return () => {};
@@ -209,7 +209,7 @@ export function useVideoUpdates(videoId: string | null): void {
 
   useWebSocketSubscription(
     'video_update',
-    (data: any) => {
+    (data: unknown) => {
       if (data.videoId === videoId) {
         updateQueueItem(videoId, data.updates);
       }
@@ -226,7 +226,7 @@ export function useChannelUpdates(channelId: string | null): void {
 
   useWebSocketSubscription(
     'channel_update',
-    (data: any) => {
+    (data: unknown) => {
       if (data.channelId === channelId) {
         updateChannel(channelId, data.updates);
       }
@@ -256,7 +256,7 @@ export function useAnalyticsUpdates(): void {
 export function useNotificationUpdates(): void {
   const { addNotification } = useOptimizedStore();
 
-  useWebSocketSubscription('notification', (data: any) => {
+  useWebSocketSubscription('notification', (data: unknown) => {
     addNotification({
       type: data.level || 'info',
       message: data.message,
@@ -270,7 +270,7 @@ export function useNotificationUpdates(): void {
 export function useCostAlerts(): void {
   const { addNotification } = useOptimizedStore();
 
-  useWebSocketSubscription('cost_alert', (data: any) => {
+  useWebSocketSubscription('cost_alert', (data: unknown) => {
     addNotification({
       type: 'warning',
       message: `Cost alert: ${data.message}`,

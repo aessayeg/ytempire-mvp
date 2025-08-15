@@ -162,7 +162,7 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
     return value >= baseline ? '#10b981' : '#ef4444';
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: unknown) => {
     if (active && payload && payload.length) {
       return (
         <Box sx={{
@@ -173,7 +173,7 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
           boxShadow: 2
         }}>
           <Typography variant="subtitle2">{label}</Typography>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry: unknown, index: number) => (
             <Typography key={index} sx={{ color: entry.color }}>
               {`${entry.dataKey}: ${entry.dataKey === 'revenue' ? formatCurrency(entry.value) : formatNumber(entry.value)}`}
             </Typography>
@@ -343,7 +343,7 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
               <ZAxis dataKey="engagement" name="Engagement" range={[50, 200]} />
               <Tooltip 
                 cursor={{ strokeDasharray: '3 3' }}
-                formatter={(value: any, name: string) => {
+                formatter={(value: unknown, name: string) => {
                   if (name === 'views') return [formatNumber(value), 'Views'];
                   if (name === 'revenue') return [formatCurrency(value), 'Revenue'];
                   if (name === 'engagement') return [`${value}%`, 'Engagement'];

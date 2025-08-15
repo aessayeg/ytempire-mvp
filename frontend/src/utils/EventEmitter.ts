@@ -3,7 +3,7 @@
  * Simple implementation for WebSocket and other event-based systems
  */
 
-type EventListener = (...args: any[]) => void;
+type EventListener = (...args: unknown[]) => void;
 
 export class EventEmitter {
   private events: Map<string, Set<EventListener>> = new Map();
@@ -17,7 +17,7 @@ export class EventEmitter {
   }
 
   once(event: string, listener: EventListener): this {
-    const onceWrapper = (...args: any[]) => {
+    const onceWrapper = (...args: unknown[]) => {
       listener(...args);
       this.off(event, onceWrapper);
     };
@@ -35,7 +35,7 @@ export class EventEmitter {
     return this;
   }
 
-  emit(event: string, ...args: any[]): boolean {
+  emit(event: string, ...args: unknown[]): boolean {
     const listeners = this.events.get(event);
     if (!listeners || listeners.size === 0) {
       return false;
@@ -43,7 +43,7 @@ export class EventEmitter {
     listeners.forEach(listener => {
       try {
         listener(...args);
-      } catch (error) {
+      } catch (_error) {
         console.error(`Error in event listener for "${event}":`, error);
       }
     });

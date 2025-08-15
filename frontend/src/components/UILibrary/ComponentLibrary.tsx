@@ -312,7 +312,7 @@ export const CopyableText: React.FC<CopyableTextProps> = ({
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+    } catch (_err) {
       console.error('Failed to copy:', err);
     }
   };
@@ -353,7 +353,7 @@ export const FileUploadButton: React.FC<FileUploadProps> = ({
     inputRef.current?.click();
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 

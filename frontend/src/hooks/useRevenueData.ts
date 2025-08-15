@@ -108,7 +108,7 @@ export const useRevenueData = ({
 
     try {
       // Prepare query parameters
-      const params: any = {};
+      const params: unknown = {};
       if (dateRange) {
         params.start_date = dateRange.start.toISOString();
         params.end_date = dateRange.end.toISOString();
@@ -157,7 +157,7 @@ export const useRevenueData = ({
       } else if (overviewResponse.data.channel_breakdown) {
         // Use channel breakdown from overview
         setChannelRevenue(
-          overviewResponse.data.channel_breakdown.map((ch: any) => ({
+          overviewResponse.data.channel_breakdown.map((ch: unknown) => ({
             channel_id: ch.channel_id,
             channel_name: ch.channel_name,
             total_revenue: ch.revenue,
@@ -168,7 +168,7 @@ export const useRevenueData = ({
         );
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching revenue data:', err);
       setError(err.response?.data?.detail || 'Failed to fetch revenue data');
     } finally {
@@ -183,7 +183,7 @@ export const useRevenueData = ({
     }
 
     try {
-      const params: any = { format };
+      const params: unknown = { format };
       if (dateRange) {
         params.start_date = dateRange.start.toISOString();
         params.end_date = dateRange.end.toISOString();
@@ -208,7 +208,7 @@ export const useRevenueData = ({
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error exporting revenue data:', err);
       setError(err.response?.data?.detail || 'Failed to export revenue data');
     }

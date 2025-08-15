@@ -42,7 +42,7 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
     React.useEffect(() => {
       if (!keyboardShortcut || disabled) return;
 
-      const handleKeyDown = (e: KeyboardEvent) => {
+      const handleKeyDown = (_e: KeyboardEvent) => {
         const keys = keyboardShortcut.toLowerCase().split('+');
         const isMatch = keys.every((key) => {
           switch (key) {
@@ -61,7 +61,7 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
 
         if (isMatch) {
           e.preventDefault();
-          onClick?.(e as any);
+          onClick?.(e as React.MouseEvent<HTMLButtonElement>);
         }
       };
 

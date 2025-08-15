@@ -111,7 +111,7 @@ interface MobileCard {
     label: string;
     action: () => void;
   }>;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface NavigationTab {
@@ -128,12 +128,12 @@ const useSwipeGestures = (onSwipeLeft?: () => void, onSwipeRight?: () => void) =
 
   const minSwipeDistance = 50;
 
-  const onTouchStart = (e: React.TouchEvent) => {
+  const onTouchStart = (_e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
 
-  const onTouchMove = (e: React.TouchEvent) => {
+  const onTouchMove = (_e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
@@ -161,11 +161,11 @@ const usePullToRefresh = (onRefresh: () => Promise<void>) => {
   const startY = useRef<number>(0);
   const currentY = useRef<number>(0);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (_e: React.TouchEvent) => {
     startY.current = e.touches[0].clientY;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = (_e: React.TouchEvent) => {
     currentY.current = e.touches[0].clientY;
     const distance = currentY.current - startY.current;
     
@@ -568,7 +568,7 @@ export const MobileResponsiveSystem: React.FC = () => {
     </SpeedDial>
   );
 
-  const TabPanel = ({ children, value, index }: any) => (
+  const TabPanel = ({ children, value, index }: unknown) => (
     <Box
       role="tabpanel"
       hidden={value !== index}

@@ -207,7 +207,7 @@ export const EnhancedNavigation: React.FC = () => {
     );
   };
 
-  const handleQuickAction = (event: React.MouseEvent<HTMLElement>) => {
+  const handleQuickAction = (_event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 

@@ -103,7 +103,7 @@ export const VideoDetail: React.FC = () => {
         description: response.description || '',
         tags: response.tags || [],
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to load video details');
     } finally {
       setLoading(false);
@@ -119,7 +119,7 @@ export const VideoDetail: React.FC = () => {
       await api.videos.update(videoId!, editForm);
       await fetchVideoDetails();
       setEditDialogOpen(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to update video');
     }
   };
@@ -130,7 +130,7 @@ export const VideoDetail: React.FC = () => {
       await api.videos.publish(videoId!, scheduledTime);
       await fetchVideoDetails();
       setPublishDialogOpen(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to publish video');
     }
   };
@@ -139,7 +139,7 @@ export const VideoDetail: React.FC = () => {
     try {
       await api.videos.delete(videoId!);
       navigate('/videos');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to delete video');
     }
   };
@@ -154,7 +154,7 @@ export const VideoDetail: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string): any => {
+  const getStatusColor = (status: string): unknown => {
     switch (status) {
       case 'completed':
         return 'success';
@@ -167,7 +167,7 @@ export const VideoDetail: React.FC = () => {
     }
   };
 
-  const getPublishStatusColor = (status: string): any => {
+  const getPublishStatusColor = (status: string): unknown => {
     switch (status) {
       case 'published':
         return 'success';

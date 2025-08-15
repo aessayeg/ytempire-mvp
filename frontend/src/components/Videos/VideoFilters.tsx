@@ -3,7 +3,7 @@ import { Box, Paper, Typography, FormControl, InputLabel, Select, MenuItem, Slid
 import { ExpandMore, FilterList, Clear } from '@mui/icons-material';
 
 interface VideoFiltersProps {
-  onApplyFilters: (filters: any) => void;
+  onApplyFilters: (filters: unknown) => void;
   onClearFilters: () => void;
 }
 

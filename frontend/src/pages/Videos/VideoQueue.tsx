@@ -13,11 +13,7 @@ import {
   IconButton,
   Chip,
   Avatar,
-  List,
-  ListItem,
   ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
   LinearProgress,
   Menu,
   MenuItem,
@@ -25,50 +21,30 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Select,
-  FormControl,
-  InputLabel,
   Tabs,
   Tab,
-  Badge,
-  Tooltip,
   Alert,
-  Collapse,
   Grid,
-  Divider,
   ToggleButton,
   ToggleButtonGroup,
   Checkbox,
-  FormControlLabel,
-  Stack,
 } from '@mui/material';
 import {
   Queue,
   PlayArrow,
   Pause,
-  Stop,
   Delete,
   Edit,
-  MoreVert,
   Schedule,
   CheckCircle,
   Error as ErrorIcon,
-  Warning,
-  Info,
-  Timer,
   AttachMoney,
   Visibility,
-  ThumbUp,
-  CloudUpload,
   Refresh,
   FilterList,
   Sort,
   DragIndicator,
-  ContentCopy,
   AutorenewOutlined,
-  SkipNext,
-  FastForward,
   ViewList,
   ViewModule,
 } from '@mui/icons-material';
@@ -170,7 +146,7 @@ const mockVideos: Video[] = [
     estimatedViews: 30000,
     tags: ['Gaming', 'RPG', 'Review'],
     createdAt: new Date(),
-    error: 'Voice synthesis failed: API quota exceeded',
+    _error: 'Voice synthesis failed: API quota exceeded',
   },
 ];
 
@@ -180,15 +156,14 @@ export const VideoQueue: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
   const [filterMenu, setFilterMenu] = useState<null | HTMLElement>(null);
-  const [sortBy, setSortBy] = useState('priority');
   const [filterStatus, setFilterStatus] = useState('all');
   const [detailDialog, setDetailDialog] = useState<Video | null>(null);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  const handleDragEnd = (result: any) => {
+  const handleDragEnd = (result: unknown) => {
     if (!result.destination) return;
     
     const items = Array.from(videos);
@@ -297,7 +272,7 @@ export const VideoQueue: React.FC = () => {
           
           <Checkbox
             checked={selectedVideos.includes(video.id)}
-            onChange={(e) => {
+            onChange={(_e) => {
               if (e.target.checked) {
                 setSelectedVideos([...selectedVideos, video.id]);
               } else {
@@ -550,7 +525,7 @@ export const VideoQueue: React.FC = () => {
                 <ViewModule />
               </ToggleButton>
             </ToggleButtonGroup>
-            <IconButton size="small" onClick={(e) => setFilterMenu(e.currentTarget)}>
+            <IconButton size="small" onClick={(_e) => setFilterMenu(e.currentTarget)}>
               <FilterList />
             </IconButton>
             <IconButton size="small">

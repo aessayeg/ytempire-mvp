@@ -38,11 +38,11 @@ export enum WSEventType {
   ERROR = 'error'
 }
 
-export interface WSMessage<T = any> {
+export interface WSMessage<T = unknown> {
   event: string;
   timestamp: string;
   data: T;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface VideoGenerationUpdate {
@@ -53,7 +53,7 @@ export interface VideoGenerationUpdate {
   currentStep?: string;
   estimatedCompletion?: string;
   error?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ChannelMetricsUpdate {
@@ -84,8 +84,8 @@ class WebSocketClient extends EventEmitter {
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
   private isConnected = false;
-  private subscriptions: Map<string, Set<Function>> = new Map();
-  private messageQueue: WSMessage[] = [];
+  private subscriptions: Map<string, Set<(...args: unknown[]) => void>> = new Map();
+  private messageQueue: WSMessage<unknown>[] = [];
   private clientId: string;
   
   constructor(url: string) {
@@ -153,14 +153,14 @@ class WebSocketClient extends EventEmitter {
     // Listen for all custom events
     Object.values(WSEventType).forEach(eventType => {
       if (!['connect', 'disconnect', 'error', 'reconnect'].includes(eventType)) {
-        this.socket?.on(eventType, (data: any) => {
+        this.socket?.on(eventType, (data: unknown) => {
           this.handleMessage({ event: eventType, data, timestamp: new Date().toISOString() });
         });
       }
     });
   }
   
-  private handleMessage(message: WSMessage): void {
+  private handleMessage(message: WSMessage<unknown>): void {
     console.log('WebSocket message received:', message.event);
     
     // Emit to global listeners
@@ -173,7 +173,7 @@ class WebSocketClient extends EventEmitter {
     }
   }
   
-  subscribe(event: WSEventType, callback: Function): () => void {
+  subscribe(event: WSEventType, callback: (...args: unknown[]) => void): () => void {
     if (!this.subscriptions.has(event)) {
       this.subscriptions.set(event, new Set());
     }
@@ -186,8 +186,8 @@ class WebSocketClient extends EventEmitter {
     };
   }
   
-  send(event: string, data: any): void {
-    const message: WSMessage = {
+  send(event: string, data: unknown): void {
+    const message: WSMessage<unknown> = {
       event,
       data,
       timestamp: new Date().toISOString()
@@ -239,7 +239,7 @@ import { useEffect, useState, useCallback } from 'react';
 
 export function useWebSocket() {
   const [connected, setConnected] = useState(false);
-  const [lastMessage] = useState<WSMessage | null>(null);
+  const [lastMessage] = useState<WSMessage<unknown> | null>(null);
   
   useEffect(() => {
     const handleConnect = () => setConnected(true);
@@ -257,11 +257,11 @@ export function useWebSocket() {
     };
   }, []);
   
-  const subscribe = useCallback((event: WSEventType, callback: Function) => {
+  const subscribe = useCallback((event: WSEventType, callback: (...args: unknown[]) => void) => {
     return wsClient.subscribe(event, callback);
   }, []);
   
-  const send = useCallback((event: string, data: any) => {
+  const send = useCallback((event: string, data: unknown) => {
     wsClient.send(event, data);
   }, []);
   
@@ -368,11 +368,11 @@ export function useSystemMetrics() {
 
 // Hook for notifications
 export function useNotifications() {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Array<unknown & { id: number; timestamp: Date }>>([]);
   const { subscribe } = useWebSocket();
   
   useEffect(() => {
-    const unsubscribe = subscribe(WSEventType.USER_NOTIFICATION, (data: any) => {
+    const unsubscribe = subscribe(WSEventType.USER_NOTIFICATION, (data: unknown) => {
       setNotifications(prev => [...prev, { ...data, id: Date.now(), timestamp: new Date() }]);
     });
     

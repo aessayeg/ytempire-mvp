@@ -3,14 +3,14 @@ import { useAuthStore } from '../stores/authStore';
 
 interface WebSocketMessage {
   type: string;
-  data: any;
+  data: unknown;
   timestamp: string;
 }
 
 export const useRealtimeData = (endpoint: string = '/ws') => {
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
-  const [metrics, setMetrics] = useState<Record<string, any>>({});
+  const [metrics, setMetrics] = useState<Record<string, unknown>>({});
   const wsRef = useRef<WebSocket | null>(null);
   const { accessToken, user } = useAuthStore();
 
@@ -55,7 +55,7 @@ export const useRealtimeData = (endpoint: string = '/ws') => {
     }
   }, []);
 
-  const sendMessage = useCallback((message: any) => {
+  const sendMessage = useCallback((message: unknown) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(message));
     }

@@ -29,7 +29,7 @@ import {
 import { format } from 'date-fns';
 
 interface ChartProps {
-  data: any[];
+  data: unknown[];
   height?: number;
   width?: string | number;
 }
@@ -74,7 +74,7 @@ export const RevenueChart: React.FC<ChartProps> = ({ data, height = 300 }) => {
             borderRadius: '8px',
             color: '#f3f4f6'
           }}
-          formatter={(value: any) => [`$${value}`, 'Revenue']}
+          formatter={(value: unknown) => [`$${value}`, 'Revenue']}
           labelFormatter={(label) => format(new Date(label), 'MMM dd, yyyy')}
         />
         <Area 
@@ -285,7 +285,7 @@ export const CostBreakdownRadial: React.FC<ChartProps> = ({ data, height = 300 }
             borderRadius: '8px',
             color: '#f3f4f6'
           }}
-          formatter={(value: any) => [`$${value}`, 'Cost']}
+          formatter={(value: unknown) => [`$${value}`, 'Cost']}
         />
       </RadialBarChart>
     </ResponsiveContainer>

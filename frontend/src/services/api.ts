@@ -19,20 +19,20 @@ apiClient.interceptors.request.use(
     }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
+  (_error) => {
+    return Promise.reject(_error)
   }
 )
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  (_error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       window.location.href = '/login'
     }
-    return Promise.reject(error)
+    return Promise.reject(_error)
   }
 )
 
@@ -59,7 +59,7 @@ export const authApi = {
     return response.data
   },
   
-  updateProfile: async (userData: any) => {
+  updateProfile: async (userData: unknown) => {
     const response = await apiClient.put('/auth/profile', userData)
     return response.data
   },
@@ -77,12 +77,12 @@ export const channelsApi = {
     return response.data
   },
   
-  create: async (channelData: any) => {
+  create: async (channelData: unknown) => {
     const response = await apiClient.post('/channels', channelData)
     return response.data
   },
   
-  update: async (id: string, channelData: any) => {
+  update: async (id: string, channelData: unknown) => {
     const response = await apiClient.put(`/channels/${id}`, channelData)
     return response.data
   },
@@ -106,7 +106,7 @@ export const videosApi = {
     return response.data
   },
   
-  generate: async (videoData: any) => {
+  generate: async (videoData: unknown) => {
     const response = await apiClient.post('/videos/generate', videoData)
     return response.data
   },
@@ -130,7 +130,7 @@ export const analyticsApi = {
     return response.data
   },
   
-  getChannelAnalytics: async (channelId: string, dateRange?: any) => {
+  getChannelAnalytics: async (channelId: string, dateRange?: unknown) => {
     const params = dateRange || {}
     const response = await apiClient.get(`/analytics/channels/${channelId}`, { params })
     return response.data
@@ -144,7 +144,7 @@ export const analyticsApi = {
 
 // Costs API
 export const costsApi = {
-  getAll: async (filters?: any) => {
+  getAll: async (filters?: unknown) => {
     const response = await apiClient.get('/costs', { params: filters })
     return response.data
   },

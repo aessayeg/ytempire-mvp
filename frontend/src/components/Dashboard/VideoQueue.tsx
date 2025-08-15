@@ -49,7 +49,7 @@ export const VideoQueue: React.FC<VideoQueueProps> = ({
     }
   }
 
-  const getStatusColor = (status: string): any => {
+  const getStatusColor = (status: string): unknown => {
     switch (status) {
       case 'processing':
         return 'warning'

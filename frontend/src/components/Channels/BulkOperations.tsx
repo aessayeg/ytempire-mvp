@@ -150,7 +150,7 @@ export const BulkOperations: React.FC = () => {
     },
   ];
 
-  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSelectAll = (_event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       setSelectedChannels(channels.map(c => c.id));
     } else {

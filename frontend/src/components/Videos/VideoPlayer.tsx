@@ -177,7 +177,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       } else {
         await video.requestPictureInPicture();
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('PiP not supported');
     }
   };

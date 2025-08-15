@@ -64,7 +64,7 @@ export const trapFocus = (container: HTMLElement) => {
   const firstElement = focusableElements[0];
   const lastElement = focusableElements[focusableElements.length - 1];
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = (_e: KeyboardEvent) => {
     if (e.key !== 'Tab') return;
 
     if (e.shiftKey) {
@@ -154,7 +154,7 @@ export const getAriaProps = (props: {
   live?: 'polite' | 'assertive' | 'off';
   role?: string;
 }) => {
-  const ariaProps: Record<string, any> = {};
+  const ariaProps: Record<string, string | boolean | undefined> = {};
   
   if (props.label) ariaProps['aria-label'] = props.label;
   if (props.labelledBy) ariaProps['aria-labelledby'] = props.labelledBy;
@@ -199,13 +199,13 @@ export const manageFocusVisible = () => {
     hadKeyboardEvent = false;
   };
   
-  const onKeyDown = (e: KeyboardEvent) => {
+  const onKeyDown = (_e: KeyboardEvent) => {
     if (e.key === 'Tab') {
       hadKeyboardEvent = true;
     }
   };
   
-  const onFocus = (e: FocusEvent) => {
+  const onFocus = (_e: FocusEvent) => {
     if (hadKeyboardEvent || (e.target as HTMLElement).matches(':focus-visible')) {
       document.body.classList.add('keyboard-focused');
     }

@@ -53,7 +53,7 @@ export interface AppState {
     realtime: RealtimeMetrics | null;
     daily: DailyMetrics[];
     loading: boolean;
-    cache: Map<string, any>;
+    cache: Map<string, unknown>;
   };
 
   // UI State
@@ -68,7 +68,7 @@ export interface AppState {
   ws: {
     connected: boolean;
     reconnecting: boolean;
-    lastMessage: any;
+    lastMessage: unknown;
   };
 }
 
@@ -150,8 +150,8 @@ export interface AppActions {
   // Analytics Actions
   updateRealtimeMetrics: (metrics: RealtimeMetrics) => void;
   addDailyMetrics: (metrics: DailyMetrics) => void;
-  cacheAnalytics: (key: string, data: any) => void;
-  getCachedAnalytics: (key: string) => any;
+  cacheAnalytics: (key: string, data: unknown) => void;
+  getCachedAnalytics: (key: string) => unknown;
 
   // UI Actions
   toggleSidebar: () => void;
@@ -165,7 +165,7 @@ export interface AppActions {
   // WebSocket Actions
   setWsConnected: (connected: boolean) => void;
   setWsReconnecting: (reconnecting: boolean) => void;
-  handleWsMessage: (message: any) => void;
+  handleWsMessage: (message: unknown) => void;
 
   // Utility Actions
   reset: () => void;
@@ -282,7 +282,7 @@ export const useOptimizedStore = create<AppState & AppActions>()(
                 state.channels.loading = false;
                 state.channels.lastFetch = now;
               });
-            } catch (error) {
+            } catch (_error) {
               set((state) => {
                 state.channels.loading = false;
                 state.channels.error = error instanceof Error ? error.message : 'An error occurred';
@@ -474,7 +474,7 @@ export const useOptimizedStore = create<AppState & AppActions>()(
                 set((state) => {
                   Object.assign(state, parsed);
                 });
-              } catch (error) {
+              } catch (_error) {
                 console.error('Failed to hydrate state:', error);
               }
             }

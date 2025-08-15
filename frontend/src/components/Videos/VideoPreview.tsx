@@ -4,7 +4,7 @@ import { PlayArrow, Edit, Publish } from '@mui/icons-material';
 import { VideoPlayer } from './VideoPlayer';
 
 interface VideoPreviewProps {
-  video: any;
+  video: unknown;
   onEdit?: () => void;
   onPublish?: () => void;
   onApprove?: () => void;

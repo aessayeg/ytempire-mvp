@@ -7,10 +7,7 @@ import {
   CardHeader,
   Typography,
   Button,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   Chip,
   Avatar,
   LinearProgress,
@@ -32,7 +29,6 @@ import {
   TrendingDown,
   AttachMoney,
   Visibility,
-  ThumbUp,
   Comment,
   PlayCircle,
   Download,
@@ -69,7 +65,7 @@ import {
   ScatterChart,
   ZAxis,
 } from 'recharts';
-import { format, subDays, startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { format, subDays, parseISO } from 'date-fns';
 
 interface RevenueData {
   date: string;
@@ -697,7 +693,7 @@ export const AnalyticsDashboard: React.FC = () => {
                 control={
                   <Switch
                     checked={comparisonMode}
-                    onChange={(e) => setComparisonMode(e.target.checked)}
+                    onChange={(_e) => setComparisonMode(_e.target.checked)}
                   />
                 }
                 label="Compare Mode"
@@ -875,7 +871,7 @@ export const AnalyticsDashboard: React.FC = () => {
             <InputLabel>Time Range</InputLabel>
             <Select
               value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
+              onChange={(_e) => setTimeRange(_e.target.value)}
               label="Time Range"
             >
               <MenuItem value="7d">Last 7 Days</MenuItem>

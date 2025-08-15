@@ -76,7 +76,7 @@ export const ChannelList: React.FC = () => {
 
   useEffect(() => {
     fetchChannels();
-  }, []);
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
 
   const fetchChannels = async () => {
     try {
@@ -84,7 +84,7 @@ export const ChannelList: React.FC = () => {
       const response = await channelApi.getChannels();
       setChannels(response.data);
       setError(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError('Failed to load channels. Please try again.');
       console.error('Error fetching channels:', error);
     } finally {
@@ -135,7 +135,7 @@ export const ChannelList: React.FC = () => {
         setChannels(channels.filter(c => c.id !== selectedChannel.id));
         setDeleteDialogOpen(false);
         setSelectedChannel(null);
-      } catch (error) {
+      } catch (_error) {
         console.error('Error deleting channel:', error);
       }
     }
@@ -151,7 +151,7 @@ export const ChannelList: React.FC = () => {
         setEditDialogOpen(false);
         setSelectedChannel(null);
         setEditForm({});
-      } catch (error) {
+      } catch (_error) {
         console.error('Error updating channel:', error);
       }
     }

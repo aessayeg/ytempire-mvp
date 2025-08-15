@@ -24,7 +24,6 @@ import {
   Lock,
   Person,
   Badge,
-  CheckCircle,
 } from '@mui/icons-material';
 
 const steps = ['Account Details', 'Personal Information', 'Confirmation'];
@@ -115,13 +114,13 @@ export const RegisterForm: React.FC = () => {
         formData.fullName || undefined
       );
       navigate('/dashboard');
-    } catch (error) {
+    } catch (_error) {
       console.error('Registration failed:', error);
       setActiveStep(0); // Go back to first step on error
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
     setFormData(prev => ({
       ...prev,

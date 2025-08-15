@@ -341,7 +341,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
       setMetricCards(cards);
 
       // Process chart data
-      const chartDataProcessed = performanceResponse.data.map((item: any) => ({
+      const chartDataProcessed = performanceResponse.data.map((item: unknown) => ({
         timestamp: item.period,
         date: item.period,
         views: item.views,
@@ -357,7 +357,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
       setChartData(chartDataProcessed);
 
       // Process channel performance
-      const channelData: ChannelPerformance[] = channelsResponse.data.map((channel: any) => ({
+      const channelData: ChannelPerformance[] = channelsResponse.data.map((channel: unknown) => ({
         channelId: channel.channel_id,
         channelName: channel.channel_name,
         videos: channel.video_count,
@@ -371,7 +371,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
       setChannelPerformance(channelData);
 
       // Process top videos
-      const videoData: VideoPerformance[] = videosResponse.data.slice(0, 10).map((video: any) => ({
+      const videoData: VideoPerformance[] = videosResponse.data.slice(0, 10).map((video: unknown) => ({
         videoId: video.id,
         title: video.title,
         channelName: channels.list.find(c => c.id === video.channel_id)?.name || 'Unknown',
@@ -387,7 +387,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
       setRealtimeMetrics(realtimeResponse.data);
       
       setLoading(false);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch dashboard data:', error);
       addNotification({
         type: 'error',

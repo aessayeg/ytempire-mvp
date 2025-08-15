@@ -144,7 +144,7 @@ export const VideoGenerationForm: React.FC = () => {
 
   useEffect(() => {
     fetchChannels();
-  }, []);
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
 
   useEffect(() => {
     // Update cost estimate when config changes
@@ -173,7 +173,7 @@ export const VideoGenerationForm: React.FC = () => {
       
       const response = await aiApi.getTrendingTopics(channel.category);
       setTrendingSuggestions(response.data);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching trending topics:', error);
     } finally {
       setLoading(false);
@@ -186,7 +186,7 @@ export const VideoGenerationForm: React.FC = () => {
     try {
       const response = await aiApi.generateTitles(config.topic, config.style);
       setTitleSuggestions(response.data);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error generating titles:', error);
     }
   };
@@ -241,7 +241,7 @@ export const VideoGenerationForm: React.FC = () => {
       
       setTimeout(checkStatus, 5000);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.response?.data?.detail || 'Failed to generate video');
       setGenerating(false);
     }

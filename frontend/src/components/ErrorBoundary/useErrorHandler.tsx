@@ -75,7 +75,7 @@ export const useErrorHandler = (options: ErrorHandlerOptions = {}) => {
         }
         
         return result;
-      } catch (err) {
+      } catch (_err) {
         setIsRetrying(false);
         handleError(err);
         throw err;
@@ -114,7 +114,7 @@ export const withErrorHandling = async <T,>(
 ): Promise<T | null> => {
   try {
     return await fn();
-  } catch (error) {
+  } catch (_error) {
     const errorMessage = error instanceof Error ? error.message : 'An error occurred';
     
     if (options?.showToast !== false) {

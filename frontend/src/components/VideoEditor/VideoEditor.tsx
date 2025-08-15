@@ -87,7 +87,7 @@ interface VideoMetadata {
 interface VideoEdit {
   type: 'trim' | 'crop' | 'filter' | 'text' | 'audio';
   timestamp: number;
-  parameters: any;
+  parameters: unknown;
 }
 
 interface TimelineItem {
@@ -96,7 +96,7 @@ interface TimelineItem {
   startTime: number;
   endTime: number;
   layer: number;
-  content: any;
+  content: unknown;
 }
 
 interface TrimMarkers {

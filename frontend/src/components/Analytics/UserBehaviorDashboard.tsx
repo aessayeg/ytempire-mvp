@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Card,
   CardContent,
   Typography,
   Grid,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   Button,
   Chip,
   LinearProgress,
@@ -22,41 +19,23 @@ import {
   TableHead,
   TableRow,
   Paper,
-  IconButton,
-  Tooltip,
 } from '@mui/material';
 import {
   Timeline,
-  TrendingUp,
   People,
   TouchApp,
   Assessment,
-  FilterList,
-  Info,
-  Warning,
-  CheckCircle,
-  Cancel,
 } from '@mui/icons-material';
 import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
   BarChart,
   Bar,
-  Funnel,
-  FunnelChart,
-  Sankey,
-  HeatMapGrid,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip as RechartsTooltip,
-  Legend,
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { format, subDays } from 'date-fns';
 import { useBehaviorAnalytics } from '../../hooks/useBehaviorAnalytics';
 import { formatNumber, formatPercentage, formatDuration } from '../../utils/formatters';
 
@@ -77,7 +56,6 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
   const [activeTab, setActiveTab] = useState(0);
   const [selectedFunnel, setSelectedFunnel] = useState('signup');
   const [cohortType, setCohortType] = useState('signup');
-  const [segmentView, setSegmentView] = useState('overview');
 
   const {
     overview,
@@ -160,7 +138,7 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
             <InputLabel>Funnel Type</InputLabel>
             <Select
               value={selectedFunnel}
-              onChange={(e) => setSelectedFunnel(e.target.value)}
+              onChange={(_e) => setSelectedFunnel(_e.target.value)}
               label="Funnel Type"
             >
               <MenuItem value="signup">Signup Flow</MenuItem>
@@ -233,7 +211,7 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
             <InputLabel>Cohort Type</InputLabel>
             <Select
               value={cohortType}
-              onChange={(e) => setCohortType(e.target.value)}
+              onChange={(_e) => setCohortType(_e.target.value)}
               label="Cohort Type"
             >
               <MenuItem value="signup">By Signup Date</MenuItem>

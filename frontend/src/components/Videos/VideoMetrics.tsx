@@ -18,14 +18,14 @@ export const VideoMetrics: React.FC<VideoMetricsProps> = ({ videoId }) => {
     try {
       const response = await api.videos.getAnalytics(videoId);
       setMetrics(response);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch metrics:', error);
     }
   };
 
   if (!metrics) return null;
 
-  const MetricCard = ({ icon, label, value, change }: any) => (
+  const MetricCard = ({ icon, label, value, change }: unknown) => (
     <Card>
       <CardContent>
         <Box display="flex" alignItems="center" gap={1} mb={1}>

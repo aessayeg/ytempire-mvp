@@ -6,7 +6,7 @@ import { apiClient } from './api';
 import { v4 as uuidv4 } from 'uuid';
 
 interface EventData {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface TrackingEvent {
@@ -54,7 +54,7 @@ class AnalyticsTracker {
     });
 
     // Track clicks
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', (_e) => {
       const target = e.target as HTMLElement;
       if (target.dataset.track) {
         this.trackEvent('click', {
@@ -67,7 +67,7 @@ class AnalyticsTracker {
     });
 
     // Track form submissions
-    document.addEventListener('submit', (e) => {
+    document.addEventListener('submit', (_e) => {
       const form = e.target as HTMLFormElement;
       if (form.dataset.track) {
         this.trackEvent('form_submit', {
@@ -79,9 +79,9 @@ class AnalyticsTracker {
     });
 
     // Track errors
-    window.addEventListener('error', (e) => {
+    window.addEventListener('error', (_e) => {
       this.trackEvent('error', {
-        message: e.message,
+        _message: e.message,
         filename: e.filename,
         line: e.lineno,
         column: e.colno,
@@ -205,7 +205,7 @@ class AnalyticsTracker {
   public trackEvent(eventType: string, eventData: EventData = {}): void {
     if (!this.isEnabled) return;
 
-    const event: TrackingEvent = {
+    const _event: TrackingEvent = {
       event_type: eventType,
       event_data: {
         ...eventData,
@@ -219,10 +219,10 @@ class AnalyticsTracker {
     };
 
     if (this.debug) {
-      console.log('[Analytics]', event);
+      console.log('[Analytics]', _event);
     }
 
-    this.addToQueue(event);
+    this.addToQueue(_event);
   }
 
   /**
@@ -271,8 +271,8 @@ class AnalyticsTracker {
   /**
    * Add event to queue
    */
-  private addToQueue(event: TrackingEvent): void {
-    this.eventQueue.push(event);
+  private addToQueue(_event: TrackingEvent): void {
+    this.eventQueue.push(_event);
 
     // Send immediately if queue is full
     if (this.eventQueue.length >= this.batchSize) {
@@ -316,12 +316,12 @@ class AnalyticsTracker {
         // Send batch
         await apiClient.post('/api/v1/analytics/events/batch', events);
       }
-    } catch (error) {
+    } catch (_error) {
       // Re-add events to queue on failure
       this.eventQueue = [...events, ...this.eventQueue];
       
       if (this.debug) {
-        console.error('[Analytics] Failed to send events:', error);
+        console.error('[Analytics] Failed to send events:', _error);
       }
     }
   }
@@ -357,7 +357,7 @@ class AnalyticsTracker {
           // First Input Delay
           const fidObserver = new PerformanceObserver((list) => {
             const entries = list.getEntries();
-            entries.forEach((entry: any) => {
+            entries.forEach((entry: unknown) => {
               this.trackTiming('web_vitals', 'fid', entry.processingStart - entry.startTime);
             });
           });
@@ -366,7 +366,7 @@ class AnalyticsTracker {
           // Cumulative Layout Shift
           const clsObserver = new PerformanceObserver((list) => {
             let clsScore = 0;
-            list.getEntries().forEach((entry: any) => {
+            list.getEntries().forEach((entry: unknown) => {
               if (!entry.hadRecentInput) {
                 clsScore += entry.value;
               }
@@ -374,7 +374,7 @@ class AnalyticsTracker {
             this.trackTiming('web_vitals', 'cls', clsScore * 1000); // Convert to ms
           });
           clsObserver.observe({ entryTypes: ['layout-shift'] });
-        } catch (e) {
+        } catch (_e) {
           // Silently fail if observers are not supported
         }
       }

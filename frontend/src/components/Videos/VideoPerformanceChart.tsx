@@ -4,7 +4,7 @@ import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
 
 interface VideoPerformanceChartProps {
   videoId: string;
-  data?: any[];
+  data?: unknown[];
   metric?: 'views' | 'engagement' | 'revenue';
   timeRange?: '24h' | '7d' | '30d' | '90d';
 }

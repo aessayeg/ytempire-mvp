@@ -3,8 +3,8 @@ import { Box, Paper, Typography, Button, TextField, Select, MenuItem, FormContro
 import { Publish, Schedule, Visibility, VisibilityOff } from '@mui/icons-material';
 
 interface PublishingControlsProps {
-  onPublish: (settings: any) => void;
-  channels: any[];
+  onPublish: (settings: unknown) => void;
+  channels: unknown[];
 }
 
 export const PublishingControls: React.FC<PublishingControlsProps> = ({ onPublish, channels }) => {

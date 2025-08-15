@@ -71,7 +71,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenuOpen = (_event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -96,7 +96,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
     }
   };
 
-  const getStatusColor = (): any => {
+  const getStatusColor = (): unknown => {
     switch (video.generation_status) {
       case 'completed':
         return 'success';
@@ -109,7 +109,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
     }
   };
 
-  const getPublishStatusColor = (): any => {
+  const getPublishStatusColor = (): unknown => {
     switch (video.publish_status) {
       case 'published':
         return 'success';
