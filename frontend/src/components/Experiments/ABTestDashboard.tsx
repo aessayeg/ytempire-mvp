@@ -27,7 +27,8 @@ import {
                 fullWidth
                 label="Experiment Name"
                 value={newExperiment.name}
-                onChange={(e) => setNewExperiment({ ...newExperiment, name: e.target.value)})}
+                onChange={(e) => setNewExperiment({ ...newExperiment, name: e.target.value)});
+}
               />
             </Grid>
             <Grid item xs={12}>
@@ -37,7 +38,8 @@ import {
                 rows={2}
                 label="Description"
                 value={newExperiment.description}
-                onChange={(e) => setNewExperiment({ ...newExperiment, description: e.target.value)})}
+                onChange={(e) => setNewExperiment({ ...newExperiment, description: e.target.value)});
+}
               />
             </Grid>
             <Grid item xs={12}>
@@ -47,7 +49,8 @@ import {
                 rows={2}
                 label="Hypothesis"
                 value={newExperiment.hypothesis}
-                onChange={(e) => setNewExperiment({ ...newExperiment, hypothesis: e.target.value)})}
+                onChange={(e) => setNewExperiment({ ...newExperiment, hypothesis: e.target.value)});
+}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -55,7 +58,8 @@ import {
                 <InputLabel>Target Metric</InputLabel>
                 <Select
                   value={newExperiment.target_metric}
-                  onChange={(e) => setNewExperiment({ ...newExperiment, target_metric: e.target.value)})}
+                  onChange={(e) => setNewExperiment({ ...newExperiment, target_metric: e.target.value)});
+}
                 >
                   <MenuItem value="conversion_rate">Conversion Rate</MenuItem>
                   <MenuItem value="revenue">Revenue</MenuItem>
@@ -70,7 +74,8 @@ import {
                 type="number"
                 label="Duration (days)"
                 value={newExperiment.duration_days}
-                onChange={(e) => setNewExperiment({ ...newExperiment, duration_days: parseInt(e.target.value) })}
+                onChange={(e) => setNewExperiment({ ...newExperiment, duration_days: parseInt(e.target.value) });
+}
               />
             </Grid>
             <Grid item xs={12} md={3}>
@@ -79,7 +84,8 @@ import {
                 type="number"
                 label="Min Sample Size"
                 value={newExperiment.min_sample_size}
-                onChange={(e) => setNewExperiment({ ...newExperiment, min_sample_size: parseInt(e.target.value) })}
+                onChange={(e) => setNewExperiment({ ...newExperiment, min_sample_size: parseInt(e.target.value) });
+}
               />
             </Grid>
           </Grid>

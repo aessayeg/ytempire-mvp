@@ -22,7 +22,7 @@ export const VideoMetrics: React.FC<VideoMetricsProps> = ({ videoId }) => {
   const fetchMetrics = async () => {
     try {
       const response = await api.videos.getAnalytics(videoId);
-      setMetrics(response)} catch (_) {
+      setMetrics(response)} catch (error) {
       console.error('Failed to fetch, metrics:', error)}
   };
 
@@ -55,15 +55,15 @@ export const VideoMetrics: React.FC<VideoMetricsProps> = ({ videoId }) => {
       <Grid item xs={6} md={3}>
         <MetricCard icon={<Comment />} label="Comments" value={metrics.comments?.toLocaleString()} />
       </Grid>
-      <Grid item xs={6} md={3}>`
+      <Grid item xs={6} md={3}>
         <MetricCard icon={<WatchLater />} label="Watch Time" value={`${metrics.watchTime}h`} />
       </Grid>
-      <Grid item xs={6} md={3}>`
+      <Grid item xs={6} md={3}>
         <MetricCard icon={<AttachMoney />} label="Revenue" value={`$${metrics.revenue?.toFixed(2)}`} change={metrics.revenueChange} />
       </Grid>
-      <Grid item xs={6} md={3}>`
+      <Grid item xs={6} md={3}>
         <MetricCard icon={<TrendingUp />} label="Engagement" value={`${metrics.engagementRate}%`} />
       </Grid>
     </Grid>
   </>
-  )};`
+  )};

@@ -69,26 +69,26 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({ severity = 'error', 
   }, [autoHideDuration, onClose]);
 
   const handleCopyError = () => {
-    const errorInfo = `
+    const errorInfo = 
 Error: ${title}
 Message: ${message}
 Code: ${errorCode || 'N/A'}
 Details: ${details || 'N/A'}
-Time: ${new Date().toISOString()`
+Time: ${new Date().toISOString()
     `.trim();
     
     navigator.clipboard.writeText(errorInfo);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000)};
 
-  const handleReportBug = () => {`
-    const errorInfo = encodeURIComponent(`
+  const handleReportBug = () => {
+    const errorInfo = encodeURIComponent(
 **Error Report**
 - Title: ${title}
 - Message: ${message}
 - Code: ${errorCode || 'N/A'}
-- Time: ${new Date().toISOString()`
-    `);`
+- Time: ${new Date().toISOString()
+    `);
     window.open(`/feedback?type=bug&details=${errorInfo}`, '_blank')};
 
   const getSeverityIcon = () => {
@@ -267,4 +267,4 @@ Time: ${new Date().toISOString()`
         </Box>
       </Alert>
     </Collapse>
-  )};`
+  )};

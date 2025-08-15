@@ -169,7 +169,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
           sx={{ 
             backgroundColor: theme.palette.background.paper,
             color: theme.palette.text.primary,
-            borderBottom: `1px solid ${theme.palette.divider}`
+            borderBottom: `1px solid ${theme.palette.divider}
           }}
         >
           <Toolbar sx={{ px: 2 }}>
@@ -303,10 +303,10 @@ export const MobileCard: React.FC<{ children: React.ReactNode }> = ({ children }
     sx={{
       p: 2,
       mb: 2,
-      borderRadius: 2,`
-      border: (theme) => `1px solid ${theme.palette.divider}`
+      borderRadius: 2,
+      border: (theme) => `1px solid ${theme.palette.divider}
     }}
   >
     {children}
   </Paper>
-);`
+);

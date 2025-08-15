@@ -113,7 +113,7 @@ export const Dashboard: React.FC = () => {
       // Fetch latest metrics
       await fetchVideos();
       // Update metrics from API
-      setLastUpdated(new Date())} catch (_) {
+      setLastUpdated(new Date())} catch (error) {
       console.error('Failed to refresh, dashboard:', error)} finally {
       setLoading(false)}
   };
@@ -127,7 +127,7 @@ export const Dashboard: React.FC = () => {
   const formatNumber = (value: number) => {
     if (value >= 1000000) {
       return `${(value / 1000000.toFixed(1)}M`;
-    } else if (value >= 1000) {`
+    } else if (value >= 1000) {
       return `${(value / 1000.toFixed(1)}K`;
     }
     return value.toString()};
@@ -137,7 +137,7 @@ export const Dashboard: React.FC = () => {
       <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Header */}
       <DashboardHeader
-        title="Dashboard"`
+        title="Dashboard"
         subtitle={`Welcome, back, ${user?.name || 'User'}`}
         lastUpdated={lastUpdated}
         onRefresh={handleRefresh}
@@ -191,7 +191,7 @@ export const Dashboard: React.FC = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <MetricCard
-            title="Avg Cost/Video"`
+            title="Avg Cost/Video"
             value={`$${metrics.averageCostPerVideo}`}
             icon={<AttachMoney />}
             trend="-5%"
@@ -354,4 +354,4 @@ export const Dashboard: React.FC = () => {
       </Grid>
     </Box>
   </>
-  )};`
+  )};

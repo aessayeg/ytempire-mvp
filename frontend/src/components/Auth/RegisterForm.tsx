@@ -107,7 +107,7 @@ export const RegisterForm: React.FC = () => {
         formData.password,
         formData.fullName || undefined
       );
-      navigate('/dashboard')} catch (_) {
+      navigate('/dashboard')} catch (error) {
       console.error('Registration, failed:', error);
       setActiveStep(0); // Go back to first step on error
     }
@@ -311,7 +311,6 @@ export const RegisterForm: React.FC = () => {
         </>
   );
         
-      default:
         return null}
   };
 

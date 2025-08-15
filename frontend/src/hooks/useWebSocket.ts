@@ -44,7 +44,7 @@ export const useWebSocket = (_channel: string, _options: WebSocketOptions = {}) 
       // Join the specific channel
       socket.emit('join', { channel })});
 
-    socket.on(_'disconnect', () => {`
+    socket.on(_'disconnect', () => {
       console.log(`WebSocket disconnected from ${channel}`);
       setState(prev => ({ ...prev, connected: false }))});
 
@@ -80,7 +80,8 @@ export const useWebSocket = (_channel: string, _options: WebSocketOptions = {}) 
 
   const sendMessage = useCallback((event: string, data: React.ChangeEvent<HTMLInputElement>) => {
     if (socketRef.current?.connected) {
-      socketRef.current.emit(event, { channel, ...data })} else {
+      socketRef.current.emit(event, { channel, ...data });
+} else {
       console.error('WebSocket not connected')}
   }, [channel]);
 
@@ -133,4 +134,4 @@ export const createOptimizedRouter = () => {
   return createBrowserRouter([
     // Router configuration would go here
   ])}
-};`
+};

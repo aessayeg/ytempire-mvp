@@ -101,7 +101,7 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
     setIsLoading(true);
     setError(null);
     
-    try {`
+    try {
       await axios.post(`${API_URL}/api/v1/auth/verify-reset-code`, { email: formData.email,
         code: formData.resetCode });
       
@@ -118,7 +118,7 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
     setIsLoading(true);
     setError(null);
     
-    try {`
+    try {
       await axios.post(`${API_URL}/api/v1/auth/reset-password`, { email: formData.email,
         code: formData.resetCode,
         new_password: formData.newPassword });
@@ -331,7 +331,6 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
         </>
   );
         
-      default:
         return null}
   };
 
@@ -404,4 +403,4 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
       </Paper>
     </Box>
   </>
-  )};`
+  )};

@@ -203,7 +203,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
           <XAxis
             dataKey="date"
             tickFormatter={value) => format(new Date(value), 'MMM dd'}
-          />`
+          />
           <YAxis tickFormatter={(value) => `$${value}`} />
           <RechartsTooltip
             formatter={(value: number) => formatCurrency(value}
@@ -304,7 +304,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           {renderRevenueCard(
-            'CPM',`
+            'CPM',
             `$${overview?.cpm?.toFixed(2) || '0.00'}`,
             overview?.cpm_trend,
             <ShowChart color="success" />
@@ -312,7 +312,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           {renderRevenueCard(
-            'RPM',`
+            'RPM',
             `$${overview?.rpm?.toFixed(2) || '0.00'}`,
             overview?.rpm_trend,
             <BarChartIcon color="info" />
@@ -447,4 +447,4 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
         </Card>
       )}
     </Box>
-  )};`
+  )};

@@ -149,21 +149,21 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
       return exportConfig.columns?.map(col => {
         const value = row[col];
         // Escape commas and quotes
-        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {`
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
           return `"${value.replace(/"/g, '""')}"`;
         }
         return value}).join(',')}).join('\n');
-    `
+    
     let csvContent = headers ? `${headers}\n${rows}` : rows;
     
     if (exportConfig.includeMetadata && data.metadata) {
-      const metadataRows = Object.entries(data.metadata)`
+      const metadataRows = Object.entries(data.metadata)
         .map(([key, value]) => `"${key}","${value}"`)
-        .join('\n');`
+        .join('\n');
       csvContent = `Metadata\n${metadataRows}\n\nData\n${csvContent}`;
     }
     
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });`
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, `${exportConfig.filename}.csv`)}, [data, exportConfig]);
 
   // Export to Excel
@@ -185,9 +185,8 @@ const exportRow: unknown = {};
     if (exportConfig.includeMetadata && data.metadata) {
       const metadataArray = Object.entries(data.metadata).map(([key, value]) => ({
         Property: key,
-        Value: value,
-
-      }));
+        Value: value
+}));
       const metadataSheet = XLSX.utils.json_to_sheet(metadataArray);
       XLSX.utils.book_append_sheet(workbook, metadataSheet, 'Metadata')}
     
@@ -195,15 +194,14 @@ const exportRow: unknown = {};
     if (data.summary) {
       const summaryArray = Object.entries(data.summary).map(([key, value]) => ({
         Metric: key,
-        Value: value,
-
-      }));
+        Value: value
+}));
       const summarySheet = XLSX.utils.json_to_sheet(summaryArray);
       XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary')}
     
     // Generate and save file
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });`
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     saveAs(blob, `${exportConfig.filename}.xlsx`)}, [data, exportConfig]);
 
   // Export to PDF
@@ -218,7 +216,7 @@ const exportRow: unknown = {};
     if (exportConfig.includeMetadata && data.metadata) {
       doc.setFontSize(10);
       let yPosition = 30;
-      Object.entries(data.metadata).forEach(([key, value]) => {`
+      Object.entries(data.metadata).forEach(([key, value]) => {
         doc.text(`${key}: ${value}`, 14, yPosition);
         yPosition += 5});
       yPosition += 5;
@@ -247,10 +245,11 @@ const exportRow: unknown = {};
       doc.text('Summary', 14, finalY);
       doc.setFontSize(10);
       let summaryY = finalY + 5;
-      Object.entries(data.summary).forEach(_([key, _value]) => {`
+      Object.entries(data.summary).forEach(_([key, _value]) => {
         doc.text(`${key}: ${value}`, 14, summaryY);
-        summaryY += 5})}
-    `
+        summaryY += 5});
+}
+    
     doc.save(`${exportConfig.filename}.pdf`)}, [data, exportConfig]);
 
   // Export to JSON
@@ -274,34 +273,36 @@ const exportRow: unknown = {};
     }
     
     const jsonString = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });`
+    const blob = new Blob([jsonString], { type: 'application/json' });
     saveAs(blob, `${exportConfig.filename}.json`)}, [data, exportConfig]);
 
   // Export to XML
   const exportToXML = useCallback(() => {
-    const jsonToXml = (obj: unknown, rootName: string = 'root'): string => {`
+    const jsonToXml = (obj: unknown, rootName: string = 'root'): string => {
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<${rootName}>`;
       
       const convertToXml = (data: unknown, indent: string = '  '): string => {
         let result = '';
         
         if (Array.isArray(data)) {
-          data.forEach(item => {`
-            result += `\n${indent}<item>${convertToXml(item, indent + '  ')}\n${indent}</item>`})} else if (typeof data === 'object' && data !== null) {
+          data.forEach(item => {
+            result += `\n${indent}<item>${convertToXml(item, indent + '  ')}\n${indent}</item>`});
+} else if (typeof data === 'object' && data !== null) {
           Object.entries(data).forEach(_([key, _value]) => {
             const safeKey = key.replace(/[^a-zA-Z0-9 _]/g, '_');
-            if (typeof value === 'object') {`
+            if (typeof value === 'object') {
               result += `\n${indent}<${safeKey}>${convertToXml(value, indent + '  ')}\n${indent}</${safeKey}>`;
-            } else {`
+            } else {
               result += `\n${indent}<${safeKey}>${value}</${safeKey}>`;
             }
-          })} else {
+          });
+} else {
           result = String(data)}
         
         return result;
       };
       
-      xml += convertToXml(obj);`
+      xml += convertToXml(obj);
       xml += `\n</${rootName}>`;
       
       return xml;
@@ -322,7 +323,7 @@ const exportRow: unknown = {};
     }
     
     const xmlString = jsonToXml(exportData, 'export');
-    const blob = new Blob([xmlString], { type: 'application/xml' });`
+    const blob = new Blob([xmlString], { type: 'application/xml' });
     saveAs(blob, `${exportConfig.filename}.xml`)}, [data, exportConfig]);
 
   // Handle export const createOptimizedRouter = () => {
@@ -372,7 +373,7 @@ const exportRow: unknown = {};
         onClose();
         setActiveStep(0);
         setExportSuccess(false);
-        setExportProgress(0)}, 1500)} catch (_) {
+        setExportProgress(0)}, 1500)} catch (error) {
       setExportError(error instanceof Error ? error.message : 'Export failed')} finally {
       setIsExporting(false)}
   };
@@ -434,7 +435,8 @@ const previewRow: unknown = {};
             </Typography>
             <RadioGroup
               value={exportConfig.format}
-              onChange={(e) => setExportConfig({ ...exportConfig, format: e.target.value as ExportFormat })}
+              onChange={(e) => setExportConfig({ ...exportConfig, format: e.target.value as ExportFormat });
+}
             >
               <Grid container spacing={2}>
                 {allowedFormats.map(format => {
@@ -453,13 +455,14 @@ const previewRow: unknown = {};
 
                           }
                         }}
-                        onClick={() => setExportConfig({ ...exportConfig, format })}
+                        onClick={() => setExportConfig({ ...exportConfig, format });
+}
                       >
                         <FormControlLabel
                           value={format}
                           control={<Radio />}
                           label={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>`
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <Box sx={{ color: `${config.color}.main` }}>
                                 {config.icon}
                               </Box>
@@ -476,7 +479,8 @@ const previewRow: unknown = {};
                         />
                       </Paper>
                     </Grid>
-                  )})}
+                  )});
+}
               </Grid>
             </RadioGroup>
           </Box>
@@ -492,7 +496,7 @@ const previewRow: unknown = {};
                 fullWidth
                 label="Filename"
                 value={exportConfig.filename}
-                onChange={(e) => setExportConfig({ ...exportConfig, filename: e.target.value)})`
+                onChange={(e) => setExportConfig({ ...exportConfig, filename: e.target.value)})
                 helperText={`File will be saved as ${exportConfig.filename}.${exportConfig.format}`}
                 margin="normal"
               />
@@ -504,7 +508,8 @@ const previewRow: unknown = {};
                   control={
                     <Checkbox
                       checked={exportConfig.includeHeaders}
-                      onChange={(e) => setExportConfig({ ...exportConfig, includeHeaders: e.target.checked })}
+                      onChange={(e) => setExportConfig({ ...exportConfig, includeHeaders: e.target.checked });
+}
                     />
                   }
                   label="Include column headers"
@@ -513,7 +518,8 @@ const previewRow: unknown = {};
                   control={
                     <Checkbox
                       checked={exportConfig.includeMetadata}
-                      onChange={(e) => setExportConfig({ ...exportConfig, includeMetadata: e.target.checked })}
+                      onChange={(e) => setExportConfig({ ...exportConfig, includeMetadata: e.target.checked });
+}
                     />
                   }
                   label="Include metadata"
@@ -523,7 +529,8 @@ const previewRow: unknown = {};
                     control={
                       <Checkbox
                         checked={exportConfig.compression || false}
-                        onChange={(e) => setExportConfig({ ...exportConfig, compression: e.target.checked })}
+                        onChange={(e) => setExportConfig({ ...exportConfig, compression: e.target.checked });
+}
                       />
                     }
                     label="Compress file"
@@ -589,7 +596,7 @@ const previewRow: unknown = {};
                     </ListItem>
                     <ListItem>
                       <ListItemText 
-                        primary="Filename" `
+                        primary="Filename" 
                         secondary={`${exportConfig.filename}.${exportConfig.format}`}
                       />
                     </ListItem>
@@ -686,4 +693,4 @@ export const createOptimizedRouter = () => {
   };
 };
 
-export default UniversalExportManager;`
+export default UniversalExportManager;

@@ -65,11 +65,11 @@ export class WebSocketService extends EventEmitter { private ws: WebSocket | nul
       // Add authentication token if available
       const token = localStorage.getItem('token');
       const url = token 
-        ? `${this.config.url}?token=${token}`
+        ? `${this.config.url}?token=${token}
         : this.config.url;
 
       this.ws = new WebSocket(url);
-      this.setupEventHandlers()} catch (_) {
+      this.setupEventHandlers()} catch (error) {
       this.handleError(_)}
   }
 
@@ -208,13 +208,12 @@ export class WebSocketService extends EventEmitter { private ws: WebSocket | nul
           this.emit('error', message.data);
           break;
         
-        default:
-          this.emit('message', _);`
+          this.emit('message', _);
           this.emit(`_:${message.type}`, message.data);
           break;
       }
 
-      this.log('Received, _:', _)} catch (_) {
+      this.log('Received, _:', _)} catch (error) {
       this.log('Failed to parse, _:', event.data, _)}
   }
 
@@ -234,7 +233,7 @@ export class WebSocketService extends EventEmitter { private ws: WebSocket | nul
     this.emit('status', this.status);
     this.reconnectAttempts++;
 
-    const delay = this.getReconnectDelay();`
+    const delay = this.getReconnectDelay();
     this.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
 
     this.reconnectTimer = setTimeout(() => {
@@ -255,7 +254,8 @@ export class WebSocketService extends EventEmitter { private ws: WebSocket | nul
     this.heartbeatTimer = setInterval(() => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.lastPing = Date.now();
-        this.send('ping', { timestamp: this.lastPing })}
+        this.send('ping', { timestamp: this.lastPing });
+}
     }, this.config.heartbeatInterval)}
 
   /**
@@ -296,7 +296,7 @@ export class WebSocketService extends EventEmitter { private ws: WebSocket | nul
   /**
    * Generate unique message ID
    */
-  private generateMessageId(): string {`
+  private generateMessageId(): string {
     return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
@@ -334,4 +334,4 @@ export function initializeWebSocket(config: WebSocketConfig): WebSocketService {
   
   wsInstance = new WebSocketService(config);
   return wsInstance;
-}`
+}

@@ -66,7 +66,8 @@ export const DashboardLayout: React.FC = () => {
                   <span className="mr-3 text-lg">{item.icon}</span>
                   {item.name}
                 </Link>
-              )})}
+              )});
+}
           </nav>
 
           {/* User info */}

@@ -193,7 +193,7 @@ export const Profile: React.FC = () => {
   const formatNumber = (value: number) => {
     if (value >= 1000000) {
       return `${(value / 1000000.toFixed(1)}M`;
-    } else if (value >= 1000) {`
+    } else if (value >= 1000) {
       return `${(value / 1000.toFixed(1)}K`;
     }
     return value.toString()};
@@ -244,8 +244,8 @@ export const Profile: React.FC = () => {
                       sx={{ 
                         width: 120, 
                         height: 120, 
-                        fontSize: '3 rem',`
-                        border: `4px solid ${theme.palette.primary.main}`
+                        fontSize: '3 rem',
+                        border: `4px solid ${theme.palette.primary.main}
                       }}
                     >
                       {profileData.fullName.charAt(0)}
@@ -532,7 +532,7 @@ export const Profile: React.FC = () => {
                     <Card 
                       variant="outlined" 
                       sx={{ 
-                        opacity: achievement.earned ? 1 : 0.5,`
+                        opacity: achievement.earned ? 1 : 0.5,
                         border: achievement.earned ? `2px solid ${getRarityColor(achievement.rarity)}` : undefined
                       }}
                     >
@@ -695,4 +695,4 @@ export const Profile: React.FC = () => {
     </Box>
   )};
 
-export default Profile;`
+export default Profile;

@@ -128,7 +128,7 @@ export const Sidebar: React.FC = () => {
           label: 'Manage',
           icon: <YouTube />,
           path: '/channels',
-          badge: `${user?.channels_limit || 0} max`
+          badge: `${user?.channels_limit || 0} max
         },
         { id: 'channels-dashboard',
           label: 'Dashboard',
@@ -434,4 +434,4 @@ export const Sidebar: React.FC = () => {
       </List>
     </Drawer>
   </>
-  )};`
+  )};

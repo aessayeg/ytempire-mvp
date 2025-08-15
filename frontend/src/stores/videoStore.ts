@@ -32,7 +32,8 @@ export const createOptimizedRouter = () => {
   return createBrowserRouter([
     // Router configuration would go here
   ])}
-      set({ error: errorMessage, loading: false })}
+      set({ error: errorMessage, loading: false });
+}
   },
 
   createVideo: async (videoData) => {
@@ -43,7 +44,8 @@ export const createOptimizedRouter = () => {
         loading: false }))
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create video';
-      set({ error: errorMessage, loading: false })}
+      set({ error: errorMessage, loading: false });
+}
   },
 
   updateVideo: (id, updates) => {

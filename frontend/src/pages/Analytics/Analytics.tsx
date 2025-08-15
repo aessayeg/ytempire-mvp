@@ -194,14 +194,14 @@ export const Analytics: React.FC = () => { const theme = useTheme();
   const formatNumber = (value: number) => {
     if (value >= 1000000) {
       return `${(value / 1000000.toFixed(1)}M`;
-    } else if (value >= 1000) {`
+    } else if (value >= 1000) {
       return `${(value / 1000.toFixed(1)}K`;
     }
     return value.toString()};
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);`
+    const secs = Math.floor(seconds % 60);
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -301,7 +301,7 @@ export const Analytics: React.FC = () => { const theme = useTheme();
 
           },
           { 
-            title: 'Avg Engagement', `
+            title: 'Avg Engagement', 
             value: `${metrics.avgEngagement}%`, 
             change: +2.1, 
             metric: 'engagement',
@@ -601,4 +601,4 @@ export const Analytics: React.FC = () => { const theme = useTheme();
   </>
   )};
 
-export default Analytics;`
+export default Analytics;

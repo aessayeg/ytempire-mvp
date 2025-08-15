@@ -43,7 +43,6 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
               return e.shiftKey;
             case 'meta':
               return e.metaKey;
-            default:
               return e.key.toLowerCase() === key}
         });
 
@@ -70,7 +69,7 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
 
     if (tooltip) {
       const tooltipTitle = keyboardShortcut
-        ? `${tooltip} (${keyboardShortcut})`
+        ? `${tooltip} (${keyboardShortcut})
         : tooltip;
 
       return (

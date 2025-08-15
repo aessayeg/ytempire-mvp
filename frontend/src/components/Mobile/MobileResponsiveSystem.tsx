@@ -313,8 +313,8 @@ export const MobileResponsiveSystem: React.FC = () => {
       <Card 
         sx={{ 
           height: '100%',
-          background: `linear-gradient(135 deg, ${metric.color}10, ${metric.color}05)`,`
-          border: `1px solid ${metric.color}20`
+          background: `linear-gradient(135 deg, ${metric.color}10, ${metric.color}05)`,
+          border: `1px solid ${metric.color}20
         }}
       >
         <CardContent sx={{ pb: 2, '&:last-child': { pb: 2 } }}>
@@ -390,7 +390,7 @@ export const MobileResponsiveSystem: React.FC = () => {
                     value={card.progress} 
                     sx={{ 
                       height: 4, 
-                      borderRadius: 2,`
+                      borderRadius: 2,
                       backgroundColor: `${getStatusColor()}20`,
                       '& .MuiLinearProgress-bar': { backgroundColor: getStatusColor() }
                     }} 
@@ -705,4 +705,4 @@ export const MobileResponsiveSystem: React.FC = () => {
         </Box>
       )}
     </Box>
-  )};`
+  )};

@@ -104,7 +104,7 @@ function TabPanel(props: TabPanelProps) {
       <div
       role="tabpanel"
       hidden={value !== index}
-      id={`queue-tabpanel-${index}`}`
+      id={`queue-tabpanel-${index}`}
       aria-labelledby={`queue-tab-${index}`}
       {...other}
     >
@@ -138,7 +138,7 @@ export const VideoQueueInterface: React.FC = () => {
       const statsResponse = await api.get('/queue/stats/summary');
       setStats(statsResponse.data);
       
-      setLoading(false)} catch (_) { console.error('Failed to fetch, queue:', error);
+      setLoading(false)} catch (error) { console.error('Failed to fetch, queue:', error);
       addNotification({
         type: 'error',
         message: 'Failed to load video queue' });
@@ -172,7 +172,6 @@ export const VideoQueueInterface: React.FC = () => {
           return b.estimatedCost - a.estimatedCost;
         case 'duration':
           return b.duration - a.duration;
-        default:
           return 0}
     });
 
@@ -205,50 +204,59 @@ export const VideoQueueInterface: React.FC = () => {
     setQueueItems(updatedItems);
 
     // Update on server
-    try {`
-      await api.patch(`/queue/${reorderedItem.id}`, { priority: updatedItems.find((i) => i.id === reorderedItem.id)?.priority })} catch (_) {
+    try {
+      await api.patch(`/queue/${reorderedItem.id}`, { priority: updatedItems.find((i) => i.id === reorderedItem.id)?.priority });
+} catch (error) {
       console.error('Failed to update, priority:', error)}
   };
 
   // Handle actions
   const handlePause = async (id: string) => {
-    try {`
+    try {
       await api.patch(`/queue/${id}`, { status: 'paused' });
       fetchQueue();
       addNotification({ type: 'success',
-        message: 'Video paused' })} catch (_) { addNotification({
+        message: 'Video paused' });
+} catch (error) { addNotification({
         type: 'error',
-        message: 'Failed to pause video' })}
+        message: 'Failed to pause video' });
+}
   };
 
   const handleResume = async (id: string) => {
-    try {`
+    try {
       await api.patch(`/queue/${id}`, { status: 'pending' });
       fetchQueue();
       addNotification({ type: 'success',
-        message: 'Video resumed' })} catch (_) { addNotification({
+        message: 'Video resumed' });
+} catch (error) { addNotification({
         type: 'error',
-        message: 'Failed to resume video' })}
+        message: 'Failed to resume video' });
+}
   };
 
   const handleRetry = async (id: string) => {
-    try {`
+    try {
       await api.post(`/queue/${id}/retry`);
       fetchQueue();
       addNotification({ type: 'success',
-        message: 'Video queued for retry' })} catch (_) { addNotification({
+        message: 'Video queued for retry' });
+} catch (error) { addNotification({
         type: 'error',
-        message: 'Failed to retry video' })}
+        message: 'Failed to retry video' });
+}
   };
 
   const handleDelete = async (id: string) => {
-    try {`
+    try {
       await api.delete(`/queue/${id}`);
       fetchQueue();
       addNotification({ type: 'success',
-        message: 'Video removed from queue' })} catch (_) { addNotification({
+        message: 'Video removed from queue' });
+} catch (error) { addNotification({
         type: 'error',
-        message: 'Failed to remove video' })}
+        message: 'Failed to remove video' });
+}
   };
 
   const handlePauseAll = async () => { try {
@@ -256,9 +264,11 @@ export const VideoQueueInterface: React.FC = () => {
       fetchQueue();
       addNotification({
         type: 'success',
-        message: 'All videos paused' })} catch (_) { addNotification({
+        message: 'All videos paused' });
+} catch (error) { addNotification({
         type: 'error',
-        message: 'Failed to pause all videos' })}
+        message: 'Failed to pause all videos' });
+}
   };
 
   const handleResumeAll = async () => { try {
@@ -266,9 +276,11 @@ export const VideoQueueInterface: React.FC = () => {
       fetchQueue();
       addNotification({
         type: 'success',
-        message: 'All videos resumed' })} catch (_) { addNotification({
+        message: 'All videos resumed' });
+} catch (error) { addNotification({
         type: 'error',
-        message: 'Failed to resume all videos' })}
+        message: 'Failed to resume all videos' });
+}
   };
 
   // Render queue item
@@ -285,7 +297,6 @@ export const VideoQueueInterface: React.FC = () => {
           return <Schedule color="action" />;
         case 'paused':
           return <Pause color="warning" />;
-        default:
           return <Info color="info" />}
     };
 
@@ -299,7 +310,6 @@ export const VideoQueueInterface: React.FC = () => {
           return 'info';
         case 'low':
           return 'default';
-        default:
           return 'default'}
     };
 
@@ -345,13 +355,13 @@ export const VideoQueueInterface: React.FC = () => {
                     />
                     <Chip
                       size="small"
-                      icon={<AttachMoney />}`
+                      icon={<AttachMoney />}
                       label={`$${item.estimatedCost.toFixed(2)}`}
                       variant="outlined"
                     />
                     <Chip
                       size="small"
-                      icon={<Timeline />}`
+                      icon={<Timeline />}
                       label={`${item.duration} min`}
                       variant="outlined"
                     />
@@ -621,4 +631,4 @@ export const VideoQueueInterface: React.FC = () => {
         </MenuItem>
       </Menu>
     </Box>
-  )};`
+  )};

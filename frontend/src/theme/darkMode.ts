@@ -12,52 +12,44 @@ const darkPalette = {
   main: '#667 eea',
     light: '#8 b9 cff',
     dark: '#4 c63 b6',
-    contrastText: '#ffffff',
-
-  },
+    contrastText: '#ffffff'
+},
   secondary: {,
   main: '#ed64 a6',
     light: '#ff8 fc7',
     dark: '#b83280',
-    contrastText: '#ffffff',
-
-  },
+    contrastText: '#ffffff'
+},
   error: {,
   main: '#f56565',
     light: '#ff8787',
-    dark: '#c53030',
-
-  },
+    dark: '#c53030'
+},
   warning: {,
   main: '#ed8936',
     light: '#ffb074',
-    dark: '#c05621',
-
-  },
+    dark: '#c05621'
+},
   info: {,
   main: '#4299 e1',
     light: '#63 b3 ed',
-    dark: '#2 c5282',
-
-  },
+    dark: '#2 c5282'
+},
   success: {,
   main: '#48 bb78',
     light: '#68 d391',
-    dark: '#2 f855 a',
-
-  },
+    dark: '#2 f855 a'
+},
   background: {,
   default: '#0 f1114',
     paper: '#1 a1 d21',
-    elevated: '#22262 b',
-
-  },
+    elevated: '#22262 b'
+},
   text: {,
   primary: '#e2 e8 f0',
     secondary: '#a0 aec0',
-    disabled: '#718096',
-
-  },
+    disabled: '#718096'
+},
   divider: 'rgba(255, 255, 255, 0.08)',
   action: {,
   active: '#e2 e8 f0',
@@ -74,52 +66,44 @@ const lightPalette = {
   main: '#667 eea',
     light: '#8 b9 cff',
     dark: '#4 c63 b6',
-    contrastText: '#ffffff',
-
-  },
+    contrastText: '#ffffff'
+},
   secondary: {,
   main: '#ed64 a6',
     light: '#ff8 fc7',
     dark: '#b83280',
-    contrastText: '#ffffff',
-
-  },
+    contrastText: '#ffffff'
+},
   error: {,
   main: '#f56565',
     light: '#fc8181',
-    dark: '#e53 e3 e',
-
-  },
+    dark: '#e53 e3 e'
+},
   warning: {,
   main: '#ed8936',
     light: '#f6 ad55',
-    dark: '#dd6 b20',
-
-  },
+    dark: '#dd6 b20'
+},
   info: {,
   main: '#4299 e1',
     light: '#63 b3 ed',
-    dark: '#3182 ce',
-
-  },
+    dark: '#3182 ce'
+},
   success: {,
   main: '#48 bb78',
     light: '#68 d391',
-    dark: '#38 a169',
-
-  },
+    dark: '#38 a169'
+},
   background: {,
   default: '#f7 fafc',
     paper: '#ffffff',
-    elevated: '#ffffff',
-
-  },
+    elevated: '#ffffff'
+},
   text: {,
   primary: '#2 d3748',
     secondary: '#4 a5568',
-    disabled: '#a0 aec0',
-
-  },
+    disabled: '#a0 aec0'
+},
   divider: 'rgba(0, 0, 0, 0.12)',
   action: {,
   active: '#2 d3748',
@@ -135,66 +119,56 @@ const getSharedThemeOptions = (isDarkMode: boolean): ThemeOptions => ({,
   palette: {,
 
     mode: isDarkMode ? 'dark' : 'light',
-    ...(isDarkMode ? darkPalette : lightPalette)
+    ...(isDarkMode ? darkPalette : lightPalette);
   },
   typography: {,
   fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {,
   fontSize: '2.5 rem',
       fontWeight: 700,
-      lineHeight: 1.2,
-
-    },
+      lineHeight: 1.2
+},
     h2: {,
   fontSize: '2 rem',
       fontWeight: 600,
-      lineHeight: 1.3,
-
-    },
+      lineHeight: 1.3
+},
     h3: {,
   fontSize: '1.75 rem',
       fontWeight: 600,
-      lineHeight: 1.4,
-
-    },
+      lineHeight: 1.4
+},
     h4: {,
   fontSize: '1.5 rem',
       fontWeight: 600,
-      lineHeight: 1.4,
-
-    },
+      lineHeight: 1.4
+},
     h5: {,
   fontSize: '1.25 rem',
       fontWeight: 600,
-      lineHeight: 1.5,
-
-    },
+      lineHeight: 1.5
+},
     h6: {,
   fontSize: '1 rem',
       fontWeight: 600,
-      lineHeight: 1.5,
-
-    },
+      lineHeight: 1.5
+},
     body1: {,
   fontSize: '1 rem',
-      lineHeight: 1.6,
-
-    },
+      lineHeight: 1.6
+},
     body2: {,
   fontSize: '0.875 rem',
-      lineHeight: 1.6,
-
-    },
+      lineHeight: 1.6
+},
     button: {,
   textTransform: 'none',
-      fontWeight: 500,
-
-    }
+      fontWeight: 500
+}
   },
   shape: {,
-  borderRadius: 12,
-
-  },
+  borderRadius: 12
+},
   shadows: isDarkMode ? [
     'none',
     '0px 2px 4px rgba(0,0,0,0.4)',
@@ -231,18 +205,15 @@ const getSharedThemeOptions = (isDarkMode: boolean): ThemeOptions => ({,
           scrollbarColor: isDarkMode ? '#4 a5568 #1 a1 d21' : '#cbd5 e0 #f7 fafc',
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
             width: '8px',
-            height: '8px',
-
-          },
+            height: '8px'
+},
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: '4px',
-            backgroundColor: isDarkMode ? '#4 a5568' : '#cbd5 e0',
-
-          },
+            backgroundColor: isDarkMode ? '#4 a5568' : '#cbd5 e0'
+},
           '&::-webkit-scrollbar-track, & *::-webkit-scrollbar-track': {
-            backgroundColor: isDarkMode ? '#1 a1 d21' : '#f7 fafc',
-
-          }
+            backgroundColor: isDarkMode ? '#1 a1 d21' : '#f7 fafc'
+}
         }
       }
     },
@@ -355,18 +326,16 @@ const getSharedThemeOptions = (isDarkMode: boolean): ThemeOptions => ({,
 
         root: {,
   borderRadius: '6px',
-          fontWeight: 500,
-
-        }
+          fontWeight: 500
+}
       }
     },
     MuiAlert: {,
   styleOverrides: {,
 
         root: {,
-  borderRadius: '8px',
-
-        }
+  borderRadius: '8px'
+}
       }
     },
     MuiTooltip: {,
@@ -376,9 +345,8 @@ const getSharedThemeOptions = (isDarkMode: boolean): ThemeOptions => ({,
   backgroundColor: isDarkMode ? '#2 d3748' : '#4 a5568',
           color: '#ffffff',
           fontSize: '0.875 rem',
-          borderRadius: '6px',
-
-        }
+          borderRadius: '6px'
+}
       }
     },
     MuiSwitch: {,
@@ -398,24 +366,21 @@ const getSharedThemeOptions = (isDarkMode: boolean): ThemeOptions => ({,
               '& + .MuiSwitch-track': {
                 backgroundColor: '#667 eea',
                 opacity: 1,
-                border: 0,
-
-              }
+                border: 0
+}
             }
           },
           '& .MuiSwitch-thumb': {
             boxSizing: 'border-box',
             width: 22,
-            height: 22,
-
-          },
+            height: 22
+},
           '& .MuiSwitch-track': {
             borderRadius: 26 / 2,
             backgroundColor: isDarkMode ? '#39393 D' : '#E9 E9 EA',
             opacity: 1,
-            transition: 'background-color 300ms',
-
-          }
+            transition: 'background-color 300ms'
+}
         }
       }
     }
@@ -464,10 +429,10 @@ export const createOptimizedRouter = () => {
   return createBrowserRouter([
     // Router configuration would go here
   ])}
-  style.innerHTML = `
+  style.innerHTML = 
     * {
-      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important}`
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important}
   `;
   document.head.appendChild(style);
   setTimeout(() => {
-    document.head.removeChild(style)}, 300)};`
+    document.head.removeChild(style)}, 300)};

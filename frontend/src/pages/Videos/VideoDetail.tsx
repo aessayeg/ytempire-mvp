@@ -55,7 +55,7 @@ function TabPanel(props: TabPanelProps) {
       <div
       role="tabpanel"
       hidden={value !== index}
-      id={`video-tabpanel-${index}`}`
+      id={`video-tabpanel-${index}`}
       aria-labelledby={`video-tab-${index}`}
       {...other}
     >
@@ -92,7 +92,8 @@ export const VideoDetail: React.FC = () => {
       setEditForm({
         title: response.title,
         description: response.description || '',
-        tags: response.tags || [] })} catch (_err: unknown) {
+        tags: response.tags || [] });
+} catch (_err: unknown) {
       setError(err.message || 'Failed to load video details')} finally {
       setLoading(false)}
   };
@@ -140,7 +141,6 @@ export const VideoDetail: React.FC = () => {
         return 'warning';
       case 'failed':
         return 'error';
-      default:
         return 'default'}
   };
 
@@ -152,7 +152,6 @@ export const VideoDetail: React.FC = () => {
         return 'info';
       case 'publishing':
         return 'warning';
-      default:
         return 'default'}
   };
 
@@ -446,8 +445,8 @@ export const VideoDetail: React.FC = () => {
                     <ListItem>
                       <ListItemText primary="Generation Time" />
                       <Typography variant="body2">
-                        {video.generation_time_seconds`
-                          ? `${Math.round(video.generation_time_seconds / 60)} min`
+                        {video.generation_time_seconds
+                          ? `${Math.round(video.generation_time_seconds / 60)} min
                           : 'N/A'}
                       </Typography>
                     </ListItem>
@@ -481,12 +480,12 @@ export const VideoDetail: React.FC = () => {
                     <ListItem>
                       <ListItemText primary="Duration" />
                       <Typography variant="body2">
-                        {video.duration_seconds`
-                          ? `${Math.floor(video.duration_seconds / 60)}:${(`
+                        {video.duration_seconds
+                          ? `${Math.floor(video.duration_seconds / 60)}:${(
                               video.duration_seconds % 60
                             )
-                              .toString()`
-                              .padStart(2, '0')}`
+                              .toString()
+                              .padStart(2, '0')}
                           : 'N/A'}
                       </Typography>
                     </ListItem>
@@ -510,14 +509,16 @@ export const VideoDetail: React.FC = () => {
             fullWidth
             label="Title"
             value={editForm.title}
-            onChange={(e) => setEditForm({ ...editForm, title: e.target.value)})}
+            onChange={(e) => setEditForm({ ...editForm, title: e.target.value)});
+}
             margin="normal"
           />
           <TextField
             fullWidth
             label="Description"
             value={editForm.description}
-            onChange={(e) => setEditForm({ ...editForm, description: e.target.value)})}
+            onChange={(e) => setEditForm({ ...editForm, description: e.target.value)});
+}
             multiline
             rows={4}
             margin="normal"
@@ -527,7 +528,8 @@ export const VideoDetail: React.FC = () => {
             label="Tags (comma, separated)"
             value={editForm.tags.join(', ')}
             onChange={(e) => {}
-              setEditForm({ ...editForm, tags: e.target.value.split(',').map((t) => t.trim()) })}
+              setEditForm({ ...editForm, tags: e.target.value.split(',').map((t) => t.trim()) });
+}
             margin="normal"
           />
         </DialogContent>
@@ -598,4 +600,4 @@ export const VideoDetail: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  )};`
+  )};

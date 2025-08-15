@@ -17,7 +17,8 @@ import {
               fullWidth
               label="Topic"
               value={config.topic}
-              onChange={(e) => setConfig({ ...config, topic: e.target.value)})}
+              onChange={(e) => setConfig({ ...config, topic: e.target.value)});
+}
               placeholder="Enter your video topic or select from trending"
               sx={{ mb: 3 }}
               multiline
@@ -28,8 +29,10 @@ import {
               freeSolo
               options={titleSuggestions}
               value={config.title}
-              onChange={(e, value) => setConfig({ ...config, title: value || '' })}
-              onInputChange={(e, value) => setConfig({ ...config, title: value })}
+              onChange={(e, value) => setConfig({ ...config, title: value || '' });
+}
+              onInputChange={(e, value) => setConfig({ ...config, title: value });
+}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -65,7 +68,8 @@ import {
       <Select
                 value={config.style}
                 label="Content Style"
-                onChange={(e) => setConfig({ ...config, style: e.target.value)})}
+                onChange={(e) => setConfig({ ...config, style: e.target.value)});
+}
               >
                 <MenuItem value="informative">Informative</MenuItem>
                 <MenuItem value="entertaining">Entertaining</MenuItem>
@@ -81,7 +85,8 @@ import {
               <Select
                 value={config.duration}
                 label="Video Duration"
-                onChange={(e) => setConfig({ ...config, duration: e.target.value)})}
+                onChange={(e) => setConfig({ ...config, duration: e.target.value)});
+}
               >
                 <MenuItem value="short">Short (1-3, min)</MenuItem>
                 <MenuItem value="medium">Medium (5-10, min)</MenuItem>
@@ -94,7 +99,8 @@ import {
               <Select
                 value={config.targetAudience}
                 label="Target Audience"
-                onChange={(e) => setConfig({ ...config, targetAudience: e.target.value)})}
+                onChange={(e) => setConfig({ ...config, targetAudience: e.target.value)});
+}
               >
                 <MenuItem value="general">General</MenuItem>
                 <MenuItem value="kids">Kids</MenuItem>
@@ -109,7 +115,8 @@ import {
               <Select
                 value={config.tone}
                 label="Tone"
-                onChange={(e) => setConfig({ ...config, tone: e.target.value)})}
+                onChange={(e) => setConfig({ ...config, tone: e.target.value)});
+}
               >
                 <MenuItem value="professional">Professional</MenuItem>
                 <MenuItem value="casual">Casual</MenuItem>
@@ -124,7 +131,8 @@ import {
               freeSolo
               options={[]}
               value={config.keywords}
-              onChange={(e, value) => setConfig({ ...config, keywords: value })}
+              onChange={(e, value) => setConfig({ ...config, keywords: value });
+}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -135,7 +143,8 @@ import {
               )}
               renderTags={(value, getTagProps) => {}
                 value.map((option, index) => (
-                  <Chip label={option} {...getTagProps({ index })} />
+                  <Chip label={option} {...getTagProps({ index });
+} />
                 ))}
             />
           </Box>
@@ -151,7 +160,8 @@ import {
       <Select
                 value={config.voiceStyle}
                 label="Voice Style"
-                onChange={(e) => setConfig({ ...config, voiceStyle: e.target.value)})}
+                onChange={(e) => setConfig({ ...config, voiceStyle: e.target.value)});
+}
               >
                 <MenuItem value="natural">Natural</MenuItem>
                 <MenuItem value="energetic">Energetic</MenuItem>
@@ -167,7 +177,8 @@ import {
               <Select
                 value={config.language}
                 label="Language"
-                onChange={(e) => setConfig({ ...config, language: e.target.value)})}
+                onChange={(e) => setConfig({ ...config, language: e.target.value)});
+}
               >
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="es">Spanish</MenuItem>
@@ -186,7 +197,8 @@ import {
               <Select
                 value={config.musicStyle}
                 label="Background Music"
-                onChange={(e) => setConfig({ ...config, musicStyle: e.target.value)})}
+                onChange={(e) => setConfig({ ...config, musicStyle: e.target.value)});
+}
               >
                 <MenuItem value="none">None</MenuItem>
                 <MenuItem value="upbeat">Upbeat</MenuItem>
@@ -216,7 +228,8 @@ import {
       <Select
                 value={config.thumbnailStyle}
                 label="Thumbnail Style"
-                onChange={(e) => setConfig({ ...config, thumbnailStyle: e.target.value)})}
+                onChange={(e) => setConfig({ ...config, thumbnailStyle: e.target.value)});
+}
               >
                 <MenuItem value="modern">Modern</MenuItem>
                 <MenuItem value="minimalist">Minimalist</MenuItem>
@@ -243,7 +256,8 @@ import {
               control={
                 <Switch
                   checked={config.autoPublish}
-                  onChange={(e) => setConfig({ ...config, autoPublish: e.target.checked })}
+                  onChange={(e) => setConfig({ ...config, autoPublish: e.target.checked });
+}
                 />
               }
               label="Auto-publish after generation"
@@ -256,7 +270,8 @@ import {
                 label="Schedule Publishing Time"
                 type="datetime-local"
                 value={config.scheduledTime || ''}
-                onChange={(e) => setConfig({ ...config, scheduledTime: e.target.value)})}
+                onChange={(e) => setConfig({ ...config, scheduledTime: e.target.value)});
+}
                 InputLabelProps={{ shrink: true }}
                 helperText="Leave empty to publish immediately"
                 sx={{ mb: 3 }}
@@ -288,7 +303,7 @@ import {
                   <ListItemText primary="Style" secondary={`${config.style} - ${config.duration}`} />
                 </ListItem>
                 <ListItem>
-                  <ListItemIcon><RecordVoiceOver /></ListItemIcon>`
+                  <ListItemIcon><RecordVoiceOver /></ListItemIcon>
                   <ListItemText primary="Voice" secondary={`${config.voiceStyle} (${config.language})`} />
                 </ListItem>
                 <ListItem>
@@ -338,7 +353,8 @@ import {
               <RadioGroup
                 row
                 value={config.qualityPreset}
-                onChange={(e) => setConfig({ ...config, qualityPreset: e.target.value)})}
+                onChange={(e) => setConfig({ ...config, qualityPreset: e.target.value)});
+}
               >
                 <FormControlLabel
                   value="fast"
@@ -394,7 +410,6 @@ import {
           </Box>
         );
 
-      default:
         return null}
   };
 
@@ -460,4 +475,4 @@ import {
       </Paper>
     </Box>
   </>
-  )};`
+  )};

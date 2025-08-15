@@ -19,7 +19,8 @@ import {
             fullWidth
             label="Your Name"
             value={userProfile.name}
-            onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value)})}
+            onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value)});
+}
             required
           />
         </Grid>
@@ -29,7 +30,8 @@ import {
             label="Email"
             type="email"
             value={userProfile.email}
-            onChange={(e) => setUserProfile({ ...userProfile, email: e.target.value)})}
+            onChange={(e) => setUserProfile({ ...userProfile, email: e.target.value)});
+}
             required
           />
         </Grid>
@@ -38,7 +40,8 @@ import {
             fullWidth
             label="Company (Optional)"
             value={userProfile.company}
-            onChange={(e) => setUserProfile({ ...userProfile, company: e.target.value)})}
+            onChange={(e) => setUserProfile({ ...userProfile, company: e.target.value)});
+}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -46,7 +49,8 @@ import {
             <InputLabel>Your Role</InputLabel>
             <Select
               value={userProfile.role}
-              onChange={(e) => setUserProfile({ ...userProfile, role: e.target.value)})}
+              onChange={(e) => setUserProfile({ ...userProfile, role: e.target.value)});
+}
               label="Your Role"
             >
               <MenuItem value="content-creator">Content Creator</MenuItem>
@@ -70,7 +74,8 @@ import {
                   const goals = userProfile.goals.includes(goal)
                     ? userProfile.goals.filter(g => g !== goal)
                     : [...userProfile.goals, goal];
-                  setUserProfile({ ...userProfile, goals })}}
+                  setUserProfile({ ...userProfile, goals });
+}}
                 color={userProfile.goals.includes(goal) ? 'primary' : 'default'}
                 icon={userProfile.goals.includes(goal) ? <Check /> : undefined}
               />
@@ -83,7 +88,8 @@ import {
             <InputLabel>How often do you plan to upload?</InputLabel>
             <Select
               value={userProfile.uploadFrequency}
-              onChange={(e) => setUserProfile({ ...userProfile, uploadFrequency: e.target.value)})}
+              onChange={(e) => setUserProfile({ ...userProfile, uploadFrequency: e.target.value)});
+}
               label="How often do you plan to upload?"
             >
               <MenuItem value="daily">Daily</MenuItem>
@@ -270,7 +276,8 @@ import {
                 control={
                   <Checkbox
                     checked={preferences.autoUpload}
-                    onChange={(e) => setPreferences({ ...preferences, autoUpload: e.target.checked })}
+                    onChange={(e) => setPreferences({ ...preferences, autoUpload: e.target.checked });
+}
                   />
                 }
                 label="Auto-upload videos when ready"
@@ -281,7 +288,8 @@ import {
                 control={
                   <Checkbox
                     checked={preferences.emailNotifications}
-                    onChange={(e) => setPreferences({ ...preferences, emailNotifications: e.target.checked })}
+                    onChange={(e) => setPreferences({ ...preferences, emailNotifications: e.target.checked });
+}
                   />
                 }
                 label="Email notifications for important updates"
@@ -292,7 +300,8 @@ import {
                 control={
                   <Checkbox
                     checked={preferences.aiOptimization}
-                    onChange={(e) => setPreferences({ ...preferences, aiOptimization: e.target.checked })}
+                    onChange={(e) => setPreferences({ ...preferences, aiOptimization: e.target.checked });
+}
                   />
                 }
                 label="AI optimization for titles and descriptions"
@@ -303,7 +312,8 @@ import {
                 control={
                   <Checkbox
                     checked={preferences.qualityCheck}
-                    onChange={(e) => setPreferences({ ...preferences, qualityCheck: e.target.checked })}
+                    onChange={(e) => setPreferences({ ...preferences, qualityCheck: e.target.checked });
+}
                   />
                 }
                 label="Quality check before publishing"
@@ -389,7 +399,6 @@ import {
         return renderPreferencesStep();
       case 4:
         return renderTutorialStep(),
-  default:
         return null}
   };
 

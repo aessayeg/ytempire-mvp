@@ -318,7 +318,7 @@ export const CostTracking: React.FC = () => { const theme = useTheme();
           },
           { 
             title: 'Projected Spend', 
-            value: formatCurrency(metrics.projectedSpend), `
+            value: formatCurrency(metrics.projectedSpend), 
             subtitle: `${metrics.projectedSpend > metrics.monthlyBudget ? 'Over' : 'Under'} budget`,
             progress: (metrics.projectedSpend / metrics.monthlyBudget) * 100,
             icon: <Analytics />,
@@ -349,7 +349,7 @@ export const CostTracking: React.FC = () => { const theme = useTheme();
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                   <Typography variant="body2" color="text.secondary">
                     {item.title}
-                  </Typography>`
+                  </Typography>
                   <Box sx={{ color: `${item.color}.main` }}>
                     {item.icon}
                   </Box>
@@ -510,7 +510,6 @@ export const CostTracking: React.FC = () => { const theme = useTheme();
                       />
                       
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Breakdown:
                       </Typography>
                       {category.subcategories.map((sub, idx) => (
                         <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
@@ -649,4 +648,4 @@ export const CostTracking: React.FC = () => { const theme = useTheme();
   </>
   )};
 
-export default CostTracking;`
+export default CostTracking;

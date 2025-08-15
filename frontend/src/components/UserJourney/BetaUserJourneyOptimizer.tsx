@@ -414,7 +414,7 @@ export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme
         {selectedSession ? (
           <Card>
             <CardHeader
-              title={`Session: ${selectedSession.userName}`}`
+              title={`Session: ${selectedSession.userName}`}
               subheader={`${format(selectedSession.startTime, 'PPP')} • ${selectedSession.device}`}
               action={
                 <Box sx={{ display: 'flex', gap: 1 }}>
@@ -722,4 +722,4 @@ export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme
       {tabValue === 2 && renderWireframeImprovements()}
     </Box>
   </>
-  )};`
+  )};

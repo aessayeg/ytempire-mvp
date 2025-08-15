@@ -10,7 +10,8 @@ export class EventEmitter {
 
   on(event: string, listener: EventListener): this {
     if (!this.events.has(event)) {
-      this.events.set(event, new Set())}
+      this.events.set(event, new Set());
+    }
     this.events.get(event)!.add(listener);
     return this;
   }
@@ -18,15 +19,18 @@ export class EventEmitter {
   once(event: string, listener: EventListener): this {
     const onceWrapper = (...args: unknown[]) => {
       listener(...args);
-      this.off(event, onceWrapper)};
-    return this.on(event, onceWrapper)}
+      this.off(event, onceWrapper);
+    };
+    return this.on(event, onceWrapper);
+  }
 
   off(event: string, listener: EventListener): this {
     const listeners = this.events.get(event);
     if (listeners) {
       listeners.delete(listener);
       if (listeners.size === 0) {
-        this.events.delete(event)}
+        this.events.delete(event);
+      }
     }
     return this;
   }
@@ -38,16 +42,20 @@ export class EventEmitter {
     }
     listeners.forEach(listener => {
       try {
-        listener(...args)} catch (_) {
-        console.error(`Error in event listener for "${event}":`, _)}
+        listener(...args);
+      } catch (error) {
+        console.error(`Error in event listener for "${event}":`, error);
+      }
     });
     return true;
   }
 
   removeAllListeners(event?: string): this {
     if (event) {
-      this.events.delete(event)} else {
-      this.events.clear()}
+      this.events.delete(event);
+    } else {
+      this.events.clear();
+    }
     return this;
   }
 
@@ -57,5 +65,6 @@ export class EventEmitter {
   }
 
   eventNames(): string[] {
-    return Array.from(this.events.keys())}
-}`
+    return Array.from(this.events.keys());
+  }
+}

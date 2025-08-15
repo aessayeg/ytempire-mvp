@@ -58,7 +58,8 @@ export const Login: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated) {
       const from = state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true })}
+      navigate(from, { replace: true });
+}
   }, [isAuthenticated, navigate, state]);
 
   // Clear errors when component mounts
@@ -105,7 +106,7 @@ const errors: {[key: string]: string} = {};
     try {
       await login(formData.email, formData.password);
       // Navigation will be handled by useEffect when isAuthenticated changes
-    } catch (_) {
+    } catch (error) {
       // Error is handled by the store
     }
   };

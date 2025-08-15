@@ -95,7 +95,6 @@ export const InlineHelp: React.FC<InlineHelpProps> = ({ context, items, onClose,
         return <School color="secondary" />;
       case 'faq':
         return <QuestionAnswer />;
-      default:
         return <CheckCircle color="success" />}
   };
   
@@ -225,4 +224,4 @@ export const InlineHelp: React.FC<InlineHelpProps> = ({ context, items, onClose,
       </Collapse>
     </Paper>
   </>
-  )};`
+  )};

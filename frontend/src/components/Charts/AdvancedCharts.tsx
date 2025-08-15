@@ -85,16 +85,19 @@ export const HeatmapChart: React.FC<ChartProps & {,
             )}
             xLabelsStyle={ () => ({
               fontSize: '0.75 rem',
-              color: theme.palette.text.secondary })}
+              color: theme.palette.text.secondary });
+}
             yLabelsStyle={ () => ({
               fontSize: '0.75 rem',
-              color: theme.palette.text.secondary })}
-            cellStyle={(x, y, ratio) => ({`
+              color: theme.palette.text.secondary });
+}
+            cellStyle={(x, y, ratio) => ({
               background: `rgba(33, 150, 243, ${ratio})`,
               color: ratio > 0.5 ? '#fff' : theme.palette.text.primary,
               fontSize: '0.7 rem',
               border: '1px solid rgba(0,0,0,0.1)'
-            })}
+            });
+}
             cellHeight="30px"
             square
           />
@@ -152,11 +155,10 @@ export const FunnelVisualization: React.FC<ChartProps> = ({ title, subtitle, dat
           <FunnelChart>
             <RechartsTooltip 
               contentStyle={{
-                backgroundColor: theme.palette.background.paper,`
+                backgroundColor: theme.palette.background.paper,
                 border: `1px solid ${theme.palette.divider}`,
-                borderRadius: 4,
-
-              }}
+                borderRadius: 4
+}}
             />
             <Funnel
               dataKey="value"
@@ -176,7 +178,7 @@ export const FunnelVisualization: React.FC<ChartProps> = ({ title, subtitle, dat
         <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {data.map((item, index) => (
             <Chip
-              key={item.name}`
+              key={item.name}
               label={`${item.name}: ${item.conversion}%`}
               size="small"
               sx={ {
@@ -433,15 +435,17 @@ export const CohortChart: React.FC<{,
         <Box sx={{ height, overflow: 'auto' }}>
           <HeatMapGrid
             data={heatmapData}
-            xLabels={cohorts}`
-            yLabels={weeks.map(w => `Week ${w}`)`
+            xLabels={cohorts}
+            yLabels={weeks.map(w => `Week ${w}`)
             cellRender={(x, y, value) => `${value}%`}
             xLabelsStyle={ () => ({
               fontSize: '0.75 rem',
-              color: theme.palette.text.secondary })}
+              color: theme.palette.text.secondary });
+}
             yLabelsStyle={ () => ({
               fontSize: '0.75 rem',
-              color: theme.palette.text.secondary })}
+              color: theme.palette.text.secondary });
+}
             cellStyle={ (x, y, ratio) => ({
               background: ratio > 0.7 
                 ? theme.palette.success.main
@@ -450,7 +454,8 @@ export const CohortChart: React.FC<{,
                 : theme.palette.error.main,
               color: '#fff',
               fontSize: '0.7 rem',
-              border: '1px solid rgba(255,255,255,0.2)' })}
+              border: '1px solid rgba(255,255,255,0.2)' });
+}
             cellHeight="35px"
             square
           />
@@ -476,4 +481,4 @@ export const CohortChart: React.FC<{,
         </Box>
       </CardContent>
     </Card>
-  )};`
+  )};

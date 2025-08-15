@@ -22,17 +22,17 @@ interface LoadingOverlayProps {
 }
 
 // Animated dots
-const dotPulse = keyframes`
+const dotPulse = keyframes
   0%, 60%, 100% {
     transform: scale(1),
   opacity: 1}
   30% {
     transform: scale(1.5),
-  opacity: 0.7}`
+  opacity: 0.7}
 `;
 
-// Pulse animation`
-const pulseAnimation = keyframes`
+// Pulse animation
+const pulseAnimation = keyframes
   0% {
     transform: scale(1),
   opacity: 1}
@@ -41,7 +41,7 @@ const pulseAnimation = keyframes`
   opacity: 0.8}
   100% {
     transform: scale(1),
-  opacity: 1}`
+  opacity: 1}
 `;
 
 export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ open, message, progress, variant = 'circular', fullScreen = true, transparent = false, showCancel = false, onCancel }) => {
@@ -73,9 +73,9 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ open, message, p
                   width: 12,
                   height: 12,
                   borderRadius: '50%',
-                  backgroundColor: 'primary.main',`
-                  animation: `${dotPulse} 1.4s ease-in-out infinite`,`
-                  animationDelay: `${index * 0.16}s`
+                  backgroundColor: 'primary.main',
+                  animation: `${dotPulse} 1.4s ease-in-out infinite`,
+                  animationDelay: `${index * 0.16}s
                 }}
               />
             ))}
@@ -89,7 +89,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ open, message, p
               width: 80,
               height: 80,
               borderRadius: '50%',
-              backgroundColor: 'primary.main',`
+              backgroundColor: 'primary.main',
               animation: `${pulseAnimation} 2s ease-in-out infinite`,
               display: 'flex',
               alignItems: 'center',
@@ -106,7 +106,6 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ open, message, p
           </Box>
         );
 
-      default:
         return (
     <CircularProgress
             size={60}
@@ -220,7 +219,7 @@ export const ImageLoadingPlaceholder: React.FC<{
         width,
         height,
         borderRadius,
-        backgroundColor: 'grey.200',`
+        backgroundColor: 'grey.200',
         backgroundImage: `linear-gradient(90 deg, transparent, rgba(255, 255, 255, 0.3), transparent)`,
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.5s infinite',
@@ -230,4 +229,4 @@ export const ImageLoadingPlaceholder: React.FC<{
         }
       }}
     />
-  )};`
+  )};

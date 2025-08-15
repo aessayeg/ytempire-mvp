@@ -265,9 +265,8 @@ export const PageTransition: React.FC<{,
   const variants = {
     fade: fadeInUp,
     slide: slideInRight,
-    scale: fadeInScale,
-
-  };
+    scale: fadeInScale
+};
 
   return (
     <AnimatePresence mode="wait">
@@ -309,8 +308,8 @@ export const AnimatedSkeleton: React.FC<{
           left: '-150%',
           width: '150%',
           height: '100%',
-          background: `linear-gradient(90 deg, transparent, ${highlightColor}, transparent)`,`
-          animation: `${shimmer} 2s infinite`
+          background: `linear-gradient(90 deg, transparent, ${highlightColor}, transparent)`,
+          animation: `${shimmer} 2s infinite
         }
       }}
     />
@@ -339,9 +338,8 @@ export const FloatingActionButton: React.FC<{,
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          boxShadow: 3,
-
-        }}
+          boxShadow: 3
+}}
       >
         {children}
       </Box>
@@ -387,4 +385,4 @@ export default {
   PageTransition,
   AnimatedSkeleton,
   FloatingActionButton
-};`
+};

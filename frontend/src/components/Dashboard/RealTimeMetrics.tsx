@@ -186,7 +186,7 @@ const newEvent: LiveEvent = {,
 
           };
           setLiveEvents(prev => [newEvent, ...prev].slice(0, 10))}
-      } catch (_) {
+      } catch (error) {
         console.error('Error parsing WebSocket, message:', error)}
     }
   }, [lastMessage]);
@@ -229,7 +229,6 @@ const newEvent: LiveEvent = {,
         return <TrendingUp sx={{ color, fontSize: 16 }} />;
       case 'down':
         return <TrendingDown sx={{ color: theme.palette.error.main, fontSize: 16 }} />;
-      default:
         return <TrendingFlat sx={{ color: theme.palette.text.secondary, fontSize: 16 }} />;
     }
   };
@@ -246,7 +245,7 @@ const newEvent: LiveEvent = {,
     
     const points = data.map((value, index) => {
       const x = (index / (data.length - 1)) * width;
-      const y = height - ((value - min) / range) * height;`
+      const y = height - ((value - min) / range) * height;
       return `${x},${y}`}).join(' ');
 
     return (
@@ -294,7 +293,7 @@ const newEvent: LiveEvent = {,
               <Avatar
                 sx={{
                   width: 32,
-                  height: 32,`
+                  height: 32,
                   backgroundColor: `${metric.color}20`,
                   color: metric.color,
 
@@ -350,7 +349,8 @@ const newEvent: LiveEvent = {,
             
             {!compactMode && (
               <Typography variant="caption" color="text.disabled" display="block" sx={{ mt: 1 }}>
-                {formatDistanceToNow(metric.lastUpdated, { addSuffix: true })}
+                {formatDistanceToNow(metric.lastUpdated, { addSuffix: true });
+}
               </Typography>
             )}
           </CardContent>
@@ -397,7 +397,8 @@ const newEvent: LiveEvent = {,
                   {event.description}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {formatDistanceToNow(event.timestamp, { addSuffix: true })}
+                  {formatDistanceToNow(event.timestamp, { addSuffix: true });
+}
                 </Typography>
               </Alert>
             </motion.div>
@@ -477,14 +478,14 @@ const newEvent: LiveEvent = {,
 
       {/* Live Events */}
       {!compactMode && renderLiveEvents()}
-      {/* CSS for pulse animation */}`
-      <style>{`
+      {/* CSS for pulse animation */}
+      <style>{
         @keyframes pulse {
           0% { opacity: 1}
           50% { opacity: 0.5}
           100% { opacity: 1}
-        }`
-      `}</style>`
+        }
+      `}</style>
     </Box>
   </>
-  )};`
+  )};

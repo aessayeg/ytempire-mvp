@@ -263,7 +263,7 @@ export const useOptimizedStore = create<AppState & AppActions>()(
             try {
               const response = await fetch('/api/v1/channels', {
                 headers: {,
-  Authorization: `Bearer ${localStorage.getItem('token')}`
+  Authorization: `Bearer ${localStorage.getItem('token')}
                 }
               });
 
@@ -274,10 +274,12 @@ export const useOptimizedStore = create<AppState & AppActions>()(
               set(_(state) => {
                 state.channels.list = data;
                 state.channels.loading = false;
-                state.channels.lastFetch = now})} catch (_) {
+                state.channels.lastFetch = now});
+} catch (error) {
               set(_(state) => {
                 state.channels.loading = false;
-                state.channels.error = error instanceof Error ? error.message : 'An error occurred'})}
+                state.channels.error = error instanceof Error ? error.message : 'An error occurred'});
+}
           },
 
           selectChannel: (channelId) => {}
@@ -297,7 +299,7 @@ export const useOptimizedStore = create<AppState & AppActions>()(
 
           // Video Actions
           addToQueue: (video) => {}
-            set(_(state) => {`
+            set(_(state) => {
               const id = `video_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
               state.videos.queue.push({ ...video, id })}),
 
@@ -372,7 +374,7 @@ export const useOptimizedStore = create<AppState & AppActions>()(
               state.ui.activeModal = null}),
 
           addNotification: (notification) => {}
-            set(_(state) => {`
+            set(_(state) => {
               const id = `notif_${Date.now()}`;
               state.ui.notifications.unshift({ ...notification,
                 id,
@@ -421,7 +423,8 @@ export const useOptimizedStore = create<AppState & AppActions>()(
                 updateRealtimeMetrics(message.data)} else if (message.type === 'notification') {
                 const { addNotification } = get();
                 addNotification({ type: message.level || 'info',
-                  message: message.text })}
+                  message: message.text });
+}
             }),
 
           // Utility Actions
@@ -434,7 +437,8 @@ export const useOptimizedStore = create<AppState & AppActions>()(
               try {
                 const parsed = JSON.parse(savedState);
                 set((state) => {
-                  Object.assign(state, parsed)})} catch (_) {
+                  Object.assign(state, parsed)});
+} catch (error) {
                 console.error('Failed to hydrate, state:', error)}
             }
           }
@@ -482,4 +486,4 @@ export const createOptimizedRouter = () => {
   return createBrowserRouter([
     // Router configuration would go here
   ])}
-export const useWsStatus = () => useOptimizedStore((state) => state.ws);`
+export const useWsStatus = () => useOptimizedStore((state) => state.ws);

@@ -183,7 +183,7 @@ export const DashboardRealtime: React.FC = () => {
         );
         setVideoGenerations(generations)}
       
-      setLastUpdated(new Date())} catch (_) {
+      setLastUpdated(new Date())} catch (error) {
       console.error('Failed to fetch, metrics:', error)} finally {
       setLoading(false)}
   };
@@ -268,7 +268,7 @@ export const DashboardRealtime: React.FC = () => {
   const formatNumber = (value: number) => {
     if (value >= 1000000) {
       return `${(value / 1000000.toFixed(1)}M`;
-    } else if (value >= 1000) {`
+    } else if (value >= 1000) {
       return `${(value / 1000.toFixed(1)}K`;
     }
     return value.toString()};
@@ -278,7 +278,7 @@ export const DashboardRealtime: React.FC = () => {
       <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Header with WebSocket Status */}
       <DashboardHeader
-        title="Real-time Dashboard"`
+        title="Real-time Dashboard"
         subtitle={`Welcome, back, ${user?.name || 'User'}`}
         lastUpdated={lastUpdated}
         onRefresh={fetchInitialMetrics}
@@ -317,7 +317,7 @@ export const DashboardRealtime: React.FC = () => {
           <MetricCard
             title="Videos Today"
             value={metrics.completedToday}
-            icon={<VideoLibrary />}`
+            icon={<VideoLibrary />}
             trend={metrics.processingVideos > 0 ? `+${metrics.processingVideos} processing` : ''}
             trendDirection="up"
             color="#8884 d8"
@@ -328,7 +328,7 @@ export const DashboardRealtime: React.FC = () => {
           <MetricCard
             title="Live Cost"
             value={formatCurrency(metrics.totalCosts)}
-            icon={<AttachMoney />}`
+            icon={<AttachMoney />}
             trend={`Avg: ${formatCurrency(metrics.averageCostPerVideo)}/video`}
             trendDirection={metrics.averageCostPerVideo < 3 ? 'down' : 'up'}
             color={metrics.averageCostPerVideo < 3 ? '#82ca9d' : '#ff7c7c'}
@@ -339,7 +339,7 @@ export const DashboardRealtime: React.FC = () => {
           <MetricCard
             title="Queue Status"
             value={metrics.queuedVideos}
-            icon={<Schedule />}`
+            icon={<Schedule />}
             trend={`${metrics.processingVideos} processing`}
             color="#ffc658"
             realtime
@@ -347,9 +347,9 @@ export const DashboardRealtime: React.FC = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <MetricCard
-            title="API Quota"`
+            title="API Quota"
             value={`${metrics.quotaStatus.percentage.toFixed(1)}%`}
-            icon={<TrendingUp />}`
+            icon={<TrendingUp />}
             trend={`${formatNumber(metrics.quotaStatus.used)}/${formatNumber(metrics.quotaStatus.total)}`}
             trendDirection={metrics.quotaStatus.percentage > 80 ? 'up' : 'down'}
             color={metrics.quotaStatus.percentage > 80 ? '#ff7c7c' : '#82ca9d'}
@@ -521,4 +521,4 @@ export const DashboardRealtime: React.FC = () => {
       </Grid>
     </Box>
   </>
-  )};`
+  )};

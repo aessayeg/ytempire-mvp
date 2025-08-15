@@ -183,9 +183,8 @@ export const ChannelTemplates: React.FC = () => { const [templates, setTemplates
           endScreen: true,
           cards: true,
           comments: true,
-          likes: true,
-
-        }
+          likes: true
+}
       }
     },
     { id: '4',
@@ -236,9 +235,8 @@ const newTemplate: Template = {
       id: `template-${Date.now()}`,
       name: `${template.name} (Copy)`,
       isDefault: false,
-      usage: 0,
-
-    };
+      usage: 0
+};
     setTemplates(prev => [...prev, newTemplate])};
 
   const handleDeleteTemplate = (templateId: string) => {
@@ -612,4 +610,4 @@ const newTemplate: Template = {
         </DialogActions>
       </Dialog>
     </Box>
-  )};`
+  )};

@@ -27,7 +27,8 @@ import {
               label="Channel Name"
               fullWidth
               value={editForm.name || ''}
-              onChange={(e) => setEditForm({ ...editForm, name: e.target.value)})}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value)});
+}
             />
             <TextField
               label="Description"
@@ -35,14 +36,16 @@ import {
               multiline
               rows={3}
               value={editForm.description || ''}
-              onChange={(e) => setEditForm({ ...editForm, description: e.target.value)})}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value)});
+}
             />
             <FormControl fullWidth>
               <InputLabel>Upload Schedule</InputLabel>
               <Select
                 value={editForm.upload_schedule || ''}
                 label="Upload Schedule"
-                onChange={(e: SelectChangeEvent) => setEditForm({ ...editForm, upload_schedule: e.target.value)})}
+                onChange={(e: SelectChangeEvent) => setEditForm({ ...editForm, upload_schedule: e.target.value)});
+}
               >
                 <MenuItem value="daily">Daily</MenuItem>
                 <MenuItem value="weekly">Weekly</MenuItem>

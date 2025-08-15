@@ -174,7 +174,7 @@ export const AnalyticsDashboard: React.FC = () => {
       avd: 30 + Math.random() * 40,
       revenue: 10 + Math.random() * 200,
       impressions: Math.floor(10000 + Math.random() * 100000),
-      retention: Array.from({  length:  10  }, () => 100 - Math.random() * 50)
+      retention: Array.from({  length:  10  }, () => 100 - Math.random() * 50);
     }));
     setVideoPerformance(videos);
 
@@ -453,7 +453,7 @@ export const AnalyticsDashboard: React.FC = () => {
                   {revenueBreakdown.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
-                </Pie>`
+                </Pie>
                 <RechartsTooltip formatter={ (value:  number) => `$${value.toFixed(2) }`} />
               </PieChart>
             </ResponsiveContainer>
@@ -611,7 +611,8 @@ export const AnalyticsDashboard: React.FC = () => {
                           </Box>
                         </TableCell>
                       </TableRow>
-                    )})}
+                    )});
+}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -899,4 +900,4 @@ export const AnalyticsDashboard: React.FC = () => {
         {renderChannelComparisonTab()}
       </TabPanel>
     </Box>
-  )};`
+  )};

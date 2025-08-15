@@ -55,9 +55,8 @@ export const staggerItem: Variants = {,
 export const morphingCard: Variants = {,
   initial: {,
     borderRadius: '8px', 
-    scale: 1,
-
-  },
+    scale: 1
+},
   hover: { ,
   borderRadius: '16px', 
     scale: 1.02,

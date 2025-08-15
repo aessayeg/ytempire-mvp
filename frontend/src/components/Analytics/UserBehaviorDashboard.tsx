@@ -76,7 +76,6 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
         return ['dashboard_view', 'video_create_click', 'video_generate', 'video_publish'];
       case 'upgrade':
         return ['pricing_view', 'plan_select', 'checkout', 'payment_complete'];
-      default:
         return []}
   }
 
@@ -150,7 +149,7 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
             <XAxis type="number" />
             <YAxis dataKey="name" type="category" width={120} />
             <RechartsTooltip
-              formatter={(value: number) => formatNumber(value}`
+              formatter={(value: number) => formatNumber(value}
               labelFormatter={(label) => `${label}: ${formatPercentage(funnelChartData.find(d => d.name === label)?.rate || 0)}`}
             />
             <Bar dataKey="value" fill="#8884d8">
@@ -243,14 +242,15 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
                         <Chip
                           label={formatPercentage(rate)}
                           size="small"
-                          sx={{`
+                          sx={{
                             backgroundColor: `rgba(0, 136, 254, ${rate / 100})`,
                             color: rate > 50 ? 'white' : 'inherit',
 
                           }}
                         />
                       </TableCell>
-                    )})}
+                    )});
+}
                 </TableRow>
               ))}
             </TableBody>
@@ -295,13 +295,12 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
                     <td
                       key={hour}
                       style={{
-                        padding: 4,`
+                        padding: 4,
                         backgroundColor: `rgba(0, 136, 254, ${intensity})`,
                         border: '1px solid #f0 f0 f0',
                         width: 20,
-                        height: 20,
-
-                      }}`
+                        height: 20
+}}
                       title={`${day} ${hour}:00 - Intensity: ${intensity * 100.toFixed(0}%`}
                     />
                   ))}
@@ -472,4 +471,4 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
       </Card>
     </Box>
   </>
-  )};`
+  )};

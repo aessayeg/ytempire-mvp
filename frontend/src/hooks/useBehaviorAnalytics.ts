@@ -154,7 +154,7 @@ export const useBehaviorAnalytics = ({ userId,
           {
             params: {,
   funnel_steps: funnelSteps,
-              ...params },`
+              ...params },
             headers: { Authorization: `Bearer ${token}` }
           }
         );
@@ -165,15 +165,15 @@ export const useBehaviorAnalytics = ({ userId,
           params: {,
   cohort_type: cohortType,
             metric: 'retention',
-            periods: 6 },`
+            periods: 6 },
           headers: { Authorization: `Bearer ${token}` }
         });
-        setCohortData(cohortResponse.data)} catch (_) {
+        setCohortData(cohortResponse.data)} catch (error) {
         console.warn('Cohort analysis not, available:', err)}
 
       // Fetch heatmap data
       const heatmapResponse = await apiClient.get('/api/v1/analytics/heatmaps', {
-        params,`
+        params,
         headers: { Authorization: `Bearer ${token}` }
       });
       setHeatmapData(heatmapResponse.data);
@@ -184,11 +184,11 @@ export const useBehaviorAnalytics = ({ userId,
           '/api/v1/analytics/segments',
           null,
           {
-            params: { criteria: {} },`
+            params: { criteria: {} },
             headers: { Authorization: `Bearer ${token}` }
           }
         );
-        setSegments(segmentsResponse.data)} catch (_) {
+        setSegments(segmentsResponse.data)} catch (error) {
         console.warn('User segments not, available:', err)}
 
     } catch (_err: unknown) {
@@ -208,4 +208,4 @@ export const useBehaviorAnalytics = ({ userId,
     loading,
     error,
     refetch: fetchAnalyticsData };
-};`
+};

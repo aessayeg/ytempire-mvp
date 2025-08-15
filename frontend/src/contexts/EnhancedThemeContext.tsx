@@ -54,8 +54,7 @@ const defaultThemeConfig: ThemeConfig = {,
   borderRadius: 8,
   animationsEnabled: true,
   reducedMotion: false,
-  highContrast: false,
-
+  highContrast: false
 };
 
 // Color palette for dark mode
@@ -267,9 +266,8 @@ export const EnhancedThemeProvider: React.FC<{ children: React.ReactNode }> = ({
           standard: themeConfig.reducedMotion ? 0 : 300,
           complex: themeConfig.reducedMotion ? 0 : 375,
           enteringScreen: themeConfig.reducedMotion ? 0 : 225,
-          leavingScreen: themeConfig.reducedMotion ? 0 : 195,
-
-        }
+          leavingScreen: themeConfig.reducedMotion ? 0 : 195
+}
       },
       components: {
         // Global component overrides for dark mode
@@ -280,14 +278,13 @@ export const EnhancedThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   scrollbarColor: isDark ? '#6 b6 b6 b #2 b2 b2 b' : '#959595 #f1 f1 f1',
               '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
                 width: 8,
-                height: 8,
-
-              },
+                height: 8
+},
               '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
                 borderRadius: 8,
                 backgroundColor: isDark ? '#6 b6 b6 b' : '#959595',
                 minHeight: 24,
-                border: `2px solid ${isDark ? '#2 b2 b2 b' : '#f1 f1 f1'}`
+                border: `2px solid ${isDark ? '#2 b2 b2 b' : '#f1 f1 f1'}
               },
               '&::-webkit-scrollbar-track, & *::-webkit-scrollbar-track': {
                 borderRadius: 8,
@@ -409,9 +406,8 @@ export const EnhancedThemeProvider: React.FC<{ children: React.ReactNode }> = ({
                 : alpha('#000', 0.87),
               color: isDark ? '#000' : '#fff',
               fontSize: '0.875 rem',
-              fontWeight: 400,
-
-            }
+              fontWeight: 400
+}
           }
         },
         MuiAlert: {,
@@ -461,7 +457,7 @@ export const EnhancedThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   styleOverrides: {,
 
             root: {`,
-  borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`
+  borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}
             }
           }
         },
@@ -541,4 +537,4 @@ export const useEnhancedTheme = () => {
   return context;
 };
 
-export default EnhancedThemeProvider;`
+export default EnhancedThemeProvider;

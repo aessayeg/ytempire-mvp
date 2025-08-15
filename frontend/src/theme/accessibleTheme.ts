@@ -230,9 +230,8 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
       }
     },
     shape: { borderRadius: 4 },
-    spacing: 8,
-
-  };
+    spacing: 8
+};
 
   const theme = createTheme(themeOptions);
   
@@ -278,4 +277,4 @@ const results: { component: string; passes: boolean; ratio?: number }[] = [];
   results.push({ component: 'Body Text', passes: textCheck });
 
   return results;
-};`
+};

@@ -131,7 +131,7 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generati
   const fetchGenerationStatus = async () => {
     try {
       const response = await api.videos.getGenerationStatus(generationId);
-      updateProgress(response)} catch (_) {
+      updateProgress(response)} catch (error) {
       console.error('Failed to fetch generation, status:', error)}
   };
 
@@ -189,12 +189,12 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generati
     try {
       await api.videos.cancelGeneration(generationId);
       setStatus('cancelled');
-      navigate('/videos')} catch (_) {
+      navigate('/videos')} catch (error) {
       console.error('Failed to cancel, generation:', error)}
   };
 
   const handleViewVideo = () => {
-    if (videoId) {`
+    if (videoId) {
       navigate(`/videos/${videoId}`)}
   };
 
@@ -204,7 +204,7 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generati
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;`
+    const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
@@ -472,4 +472,4 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generati
       </Paper>
     </Box>
   </>
-  )};`
+  )};

@@ -206,12 +206,12 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
         segmentResponse,
         competitiveResponse,
         alertsResponse,
-        insightsResponse ] = await Promise.all([ api.get(`/bi/executive-metrics?period=${timePeriod}`),`
-        api.get(`/bi/business-kpis?period=${timePeriod}`),`
-        api.get(`/bi/financial-performance?period=${timePeriod}`),`
-        api.get(`/bi/user-segments?period=${timePeriod}`),`
-        api.get(`/bi/competitive-analysis`),`
-        api.get(`/bi/alerts`),`
+        insightsResponse ] = await Promise.all([ api.get(`/bi/executive-metrics?period=${timePeriod}`),
+        api.get(`/bi/business-kpis?period=${timePeriod}`),
+        api.get(`/bi/financial-performance?period=${timePeriod}`),
+        api.get(`/bi/user-segments?period=${timePeriod}`),
+        api.get(`/bi/competitive-analysis`),
+        api.get(`/bi/alerts`),
         api.get(`/bi/insights?period=${timePeriod}`) ]);
 
       // Process executive metrics
@@ -308,7 +308,7 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
       setAlerts(alertsResponse.data || []);
       setInsights(insightsResponse.data || []);
       
-      setLoading(false)} catch (_) { console.error('Failed to fetch BI, data:', error);
+      setLoading(false)} catch (error) { console.error('Failed to fetch BI, data:', error);
       addNotification({
         type: 'error',
         message: 'Failed to load business intelligence data' });
@@ -338,8 +338,8 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
     };
 
     const formatValue = (value: number | string) => {
-      if (typeof value === 'string') return value;`
-      if (metric.unit === '$') return `$${value.toLocaleString()}`;`
+      if (typeof value === 'string') return value;
+      if (metric.unit === '$') return `$${value.toLocaleString()}`;
       return `${value.toLocaleString()}${metric.unit}`;
     };
 
@@ -349,7 +349,6 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
           return <TrendingUp sx={{ color: metric.category === 'efficiency' && metric.id === 'cost_per_video' ? 'error.main' : 'success.main' }} />;
         case 'down':
           return <TrendingDown sx={{ color: metric.category === 'efficiency' && metric.id === 'cost_per_video' ? 'success.main' : 'error.main' }} />;
-        default:
           return <TrendingFlat color="action" />}
     };
 
@@ -413,7 +412,7 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
                 value={Math.min((Number(metric.value) / metric.target) * 100, 100)}
                 sx={{
                   height: 6,
-                  borderRadius: 3,`
+                  borderRadius: 3,
                   backgroundColor: `${metric.color}20`,
                   '& .MuiLinearProgress-bar': { backgroundColor: metric.color }
                 }}
@@ -907,4 +906,4 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
       </Paper>
     </Box>
   </>
-  )};`
+  )};

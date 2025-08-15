@@ -35,7 +35,7 @@ const VideoEditorPage: React.FC = () => {
         </Button>
       </Box>
       <VideoEditor
-        videoId={id}`
+        videoId={id}
         videoUrl={`/api/v1/videos/${id}/stream`} // TODO: Get actual video URL
         onSave={handleSave}
         onExport={handleExport}
@@ -44,4 +44,4 @@ const VideoEditorPage: React.FC = () => {
   </>
   )};
 
-export default VideoEditorPage;`
+export default VideoEditorPage;

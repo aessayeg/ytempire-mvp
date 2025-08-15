@@ -54,7 +54,7 @@ export const LoginForm: React.FC = () => {
     
     try {
       await login(formData.email, formData.password);
-      navigate('/dashboard')} catch (_) {
+      navigate('/dashboard')} catch (error) {
       console.error('Login, failed:', error)}
   };
 

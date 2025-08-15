@@ -35,27 +35,27 @@ import {
  } from '@mui/icons-material';
 
 // ============= Animations =============
-const pulse = keyframes`
+const pulse = keyframes
   0% {
     box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7)}
   70% {
     box-shadow: 0 0 0 10px rgba(33, 150, 243, 0)}
   100% {
-    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0)}`
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0)}
 `;
-`
-const shimmer = keyframes`
+
+const shimmer = keyframes
   0% {
     background-position: -1000px 0}
   100% {
-    background-position: 1000px 0}`
+    background-position: 1000px 0}
 `;
-`
-const rotate = keyframes`
+
+const rotate = keyframes
   from {
     transform: rotate(0 deg)}
   to {
-    transform: rotate(360 deg)}`
+    transform: rotate(360 deg)}
 `;
 
 // ============= Loading Components =============
@@ -82,9 +82,9 @@ export const SkeletonCard: React.FC<{ height?: number; animate?: boolean }> = ({
         height={height}
         animation={animate ? 'pulse' : false}
         sx={{
-          background: animate`
-            ? `linear-gradient(90 deg, transparent, rgba(255,255,255,0.1), transparent)`
-            : undefined,`
+          background: animate
+            ? `linear-gradient(90 deg, transparent, rgba(255,255,255,0.1), transparent)
+            : undefined,
           animation: animate ? `${shimmer} 2s infinite` : undefined
         }}
       />
@@ -121,7 +121,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, children, ...p
   const StyledBadge = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
       backgroundColor: colors[status],
-      color: colors[status],`
+      color: colors[status],
       boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
       '&::after': {
         position: 'absolute',
@@ -129,7 +129,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, children, ...p
         left: 0,
         width: '100%',
         height: '100%',
-        borderRadius: '50%',`
+        borderRadius: '50%',
         animation: status === 'online' ? `${pulse} 1.5s infinite` : undefined,
         border: '1px solid currentColor',
         content: '""',
@@ -164,7 +164,6 @@ export const StatusChip: React.FC<ChipProps & { status: string }> = ({ status, .
       case 'failed':
       case 'cancelled':
         return 'error';
-      default:
         return 'default'}
   };
 
@@ -226,7 +225,8 @@ export const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, ic
             >
               {React.cloneElement(icon as React.ReactElement, {
                 sx: { color, fontSize: 32 }
-              })}
+              });
+}
             </Box>
           )}
         </Box>
@@ -252,7 +252,7 @@ export const CopyableText: React.FC<CopyableTextProps> = ({ text, variant = 'bod
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000)} catch (_) {
+      setTimeout(() => setCopied(false), 2000)} catch (error) {
       console.error('Failed to, copy:', err)}
   };
 
@@ -294,7 +294,7 @@ export const FileUploadButton: React.FC<FileUploadProps> = ({ onFileSelect, acce
       const oversizedFiles = Array.from(files).filter(
         (file) => file.size > maxSize * 1024 * 1024
       );
-      if (oversizedFiles.length > 0) {`
+      if (oversizedFiles.length > 0) {
         setError(`File size must be less than ${maxSize}MB`);
         return;
       }
@@ -384,7 +384,6 @@ export const ProgressStepper: React.FC<StepperProps> = ({ steps, activeStep, com
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor:
                   completed.includes(index) || index < activeStep
                     ? 'primary.main'
                     : index === activeStep
@@ -434,7 +433,7 @@ export const CircularProgressWithLabel: React.FC<{ value: number; size?: number 
         sx={ {
           transform: 'translate(-50%, -50%)' }}
       >
-        <Typography variant="caption" component="div" color="text.secondary">`
+        <Typography variant="caption" component="div" color="text.secondary">
           {`${Math.round(value)}%`}
         </Typography>
       </Box>
@@ -614,4 +613,4 @@ export const PasswordField: React.FC<{,
         {showPassword ? <VisibilityOff /> </>: <Visibility />}
       </IconButton>
     </Box>
-  )};`
+  )};

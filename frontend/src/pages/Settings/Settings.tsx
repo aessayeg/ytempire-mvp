@@ -163,7 +163,7 @@ import {
                         <Security />
                       </ListItemIcon>
                       <ListItemText
-                        primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())`
+                        primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
                         secondary={`Allow ${key.toLowerCase().replace(/([A-Z])/g, ' $1')} to improve service quality`}
                       />
                       <ListItemSecondaryAction>
@@ -530,4 +530,4 @@ import {
     </Box>
   )};
 
-export default Settings;`
+export default Settings;

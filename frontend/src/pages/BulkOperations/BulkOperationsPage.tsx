@@ -21,7 +21,7 @@ function TabPanel(props: TabPanelProps) {
       <div
       role="tabpanel"
       hidden={value !== index}
-      id={`bulk-tabpanel-${index}`}`
+      id={`bulk-tabpanel-${index}`}
       aria-labelledby={`bulk-tab-${index}`}
       {...other}
     >
@@ -37,10 +37,10 @@ const BulkOperationsPage: React.FC = () => {
 
   useEffect(() => {
     // Generate mock data for demonstration
-    const mockChannels = Array.from({ length: 10 }, (_, i) => ({`
+    const mockChannels = Array.from({ length: 10 }, (_, i) => ({
       id: `channel-${i + 1}`,
       name: `Channel ${i + 1}`,
-      type: 'channel' as const status: ['active', 'paused', 'archived'][Math.floor(Math.random() * 3)] as any,`
+      type: 'channel' as const status: ['active', 'paused', 'archived'][Math.floor(Math.random() * 3)] as any,
       thumbnail: `https://via.placeholder.com/150?text=CH${i + 1}`,
       tags: ['YouTube', 'Content', 'Automation'],
       starred: Math.random() > 0.7,
@@ -52,10 +52,10 @@ const BulkOperationsPage: React.FC = () => {
         views: Math.floor(Math.random() * 1000000)}
     }));
 
-    const mockVideos = Array.from({ length: 20 }, (_, i) => ({`
+    const mockVideos = Array.from({ length: 20 }, (_, i) => ({
       id: `video-${i + 1}`,
       name: `Video Title ${i + 1}`,
-      type: 'video' as const status: ['active', 'processing', 'archived'][Math.floor(Math.random() * 3)] as any,`
+      type: 'video' as const status: ['active', 'processing', 'archived'][Math.floor(Math.random() * 3)] as any,
       thumbnail: `https://via.placeholder.com/150?text=VID${i + 1}`,
       tags: ['AI Generated', 'Tutorial', 'Tech'],
       starred: Math.random() > 0.8,
@@ -70,12 +70,12 @@ const BulkOperationsPage: React.FC = () => {
     setChannelItems(mockChannels);
     setVideoItems(mockVideos)}, []);
 
-  const handleChannelOperation = (operation: string, _items: string[]) => {`
+  const handleChannelOperation = (operation: string, _items: string[]) => {
     console.log(`Channel, operation: ${operation}`, items);
     // TODO: Implement API calls for channel operations
   };
 
-  const handleVideoOperation = (operation: string, _items: string[]) => {`
+  const handleVideoOperation = (operation: string, _items: string[]) => {
     console.log(`Video, operation: ${operation}`, items);
     // TODO: Implement API calls for video operations
   };
@@ -97,8 +97,8 @@ const BulkOperationsPage: React.FC = () => {
             indicatorColor="primary"
             textColor="primary"
             variant="fullWidth"
-          >`
-            <Tab label={`Channels (${channelItems.length})`} />`
+          >
+            <Tab label={`Channels (${channelItems.length})`} />
             <Tab label={`Videos (${videoItems.length})`} />
             <Tab label="Mixed Content" />
           </Tabs>
@@ -166,4 +166,4 @@ const BulkOperationsPage: React.FC = () => {
     </Container>
   )};
 
-export default BulkOperationsPage;`
+export default BulkOperationsPage;

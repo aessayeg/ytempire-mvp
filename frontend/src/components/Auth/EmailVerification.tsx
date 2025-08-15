@@ -51,7 +51,7 @@ export const EmailVerification: React.FC = () => {
       // This would require the user's email
       // You might want to add an input field for this
       setMessage('A new verification email has been sent.');
-      setStatus('success')} catch (_) {
+      setStatus('success')} catch (error) {
       setStatus('error');
       setMessage('Failed to resend verification email.')}
   };

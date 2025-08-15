@@ -145,7 +145,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
       if (document.pictureInPictureElement) {
         await document.exitPictureInPicture()} else {
         await video.requestPictureInPicture()}
-    } catch (_) {
+    } catch (error) {
       console.error('PiP not supported')}
   };
 
@@ -315,4 +315,4 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
       </Box>
     </Paper>
   </>
-  )};`
+  )};

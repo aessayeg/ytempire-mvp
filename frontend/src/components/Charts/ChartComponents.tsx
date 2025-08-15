@@ -75,7 +75,7 @@ export const RevenueChart: React.FC<ChartProps> = ({ data, height = 300 }) => {
             borderRadius: '8px',
             color: '#f3 f4 f6',
 
-          }}`
+          }}
           formatter={(value: React.ChangeEvent<HTMLInputElement>) => [ `$${value}`, 'Revenue' ]
           labelFormatter={label) => format(new Date(label), 'MMM dd, yyyy'}
         />
@@ -291,7 +291,7 @@ export const CostBreakdownRadial: React.FC<ChartProps> = ({ data, height = 300 }
             borderRadius: '8px',
             color: '#f3 f4 f6',
 
-          }}`
+          }}
           formatter={(value: React.ChangeEvent<HTMLInputElement>) => [ `$${value}`, 'Cost' ]
         />
       </RadialBarChart>
@@ -389,4 +389,4 @@ export const RealTimeMetricsChart: React.FC<ChartProps> = ({ data, height = 200 
         />
       </AreaChart>
     </ResponsiveContainer>
-  )};`
+  )};

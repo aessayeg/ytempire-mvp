@@ -32,7 +32,7 @@ function TabPanel(props: TabPanelProps) {
       <div
       role="tabpanel"
       hidden={value !== index}
-      id={`analytics-tabpanel-${index}`}`
+      id={`analytics-tabpanel-${index}`}
       aria-labelledby={`analytics-tab-${index}`}
       {...other}
     >
@@ -89,4 +89,4 @@ export const AnalyticsDashboard: React.FC = () => {
         </Paper>
       </Box>
     </Container>
-  )};`
+  )};

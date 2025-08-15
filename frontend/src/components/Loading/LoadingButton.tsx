@@ -56,7 +56,6 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
             </>
           );
         case 'center':
-        default:
           return getLoadingIndicator()}
     }
 

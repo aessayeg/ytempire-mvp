@@ -66,8 +66,8 @@ class AccessibilityTester {
       errors: errors.length,
       warnings: warnings.length,
       info: info.length,
-      details: issues,
-    };
+      details: issues
+};
     this.results.push(result);
 
     // Print page results

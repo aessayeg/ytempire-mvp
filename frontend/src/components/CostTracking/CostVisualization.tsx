@@ -205,7 +205,8 @@ export const CostVisualization: React.FC = () => {
           openai: Math.random() * 80 + 20,
           youtube: Math.random() * 30 + 10,
           storage: Math.random() * 20 + 5,
-          compute: Math.random() * 40 + 10 })}
+          compute: Math.random() * 40 + 10 });
+}
       setCostHistory(history);
 
       // Generate mock forecasts
@@ -218,14 +219,15 @@ export const CostVisualization: React.FC = () => {
           predicted,
           actual: i === 0 ? predicted * 0.95 : undefined,
           confidenceLow: predicted * 0.8,
-          confidenceHigh: predicted * 1.2 })}
+          confidenceHigh: predicted * 1.2 });
+}
       setForecasts(forecastData);
 
       // Fetch alerts
       const alertsResponse = await api.get('/costs/alerts');
       setAlerts(alertsResponse.data || []);
 
-      setLoading(false)} catch (_) { console.error('Failed to fetch cost, data:', error);
+      setLoading(false)} catch (error) { console.error('Failed to fetch cost, data:', error);
       addNotification({
         type: 'error',
         message: 'Failed to load cost data' });
@@ -264,9 +266,11 @@ export const CostVisualization: React.FC = () => {
       setSelectedBudget(null);
       
       addNotification({ type: 'success',
-        message: selectedBudget ? 'Budget updated' : 'Budget created' })} catch (_) { addNotification({
+        message: selectedBudget ? 'Budget updated' : 'Budget created' });
+} catch (error) { addNotification({
         type: 'error',
-        message: 'Failed to save budget' })}
+        message: 'Failed to save budget' });
+}
   };
 
   // Render category card
@@ -554,7 +558,7 @@ export const CostVisualization: React.FC = () => {
                         nameKey="name"
                         cx="50%"
                         cy="50%"
-                        outerRadius={100}`
+                        outerRadius={100}
                         label={(entry) => `${entry.name}: $${entry.amount.toFixed(0)}`}
                       >
                         {categories.map((entry, index) => (
@@ -862,10 +866,11 @@ export const CostVisualization: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setBudgetDialogOpen(false)}>Cancel</Button>
-          <Button onClick={() => handleSaveBudget({})} variant="contained">
+          <Button onClick={() => handleSaveBudget({});
+} variant="contained">
             Save
           </Button>
         </DialogActions>
       </Dialog>
     </Box>
-  )};`
+  )};

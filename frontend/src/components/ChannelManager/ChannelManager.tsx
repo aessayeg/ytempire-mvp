@@ -67,7 +67,6 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
         return <WarningIcon color="warning" />;
       case 'critical':
         return <ErrorIcon color="error" />;
-      default:
         return <CheckCircleIcon color="disabled" />}
   };
 
@@ -79,7 +78,6 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
         return 'warning';
       case 'critical':
         return 'error';
-      default:
         return 'default'}
   };
 
@@ -129,7 +127,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
           isActive: false,
           lastSync: new Date().toISOString()}
       ];
-      setChannels(mockChannels)} catch (_) {
+      setChannels(mockChannels)} catch (error) {
       console.error('Failed to load, channels:', error)} finally {
       setIsLoading(false)}
   };
@@ -237,7 +235,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
                       <Typography variant="h6" component="h2">
                         {channel.name}
                       </Typography>
-                    </Box>`
+                    </Box>
                     <Tooltip title={`Health: ${channel.health}`}>
                       {getHealthIcon(channel.health)}
                     </Tooltip>
@@ -252,12 +250,12 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
                       Category: {channel.category}
                     </Typography>
                     <Box display="flex" gap={2} mt={1}>
-                      <Chip `
+                      <Chip 
                         label={`${channel.subscribers.toLocaleString()} subs`} 
                         size="small" 
                         variant="outlined"
                       />
-                      <Chip `
+                      <Chip 
                         label={`${channel.videoCount} videos`} 
                         size="small" 
                         variant="outlined"
@@ -344,14 +342,16 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
             <TextField
               label="Channel Name"
               value={newChannel.name}
-              onChange={(e) => setNewChannel({ ...newChannel, name: e.target.value)})}
+              onChange={(e) => setNewChannel({ ...newChannel, name: e.target.value)});
+}
               fullWidth
               required
             />
             <TextField
               label="YouTube Channel ID"
               value={newChannel.youtubeId}
-              onChange={(e) => setNewChannel({ ...newChannel, youtubeId: e.target.value)})}
+              onChange={(e) => setNewChannel({ ...newChannel, youtubeId: e.target.value)});
+}
               fullWidth
               required
               helperText="Found in YouTube Studio > Settings"
@@ -359,7 +359,8 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
             <TextField
               label="API Key"
               value={newChannel.apiKey}
-              onChange={(e) => setNewChannel({ ...newChannel, apiKey: e.target.value)})}
+              onChange={(e) => setNewChannel({ ...newChannel, apiKey: e.target.value)});
+}
               fullWidth
               required
               type="password"
@@ -369,7 +370,8 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
               <InputLabel>Category</InputLabel>
               <Select
                 value={newChannel.category}
-                onChange={(e) => setNewChannel({ ...newChannel, category: e.target.value)})}
+                onChange={(e) => setNewChannel({ ...newChannel, category: e.target.value)});
+}
                 label="Category"
               >
                 <MenuItem value="Technology">Technology</MenuItem>
@@ -383,7 +385,8 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
             <TextField
               label="Description"
               value={newChannel.description}
-              onChange={(e) => setNewChannel({ ...newChannel, description: e.target.value)})}
+              onChange={(e) => setNewChannel({ ...newChannel, description: e.target.value)});
+}
               fullWidth
               multiline
               rows={3}
@@ -404,4 +407,4 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
     </Box>
   )};
 
-export default ChannelManager;`
+export default ChannelManager;

@@ -200,9 +200,9 @@ const newWidget: Widget = {,
     const widget = widgets.find(w => w.id === widgetId);
     if (widget) {
 const newWidget: Widget = {
-        ...widget,`
+        ...widget,
         id: `widget-${Date.now()}`,
-        title: `${widget.title} (Copy)`
+        title: `${widget.title} (Copy)
       };
       setWidgets([...widgets, newWidget])}
     setAnchorEl(null)};
@@ -223,7 +223,7 @@ const newWidget: Widget = {
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;`
+      a.href = url;
       a.download = `${widget.title.replace(/\s+/g, '-')}-${format(new Date(), 'yyyy-MM-dd')}.json`;
       a.click();
       URL.revokeObjectURL(url)}
@@ -355,7 +355,7 @@ const newWidget: Widget = {
                     <ListItemIcon>
                       <CloudQueue color="primary" />
                     </ListItemIcon>
-                    <ListItemText`
+                    <ListItemText
                       primary={`Video ${item}`}
                       secondary="Processing..."
                     />
@@ -624,4 +624,4 @@ const newWidget: Widget = {
         </Zoom>
       )}
     </Box>
-  )};`
+  )};

@@ -218,7 +218,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
         videosResponse,
         realtimeResponse
       ] = await Promise.all([
-        api.get(`/dashboard/overview`),`
+        api.get(`/dashboard/overview`),
         api.get(`/dashboard/performance?period=${timeRange}`),
         api.get('/dashboard/channels'),
         api.get('/videos/top?limit=10'),
@@ -333,7 +333,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
       setTopVideos(videoData);
       setRealtimeMetrics(realtimeResponse.data);
       
-      setLoading(false)} catch (_) { console.error('Failed to fetch dashboard, data:', error);
+      setLoading(false)} catch (error) { console.error('Failed to fetch dashboard, data:', error);
       addNotification({
         type: 'error',
         message: 'Failed to load dashboard data' });
@@ -363,8 +363,8 @@ export const EnhancedMetricsDashboard: React.FC = () => {
   // Render metric card
   const renderMetricCard = (metric: MetricCard) => {
     const formatValue = (value: number | string) => {
-      if (typeof value === 'string') return value;`
-      if (metric.prefix === '$') return `$${value.toLocaleString()}`;`
+      if (typeof value === 'string') return value;
+      if (metric.prefix === '$') return `$${value.toLocaleString()}`;
       if (metric.suffix === '%') return `${value.toFixed(1)}%`;
       return value.toLocaleString()};
 
@@ -374,7 +374,6 @@ export const EnhancedMetricsDashboard: React.FC = () => {
           return <TrendingUp color="success" />;
         case 'down':
           return <TrendingDown color="error" />;
-        default:
           return <TrendingFlat color="action" />}
     };
 
@@ -384,7 +383,6 @@ export const EnhancedMetricsDashboard: React.FC = () => {
           return metric.id === 'cost' ? 'error.main' : 'success.main';
         case 'down':
           return metric.id === 'cost' ? 'success.main' : 'error.main';
-        default:
           return 'text.secondary'}
     };
 
@@ -434,7 +432,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
                 variant="determinate"
                 value={Math.min((Number(metric.value) / metric.target) * 100, 100)}
                 sx={{
-                  mt: 1,`
+                  mt: 1,
                   backgroundColor: `${metric.color}20`,
                   '& .MuiLinearProgress-bar': { backgroundColor: metric.color }
                 }}
@@ -483,7 +481,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
                   type="monotone"
                   dataKey={metric}
                   stroke={CHART_COLORS[ metric ]
-                  fillOpacity={1}`
+                  fillOpacity={1}
                   fill={`url(#gradient-${metric})`}
                 />
               ))}
@@ -511,7 +509,6 @@ export const EnhancedMetricsDashboard: React.FC = () => {
   );
       
       case 'line':
-      default:
         return (
     <ResponsiveContainer width="100%" height={400}>
             <LineChart {...commonProps}>
@@ -748,4 +745,4 @@ export const EnhancedMetricsDashboard: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  )};`
+  )};

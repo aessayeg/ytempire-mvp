@@ -107,7 +107,7 @@ export const PerformanceDashboard: React.FC = () => {
       };
 
       // Fetch performance overview
-      const overviewResponse = await fetch(`
+      const overviewResponse = await fetch(
         `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/performance/overview`,
         { headers }
       );
@@ -117,7 +117,7 @@ export const PerformanceDashboard: React.FC = () => {
         setMetrics(data)}
 
       // Fetch alerts
-      const alertsResponse = await fetch(`
+      const alertsResponse = await fetch(
         `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/performance/alerts`,
         { headers }
       );
@@ -125,7 +125,7 @@ export const PerformanceDashboard: React.FC = () => {
       if (alertsResponse.ok) {
         const alertData = await alertsResponse.json();
         setAlerts(alertData)}
-    } catch (_) {
+    } catch (error) {
       console.error('Error fetching performance, data:', error)} finally {
       setLoading(false)}
   };
@@ -413,7 +413,7 @@ export const PerformanceDashboard: React.FC = () => {
             <List>
               <ListItem>
                 <ListItemText 
-                  primary="Avg Query Time"`
+                  primary="Avg Query Time"
                   secondary={`${metrics.database.average_query_time.toFixed(2)} ms`}
                 />
               </ListItem>
@@ -532,4 +532,4 @@ export const PerformanceDashboard: React.FC = () => {
       </Paper>
     </Box>
   </>
-  )};`
+  )};

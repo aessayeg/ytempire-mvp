@@ -73,7 +73,8 @@ export const Register: React.FC = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard', { replace: true })}
+      navigate('/dashboard', { replace: true });
+}
   }, [isAuthenticated, navigate]);
 
   // Clear errors when component mounts
@@ -183,7 +184,7 @@ const errors: {[key: string]: string} = {};
     try {
       await register(formData.email, formData.username, formData.password, formData.full_name);
       // Navigation will be handled by useEffect when isAuthenticated changes
-    } catch (_) {
+    } catch (error) {
       // Error is handled by the store
     }
   };
@@ -600,4 +601,4 @@ const errors: {[key: string]: string} = {};
   </>
   )};
 
-export default Register;`
+export default Register;

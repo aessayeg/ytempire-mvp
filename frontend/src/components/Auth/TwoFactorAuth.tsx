@@ -92,7 +92,8 @@ export const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({ onSuccess, onCance
         if (pastedCode.length === 6) {
 }
           handleSubmit(pastedCode)}
-      })}
+      });
+}
   };
 
   const handleSubmit = async (_codeString?: string) => {
@@ -108,7 +109,7 @@ export const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({ onSuccess, onCance
       if (success && onSuccess) {
 }
         onSuccess()}
-    } catch (_) {
+    } catch (error) {
 }
       console.error('2 FA verification, failed:', error)}
   };

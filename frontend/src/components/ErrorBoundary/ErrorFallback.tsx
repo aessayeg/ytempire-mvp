@@ -39,10 +39,10 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo, 
   const [copied, setCopied] = useState(false);
 
   const handleCopyError = () => {
-    const errorText = `
+    const errorText = 
 Error: ${error.message}
 Stack: ${error.stack}
-Component, Stack: ${errorInfo?.componentStack || 'N/A'}`
+Component, Stack: ${errorInfo?.componentStack || 'N/A'}
     `.trim();
 
     navigator.clipboard.writeText(errorText);
@@ -330,4 +330,4 @@ export const MinimalErrorFallback: React.FC<{
       </button>
     </div>
   </>
-  )};`
+  )};

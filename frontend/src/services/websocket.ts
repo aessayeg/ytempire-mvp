@@ -112,9 +112,8 @@ class WebSocketClient extends EventEmitter {
       reconnection: true,
       reconnectionAttempts: this.maxReconnectAttempts,
       reconnectionDelay: this.reconnectDelay,
-      reconnectionDelayMax: 10000,
-
-    });
+      reconnectionDelayMax: 10000
+});
     
     this.setupEventListeners()}
   
@@ -145,7 +144,7 @@ class WebSocketClient extends EventEmitter {
       console.error('WebSocket, error:', error);
       this.emit(WSEventType.ERROR, error)});
     
-    this.socket.on(_'reconnect', _(attemptNumber) => {`
+    this.socket.on(_'reconnect', _(attemptNumber) => {
       console.log(`WebSocket reconnected after ${attemptNumber} attempts`);
       this.emit(WSEventType.RECONNECT, attemptNumber)});
     
@@ -153,8 +152,10 @@ class WebSocketClient extends EventEmitter {
     Object.values(WSEventType).forEach(eventType => {
       if (!['connect', 'disconnect', 'error', 'reconnect'].includes(eventType)) {
         this.socket?.on(eventType, _(data: React.ChangeEvent<HTMLInputElement>) => {
-          this.handleMessage({ event: eventType, data, timestamp: new Date().toISOString() })})}
-    })}
+          this.handleMessage({ event: eventType, data, timestamp: new Date().toISOString() })});
+}
+    });
+}
   
   private handleMessage(message: WSMessage<unknown>): void {
     console.log('WebSocket message, received:', message.event);
@@ -194,10 +195,12 @@ class WebSocketClient extends EventEmitter {
   }
   
   joinRoom(roomId: string): void {
-    this.send('subscribe', { roomId })}
+    this.send('subscribe', { roomId });
+}
   
   leaveRoom(roomId: string): void {
-    this.send('unsubscribe', { roomId })}
+    this.send('unsubscribe', { roomId });
+}
   
   private flushMessageQueue(): void {
     while (this.messageQueue.length > 0 && this.isConnected) {
@@ -207,7 +210,7 @@ class WebSocketClient extends EventEmitter {
     }
   }
   
-  private generateClientId(): string {`
+  private generateClientId(): string {
     return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
   
@@ -309,7 +312,7 @@ export function useChannelMetrics(channelId?: string) {
   useEffect(() => {
     if (!channelId) return;
     
-    // Join channel room`
+    // Join channel room
     joinRoom(`channel:${channelId}`);
     
     const unsubscribe = subscribe(_WSEventType.CHANNEL_METRICS_UPDATE, (data: ChannelMetricsUpdate) => {
@@ -317,7 +320,7 @@ export function useChannelMetrics(channelId?: string) {
         setMetrics(data)}
     });
     
-    return () => {`
+    return () => {
       leaveRoom(`channel:${channelId}`);
       unsubscribe()};
   }, [channelId, subscribe, joinRoom, leaveRoom]);
@@ -365,4 +368,4 @@ export function useNotifications() {
   };
 }
 
-export default wsClient;`
+export default wsClient;

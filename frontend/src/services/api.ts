@@ -13,7 +13,7 @@ apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers.Authorization = `Bearer ${token}
     }
     return config
   },
@@ -47,7 +47,7 @@ export const authApi = {
     return response.data
   },
   
-  getCurrentUser: async (token?: string) => {`
+  getCurrentUser: async (token?: string) => {
     const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {}
     const response = await apiClient.get('/auth/me', config)
     return response.data
@@ -66,7 +66,7 @@ export const channelsApi = {
     return response.data
   },
   
-  getById: async (id: string) => {`
+  getById: async (id: string) => {
     const response = await apiClient.get(`/channels/${id}`)
     return response.data
   },
@@ -76,12 +76,12 @@ export const channelsApi = {
     return response.data
   },
   
-  update: async (id: string, channelData: unknown) => {`
+  update: async (id: string, channelData: unknown) => {
     const response = await apiClient.put(`/channels/${id}`, channelData)
     return response.data
   },
   
-  delete: async (id: string) => {`
+  delete: async (id: string) => {
     const response = await apiClient.delete(`/channels/${id}`)
     return response.data
   }
@@ -95,7 +95,7 @@ export const videosApi = {
     return response.data
   },
   
-  getById: async (id: string) => {`
+  getById: async (id: string) => {
     const response = await apiClient.get(`/videos/${id}`)
     return response.data
   },
@@ -110,7 +110,7 @@ export const videosApi = {
     return response.data
   },
   
-  updateStatus: async (id: string, status: string) => {`
+  updateStatus: async (id: string, status: string) => {
     const response = await apiClient.patch(`/videos/${id}/status`, { status })
     return response.data
   }
@@ -125,12 +125,12 @@ export const analyticsApi = {
   },
   
   getChannelAnalytics: async (channelId: string, dateRange?: unknown) => {
-    const params = dateRange || {}`
+    const params = dateRange || {}
     const response = await apiClient.get(`/analytics/channels/${channelId}`, { params })
     return response.data
   },
   
-  getVideoAnalytics: async (videoId: string) => {`
+  getVideoAnalytics: async (videoId: string) => {
     const response = await apiClient.get(`/analytics/videos/${videoId}`)
     return response.data
   }
@@ -148,7 +148,7 @@ export const costsApi = {
     return response.data
   },
   
-  getByVideo: async (videoId: string) => {`
+  getByVideo: async (videoId: string) => {
     const response = await apiClient.get(`/costs/videos/${videoId}`)
     return response.data
   }
@@ -182,4 +182,4 @@ export const aiToolsApi = {
   }
 }
 
-export default apiClient`
+export default apiClient

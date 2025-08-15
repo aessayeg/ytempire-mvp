@@ -23,7 +23,8 @@ export const RouteErrorBoundary: React.FC<RouteErrorBoundaryProps> = ({ children
       //   route: location.pathname,
       //   error,
       //   errorInfo,
-      // })}
+      // });
+}
   };
 
   return (

@@ -452,7 +452,7 @@ import {
                             />
                             {key.last_used && (
                               <Chip
-                                size="small"`
+                                size="small"
                                 label={`Last, used: ${new Date(key.last_used).toLocaleDateString()}`}
                               />
                             )}
@@ -512,4 +512,4 @@ import {
     </Container>
   )};
 
-export default UserSettings;`
+export default UserSettings;

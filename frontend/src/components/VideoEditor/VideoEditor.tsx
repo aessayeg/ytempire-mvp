@@ -381,7 +381,8 @@ const editedVideo: EditedVideo = {,
                       max={duration}
                       onChange={(_, value) => {
                         const [start, end] = value as number[];
-                        setTrimMarkers({ start, end })}}
+                        setTrimMarkers({ start, end });
+}}
                       valueLabelDisplay="auto"
                       valueLabelFormat={formatTime}
                       sx={{
@@ -577,7 +578,8 @@ const editedVideo: EditedVideo = {,
                               variant="outlined"
                               label={option}
                               size="small"
-                              {...getTagProps({ index })}
+                              {...getTagProps({ index });
+}
                             />
                           ))}
                         renderInput={(params) => (
@@ -624,7 +626,7 @@ const editedVideo: EditedVideo = {,
                           <TimelineIcon />
                         </ListItemIcon>
                         <ListItemText
-                          primary="Main Video"`
+                          primary="Main Video"
                           secondary={`0:00 - ${formatTime(duration)}`}
                         />
                       </ListItem>
@@ -717,4 +719,4 @@ const editedVideo: EditedVideo = {,
       </Dialog>
     </Box>
   </>
-  )};`
+  )};

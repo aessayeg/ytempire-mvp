@@ -342,7 +342,8 @@ export const BulkOperations: React.FC = () => {
                   </ListItemIcon>
                   <ListItemText primary={channel.name} />
                 </ListItem>
-              ) : null})}
+              ) : null});
+}
           </List>
 
           {processing && (
@@ -369,4 +370,4 @@ export const BulkOperations: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  )};`
+  )};

@@ -66,9 +66,12 @@ export const VideoSearch: React.FC<VideoSearchProps> = ({ onSearch, onClear }) =
       
       {Object.values(filters).some(v => v !== 'all') && (
         <Box display="flex" gap={1}>
-          {filters.dateRange !== 'all' && <Chip label={filters.dateRange} size="small" onDelete={() => setFilters({...filters, dateRange: 'all'})} />}
-          {filters.sortBy !== 'relevance' && <Chip label={filters.sortBy} size="small" onDelete={() => setFilters({...filters, sortBy: 'relevance'})} />}
-          {filters.status !== 'all' && <Chip label={filters.status} size="small" onDelete={() => setFilters({...filters, status: 'all'})} />}
+          {filters.dateRange !== 'all' && <Chip label={filters.dateRange} size="small" onDelete={() => setFilters({...filters, dateRange: 'all'});
+} />}
+          {filters.sortBy !== 'relevance' && <Chip label={filters.sortBy} size="small" onDelete={() => setFilters({...filters, sortBy: 'relevance'});
+} />}
+          {filters.status !== 'all' && <Chip label={filters.status} size="small" onDelete={() => setFilters({...filters, status: 'all'});
+} />}
         </Box>
       )}
     </Box>

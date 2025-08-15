@@ -580,7 +580,8 @@ const newCompetitor: Competitor = {,
                         </IconButton>
                       </TableCell>
                     </TableRow>
-                  )})}
+                  )});
+}
               </TableBody>
             </Table>
           </TableContainer>
@@ -632,7 +633,8 @@ const newCompetitor: Competitor = {,
                         fill={colors[index % colors.length]
                         fillOpacity={0.3}
                       />
-                    ) : null})}
+                    ) : null});
+}
                   <Legend />
                 </RadarChart>
               </ResponsiveContainer>
@@ -657,7 +659,8 @@ const newCompetitor: Competitor = {,
       <TableCell key={compId} align="center">
                             {comp?.channelName}
                           </TableCell>
-                        )})}
+                        )});
+}
                     </TableRow>
                   </TableHead>
       <TableBody>
@@ -834,7 +837,8 @@ const newCompetitor: Competitor = {,
                         fill={colors[index % colors.length]
                         fillOpacity={0.3}
                       />
-                    ) : null})}
+                    ) : null});
+}
                 </AreaChart>
               </ResponsiveContainer>
             </Paper>
@@ -842,4 +846,4 @@ const newCompetitor: Competitor = {,
         </Grid>
       )}
     </Box>
-  )};`
+  )};

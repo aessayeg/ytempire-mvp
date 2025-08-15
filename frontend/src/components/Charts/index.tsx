@@ -57,7 +57,7 @@ export const ViewsLineChart: React.FC<ChartProps> = ({ title = 'Views Over Time'
           <Tooltip 
             contentStyle={{ 
               backgroundColor: theme.palette.background.paper,
-              border: `1px solid ${theme.palette.divider}`
+              border: `1px solid ${theme.palette.divider}
             }}
           />
           <Legend />
@@ -111,9 +111,9 @@ export const RevenueAreaChart: React.FC<ChartProps> = ({ title = 'Revenue Trend'
           <YAxis stroke={theme.palette.text.secondary} />
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: theme.palette.background.paper,`
-              border: `1px solid ${theme.palette.divider}`
-            }}`
+              backgroundColor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}
+            }}
             formatter={(value: number) => `$${value.toFixed(2}`}
           />
           <Legend />
@@ -145,8 +145,8 @@ export const VideoPerformanceBar: React.FC<ChartProps> = ({ title = 'Video Perfo
           <YAxis stroke={theme.palette.text.secondary} />
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: theme.palette.background.paper,`
-              border: `1px solid ${theme.palette.divider}`
+              backgroundColor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}
             }}
           />
           <Legend />
@@ -184,8 +184,8 @@ export const ChannelDistributionPie: React.FC<ChartProps> = ({ title = 'Channel 
           </Pie>
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: theme.palette.background.paper,`
-              border: `1px solid ${theme.palette.divider}`
+              backgroundColor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}
             }}
           />
         </PieChart>
@@ -211,8 +211,8 @@ export const MetricsRadar: React.FC<ChartProps> = ({ title = 'Performance Metric
           <Legend />
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: theme.palette.background.paper,`
-              border: `1px solid ${theme.palette.divider}`
+              backgroundColor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}
             }}
           />
         </RadarChart>
@@ -303,8 +303,8 @@ export const RealTimeMetrics: React.FC<{ data: unknown[] }> = ({ data }) => {
           <YAxis stroke={theme.palette.text.secondary} />
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: theme.palette.background.paper,`
-              border: `1px solid ${theme.palette.divider}`
+              backgroundColor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}
             }}
           />
           <Line 
@@ -335,4 +335,4 @@ export const DashboardCharts: React.FC<{ metrics: unknown }> = ({ metrics }) => 
   )};
 
 // Export the new Channel Performance Charts component
-export { default as ChannelPerformanceCharts } from './ChannelPerformanceCharts';`
+export { default as ChannelPerformanceCharts } from './ChannelPerformanceCharts';

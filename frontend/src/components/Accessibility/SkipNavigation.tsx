@@ -60,7 +60,8 @@ export const SkipNavigation: React.FC<SkipNavigationProps> = ({
             const target = document.querySelector(link.href);
             if (target) {
               (target as HTMLElement).focus();
-              target.scrollIntoView({ behavior: 'smooth' })}
+              target.scrollIntoView({ behavior: 'smooth' });
+}
           }}
         >
           {link.label}

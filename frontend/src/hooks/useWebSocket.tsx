@@ -212,7 +212,8 @@ export function useAnalyticsUpdates(): void {
     updateRealtimeMetrics(data)});
 
   useWebSocketSubscription(_'analytics_daily', (data) => {
-    addDailyMetrics(data)})}
+    addDailyMetrics(data)});
+}
 
 /**
  * Hook for real-time notifications
@@ -222,7 +223,8 @@ export function useNotificationUpdates(): void {
 
   useWebSocketSubscription(_'notification', _(data: unknown) => { addNotification({,
   type: data.level || 'info',
-      message: data.message })})}
+      message: data.message })});
+}
 
 /**
  * Hook for real-time cost alerts
@@ -233,5 +235,6 @@ export function useCostAlerts(): void {
   useWebSocketSubscription(_'cost_alert', _(data: React.ChangeEvent<HTMLInputElement>) => {
     addNotification({
       type: 'warning',
-      message: `Cost, alert: ${data.message}`
-    })})}`
+      message: `Cost, alert: ${data.message}
+    })});
+}

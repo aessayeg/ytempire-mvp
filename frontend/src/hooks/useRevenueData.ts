@@ -131,29 +131,29 @@ export const useRevenueData = ({ userId,
           period,
           lookback_days: dateRange ? 
             Math.ceil((dateRange.end.getTime() - dateRange.start.getTime()) / (1000 * 60 * 60 * 24)) : 
-            30 },`
+            30 },
         headers: { Authorization: `Bearer ${token}` }
       });
       setTrends(trendsResponse.data.trends);
 
       // Fetch forecast
       const forecastResponse = await apiClient.get('/api/v1/revenue/forecast', {
-        params: { forecast_days: 7 },`
+        params: { forecast_days: 7 },
         headers: { Authorization: `Bearer ${token}` }
       });
       setForecast(forecastResponse.data.forecast);
 
       // Fetch breakdown
       const breakdownResponse = await apiClient.get('/api/v1/revenue/breakdown', {
-        params: { breakdown_by: breakdownBy },`
+        params: { breakdown_by: breakdownBy },
         headers: { Authorization: `Bearer ${token}` }
       });
       setBreakdown(breakdownResponse.data.breakdown);
 
       // Fetch channel revenue if channelId is provided
-      if (channelId) {`
+      if (channelId) {
         const channelResponse = await apiClient.get(`/api/v1/revenue/channels/${channelId}`, {
-          params,`
+          params,
           headers: { Authorization: `Bearer ${token}` }
         });
         setChannelRevenue([channelResponse.data])} else if (overviewResponse.data.channel_breakdown) { // Use channel breakdown from overview
@@ -185,7 +185,7 @@ export const useRevenueData = ({ userId,
         params.end_date = dateRange.end.toISOString()}
 
       const response = await apiClient.get('/api/v1/revenue/export', {
-        params,`
+        params,
         headers: { Authorization: `Bearer ${token}` },
         responseType: format === 'csv' ? 'blob' : 'json',
 
@@ -198,7 +198,7 @@ export const useRevenueData = ({ userId,
       
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url;`
+      link.href = url;
       link.download = `revenue_export_${new Date().toISOString().split('T')[0]}.${format}`;
       document.body.appendChild(link);
       link.click();
@@ -220,4 +220,4 @@ export const useRevenueData = ({ userId,
     error,
     refetch: fetchRevenueData,
     exportData };
-};`
+};

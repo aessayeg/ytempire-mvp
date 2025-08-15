@@ -64,7 +64,7 @@ export const createOptimizedRouter = () => {
           onRetry()}
         
         return result;
-      } catch (_) {
+      } catch (error) {
         setIsRetrying(false);
         handleError(err);
         throw err;
@@ -98,7 +98,7 @@ export const createOptimizedRouter = () => {
   return createBrowserRouter([
     // Router configuration would go here
   ])}
-  } catch (_) {
+  } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'An error occurred';
     
     if (options?.showToast !== false) {

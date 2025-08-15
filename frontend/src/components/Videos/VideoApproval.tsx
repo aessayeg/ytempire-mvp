@@ -26,7 +26,8 @@ export const VideoApproval: React.FC<VideoApprovalProps> = ({ video, onApprove, 
   
   const handleSubmit = () => {
     if (decision === 'approve') {
-      onApprove({ quality, feedback })} else if (decision === 'reject') {
+      onApprove({ quality, feedback });
+} else if (decision === 'reject') {
       onReject(feedback)} else {
       onRequestChanges(feedback)}
   };

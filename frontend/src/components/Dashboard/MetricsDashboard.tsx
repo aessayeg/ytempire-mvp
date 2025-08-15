@@ -127,7 +127,6 @@ export const MetricsDashboard: React.FC = () => {
         case '90 d':
           startDate = subDays(endDate, 90);
           break;
-        default:
           startDate = subDays(endDate, 7)}
 
       // Fetch data from API
@@ -151,7 +150,8 @@ export const MetricsDashboard: React.FC = () => {
           views: Math.floor(Math.random() * 10000) + 1000,
           revenue: Math.random() * 500 + 100,
           subscribers: Math.floor(Math.random() * 100) + 10,
-          engagement: Math.random() * 10 + 2 })}
+          engagement: Math.random() * 10 + 2 });
+}
       setChartData(newChartData);
 
       // Set performance data
@@ -160,7 +160,7 @@ export const MetricsDashboard: React.FC = () => {
         { name: 'Retention', value: 65, target: 70, unit: '%' },
         { name: 'Engagement', value: 8.5, target: 10, unit: '%' } ]);
 
-      setLoading(false)} catch (_) {
+      setLoading(false)} catch (error) {
       console.error('Failed to fetch, metrics:', error);
       setLoading(false)}
   };
@@ -246,7 +246,8 @@ export const MetricsDashboard: React.FC = () => {
           >
             {React.cloneElement(card.icon as React.ReactElement, {
               sx: { color: card.color, fontSize: 32 }
-            })}
+            });
+}
           </Box>
         </Box>
       </CardContent>
@@ -344,22 +345,22 @@ export const MetricsDashboard: React.FC = () => {
         <Alert severity="info" sx={{ mb: 3 }}>
           <Box display="flex" gap={3}>
             <Chip
-              icon={<Speed />}`
+              icon={<Speed />}
               label={`${analytics.realtime.activeViewers} Active Viewers`}
               size="small"
             />
             <Chip
-              icon={<VideoLibrary />}`
+              icon={<VideoLibrary />}
               label={`${analytics.realtime.videosProcessing} Videos Processing`}
               size="small"
             />
             <Chip
-              icon={<Timeline />}`
+              icon={<Timeline />}
               label={`${analytics.realtime.apiCallsPerMinute} API Calls/min`}
               size="small"
             />
             <Chip
-              icon={analytics.realtime.errorRate < 0.01 ? <CheckCircle /> </>: <Warning />}`
+              icon={analytics.realtime.errorRate < 0.01 ? <CheckCircle /> </>: <Warning />}
               label={`${(analytics.realtime.errorRate * 100.toFixed(2)}% Error Rate`}
               size="small"
               color={analytics.realtime.errorRate < 0.01 ? 'success' : 'warning'}
@@ -524,4 +525,4 @@ export const MetricsDashboard: React.FC = () => {
       )}
     </Box>
   </>
-  )};`
+  )};

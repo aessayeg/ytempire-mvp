@@ -54,7 +54,8 @@ class AnalyticsTracker {
           element: target.dataset.track,
           text: target.textContent?.substring(0, 100),
           class: target.className,
-          id: target.id })}
+          id: target.id });
+}
     });
 
     // Track form submissions
@@ -63,7 +64,8 @@ class AnalyticsTracker {
         this.trackEvent('form_submit', {
           form_name: form.dataset.track,
           form_id: form.id,
-          action: form.action })}
+          action: form.action });
+}
     });
 
     // Track errors
@@ -131,7 +133,8 @@ class AnalyticsTracker {
   public setUserId(userId: number | null): void {
     this.userId = userId;
     if (userId) {
-      this.trackEvent('identify', { user_id: userId })}
+      this.trackEvent('identify', { user_id: userId });
+}
   }
 
   /**
@@ -198,7 +201,8 @@ const _: TrackingEvent = {,
    */
   public trackFeature(featureName: string, metadata?: EventData): void { this.trackEvent('feature_use', {
       feature_name: featureName,
-      ...metadata })}
+      ...metadata });
+}
 
   /**
    * Track timing (performance)
@@ -207,14 +211,16 @@ const _: TrackingEvent = {,
       category,
       variable,
       time_ms: timeMs,
-      label })}
+      label });
+}
 
   /**
    * Track user journey step
    */
   public trackJourneyStep(step: string, metadata?: EventData): void { this.trackEvent('journey_step', {
       step,
-      ...metadata })}
+      ...metadata });
+}
 
   /**
    * Track conversion
@@ -222,7 +228,8 @@ const _: TrackingEvent = {,
   public trackConversion(conversionType: string, value?: number, metadata?: EventData): void { this.trackEvent('conversion', {
       conversion_type: conversionType,
       value,
-      ...metadata })}
+      ...metadata });
+}
 
   /**
    * Add event to queue
@@ -266,7 +273,7 @@ const _: TrackingEvent = {,
         await apiClient.post('/api/v1/analytics/events', events[0])} else {
         // Send batch
         await apiClient.post('/api/v1/analytics/events/batch', events)}
-    } catch (_) {
+    } catch (error) {
       // Re-add events to queue on failure
       this.eventQueue = [...events, ...this.eventQueue];
       
@@ -293,7 +300,7 @@ const _: TrackingEvent = {,
       this.trackTiming('performance', 'first_paint', firstPaintTime);
 
       // Track Core Web Vitals if available
-      if ('PerformanceObserver' in, window) {
+      if ('PerformanceObserver' in window) {
         try {
           // Largest Contentful Paint
           const lcpObserver = new PerformanceObserver(_(list) => {
@@ -319,7 +326,8 @@ const _: TrackingEvent = {,
             });
             this.trackTiming('web_vitals', 'cls', clsScore * 1000); // Convert to ms
           });
-          clsObserver.observe({ entryTypes: ['layout-shift'] })} catch (_) {
+          clsObserver.observe({ entryTypes: ['layout-shift'] });
+} catch (error) {
           // Silently fail if observers are not supported
         }
       }

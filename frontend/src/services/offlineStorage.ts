@@ -95,7 +95,8 @@ class OfflineStorage {
           actionsStore.createIndex('timestamp', 'timestamp');
           actionsStore.createIndex('action', 'action')}
       }
-    })}
+    });
+}
 
   // Videos operations
   async saveVideo(video: YTEmpireDB['videos']['value']) { await this.init();
@@ -104,7 +105,8 @@ class OfflineStorage {
     return this.db.put('videos', {
       ...video,
       syncedAt: new Date(),
-      offline: !navigator.onLine })}
+      offline: !navigator.onLine });
+}
 
   async getVideos(limit = 50) {
     await this.init();
@@ -125,7 +127,8 @@ class OfflineStorage {
     
     return this.db.put('channels', {
       ...channel,
-      lastSync: new Date() })}
+      lastSync: new Date() });
+}
 
   async getChannels() {
     await this.init();
@@ -141,7 +144,8 @@ class OfflineStorage {
     const id = `${analytics.type}-${Date.now()}`;
     return this.db.put('analytics', { ...analytics,
       id,
-      synced: navigator.onLine })}
+      synced: navigator.onLine });
+}
 
   async getAnalytics(type?: string, startDate?: Date, endDate?: Date) {
     await this.init();
@@ -164,12 +168,13 @@ class OfflineStorage {
   async queueAction(action: Omit<YTEmpireDB['pendingActions']['value'], 'id' | 'timestamp' | 'retries'>) {
     await this.init();
     if (!this.db) throw new Error('Database not initialized');
-    `
+    
     const id = `${action.action}-${Date.now()}`;
     return this.db.put('pendingActions', { ...action,
       id,
       timestamp: new Date(),
-      retries: 0 })}
+      retries: 0 });
+}
 
   async getPendingActions() {
     await this.init();
@@ -220,7 +225,7 @@ class OfflineStorage {
         if (response.ok) {
           await this.removePendingAction(action.id)} else {
           await this.incrementRetries(action.id)}
-      } catch (_) {
+      } catch (error) {
         console.error('Sync, error:', error);
         await this.incrementRetries(action.id)}
     }
@@ -287,4 +292,5 @@ export const offlineStorage = new OfflineStorage();
 // Auto-sync when coming back online
 if (typeof window !== 'undefined') {
   window.addEventListener(_'online', () => {
-    offlineStorage.syncPendingActions()})}`
+    offlineStorage.syncPendingActions()});
+}

@@ -199,7 +199,7 @@ export const ChannelManagement: React.FC = () => {
   };
 
   const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${num / 1000000.toFixed(1}M`;`
+    if (num >= 1000000) return `${num / 1000000.toFixed(1}M`;
     if (num >= 1000) return `${num / 1000.toFixed(1}K`;
     return num.toString()};
 
@@ -236,7 +236,7 @@ export const ChannelManagement: React.FC = () => {
               <Typography variant="h4">
                 {channels.length}
               </Typography>
-              <Chip `
+              <Chip 
                 label={`${channels.filter(c => c.status === 'active').length} Active`}
                 color="success"
                 size="small"
@@ -444,7 +444,8 @@ export const ChannelManagement: React.FC = () => {
             fullWidth
             variant="outlined"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value)})}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value)});
+}
             sx={{ mb: 2 }}
           />
           <TextField
@@ -453,7 +454,8 @@ export const ChannelManagement: React.FC = () => {
             fullWidth
             variant="outlined"
             value={formData.youtubeId}
-            onChange={(e) => setFormData({ ...formData, youtubeId: e.target.value)})}
+            onChange={(e) => setFormData({ ...formData, youtubeId: e.target.value)});
+}
             sx={{ mb: 2 }}
           />
           <FormControl fullWidth sx={{ mb: 2 }}>
@@ -461,7 +463,8 @@ export const ChannelManagement: React.FC = () => {
             <Select
               value={formData.category}
               label="Category"
-              onChange={(e) => setFormData({ ...formData, category: e.target.value)})}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value)});
+}
             >
               <MenuItem value="Technology">Technology</MenuItem>
               <MenuItem value="Gaming">Gaming</MenuItem>
@@ -476,7 +479,8 @@ export const ChannelManagement: React.FC = () => {
             control={
               <Switch
                 checked={formData.autoUpload}
-                onChange={(e) => setFormData({ ...formData, autoUpload: e.target.checked })}
+                onChange={(e) => setFormData({ ...formData, autoUpload: e.target.checked });
+}
               />
             }
             label="Enable Auto Upload"
@@ -488,7 +492,8 @@ export const ChannelManagement: React.FC = () => {
               fullWidth
               variant="outlined"
               value={formData.uploadSchedule}
-              onChange={(e) => setFormData({ ...formData, uploadSchedule: e.target.value)})}
+              onChange={(e) => setFormData({ ...formData, uploadSchedule: e.target.value)});
+}
               placeholder="e.g., Daily at 2:00 PM"
             />
           )}
@@ -501,4 +506,4 @@ export const ChannelManagement: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  )};`
+  )};

@@ -159,18 +159,16 @@ export const FloatingThemeToggle: React.FC = () => {
         position: 'fixed',
         bottom: 24,
         right: 24,
-        zIndex: 1300,
-
-      }}
+        zIndex: 1300
+}}
     >
       <Box
         sx={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 1,
-
-        }}
+          gap: 1
+}}
       >
         {isExpanded && (
           <Box
@@ -179,9 +177,8 @@ export const FloatingThemeToggle: React.FC = () => {
               borderRadius: 2,
               p: 1.5,
               boxShadow: 3,
-              mb: 1,
-
-            }}
+              mb: 1
+}}
           >
             <Typography variant="caption" color="text.secondary" gutterBottom>
               Theme
@@ -212,9 +209,8 @@ export const FloatingThemeToggle: React.FC = () => {
 
             },
             width: 56,
-            height: 56,
-
-          }}
+            height: 56
+}}
         >
           {isExpanded ? <SettingsIcon /> : (isDarkMode ? <DarkModeIcon /> </>: <LightModeIcon />)}
         </IconButton>

@@ -104,9 +104,10 @@ import {
                   <Box>
                     <Typography variant="body2" color="text.secondary">
                       {video.status === 'published' && video.publishedAt
-                        ? `Published ${formatDistanceToNow(video.publishedAt, { addSuffix: true })}`
-                        : video.status === 'scheduled' && video.scheduledAt`
-                        ? `Scheduled for ${format(video.scheduledAt, 'PPp')}``
+                        ? `Published ${formatDistanceToNow(video.publishedAt, { addSuffix: true });
+}
+                        : video.status === 'scheduled' && video.scheduledAt
+                        ? `Scheduled for ${format(video.scheduledAt, 'PPp')}
                         : `Status: ${video.status}`}
                     </Typography>
                     
@@ -131,7 +132,7 @@ import {
                           variant="outlined"
                         />
                         <Chip
-                          icon={<AttachMoney />}`
+                          icon={<AttachMoney />}
                           label={`$${video.revenue.toFixed(2)}`}
                           size="small"
                           variant="outlined"
@@ -335,4 +336,4 @@ import {
       </TabPanel>
     </Box>
   </>
-  )};`
+  )};

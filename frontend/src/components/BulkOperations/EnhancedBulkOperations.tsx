@@ -219,7 +219,8 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({,
       setSelectedIds(prev => {
         const newSet = new Set(prev);
         range.forEach(item => newSet.add(item.id));
-        return newSet})}
+        return newSet});
+}
   }, [filteredItems]);
 
   const handleOperation = useCallback(async (operation: BulkOperation) => {
@@ -237,7 +238,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({,
       setConfirmDialog({
         open: true,
         operation,
-        _: `Are you sure you want to ${operation.name.toLowerCase()} ${selectedIds.size} item(s)?`
+        _: `Are you sure you want to ${operation.name.toLowerCase()} ${selectedIds.size} item(s)?
       });
       return;
     }
@@ -290,7 +291,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({,
 
     // Show success message
     setSnackbar({
-      open: true,`
+      open: true,
       _: `Successfully ${operation.name.toLowerCase()}d ${selectedIds.size} item(s)`,
       severity: 'success',
 
@@ -310,11 +311,12 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({,
       // Implement undo logic based on action
       setHistoryIndex(prev => prev - 1);
       setSnackbar({
-        open: true,`
+        open: true,
         _: `Undid: ${previousAction.action}`,
         severity: 'info',
 
-      })}
+      });
+}
   }, [history, historyIndex]);
 
   const handleRedo = useCallback(() => {
@@ -323,11 +325,12 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({,
       // Implement redo logic based on action
       setHistoryIndex(prev => prev + 1);
       setSnackbar({
-        open: true,`
+        open: true,
         _: `Redid: ${nextAction.action}`,
         severity: 'info',
 
-      })}
+      });
+}
   }, [history, historyIndex]);
 
   // Effects
@@ -353,9 +356,8 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({,
           borderRadius: 2,
           display: 'flex',
           alignItems: 'center',
-          gap: 2,
-
-        }}
+          gap: 2
+}}
       >
         <Typography variant="subtitle1" sx={ { fontWeight:  600  }}>
           {selectedIds.size} item{ selectedIds.size !== 1 ? 's' :  '' } selected
@@ -450,7 +452,7 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({,
                   {item.tags?.slice(0, 3).map(tag => (
                     <Chip key={tag} label={tag} size="small" />
                   ))}
-                  {item.tags && item.tags.length > 3 && (`
+                  {item.tags && item.tags.length > 3 && (
                     <Chip label={`+${item.tags.length - 3}`} size="small" variant="outlined" />
                   )}
                 </Box>
@@ -496,9 +498,8 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({,
               transition: 'all 0.2s',
               '&:hover': {
                 transform: 'translateY(-2px)',
-                boxShadow: 4,
-
-              },
+                boxShadow: 4
+},
               ...(selectedIds.has(item.id) && {
                 borderColor: 'primary.main',
                 borderWidth: 2,
@@ -515,9 +516,8 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({,
                 onClick={(_) => _.stopPropagation()}
                 sx={{
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  borderRadius: 1,
-
-                }}
+                  borderRadius: 1
+}}
               />
             </Box>
             {item.starred && (
@@ -684,20 +684,23 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({,
       {/* Content Area */}
       { viewMode === 'table' ? renderTableView() :  renderGridView() }
       {/* Confirmation Dialog */}
-      <Dialog open={confirmDialog.open} onClose={ () => setConfirmDialog({ open:  false  })}>
+      <Dialog open={confirmDialog.open} onClose={ () => setConfirmDialog({ open:  false  });
+}>
         <DialogTitle>Confirm Operation</DialogTitle>
         <DialogContent>
           <Typography>{confirmDialog.message}</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={ () => setConfirmDialog({ open:  false  })}>
+          <Button onClick={ () => setConfirmDialog({ open:  false  });
+}>
             Cancel
           </Button>
           <Button
             onClick={() => {
               if (confirmDialog.operation) {
                 executeOperation(confirmDialog.operation)}
-              setConfirmDialog({  open:  false  })}}
+              setConfirmDialog({  open:  false  });
+}}
             variant="contained"
             color={confirmDialog.operation?.color || 'primary'}
           >
@@ -779,4 +782,4 @@ export const EnhancedBulkOperations: React.FC<BulkOperationsProps> = ({,
         />
       </SpeedDial>
     </Box>
-  )};`
+  )};

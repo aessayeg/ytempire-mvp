@@ -201,9 +201,8 @@ export const CustomReports: React.FC = () => {
       ],
       tables: [{,
   headers: ['Video Title', 'Views', 'Revenue ($)', 'Published Date'],
-        rows: tableData,
-
-      }]
+        rows: tableData
+}]
     });
     
     setIsGenerating(false)}, [selectedMetrics]);
@@ -225,7 +224,7 @@ export const CustomReports: React.FC = () => {
     // Convert metrics to CSV
     let csv = 'Metric,Value\n';
     Object.entries(reportData.metrics).forEach(([key, value]) => {
-      const metric = AVAILABLE_METRICS.find(m => m.id === key);`
+      const metric = AVAILABLE_METRICS.find(m => m.id === key);
       csv += `"${metric?.name || key}",${value}\n`});
     
     // Add table data
@@ -233,13 +232,14 @@ export const CustomReports: React.FC = () => {
       csv += '\n\nDetailed Data\n';
       csv += reportData.tables[0].headers.join(',') + '\n';
       reportData.tables[0].rows.forEach(row => {
-        csv += row.join(',') + '\n'})}
+        csv += row.join(',') + '\n'});
+}
     
     // Download CSV
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;`
+    a.href = url;
     a.download = `report_${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click()}, [reportData]);
 
@@ -546,7 +546,8 @@ const newReport: SavedReport = {,
                         </CardContent>
                       </Card>
                     </Grid>
-                  )})}
+                  )});
+}
               </Grid>
               
               {/* Charts */}
@@ -668,7 +669,8 @@ const newReport: SavedReport = {,
             <InputLabel>Frequency</InputLabel>
             <Select
               value={schedule.frequency}
-              onChange={(e) => setSchedule({ ...schedule, frequency: e.target.value as any })}
+              onChange={(e) => setSchedule({ ...schedule, frequency: e.target.value as any });
+}
             >
               <MenuItem value="daily">Daily</MenuItem>
               <MenuItem value="weekly">Weekly</MenuItem>
@@ -680,7 +682,8 @@ const newReport: SavedReport = {,
             type="time"
             label="Time"
             value={schedule.time}
-            onChange={(e) => setSchedule({ ...schedule, time: e.target.value)})}
+            onChange={(e) => setSchedule({ ...schedule, time: e.target.value)});
+}
             margin="normal"
             InputLabelProps={{ shrink: true }}
           />
@@ -688,7 +691,8 @@ const newReport: SavedReport = {,
             <InputLabel>Format</InputLabel>
             <Select
               value={schedule.format}
-              onChange={(e) => setSchedule({ ...schedule, format: e.target.value as any })}
+              onChange={(e) => setSchedule({ ...schedule, format: e.target.value as any });
+}
             >
               <MenuItem value="pdf">PDF</MenuItem>
               <MenuItem value="excel">Excel</MenuItem>
@@ -703,4 +707,4 @@ const newReport: SavedReport = {,
       </Dialog>
     </Box>
   </>
-  )};`
+  )};

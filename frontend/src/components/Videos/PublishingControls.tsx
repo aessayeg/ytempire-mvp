@@ -39,14 +39,16 @@ export const PublishingControls: React.FC<PublishingControlsProps> = ({ onPublis
     <>
       <Paper sx={{ p: 3 }}>
       <Typography variant="h6" gutterBottom>Publishing Settings</Typography>
-      <FormControlLabel control={<Switch checked={settings.publishNow} onChange={(e) => setSettings({...settings, publishNow: e.target.checked})} />} label="Publish Immediately" />
+      <FormControlLabel control={<Switch checked={settings.publishNow} onChange={(e) => setSettings({...settings, publishNow: e.target.checked});
+} />} label="Publish Immediately" />
       
       {!settings.publishNow && (
         <TextField type="datetime-local" label="Schedule Time" fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
       )}
       <FormControl fullWidth margin="normal">
         <InputLabel>Visibility</InputLabel>
-        <Select value={settings.visibility} onChange={(e) => setSettings({...settings, visibility: e.target.value)})}>
+        <Select value={settings.visibility} onChange={(e) => setSettings({...settings, visibility: e.target.value)});
+}>
           <MenuItem value="public">Public</MenuItem>
           <MenuItem value="unlisted">Unlisted</MenuItem>
           <MenuItem value="private">Private</MenuItem>

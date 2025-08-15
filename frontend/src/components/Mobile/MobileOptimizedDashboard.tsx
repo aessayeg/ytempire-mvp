@@ -168,7 +168,7 @@ const MobileOptimizedDashboard: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Pull to Refresh Container */}`
+      {/* Pull to Refresh Container */}
       <div className={`mobile-pull-refresh ${isRefreshing ? 'pulling' : ''}`}>
         <div className="mobile-pull-indicator">
           <RefreshIcon />
@@ -198,9 +198,8 @@ const MobileOptimizedDashboard: React.FC = () => {
         {/* Main Content */}
         <Box sx={{ 
           pb: { xs: 8, md: 0 }, // Bottom padding for mobile nav
-          px: 2,
-
-        }}>
+          px: 2
+}}>
           {isLoading ? (
             renderSkeleton()
           ) : (
@@ -215,9 +214,8 @@ const MobileOptimizedDashboard: React.FC = () => {
 
                 },
                 gap: 2,
-                mb: 3,
-
-              }}>
+                mb: 3
+}}>
                 {dataCards.map(renderDataCard)}
               </Box>
 
@@ -240,9 +238,8 @@ const MobileOptimizedDashboard: React.FC = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      minWidth: 400,
-
-                    }}>
+                      minWidth: 400
+}}>
                       <Typography color="textSecondary">
                         Chart Component Placeholder
                       </Typography>
@@ -315,9 +312,8 @@ const MobileOptimizedDashboard: React.FC = () => {
                       borderRadius: '8px',
                       padding: '12px 24px',
                       fontSize: '16px',
-                      fontWeight: 600,
-
-                    }}
+                      fontWeight: 600
+}}
                   >
                     Generate Video
                   </button>
@@ -338,7 +334,7 @@ const MobileOptimizedDashboard: React.FC = () => {
             { id: 'settings', label: 'Settings', icon: '⚙️' }
           ].map((tab) => (_<a
               key={tab.id}
-              href="#"`
+              href="#"
               className={`mobile-nav-tab ${activeTab === tab.id ? 'active' : ''}`}
               onClick={(e) => {
                 e.preventDefault(</>
@@ -366,7 +362,7 @@ const MobileOptimizedDashboard: React.FC = () => {
         <AddIcon />
       </Fab>
 
-      {/* Full Screen Mobile Modal */}`
+      {/* Full Screen Mobile Modal */}
       <div className={`mobile-modal-fullscreen ${showMobileModal ? 'active' : ''}`}>
         <div className="mobile-modal-header">
           <button
@@ -384,9 +380,8 @@ const MobileOptimizedDashboard: React.FC = () => {
               borderRadius: '6px',
               padding: '8px 16px',
               fontSize: '14px',
-              fontWeight: 600,
-
-            }}
+              fontWeight: 600
+}}
           >
             Save
           </button>
@@ -478,13 +473,12 @@ const MobileOptimizedDashboard: React.FC = () => {
             right: 0,
             bottom: 0,
             background: 'rgba(0, 0, 0, 0.3)',
-            zIndex: 9998,
-
-          }}
+            zIndex: 9998
+}}
           onClick={() => setShowMobileModal(false}
         />
       )}
     </Box>
   )};
 
-export default MobileOptimizedDashboard;`
+export default MobileOptimizedDashboard;

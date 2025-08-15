@@ -83,7 +83,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
         return <HourglassEmpty color="warning" />;
       case 'failed':
         return <Error color="error" />;
-      default:
         return <Schedule color="action" />}
   };
 
@@ -95,7 +94,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
         return 'warning';
       case 'failed':
         return 'error';
-      default:
         return 'default'}
   };
 
@@ -107,19 +105,18 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
         return 'info';
       case 'publishing':
         return 'warning';
-      default:
         return 'default'}
   };
 
   const formatDuration = (_seconds?: number) => {
     if (!seconds) return 'N/A';
     const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;`
+    const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const formatNumber = (num: number) => {`
-    if (num >= 1000000) return `${num / 1000000.toFixed(1}M`;`
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${num / 1000000.toFixed(1}M`;
     if (num >= 1000) return `${num / 1000.toFixed(1}K`;
     return num.toString()};
 
@@ -258,7 +255,8 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
           </Typography>
         )}
         <Typography variant="caption" color="text.secondary">
-          Created {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
+          Created {formatDistanceToNow(new Date(video.created_at), { addSuffix: true });
+}
         </Typography>
 
         {video.scheduled_publish_time && video.publish_status === 'scheduled' && (
@@ -327,7 +325,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
         >
           <MenuItem
             onClick={() => {
-              handleMenuClose();`
+              handleMenuClose();
               navigate(`/videos/${video.id}`)}}
           >
             View Details
@@ -358,4 +356,4 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
         </Menu>
       </CardActions>
     </Card>
-  )};`
+  )};

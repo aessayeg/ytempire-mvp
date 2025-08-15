@@ -319,7 +319,8 @@ export const LiveVideoGenerationMonitor: React.FC = () => { const [tasks, setTas
                   color={getStatusColor(task.status) as any}
                 />
                 <Typography variant="caption" color="text.secondary">
-                  Started {formatDistanceToNow(task.startTime, { addSuffix: true })}
+                  Started {formatDistanceToNow(task.startTime, { addSuffix: true });
+}
                 </Typography>
               </Box>
             </Box>

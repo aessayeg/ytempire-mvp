@@ -131,7 +131,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await updateServiceWorker(true)}, [updateServiceWorker]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const clearOfflineData = useCallback(_async () => {
-    if ('caches' in, window) {
+    if ('caches' in window) {
       const cacheNames = await caches.keys();
       await Promise.all(cacheNames.map((name) => caches.delete(name)));
       toast.success('Offline data cleared')}

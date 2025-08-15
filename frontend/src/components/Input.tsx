@@ -36,20 +36,20 @@ export const Input: React.FC<InputProps> = ({
               'border-red-300, focus:border-red-500, focus:ring-red-500': error },
             className
           )}
-          aria-invalid={error ? 'true' : 'false'}`
+          aria-invalid={error ? 'true' : 'false'}
           aria-describedby={error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined}
           {...props}
         />
       </div>
-      {error && (`
+      {error && (
         <p className="mt-1 text-sm text-red-600" id={`${inputId}-error`}>
           {error}
         </p>
       )}
-      {helperText && !error && (`
+      {helperText && !error && (
         <p className="mt-1 text-sm text-gray-500" id={`${inputId}-helper`}>
           {helperText}
         </p>
       )}
     </div>
-  )};`
+  )};

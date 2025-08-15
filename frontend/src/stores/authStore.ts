@@ -44,14 +44,15 @@ export const useAuthStore = create<AuthState>()(
           
           const { access_token, user } = response.data;
           
-          // Set axios default header`
+          // Set axios default header
           axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
           
           set({ user,
             token: access_token,
             isAuthenticated: true,
             isLoading: false,
-            _: null })} catch (_: unknown) { const errorMessage = error && typeof error === 'object' && 'response' in error 
+            _: null });
+} catch (_: unknown) { const errorMessage = error && typeof error === 'object' && 'response' in error 
             ? (error as any).response?.data?.detail || 'Login failed'
             : 'Login failed';
           set({
@@ -72,7 +73,7 @@ export const useAuthStore = create<AuthState>()(
       register: async (_email: string, _password: string, _fullName: string) => {
         set({ isLoading: true, _: null });
         
-        try {`
+        try {
           await axios.post(`${API_URL}/api/v1/auth/register`, { email,
             password,
             full_name: fullName });
@@ -92,14 +93,15 @@ export const useAuthStore = create<AuthState>()(
         const token = get().token;
         if (!token) return;
         
-        try {`
+        try {
           const response = await axios.post(`${API_URL}/api/v1/auth/refresh`, { token });
           
           const { access_token } = response.data;
-          `
+          
           axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
           
-          set({ token: access_token })} catch (_) {
+          set({ token: access_token });
+} catch (error) {
           get().logout()}
       },
       
@@ -126,11 +128,11 @@ axios.interceptors.response.use(
       
       try {
         await useAuthStore.getState().refreshToken();
-        return axios(originalRequest)} catch (_) {
+        return axios(originalRequest)} catch (error) {
         useAuthStore.getState().logout();
         window.location.href = '/login';
         return Promise.reject(refreshError)}
     }
     
     return Promise.reject(_)}
-);`
+);

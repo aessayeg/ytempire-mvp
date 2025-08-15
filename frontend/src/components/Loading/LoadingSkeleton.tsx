@@ -59,7 +59,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ variant = 'tex
             <Skeleton
               key={`header-${index}`}
               animation={animation}
-              variant="text"`
+              variant="text"
               width={`${100 / columns}%`}
               height={24}
               sx={{ mx: 1 }}
@@ -68,15 +68,15 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ variant = 'tex
         </Box>
         {/* Table rows */}
         {Array.from({ length: rows }).map((_, rowIndex) => (
-          <Box`
+          <Box
             key={`row-${rowIndex}`}
             sx={{ display: 'flex', mb: 1, pb: 1, borderBottom: 1, borderColor: 'divider' }}
           >
             {Array.from({ length: columns }).map((_, colIndex) => (
-              <Skeleton`
+              <Skeleton
                 key={`cell-${rowIndex}-${colIndex}`}
                 animation={animation}
-                variant="text"`
+                variant="text"
                 width={`${100 / columns}%`}
                 height={20}
                 sx={{ mx: 1 }}
@@ -106,7 +106,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ variant = 'tex
               key={index}
               animation={animation}
               variant="rectangular"
-              width="15%"`
+              width="15%"
               height={`${(index + 1) * 20}%`}
               sx={{ backgroundColor: 'rgba(0, 0, 0, 0.11)' }}
             />
@@ -266,4 +266,4 @@ export const ChannelListSkeleton: React.FC = () => {
         </Card>
       ))}
     </Box>
-  )};`
+  )};

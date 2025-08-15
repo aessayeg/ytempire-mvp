@@ -33,9 +33,8 @@ const Login: React.FC = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    rememberMe: false,
-
-  });
+    rememberMe: false
+});
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -64,14 +63,14 @@ const Login: React.FC = () => {
   const handleGoogleLogin = async () => {
     try {
       window.location.href = '/api/v1/auth/google';
-    } catch (_) {
+    } catch (error) {
       setError('Google login failed. Please try again.')}
   };
 
   const handleYouTubeLogin = async () => {
     try {
       window.location.href = '/api/v1/auth/youtube';
-    } catch (_) {
+    } catch (error) {
       setError('YouTube login failed. Please try again.')}
   };
 

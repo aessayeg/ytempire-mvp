@@ -78,14 +78,14 @@ const errors: unknown = {};
     
     try {
       await login(formData.email, formData.password, formData.rememberMe);
-      navigate('/dashboard')} catch (_) {
+      navigate('/dashboard')} catch (error) {
       console.error('Login, failed:', err)}
   };
 
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      navigate('/dashboard')} catch (_) {
+      navigate('/dashboard')} catch (error) {
       console.error('Google login, failed:', err)}
   };
 
@@ -95,7 +95,7 @@ const errors: unknown = {};
       rememberMe: false });
     try {
       await login('demo@ytempire.com', 'demo123', false);
-      navigate('/dashboard')} catch (_) {
+      navigate('/dashboard')} catch (error) {
       console.error('Demo login, failed:', err)}
   };
 

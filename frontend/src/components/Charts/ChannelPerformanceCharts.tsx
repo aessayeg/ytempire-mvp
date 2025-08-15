@@ -109,7 +109,8 @@ const data: ChannelMetrics[] = [];
           comments: Math.floor(Math.random() * 500) + 20,
           shares: Math.floor(Math.random() * 200) + 10,
 
-        })}
+        });
+}
       
       return data;
     };
@@ -131,15 +132,15 @@ const data: ChannelMetrics[] = [];
       setLoading(false)}, 1000)}, [channelId, timeRange]);
 
   const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000.toFixed(1)}M`;`
+    if (num >= 1000000) return `${(num / 1000000.toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000.toFixed(1)}K`;
     return num.toString()};
-`
+
   const formatCurrency = (num: number) => `$${num.toFixed(2)}`;
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);`
+    const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -156,12 +157,11 @@ const data: ChannelMetrics[] = [];
           border: '1px solid #e5 e7 eb',
           borderRadius: 1,
           p: 2,
-          boxShadow: 2,
-
-        }}>
+          boxShadow: 2
+}}>
           <Typography variant="subtitle2">{label}</Typography>
           {payload.map((entry: React.ChangeEvent<HTMLInputElement>, index: number) => (
-            <Typography key={index} sx={{ color: entry.color }}>`
+            <Typography key={index} sx={{ color: entry.color }}>
               {`${entry.dataKey}: ${entry.dataKey === 'revenue' ? formatCurrency(entry.value) : formatNumber(entry.value)}`}
             </Typography>
           ))}
@@ -183,8 +183,8 @@ const data: ChannelMetrics[] = [];
     <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
           { label: 'Total Views', value: formatNumber(totalViews), color: '#3 b82 f6', trend: 12.5 },
-          { label: 'Revenue', value: formatCurrency(totalRevenue), color: '#10 b981', trend: 8.3 },`
-          { label: 'Avg. Engagement', value: `${avgEngagement.toFixed(1)}%`, color: '#f59 e0 b', trend: -2.1 },`
+          { label: 'Revenue', value: formatCurrency(totalRevenue), color: '#10 b981', trend: 8.3 },
+          { label: 'Avg. Engagement', value: `${avgEngagement.toFixed(1)}%`, color: '#f59 e0 b', trend: -2.1 },
           { label: 'Avg. CTR', value: `${avgCTR.toFixed(2)}%`, color: '#8 b5 cf6', trend: 5.7 }
         ].map((metric, index) => (
           <Grid item xs={6} sm={3} key={index}>
@@ -196,7 +196,7 @@ const data: ChannelMetrics[] = [];
                   </Typography>
       <Chip
                     size="small"
-                    icon={metric.trend >= 0 ? <TrendingUpIcon /> </>: <TrendingDownIcon />}`
+                    icon={metric.trend >= 0 ? <TrendingUpIcon /> </>: <TrendingDownIcon />}
                     label={`${metric.trend >= 0 ? '+' : ''}${metric.trend}%`}
                     color={metric.trend >= 0 ? 'success' : 'error'}
                     sx={{ height: 20, fontSize: '0.75 rem' }}
@@ -251,7 +251,8 @@ const data: ChannelMetrics[] = [];
                 dataKey="date" 
                 stroke="#666"
                 fontSize={12}
-                tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
               />
               <YAxis 
                 stroke="#666"
@@ -331,7 +332,7 @@ const data: ChannelMetrics[] = [];
                 cursor={{ strokeDasharray: '3 3' }}
                 formatter={(value: React.ChangeEvent<HTMLInputElement>, name: string) => {
                   if (name === 'views') return [formatNumber(value), 'Views'];
-                  if (name === 'revenue') return [formatCurrency(value), 'Revenue'];`
+                  if (name === 'revenue') return [formatCurrency(value), 'Revenue'];
                   if (name === 'engagement') return [`${value}%`, 'Engagement'];
                   return [value, name];
                 }}
@@ -436,7 +437,8 @@ const data: ChannelMetrics[] = [];
               <XAxis 
                 dataKey="date" 
                 fontSize={12}
-                tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
               />
               <YAxis fontSize={12} tickFormatter={formatCurrency} />
               <Tooltip content={<CustomTooltip />} />
@@ -550,4 +552,4 @@ const data: ChannelMetrics[] = [];
   </>
   )};
 
-export default ChannelPerformanceCharts;`
+export default ChannelPerformanceCharts;
