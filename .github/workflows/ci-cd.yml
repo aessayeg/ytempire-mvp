@@ -88,14 +88,14 @@ jobs:
     
     # License Compliance
     - name: License Check
-      uses: fossa-contrib/fossa-action@v2
+      uses: fossa-contrib/fossa-action@v3
       continue-on-error: true
       with:
         api-key: ${{ secrets.FOSSA_API_KEY }}
     
     # SAST Scanning
     - name: Run Semgrep SAST
-      uses: returntocorp/semgrep-action@v1
+      uses: returntocorp/semgrep-action@v2
       with:
         config: auto
         generateSarif: true
@@ -543,7 +543,7 @@ jobs:
         ./scripts/smoke_tests.sh staging
     
     - name: Notify Deployment
-      uses: 8398a7/action-slack@v3
+      uses: 8398a7/action-slack@v4
       with:
         status: ${{ job.status }}
         text: 'Staging deployment completed for ${{ github.sha }}'

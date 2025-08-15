@@ -31,7 +31,7 @@ jobs:
     
     # Semgrep SAST
     - name: Run Semgrep
-      uses: returntocorp/semgrep-action@v1
+      uses: returntocorp/semgrep-action@v2
       with:
         config: >-
           p/security-audit
@@ -193,7 +193,7 @@ jobs:
     
     # Grype Scanner
     - name: Run Grype vulnerability scanner
-      uses: anchore/scan-action@v3
+      uses: anchore/scan-action@v4
       with:
         image: 'ytempire-backend:scan'
         fail-build: true
@@ -350,7 +350,7 @@ jobs:
     
     # License Compliance
     - name: License Compliance Check
-      uses: fossa-contrib/fossa-action@v2
+      uses: fossa-contrib/fossa-action@v3
       with:
         api-key: ${{ secrets.FOSSA_API_KEY }}
         run-tests: true
@@ -445,7 +445,7 @@ jobs:
     
     - name: Send Security Alert
       if: failure()
-      uses: 8398a7/action-slack@v3
+      uses: 8398a7/action-slack@v4
       with:
         status: ${{ job.status }}
         text: '⚠️ Security vulnerabilities detected in ${{ github.repository }}'
