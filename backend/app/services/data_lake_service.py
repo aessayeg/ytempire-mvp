@@ -3,6 +3,7 @@ Analytics Data Lake Service
 S3-compatible object storage with partitioning, cataloging, and governance
 """
 import asyncio
+import io
 import json
 import logging
 import hashlib

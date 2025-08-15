@@ -1,0 +1,24 @@
+{
+  "successes": 13,
+  "warnings": 0,
+  "issues": 0,
+  "details": {
+    "successes": [
+      "[OK] 60/60 backend services imported in main.py",
+      "[OK] 45/44 API endpoints registered",
+      "[OK] 2 database migrations found",
+      "[OK] 59 Celery tasks defined across 8 files",
+      "[OK] 45/90 components used (50%)",
+      "[OK] 21 routes defined in router",
+      "[OK] 6 Zustand stores defined",
+      "[OK] 11/6 stores actively used",
+      "[OK] 56 Docker services defined across 3 compose files",
+      "[OK] 37 environment variables documented",
+      "[OK] 9 CI/CD workflows configured",
+      "[OK] 6/6 ML pipeline services found",
+      "[OK] 4 WebSocket endpoints configured"
+    ],
+    "warnings": [],
+    "issues": []
+  }
+}

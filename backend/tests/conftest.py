@@ -16,9 +16,16 @@ from app.core.config import settings
 from app.core.security import create_access_token
 from app.models.user import User
 
-# Test database URL
-TEST_DATABASE_URL = "postgresql+asyncpg://test_user:test_pass@localhost:5433/test_db"
-TEST_REDIS_URL = "redis://localhost:6380/0"
+# Test database URL - Use environment variables or fallback to defaults
+import os
+TEST_DATABASE_URL = os.getenv(
+    "DATABASE_URL", 
+    "postgresql+asyncpg://ytempire:admin@localhost:5432/ytempire_db"
+)
+TEST_REDIS_URL = os.getenv(
+    "REDIS_URL",
+    "redis://localhost:6379/0"
+)
 
 
 @pytest.fixture(scope="session")

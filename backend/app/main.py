@@ -108,6 +108,60 @@ from app.services.user_analytics import user_analytics
 from app.services.dashboard_service import dashboard_service
 from app.services.health_monitoring import health_monitor
 
+# Import previously missing utility services
+from app.services.advanced_caching import AdvancedCacheManager
+from app.services.advanced_data_visualization import DataVisualizationService
+from app.services.advanced_forecasting_models import ForecastingService
+from app.services.ai_services import AIServiceManager
+from app.services.channel_manager import ChannelManager
+
+# Initialize utility services
+advanced_cache = AdvancedCacheManager()
+data_viz_service = DataVisualizationService()
+forecasting_service = ForecastingService()
+ai_service_manager = AIServiceManager()
+channel_management = ChannelManager()
+
+# Import remaining utility services
+from app.services.data_marketplace_integration import DataMarketplaceService
+from app.services.data_quality import DataQualityService
+from app.services.email_service import EmailService
+from app.services.feature_engineering import FeatureEngineeringService
+from app.services.gpu_resource_manager import GPUResourceManager
+
+# Initialize remaining services
+data_marketplace = DataMarketplaceService()
+data_quality_service = DataQualityService()
+email_sender = EmailService()
+feature_engineering = FeatureEngineeringService()
+gpu_manager = GPUResourceManager()
+
+# Import final set of services
+from app.services.invoice_generator import InvoiceGenerator
+from app.services.multi_provider_ai import MultiProviderAI
+from app.services.room_manager import RoomManager
+from app.services.subscription_service import SubscriptionService
+from app.services.trend_analyzer import TrendAnalyzer
+
+# Initialize final services
+invoice_gen = InvoiceGenerator()
+multi_ai = MultiProviderAI()
+room_mgr = RoomManager()
+subscription_svc = SubscriptionService()
+trend_analysis = TrendAnalyzer()
+
+# Import last remaining services (vector DB and YouTube services)
+from app.services.vector_database import VectorDatabase
+from app.services.vector_database_deployed import DeployedVectorDB
+from app.services.youtube_oauth_service import YouTubeOAuthService
+from app.services.youtube_service import YouTubeService
+
+# Initialize last services
+vector_db = VectorDatabase()
+vector_db_deployed = DeployedVectorDB()
+youtube_oauth = YouTubeOAuthService()
+youtube_svc = YouTubeService()
+
 # Setup logging
 setup_logging()
 logger = logging.getLogger(__name__)

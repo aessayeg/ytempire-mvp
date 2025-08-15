@@ -3,6 +3,7 @@ API Optimization endpoints
 Monitor and control third-party API optimization
 """
 
+import asyncio
 from typing import Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field

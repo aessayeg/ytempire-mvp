@@ -8,7 +8,7 @@ import json
 import logging
 import io
 import zipfile
-from typing import Dict, List, Optional, Any, AsyncIterator, Union
+from typing import Dict, List, Optional, Any, AsyncIterator, Union, Tuple
 from datetime import datetime, timedelta
 from pathlib import Path
 from dataclasses import dataclass, field, asdict

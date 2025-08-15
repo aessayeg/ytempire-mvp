@@ -138,7 +138,8 @@ async def create_template(
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat(),
             "usage_count": 0
-        }\n        
+        }
+        
         # In production: await db_store_template(template_data)
         
         return {

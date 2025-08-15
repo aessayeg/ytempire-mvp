@@ -2,6 +2,7 @@
 Batch Processing API endpoints
 """
 
+import uuid
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from pydantic import BaseModel, Field

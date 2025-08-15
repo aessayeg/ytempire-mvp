@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import WebSocket
 
 from app.services.youtube_multi_account import get_youtube_manager
+youtube_account_manager = get_youtube_manager()
 from app.services.video_generation_pipeline import VideoGenerationPipeline
 # Create compatibility for old names
 VideoPipelineOrchestrator = VideoGenerationPipeline

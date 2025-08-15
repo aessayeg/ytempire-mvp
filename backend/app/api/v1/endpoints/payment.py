@@ -14,7 +14,7 @@ import logging
 from app.db.session import get_db
 from app.api.v1.endpoints.auth import get_current_verified_user
 from app.models.user import User
-from app.services.payment_service_enhanced import payment_service, SubscriptionStatus
+from app.services.payment_service_enhanced import payment_service, PaymentService, SubscriptionStatus
 
 logger = logging.getLogger(__name__)
 

@@ -6,10 +6,12 @@ import asyncio
 import logging
 from typing import Dict, Any
 from celery import Task
+from sqlalchemy import and_
 
 from app.core.celery_app import celery_app
 from app.db.session import get_db
 from app.services.webhook_service import webhook_service
+from app.models.webhook import WebhookDelivery
 import uuid
 
 logger = logging.getLogger(__name__)

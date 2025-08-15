@@ -122,8 +122,8 @@ jobs:
         image: postgres:${{ env.POSTGRES_VERSION }}
         env:
           POSTGRES_USER: ytempire
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: ytempire_test
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: ytempire_db
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -166,9 +166,22 @@ jobs:
         pip install -r requirements.txt
         pip install -r requirements-test.txt
     
+    - name: Setup Test Environment
+      run: |
+        cd backend
+        # Copy test environment if it exists
+        if [ -f .env.test ]; then
+          cp .env.test .env
+        fi
+    
     - name: Run Unit Tests
       env:
-        DATABASE_URL: postgresql://ytempire:test_password@localhost:5432/ytempire_test
+        DATABASE_URL: postgresql+asyncpg://ytempire:admin@localhost:5432/ytempire_db
+        POSTGRES_USER: ytempire
+        POSTGRES_PASSWORD: admin
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: ytempire_db
         REDIS_URL: redis://localhost:6379/0
         SECRET_KEY: test_secret_key_for_ci
         ENVIRONMENT: testing
@@ -178,7 +191,12 @@ jobs:
     
     - name: Run Integration Tests
       env:
-        DATABASE_URL: postgresql://ytempire:test_password@localhost:5432/ytempire_test
+        DATABASE_URL: postgresql+asyncpg://ytempire:admin@localhost:5432/ytempire_db
+        POSTGRES_USER: ytempire
+        POSTGRES_PASSWORD: admin
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: ytempire_db
         REDIS_URL: redis://localhost:6379/0
         SECRET_KEY: test_secret_key_for_ci
         ENVIRONMENT: testing
@@ -292,8 +310,8 @@ jobs:
         image: postgres:${{ env.POSTGRES_VERSION }}
         env:
           POSTGRES_USER: ytempire
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: ytempire_e2e
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: ytempire_db
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -342,7 +360,7 @@ jobs:
     
     - name: Start Services
       env:
-        DATABASE_URL: postgresql://ytempire:test_password@localhost:5432/ytempire_e2e
+        DATABASE_URL: postgresql+asyncpg://ytempire:admin@localhost:5432/ytempire_db
         REDIS_URL: redis://localhost:6379/0
         SECRET_KEY: test_secret_key_for_e2e
         ENVIRONMENT: testing

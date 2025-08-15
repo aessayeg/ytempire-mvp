@@ -6,7 +6,7 @@ Handles batch video generation, bulk operations, and batch analytics
 import logging
 import asyncio
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 from celery import Task, group, chord, chain
 import json
 
