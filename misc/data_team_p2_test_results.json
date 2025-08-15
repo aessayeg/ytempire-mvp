@@ -1,0 +1,331 @@
+{
+  "timestamp": "2025-08-14T22:49:18.408671",
+  "components": [
+    {
+      "component": "advanced_data_visualization",
+      "file": "backend/app/services/advanced_data_visualization.py",
+      "tests": [
+        {
+          "test": "file_exists",
+          "status": "PASSED"
+        },
+        {
+          "test": "service_instantiation",
+          "status": "PASSED"
+        },
+        {
+          "test": "visualization_type_LINE_CHART",
+          "status": "PASSED"
+        },
+        {
+          "test": "visualization_type_BAR_CHART",
+          "status": "PASSED"
+        },
+        {
+          "test": "visualization_type_HEATMAP",
+          "status": "PASSED"
+        },
+        {
+          "test": "visualization_type_FUNNEL",
+          "status": "PASSED"
+        },
+        {
+          "test": "visualization_type_NETWORK_GRAPH",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_register_visualization",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_create_visualization",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_create_dashboard",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_export_visualization",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_get_visualization_list",
+          "status": "PASSED"
+        },
+        {
+          "test": "visualization_list",
+          "status": "PASSED",
+          "visualizations_count": 4
+        }
+      ]
+    },
+    {
+      "component": "custom_report_builder",
+      "file": "backend/app/services/custom_report_builder.py",
+      "tests": [
+        {
+          "test": "file_exists",
+          "status": "PASSED"
+        },
+        {
+          "test": "service_instantiation",
+          "status": "PASSED"
+        },
+        {
+          "test": "report_type_PERFORMANCE",
+          "status": "PASSED"
+        },
+        {
+          "test": "report_type_REVENUE",
+          "status": "PASSED"
+        },
+        {
+          "test": "report_type_CONTENT",
+          "status": "PASSED"
+        },
+        {
+          "test": "report_type_EXECUTIVE",
+          "status": "PASSED"
+        },
+        {
+          "test": "report_type_CUSTOM",
+          "status": "PASSED"
+        },
+        {
+          "test": "format_PDF",
+          "status": "PASSED"
+        },
+        {
+          "test": "format_EXCEL",
+          "status": "PASSED"
+        },
+        {
+          "test": "format_HTML",
+          "status": "PASSED"
+        },
+        {
+          "test": "format_JSON",
+          "status": "PASSED"
+        },
+        {
+          "test": "format_CSV",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_create_report",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_schedule_report",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_create_custom_template",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_get_templates",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_get_scheduled_reports",
+          "status": "PASSED"
+        },
+        {
+          "test": "default_templates",
+          "status": "PASSED",
+          "template_count": 2
+        }
+      ]
+    },
+    {
+      "component": "data_marketplace_integration",
+      "file": "backend/app/services/data_marketplace_integration.py",
+      "tests": [
+        {
+          "test": "file_exists",
+          "status": "PASSED"
+        },
+        {
+          "test": "service_instantiation",
+          "status": "PASSED"
+        },
+        {
+          "test": "provider_AWS_DATA_EXCHANGE",
+          "status": "PASSED"
+        },
+        {
+          "test": "provider_GOOGLE_ANALYTICS_HUB",
+          "status": "PASSED"
+        },
+        {
+          "test": "provider_RAPID_API",
+          "status": "PASSED"
+        },
+        {
+          "test": "provider_SNOWFLAKE_MARKETPLACE",
+          "status": "PASSED"
+        },
+        {
+          "test": "category_VIDEO_ANALYTICS",
+          "status": "PASSED"
+        },
+        {
+          "test": "category_TRENDING_TOPICS",
+          "status": "PASSED"
+        },
+        {
+          "test": "category_COMPETITOR_DATA",
+          "status": "PASSED"
+        },
+        {
+          "test": "category_AUDIENCE_INSIGHTS",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_browse_products",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_subscribe_to_product",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_fetch_data",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_sync_to_warehouse",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_get_marketplace_analytics",
+          "status": "PASSED"
+        },
+        {
+          "test": "product_catalog",
+          "status": "PASSED",
+          "product_count": 5
+        },
+        {
+          "test": "marketplace_analytics",
+          "status": "PASSED"
+        }
+      ]
+    },
+    {
+      "component": "advanced_forecasting_models",
+      "file": "backend/app/services/advanced_forecasting_models.py",
+      "tests": [
+        {
+          "test": "file_exists",
+          "status": "PASSED"
+        },
+        {
+          "test": "service_instantiation",
+          "status": "PASSED"
+        },
+        {
+          "test": "model_ARIMA",
+          "status": "PASSED"
+        },
+        {
+          "test": "model_SARIMA",
+          "status": "PASSED"
+        },
+        {
+          "test": "model_PROPHET",
+          "status": "PASSED"
+        },
+        {
+          "test": "model_EXPONENTIAL_SMOOTHING",
+          "status": "PASSED"
+        },
+        {
+          "test": "model_RANDOM_FOREST",
+          "status": "PASSED"
+        },
+        {
+          "test": "model_GRADIENT_BOOSTING",
+          "status": "PASSED"
+        },
+        {
+          "test": "model_ENSEMBLE",
+          "status": "PASSED"
+        },
+        {
+          "test": "metric_REVENUE",
+          "status": "PASSED"
+        },
+        {
+          "test": "metric_VIEWS",
+          "status": "PASSED"
+        },
+        {
+          "test": "metric_SUBSCRIBERS",
+          "status": "PASSED"
+        },
+        {
+          "test": "metric_ENGAGEMENT",
+          "status": "PASSED"
+        },
+        {
+          "test": "metric_CPM",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_create_forecast",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_compare_models",
+          "status": "PASSED"
+        },
+        {
+          "test": "method_get_model_recommendations",
+          "status": "PASSED"
+        },
+        {
+          "test": "forecast_creation",
+          "status": "PASSED",
+          "horizon": 7
+        },
+        {
+          "test": "model_recommendations",
+          "status": "PASSED",
+          "recommendations": 2
+        }
+      ]
+    }
+  ],
+  "integration_tests": [
+    {
+      "test": "viz_report_data_compatibility",
+      "status": "PASSED",
+      "description": "Data formats compatible between visualization and reporting"
+    },
+    {
+      "test": "marketplace_forecast_integration",
+      "status": "PASSED",
+      "description": "Marketplace data can be used for forecasting"
+    },
+    {
+      "test": "forecast_viz_integration",
+      "status": "PASSED",
+      "description": "Forecast results can be visualized"
+    },
+    {
+      "test": "complete_data_pipeline",
+      "status": "PASSED",
+      "description": "Data flows through all components successfully"
+    }
+  ],
+  "summary": {
+    "total_tests": 71,
+    "passed": 71,
+    "failed": 0,
+    "success_rate": 100.0,
+    "status": "COMPLETE"
+  }
+}

@@ -79,7 +79,7 @@ celery_app.conf.update(
     worker_disable_rate_limits=False,
     worker_pool="prefork",  # Process pool for CPU-bound tasks
     worker_concurrency=8,  # Number of concurrent worker processes
-    worker_autoscaler="8,16",  # Auto-scale between 8-16 workers
+    worker_autoscale=[16, 4],  # Auto-scale between 4-16 workers [max, min]
     
     # Adjusted task time limits for video processing
     task_soft_time_limit=900,  # 15 minutes soft limit

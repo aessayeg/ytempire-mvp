@@ -9,7 +9,7 @@ from app.api.v1.endpoints import (
     payment, dashboard, video_queue, webhooks, analytics, notifications, batch, api_optimization, data_quality,
     videos, users, test_generation, video_generation, cost_optimization, beta_users, revenue, collaboration, video_processing, advanced_analytics, business_intelligence, system_monitoring,
     behavior_analytics, channels_optimized, experiments, gpu_resources, quality_dashboard, youtube_oauth, youtube_advanced, content_library, cost_intelligence, ai_multi_provider,
-    ml_features, training, etl, error_recovery, integrations, caching
+    ml_features, training, etl, error_recovery, integrations, caching, data_analytics
 )
 from app.api.v1 import cost_tracking
 
@@ -268,6 +268,13 @@ api_router.include_router(
     caching.router,
     prefix="/cache",
     tags=["advanced-caching"]
+)
+
+# Week 2 P2 Data Team Features - Advanced Analytics
+api_router.include_router(
+    data_analytics.router,
+    prefix="/data-analytics",
+    tags=["data-analytics"]
 )
 
 # Health check endpoint
