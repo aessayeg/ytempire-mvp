@@ -1,0 +1,223 @@
+# Prometheus Alert Rules for YTEmpire
+groups:
+  - name: ytempire_alerts
+    interval: 30s
+    rules:
+      # API Performance Alerts
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High API latency detected"
+          description: "95th percentile latency is above 1 second (current: {{ $value }}s)"
+      
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% (current: {{ $value | humanizePercentage }})"
+      
+      # Video Generation Alerts
+      - alert: VideoGenerationFailureRate
+        expr: rate(video_generation_failures_total[15m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          service: video_generation
+        annotations:
+          summary: "High video generation failure rate"
+          description: "Video generation failure rate above 10% (current: {{ $value | humanizePercentage }})"
+      
+      - alert: VideoGenerationSlow
+        expr: histogram_quantile(0.95, rate(video_generation_duration_seconds_bucket[15m])) > 600
+        for: 15m
+        labels:
+          severity: warning
+          service: video_generation
+        annotations:
+          summary: "Video generation taking too long"
+          description: "95th percentile generation time above 10 minutes (current: {{ $value }}s)"
+      
+      # Cost Alerts
+      - alert: HighCostPerVideo
+        expr: avg(cost_per_video_dollars) > 3
+        for: 30m
+        labels:
+          severity: critical
+          service: cost_tracking
+        annotations:
+          summary: "Cost per video exceeds target"
+          description: "Average cost per video is above $3 target (current: ${{ $value }})"
+      
+      - alert: DailyBudgetExceeded
+        expr: sum(increase(total_cost_dollars[24h])) > 100
+        for: 5m
+        labels:
+          severity: critical
+          service: cost_tracking
+        annotations:
+          summary: "Daily budget exceeded"
+          description: "Daily spending exceeds $100 budget (current: ${{ $value }})"
+      
+      # ML Model Alerts
+      - alert: MLModelHighLatency
+        expr: ml_model_latency_ms{quantile="0.95"} > 1000
+        for: 10m
+        labels:
+          severity: warning
+          service: ml_pipeline
+        annotations:
+          summary: "ML model high latency"
+          description: "Model {{ $labels.model_id }} latency above 1 second (current: {{ $value }}ms)"
+      
+      - alert: MLModelLowAccuracy
+        expr: ml_model_accuracy < 0.85
+        for: 15m
+        labels:
+          severity: warning
+          service: ml_pipeline
+        annotations:
+          summary: "ML model accuracy dropped"
+          description: "Model {{ $labels.model_id }} accuracy below 85% (current: {{ $value | humanizePercentage }})"
+      
+      - alert: MLModelHighErrorRate
+        expr: ml_model_error_rate > 0.05
+        for: 10m
+        labels:
+          severity: critical
+          service: ml_pipeline
+        annotations:
+          summary: "ML model high error rate"
+          description: "Model {{ $labels.model_id }} error rate above 5% (current: {{ $value | humanizePercentage }})"
+      
+      # Infrastructure Alerts
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage above 90% (current: {{ $value | humanizePercentage }})"
+      
+      - alert: HighCPUUsage
+        expr: avg(rate(node_cpu_seconds_total{mode!="idle"}[5m])) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage above 80% (current: {{ $value | humanizePercentage }})"
+      
+      - alert: HighGPUUsage
+        expr: nvidia_gpu_utilization_percent > 90
+        for: 15m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High GPU usage detected"
+          description: "GPU utilization above 90% (current: {{ $value }}%)"
+      
+      - alert: DiskSpaceRunningOut
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: infrastructure
+        annotations:
+          summary: "Disk space running out"
+          description: "Less than 10% disk space remaining (current: {{ $value | humanizePercentage }})"
+      
+      # Database Alerts
+      - alert: DatabaseConnectionPoolExhausted
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "Using more than 80% of available connections (current: {{ $value | humanizePercentage }})"
+      
+      - alert: DatabaseSlowQueries
+        expr: rate(pg_stat_statements_mean_exec_time_seconds[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Database queries running slow"
+          description: "Average query execution time above 1 second (current: {{ $value }}s)"
+      
+      # Redis Alerts
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis using more than 90% of allocated memory (current: {{ $value | humanizePercentage }})"
+      
+      - alert: RedisConnectionsHigh
+        expr: redis_connected_clients > 900
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis connections high"
+          description: "Redis has more than 900 connected clients (current: {{ $value }})"
+      
+      # Celery Worker Alerts
+      - alert: CeleryQueueBacklog
+        expr: celery_queue_length > 100
+        for: 10m
+        labels:
+          severity: warning
+          service: celery
+        annotations:
+          summary: "Celery queue backlog detected"
+          description: "More than 100 tasks in queue (current: {{ $value }})"
+      
+      - alert: CeleryWorkerDown
+        expr: up{job="celery_worker"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: celery
+        annotations:
+          summary: "Celery worker is down"
+          description: "Celery worker {{ $labels.instance }} has been down for 5 minutes"
+      
+      # YouTube API Alerts
+      - alert: YouTubeQuotaExhausted
+        expr: youtube_api_quota_used / youtube_api_quota_limit > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          service: youtube
+        annotations:
+          summary: "YouTube API quota nearly exhausted"
+          description: "Using more than 90% of YouTube API quota (current: {{ $value | humanizePercentage }})"
+      
+      - alert: YouTubeUploadFailureRate
+        expr: rate(youtube_upload_failures_total[30m]) > 0.1
+        for: 15m
+        labels:
+          severity: warning
+          service: youtube
+        annotations:
+          summary: "High YouTube upload failure rate"
+          description: "YouTube upload failure rate above 10% (current: {{ $value | humanizePercentage }})"

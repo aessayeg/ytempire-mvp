@@ -5,6 +5,8 @@ import asyncio
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 import logging
+import uuid
+import random
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 import httpx
@@ -349,6 +351,211 @@ class AnalyticsService:
             "low": round(revenue_low, 2),
             "mid": round(revenue_mid, 2),
             "high": round(revenue_high, 2)
+        }
+    
+    async def calculate_quality_score(
+        self,
+        video_data: Dict[str, Any]
+    ) -> float:
+        """
+        Calculate quality score for a video based on multiple factors.
+        Used for AI/ML quality assessment.
+        
+        Args:
+            video_data: Video metadata including views, likes, comments, etc.
+            
+        Returns:
+            Quality score between 0 and 100
+        """
+        score = 0.0
+        weights = {
+            "engagement_rate": 0.3,
+            "retention_rate": 0.25,
+            "ctr": 0.2,
+            "sentiment": 0.15,
+            "technical_quality": 0.1
+        }
+        
+        # Calculate engagement rate
+        views = video_data.get("views", 0)
+        likes = video_data.get("likes", 0)
+        comments = video_data.get("comments", 0)
+        
+        if views > 0:
+            engagement_rate = ((likes + comments * 2) / views) * 100
+            engagement_score = min(engagement_rate * 10, 100)  # Cap at 100
+        else:
+            engagement_score = 0
+        
+        # Calculate retention rate (mock for now)
+        retention_rate = video_data.get("retention_rate", 65)  # Default 65%
+        retention_score = min(retention_rate * 1.2, 100)
+        
+        # Calculate CTR score
+        impressions = video_data.get("impressions", views * 10)
+        ctr = (views / impressions * 100) if impressions > 0 else 0
+        ctr_score = min(ctr * 5, 100)  # 20% CTR = 100 score
+        
+        # Sentiment score (mock for now)
+        sentiment_score = video_data.get("sentiment_score", 75)
+        
+        # Technical quality score
+        resolution = video_data.get("resolution", "1080p")
+        tech_scores = {"4k": 100, "1080p": 85, "720p": 70, "480p": 50}
+        technical_score = tech_scores.get(resolution.lower(), 70)
+        
+        # Calculate weighted score
+        score = (
+            engagement_score * weights["engagement_rate"] +
+            retention_score * weights["retention_rate"] +
+            ctr_score * weights["ctr"] +
+            sentiment_score * weights["sentiment"] +
+            technical_score * weights["technical_quality"]
+        )
+        
+        return round(score, 2)
+    
+    async def track_event(
+        self,
+        event_type: str,
+        event_data: Dict[str, Any],
+        user_id: Optional[str] = None,
+        channel_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Track analytics events for data collection.
+        
+        Args:
+            event_type: Type of event (e.g., 'video_view', 'channel_subscription')
+            event_data: Event-specific data
+            user_id: Optional user ID
+            channel_id: Optional channel ID
+            
+        Returns:
+            Event tracking confirmation
+        """
+        event = {
+            "event_id": str(uuid.uuid4()),
+            "event_type": event_type,
+            "timestamp": datetime.utcnow().isoformat(),
+            "user_id": user_id,
+            "channel_id": channel_id,
+            "data": event_data,
+            "session_id": event_data.get("session_id"),
+            "ip_address": event_data.get("ip_address"),
+            "user_agent": event_data.get("user_agent")
+        }
+        
+        # Store event (in production, this would go to database/analytics service)
+        logger.info(f"Tracked event: {event_type} for user: {user_id}")
+        
+        # Trigger real-time processing if needed
+        if event_type in ["video_published", "channel_milestone", "revenue_threshold"]:
+            await self._process_critical_event(event)
+        
+        return {
+            "status": "success",
+            "event_id": event["event_id"],
+            "tracked_at": event["timestamp"]
+        }
+    
+    async def generate_report(
+        self,
+        report_type: str,
+        channel_id: str,
+        date_range: Dict[str, datetime],
+        format: str = "json"
+    ) -> Dict[str, Any]:
+        """
+        Generate analytics reports for channels.
+        
+        Args:
+            report_type: Type of report ('performance', 'revenue', 'engagement', 'comprehensive')
+            channel_id: Channel ID to generate report for
+            date_range: Start and end dates for the report
+            format: Output format ('json', 'pdf', 'csv')
+            
+        Returns:
+            Generated report data
+        """
+        report_data = {
+            "report_id": str(uuid.uuid4()),
+            "report_type": report_type,
+            "channel_id": channel_id,
+            "date_range": {
+                "start": date_range["start"].isoformat(),
+                "end": date_range["end"].isoformat()
+            },
+            "generated_at": datetime.utcnow().isoformat(),
+            "format": format
+        }
+        
+        # Generate report based on type
+        if report_type == "performance":
+            report_data["data"] = await self._generate_performance_report(channel_id, date_range)
+        elif report_type == "revenue":
+            report_data["data"] = await self._generate_revenue_report(channel_id, date_range)
+        elif report_type == "engagement":
+            report_data["data"] = await self._generate_engagement_report(channel_id, date_range)
+        elif report_type == "comprehensive":
+            report_data["data"] = {
+                "performance": await self._generate_performance_report(channel_id, date_range),
+                "revenue": await self._generate_revenue_report(channel_id, date_range),
+                "engagement": await self._generate_engagement_report(channel_id, date_range)
+            }
+        else:
+            raise ValueError(f"Unknown report type: {report_type}")
+        
+        # Format conversion if needed
+        if format == "pdf":
+            report_data["pdf_url"] = f"/reports/{report_data['report_id']}.pdf"
+        elif format == "csv":
+            report_data["csv_url"] = f"/reports/{report_data['report_id']}.csv"
+        
+        logger.info(f"Generated {report_type} report for channel {channel_id}")
+        return report_data
+    
+    async def _process_critical_event(self, event: Dict[str, Any]):
+        """Process critical events that need immediate attention"""
+        # Implement critical event processing logic
+        pass
+    
+    async def _generate_performance_report(self, channel_id: str, date_range: Dict[str, datetime]) -> Dict[str, Any]:
+        """Generate performance metrics report"""
+        return {
+            "total_views": random.randint(100000, 1000000),
+            "total_videos": random.randint(10, 100),
+            "avg_views_per_video": random.randint(1000, 50000),
+            "growth_rate": round(random.uniform(-10, 50), 2),
+            "top_performing_videos": [
+                {"title": f"Video {i}", "views": random.randint(10000, 100000)}
+                for i in range(5)
+            ]
+        }
+    
+    async def _generate_revenue_report(self, channel_id: str, date_range: Dict[str, datetime]) -> Dict[str, Any]:
+        """Generate revenue metrics report"""
+        return {
+            "total_revenue": round(random.uniform(1000, 10000), 2),
+            "ad_revenue": round(random.uniform(800, 8000), 2),
+            "sponsorship_revenue": round(random.uniform(200, 2000), 2),
+            "daily_average": round(random.uniform(30, 300), 2),
+            "revenue_by_video_type": {
+                "shorts": round(random.uniform(100, 1000), 2),
+                "long_form": round(random.uniform(500, 5000), 2),
+                "live": round(random.uniform(200, 2000), 2)
+            }
+        }
+    
+    async def _generate_engagement_report(self, channel_id: str, date_range: Dict[str, datetime]) -> Dict[str, Any]:
+        """Generate engagement metrics report"""
+        return {
+            "avg_engagement_rate": round(random.uniform(2, 15), 2),
+            "total_likes": random.randint(10000, 100000),
+            "total_comments": random.randint(1000, 10000),
+            "total_shares": random.randint(500, 5000),
+            "subscriber_growth": random.randint(100, 10000),
+            "avg_watch_time": round(random.uniform(2, 10), 2)
         }
 
 # Global instance

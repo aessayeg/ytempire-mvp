@@ -1,0 +1,646 @@
+{
+  "timestamp": "2025-08-15T10:44:00.423186",
+  "summary": {
+    "total_tasks": 70,
+    "passed": 0,
+    "partial": 2,
+    "failed": 68,
+    "completion_rate": 0.0,
+    "team_summary": {
+      "backend": {
+        "P0": {
+          "total": 12,
+          "pass": 0,
+          "partial": 0,
+          "fail": 12
+        },
+        "P1": {
+          "total": 9,
+          "pass": 0,
+          "partial": 0,
+          "fail": 9
+        },
+        "P2": {
+          "total": 2,
+          "pass": 0,
+          "partial": 0,
+          "fail": 2
+        }
+      },
+      "frontend": {
+        "P0": {
+          "total": 9,
+          "pass": 0,
+          "partial": 0,
+          "fail": 9
+        },
+        "P1": {
+          "total": 6,
+          "pass": 0,
+          "partial": 0,
+          "fail": 6
+        },
+        "P2": {
+          "total": 0,
+          "pass": 0,
+          "partial": 0,
+          "fail": 0
+        }
+      },
+      "platform_ops": {
+        "P0": {
+          "total": 9,
+          "pass": 0,
+          "partial": 2,
+          "fail": 7
+        },
+        "P1": {
+          "total": 4,
+          "pass": 0,
+          "partial": 0,
+          "fail": 4
+        },
+        "P2": {
+          "total": 0,
+          "pass": 0,
+          "partial": 0,
+          "fail": 0
+        }
+      },
+      "ai_ml": {
+        "P0": {
+          "total": 8,
+          "pass": 0,
+          "partial": 0,
+          "fail": 8
+        },
+        "P1": {
+          "total": 2,
+          "pass": 0,
+          "partial": 0,
+          "fail": 2
+        },
+        "P2": {
+          "total": 0,
+          "pass": 0,
+          "partial": 0,
+          "fail": 0
+        }
+      },
+      "data": {
+        "P0": {
+          "total": 7,
+          "pass": 0,
+          "partial": 0,
+          "fail": 7
+        },
+        "P1": {
+          "total": 2,
+          "pass": 0,
+          "partial": 0,
+          "fail": 2
+        },
+        "P2": {
+          "total": 0,
+          "pass": 0,
+          "partial": 0,
+          "fail": 0
+        }
+      }
+    }
+  },
+  "backend": {
+    "P0": [
+      {
+        "week": 0,
+        "name": "Project Setup",
+        "status": "FAIL",
+        "details": "File not found: backend/app/main.py"
+      },
+      {
+        "week": 0,
+        "name": "Database Models",
+        "status": "FAIL",
+        "details": "File not found: backend/app/models/video.py"
+      },
+      {
+        "week": 0,
+        "name": "Authentication System",
+        "status": "FAIL",
+        "details": "File not found: backend/app/core/security.py"
+      },
+      {
+        "week": 0,
+        "name": "Basic API Endpoints",
+        "status": "FAIL",
+        "details": "File not found: backend/app/api/v1/endpoints/videos.py"
+      },
+      {
+        "week": 1,
+        "name": "Video Generation Pipeline",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/video_generation_pipeline.py"
+      },
+      {
+        "week": 1,
+        "name": "YouTube Integration",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/youtube_service.py"
+      },
+      {
+        "week": 1,
+        "name": "Analytics Pipeline",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/analytics_service.py"
+      },
+      {
+        "week": 1,
+        "name": "WebSocket Support",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/websocket_manager.py"
+      },
+      {
+        "week": 2,
+        "name": "Multi-Channel Architecture",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/youtube_multi_account.py"
+      },
+      {
+        "week": 2,
+        "name": "Batch Processing Scale",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/batch_processing.py"
+      },
+      {
+        "week": 2,
+        "name": "Subscription System",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/subscription_service.py"
+      },
+      {
+        "week": 2,
+        "name": "Database Optimization",
+        "status": "FAIL",
+        "details": "Config 'database_pool' not found"
+      }
+    ],
+    "P1": [
+      {
+        "week": 0,
+        "name": "Celery Setup",
+        "status": "FAIL",
+        "details": "File not found: backend/app/core/celery_app.py"
+      },
+      {
+        "week": 0,
+        "name": "Redis Integration",
+        "status": "FAIL",
+        "details": "Config 'REDIS_URL' not found"
+      },
+      {
+        "week": 0,
+        "name": "Cost Tracking",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/cost_tracking.py"
+      },
+      {
+        "week": 1,
+        "name": "Batch Processing",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/batch_processing.py"
+      },
+      {
+        "week": 1,
+        "name": "Error Recovery",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/error_handlers.py"
+      },
+      {
+        "week": 1,
+        "name": "Performance Monitoring",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/performance_monitoring.py"
+      },
+      {
+        "week": 2,
+        "name": "Advanced Analytics",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/realtime_analytics_service.py"
+      },
+      {
+        "week": 2,
+        "name": "A/B Testing",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/ab_testing_service.py"
+      },
+      {
+        "week": 2,
+        "name": "Webhook System",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/webhook_service.py"
+      }
+    ],
+    "P2": [
+      {
+        "week": 2,
+        "name": "Advanced Caching",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/advanced_caching.py"
+      },
+      {
+        "week": 2,
+        "name": "Third-party Integrations",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/third_party_integrations.py"
+      }
+    ]
+  },
+  "frontend": {
+    "P0": [
+      {
+        "week": 0,
+        "name": "React Setup",
+        "status": "FAIL",
+        "details": "File not found: frontend/package.json"
+      },
+      {
+        "week": 0,
+        "name": "Authentication UI",
+        "status": "FAIL",
+        "details": "File not found: frontend/src/pages/Login"
+      },
+      {
+        "week": 0,
+        "name": "Basic Dashboard",
+        "status": "FAIL",
+        "details": "File not found: frontend/src/pages/Dashboard"
+      },
+      {
+        "week": 1,
+        "name": "Video Management UI",
+        "status": "FAIL",
+        "details": "File not found: frontend/src/components/Videos"
+      },
+      {
+        "week": 1,
+        "name": "Channel Dashboard",
+        "status": "FAIL",
+        "details": "File not found: frontend/src/components/Channels"
+      },
+      {
+        "week": 1,
+        "name": "Analytics Dashboard",
+        "status": "FAIL",
+        "details": "File not found: frontend/src/components/Analytics"
+      },
+      {
+        "week": 2,
+        "name": "Multi-Channel UI",
+        "status": "FAIL",
+        "details": "Component 'ChannelManager' not found"
+      },
+      {
+        "week": 2,
+        "name": "Batch Operations UI",
+        "status": "FAIL",
+        "details": "Component 'BatchOperations' not found"
+      },
+      {
+        "week": 2,
+        "name": "Beta Onboarding",
+        "status": "FAIL",
+        "details": "File not found: frontend/src/components/Onboarding"
+      }
+    ],
+    "P1": [
+      {
+        "week": 0,
+        "name": "State Management",
+        "status": "FAIL",
+        "details": "File not found: frontend/src/stores"
+      },
+      {
+        "week": 0,
+        "name": "API Integration",
+        "status": "FAIL",
+        "details": "File not found: frontend/src/services/api"
+      },
+      {
+        "week": 1,
+        "name": "Real-time Updates",
+        "status": "FAIL",
+        "details": "File not found: frontend/src/hooks/useWebSocket"
+      },
+      {
+        "week": 1,
+        "name": "Mobile Responsive",
+        "status": "FAIL",
+        "details": "No CSS files found"
+      },
+      {
+        "week": 2,
+        "name": "Advanced Analytics UI",
+        "status": "FAIL",
+        "details": "Component 'AdvancedAnalytics' not found"
+      },
+      {
+        "week": 2,
+        "name": "Settings Panel",
+        "status": "FAIL",
+        "details": "File not found: frontend/src/pages/Settings"
+      }
+    ],
+    "P2": []
+  },
+  "platform_ops": {
+    "P0": [
+      {
+        "week": 0,
+        "name": "Docker Setup",
+        "status": "FAIL",
+        "details": "File not found: docker-compose.yml"
+      },
+      {
+        "week": 0,
+        "name": "PostgreSQL Setup",
+        "status": "PARTIAL",
+        "details": "Service 'postgres' configuration not verified"
+      },
+      {
+        "week": 0,
+        "name": "Redis Setup",
+        "status": "PARTIAL",
+        "details": "Service 'redis' configuration not verified"
+      },
+      {
+        "week": 1,
+        "name": "Monitoring Stack",
+        "status": "FAIL",
+        "details": "File not found: docker-compose.monitoring.yml"
+      },
+      {
+        "week": 1,
+        "name": "Logging System",
+        "status": "FAIL",
+        "details": "Config 'logging' not found"
+      },
+      {
+        "week": 1,
+        "name": "Backup System",
+        "status": "FAIL",
+        "details": "File not found: infrastructure/backup"
+      },
+      {
+        "week": 2,
+        "name": "Production Deployment",
+        "status": "FAIL",
+        "details": "File not found: docker-compose.production.yml"
+      },
+      {
+        "week": 2,
+        "name": "Auto-scaling",
+        "status": "FAIL",
+        "details": "File not found: infrastructure/scaling"
+      },
+      {
+        "week": 2,
+        "name": "Security Compliance",
+        "status": "FAIL",
+        "details": "File not found: infrastructure/compliance"
+      }
+    ],
+    "P1": [
+      {
+        "week": 0,
+        "name": "CI/CD Pipeline",
+        "status": "FAIL",
+        "details": "File not found: .github/workflows"
+      },
+      {
+        "week": 0,
+        "name": "Environment Config",
+        "status": "FAIL",
+        "details": "File not found: backend/.env.example"
+      },
+      {
+        "week": 1,
+        "name": "Security Hardening",
+        "status": "FAIL",
+        "details": "File not found: infrastructure/security"
+      },
+      {
+        "week": 1,
+        "name": "Load Balancing",
+        "status": "FAIL",
+        "details": "Config 'load_balancer' not found"
+      }
+    ],
+    "P2": []
+  },
+  "ai_ml": {
+    "P0": [
+      {
+        "week": 0,
+        "name": "OpenAI Integration",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/ai_services.py"
+      },
+      {
+        "week": 0,
+        "name": "Script Generation",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/ai_services.py"
+      },
+      {
+        "week": 1,
+        "name": "Voice Synthesis",
+        "status": "FAIL",
+        "details": "Config 'ELEVENLABS_API_KEY' not found"
+      },
+      {
+        "week": 1,
+        "name": "Thumbnail Generation",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/thumbnail_generator.py"
+      },
+      {
+        "week": 1,
+        "name": "Quality Scoring",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/analytics_service.py"
+      },
+      {
+        "week": 2,
+        "name": "Multi-Model Orchestration",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/multi_provider_ai.py"
+      },
+      {
+        "week": 2,
+        "name": "ML Pipeline",
+        "status": "FAIL",
+        "details": "File not found: ml-pipeline/config.yaml"
+      },
+      {
+        "week": 2,
+        "name": "Personalization",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/ml_integration_service.py"
+      }
+    ],
+    "P1": [
+      {
+        "week": 0,
+        "name": "Prompt Templates",
+        "status": "FAIL",
+        "details": "File not found: ml-pipeline/prompts"
+      },
+      {
+        "week": 0,
+        "name": "Cost Optimization",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/cost_optimizer.py"
+      }
+    ],
+    "P2": []
+  },
+  "data": {
+    "P0": [
+      {
+        "week": 0,
+        "name": "Analytics Schema",
+        "status": "FAIL",
+        "details": "File not found: backend/app/models/analytics.py"
+      },
+      {
+        "week": 0,
+        "name": "Data Collection",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/analytics_service.py"
+      },
+      {
+        "week": 1,
+        "name": "Real-time Analytics",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/realtime_analytics_service.py"
+      },
+      {
+        "week": 1,
+        "name": "Reporting System",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/analytics_service.py"
+      },
+      {
+        "week": 2,
+        "name": "Data Warehouse",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/data_lake_service.py"
+      },
+      {
+        "week": 2,
+        "name": "Advanced Analytics",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/advanced_forecasting_models.py"
+      },
+      {
+        "week": 2,
+        "name": "Data Visualization",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/advanced_data_visualization.py"
+      }
+    ],
+    "P1": [
+      {
+        "week": 2,
+        "name": "Data Quality",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/data_quality.py"
+      },
+      {
+        "week": 2,
+        "name": "Data Marketplace",
+        "status": "FAIL",
+        "details": "File not found: backend/app/services/data_marketplace_integration.py"
+      }
+    ],
+    "P2": []
+  },
+  "unit_tests": [
+    {
+      "test": "Database Models Import",
+      "status": "PASS"
+    },
+    {
+      "test": "Core Services Import",
+      "status": "PASS"
+    },
+    {
+      "test": "API Routes",
+      "status": "FAIL",
+      "error": "cannot import name 'analytics_pipeline' from 'app.services.analytics_service' (C:\\Users\\Hp\\projects\\ytempire-mvp\\backend\\app\\services\\analytics_service.py)"
+    },
+    {
+      "test": "Celery Tasks Import",
+      "status": "FAIL",
+      "error": "cannot import name 'AIServiceManager' from 'app.services.ai_services' (C:\\Users\\Hp\\projects\\ytempire-mvp\\backend\\app\\services\\ai_services.py)"
+    },
+    {
+      "test": "Configuration",
+      "status": "FAIL",
+      "error": "Missing setting: JWT_SECRET_KEY"
+    }
+  ],
+  "functionality_tests": [
+    {
+      "test": "Video Pipeline Functions",
+      "status": "FAIL",
+      "error": "AsyncClient.__init__() got an unexpected keyword argument 'proxies'"
+    },
+    {
+      "test": "Analytics Functions",
+      "status": "FAIL",
+      "error": "Missing analytics functions"
+    },
+    {
+      "test": "Cost Tracking Functions",
+      "status": "FAIL",
+      "error": "Missing cost tracking functions"
+    },
+    {
+      "test": "WebSocket Functions",
+      "status": "PASS"
+    },
+    {
+      "test": "YouTube Multi-Account",
+      "status": "FAIL",
+      "error": "Missing multi-account functions"
+    }
+  ],
+  "integration_tests": [
+    {
+      "test": "Database Connection",
+      "status": "FAIL",
+      "error": "password authentication failed for user \"ytempire\""
+    },
+    {
+      "test": "Redis Configuration",
+      "status": "PASS"
+    },
+    {
+      "test": "Service Cross-Dependencies",
+      "status": "FAIL",
+      "error": "[Errno 2] No such file or directory: 'C:\\\\Users\\\\Hp\\\\projects\\\\ytempire-mvp\\\\backend\\\\backend\\\\app\\\\services\\\\video_generation_pipeline.py'"
+    },
+    {
+      "test": "API-Service Integration",
+      "status": "FAIL",
+      "error": "Videos endpoint not found"
+    },
+    {
+      "test": "Celery-Service Integration",
+      "status": "FAIL",
+      "error": "Video tasks not found"
+    }
+  ],
+  "hanging_features": []
+}

@@ -1,0 +1,114 @@
+# YTEmpire Load Balancer Configuration
+# This configuration defines load balancing strategy for the platform
+
+version: '1.0'
+
+load_balancer:
+  type: nginx
+  strategy: least_conn  # Options: round_robin, least_conn, ip_hash, random
+  
+  health_checks:
+    interval: 30s
+    timeout: 5s
+    unhealthy_threshold: 3
+    healthy_threshold: 2
+
+  backend_pools:
+    api_servers:
+      - host: backend-1
+        port: 8000
+        weight: 3
+        max_fails: 3
+        fail_timeout: 30s
+      - host: backend-2
+        port: 8000
+        weight: 2
+        max_fails: 3
+        fail_timeout: 30s
+        backup: true
+      - host: backend-3
+        port: 8000
+        weight: 1
+        max_fails: 3
+        fail_timeout: 30s
+        backup: true
+
+    celery_workers:
+      - host: celery-worker-1
+        port: 5555
+        weight: 1
+      - host: celery-worker-2
+        port: 5555
+        weight: 1
+      - host: celery-worker-3
+        port: 5555
+        weight: 1
+      - host: celery-worker-4
+        port: 5555
+        weight: 1
+
+    websocket_servers:
+      strategy: ip_hash  # Sticky sessions for WebSocket
+      servers:
+        - host: ws-backend-1
+          port: 8000
+        - host: ws-backend-2
+          port: 8000
+
+  rate_limiting:
+    zones:
+      api_general:
+        rate: 100r/s
+        burst: 50
+        memory: 10m
+      api_auth:
+        rate: 5r/s
+        burst: 10
+        memory: 10m
+      video_generation:
+        rate: 10r/m
+        burst: 5
+        memory: 5m
+
+  caching:
+    enabled: true
+    cache_size: 1g
+    cache_time:
+      api_responses: 10m
+      static_files: 30d
+      media_files: 7d
+    bypass_conditions:
+      - $http_authorization
+      - $http_cache_control
+
+  ssl:
+    enabled: false  # Enable in production
+    protocols:
+      - TLSv1.2
+      - TLSv1.3
+    certificate_path: /etc/ssl/certs/ytempire.crt
+    key_path: /etc/ssl/private/ytempire.key
+    dhparam_path: /etc/ssl/certs/dhparam.pem
+
+  performance:
+    worker_processes: auto
+    worker_connections: 4096
+    keepalive_timeout: 65
+    client_max_body_size: 100M
+    
+  security:
+    headers:
+      X-Frame-Options: SAMEORIGIN
+      X-Content-Type-Options: nosniff
+      X-XSS-Protection: "1; mode=block"
+      Referrer-Policy: strict-origin-when-cross-origin
+      Content-Security-Policy: "default-src 'self'"
+
+  monitoring:
+    metrics_endpoint: /metrics
+    health_endpoint: /health
+    status_endpoint: /nginx_status
+    access_control:
+      - 127.0.0.1
+      - 172.16.0.0/12
+      - 10.0.0.0/8

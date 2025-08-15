@@ -43,6 +43,13 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "ytempire_db"
     DATABASE_URL: Optional[str] = None
     
+    # Database Pool Configuration (Exposed for production tuning)
+    DATABASE_POOL_SIZE: int = 50  # Base pool size
+    DATABASE_MAX_OVERFLOW: int = 150  # Maximum overflow connections
+    DATABASE_POOL_TIMEOUT: int = 30  # Timeout for getting connection from pool
+    DATABASE_POOL_RECYCLE: int = 1800  # Recycle connections after 30 minutes
+    DATABASE_ECHO: bool = False  # Enable SQL logging (debug only)
+    
     @validator("DATABASE_URL", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if isinstance(v, str):
@@ -156,6 +163,17 @@ class Settings(BaseSettings):
     AUTOML_RETRAIN_DAYS: int = 7
     PERSONALIZATION_UPDATE_DAYS: int = 3
     ML_ENABLED: bool = True
+    
+    @property
+    def database_pool(self) -> Dict[str, Any]:
+        """Expose database pool configuration as a dictionary"""
+        return {
+            "pool_size": self.DATABASE_POOL_SIZE,
+            "max_overflow": self.DATABASE_MAX_OVERFLOW,
+            "pool_timeout": self.DATABASE_POOL_TIMEOUT,
+            "pool_recycle": self.DATABASE_POOL_RECYCLE,
+            "echo": self.DATABASE_ECHO
+        }
     
     class Config:
         case_sensitive = True

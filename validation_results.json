@@ -1,0 +1,650 @@
+{
+  "timestamp": "2025-08-15T10:44:25.891094",
+  "summary": {
+    "total_tasks": 70,
+    "passed": 57,
+    "partial": 2,
+    "failed": 11,
+    "completion_rate": 81.42857142857143,
+    "team_summary": {
+      "backend": {
+        "P0": {
+          "total": 12,
+          "pass": 10,
+          "partial": 0,
+          "fail": 2
+        },
+        "P1": {
+          "total": 9,
+          "pass": 9,
+          "partial": 0,
+          "fail": 0
+        },
+        "P2": {
+          "total": 2,
+          "pass": 2,
+          "partial": 0,
+          "fail": 0
+        }
+      },
+      "frontend": {
+        "P0": {
+          "total": 9,
+          "pass": 6,
+          "partial": 0,
+          "fail": 3
+        },
+        "P1": {
+          "total": 6,
+          "pass": 4,
+          "partial": 2,
+          "fail": 0
+        },
+        "P2": {
+          "total": 0,
+          "pass": 0,
+          "partial": 0,
+          "fail": 0
+        }
+      },
+      "platform_ops": {
+        "P0": {
+          "total": 9,
+          "pass": 8,
+          "partial": 0,
+          "fail": 1
+        },
+        "P1": {
+          "total": 4,
+          "pass": 3,
+          "partial": 0,
+          "fail": 1
+        },
+        "P2": {
+          "total": 0,
+          "pass": 0,
+          "partial": 0,
+          "fail": 0
+        }
+      },
+      "ai_ml": {
+        "P0": {
+          "total": 8,
+          "pass": 7,
+          "partial": 0,
+          "fail": 1
+        },
+        "P1": {
+          "total": 2,
+          "pass": 1,
+          "partial": 0,
+          "fail": 1
+        },
+        "P2": {
+          "total": 0,
+          "pass": 0,
+          "partial": 0,
+          "fail": 0
+        }
+      },
+      "data": {
+        "P0": {
+          "total": 7,
+          "pass": 5,
+          "partial": 0,
+          "fail": 2
+        },
+        "P1": {
+          "total": 2,
+          "pass": 2,
+          "partial": 0,
+          "fail": 0
+        },
+        "P2": {
+          "total": 0,
+          "pass": 0,
+          "partial": 0,
+          "fail": 0
+        }
+      }
+    }
+  },
+  "backend": {
+    "P0": [
+      {
+        "week": 0,
+        "name": "Project Setup",
+        "status": "PASS",
+        "details": "File exists (19,735 bytes)"
+      },
+      {
+        "week": 0,
+        "name": "Database Models",
+        "status": "PASS",
+        "details": "File exists (3,513 bytes)"
+      },
+      {
+        "week": 0,
+        "name": "Authentication System",
+        "status": "PASS",
+        "details": "File exists (2,475 bytes)"
+      },
+      {
+        "week": 0,
+        "name": "Basic API Endpoints",
+        "status": "PASS",
+        "details": "File exists (29,187 bytes)"
+      },
+      {
+        "week": 1,
+        "name": "Video Generation Pipeline",
+        "status": "PASS",
+        "details": "File exists (21,123 bytes)"
+      },
+      {
+        "week": 1,
+        "name": "YouTube Integration",
+        "status": "PASS",
+        "details": "File exists (33,309 bytes)"
+      },
+      {
+        "week": 1,
+        "name": "Analytics Pipeline",
+        "status": "PASS",
+        "details": "File exists (13,725 bytes)"
+      },
+      {
+        "week": 1,
+        "name": "WebSocket Support",
+        "status": "PASS",
+        "details": "File exists (23,547 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "Multi-Channel Architecture",
+        "status": "PASS",
+        "details": "File exists (42,029 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "Batch Processing Scale",
+        "status": "FAIL",
+        "details": "Function 'process_batch' not found in backend/app/services/batch_processing.py"
+      },
+      {
+        "week": 2,
+        "name": "Subscription System",
+        "status": "PASS",
+        "details": "File exists (22,388 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "Database Optimization",
+        "status": "FAIL",
+        "details": "Config 'database_pool' not found"
+      }
+    ],
+    "P1": [
+      {
+        "week": 0,
+        "name": "Celery Setup",
+        "status": "PASS",
+        "details": "File exists (7,388 bytes)"
+      },
+      {
+        "week": 0,
+        "name": "Redis Integration",
+        "status": "PASS",
+        "details": "Config 'REDIS_URL' found in .env.example"
+      },
+      {
+        "week": 0,
+        "name": "Cost Tracking",
+        "status": "PASS",
+        "details": "File exists (19,259 bytes)"
+      },
+      {
+        "week": 1,
+        "name": "Batch Processing",
+        "status": "PASS",
+        "details": "File exists (26,843 bytes)"
+      },
+      {
+        "week": 1,
+        "name": "Error Recovery",
+        "status": "PASS",
+        "details": "File exists (18,756 bytes)"
+      },
+      {
+        "week": 1,
+        "name": "Performance Monitoring",
+        "status": "PASS",
+        "details": "File exists (17,277 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "Advanced Analytics",
+        "status": "PASS",
+        "details": "File exists (31,387 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "A/B Testing",
+        "status": "PASS",
+        "details": "File exists (23,256 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "Webhook System",
+        "status": "PASS",
+        "details": "File exists (22,655 bytes)"
+      }
+    ],
+    "P2": [
+      {
+        "week": 2,
+        "name": "Advanced Caching",
+        "status": "PASS",
+        "details": "File exists (25,724 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "Third-party Integrations",
+        "status": "PASS",
+        "details": "File exists (23,967 bytes)"
+      }
+    ]
+  },
+  "frontend": {
+    "P0": [
+      {
+        "week": 0,
+        "name": "React Setup",
+        "status": "PASS",
+        "details": "File exists (2,015 bytes)"
+      },
+      {
+        "week": 0,
+        "name": "Authentication UI",
+        "status": "FAIL",
+        "details": "File not found: frontend/src/pages/Login"
+      },
+      {
+        "week": 0,
+        "name": "Basic Dashboard",
+        "status": "PASS",
+        "details": "Directory exists with 3 files"
+      },
+      {
+        "week": 1,
+        "name": "Video Management UI",
+        "status": "PASS",
+        "details": "Directory exists with 15 files"
+      },
+      {
+        "week": 1,
+        "name": "Channel Dashboard",
+        "status": "PASS",
+        "details": "Directory exists with 5 files"
+      },
+      {
+        "week": 1,
+        "name": "Analytics Dashboard",
+        "status": "PASS",
+        "details": "Directory exists with 4 files"
+      },
+      {
+        "week": 2,
+        "name": "Multi-Channel UI",
+        "status": "FAIL",
+        "details": "Component 'ChannelManager' not found"
+      },
+      {
+        "week": 2,
+        "name": "Batch Operations UI",
+        "status": "FAIL",
+        "details": "Component 'BatchOperations' not found"
+      },
+      {
+        "week": 2,
+        "name": "Beta Onboarding",
+        "status": "PASS",
+        "details": "Directory exists with 1 files"
+      }
+    ],
+    "P1": [
+      {
+        "week": 0,
+        "name": "State Management",
+        "status": "PASS",
+        "details": "Directory exists with 3 files"
+      },
+      {
+        "week": 0,
+        "name": "API Integration",
+        "status": "PARTIAL",
+        "details": "File not found, but similar exists: api.ts"
+      },
+      {
+        "week": 1,
+        "name": "Real-time Updates",
+        "status": "PARTIAL",
+        "details": "File not found, but similar exists: useWebSocket.ts"
+      },
+      {
+        "week": 1,
+        "name": "Mobile Responsive",
+        "status": "PASS",
+        "details": "Responsive styling found"
+      },
+      {
+        "week": 2,
+        "name": "Advanced Analytics UI",
+        "status": "PASS",
+        "details": "Component 'AdvancedAnalytics' found at src\\pages\\Analytics\\AdvancedAnalytics.tsx"
+      },
+      {
+        "week": 2,
+        "name": "Settings Panel",
+        "status": "PASS",
+        "details": "Directory exists with 2 files"
+      }
+    ],
+    "P2": []
+  },
+  "platform_ops": {
+    "P0": [
+      {
+        "week": 0,
+        "name": "Docker Setup",
+        "status": "PASS",
+        "details": "File exists (8,591 bytes)"
+      },
+      {
+        "week": 0,
+        "name": "PostgreSQL Setup",
+        "status": "PASS",
+        "details": "Service 'postgres' configured in docker-compose"
+      },
+      {
+        "week": 0,
+        "name": "Redis Setup",
+        "status": "PASS",
+        "details": "Service 'redis' configured in docker-compose"
+      },
+      {
+        "week": 1,
+        "name": "Monitoring Stack",
+        "status": "FAIL",
+        "details": "File not found: docker-compose.monitoring.yml"
+      },
+      {
+        "week": 1,
+        "name": "Logging System",
+        "status": "PASS",
+        "details": "Config 'logging' found in .env.example"
+      },
+      {
+        "week": 1,
+        "name": "Backup System",
+        "status": "PASS",
+        "details": "Directory exists with 11 files"
+      },
+      {
+        "week": 2,
+        "name": "Production Deployment",
+        "status": "PASS",
+        "details": "File exists (11,410 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "Auto-scaling",
+        "status": "PASS",
+        "details": "Directory exists with 8 files"
+      },
+      {
+        "week": 2,
+        "name": "Security Compliance",
+        "status": "PASS",
+        "details": "Directory exists with 1 files"
+      }
+    ],
+    "P1": [
+      {
+        "week": 0,
+        "name": "CI/CD Pipeline",
+        "status": "PASS",
+        "details": "Directory exists with 9 files"
+      },
+      {
+        "week": 0,
+        "name": "Environment Config",
+        "status": "PASS",
+        "details": "File exists (1,925 bytes)"
+      },
+      {
+        "week": 1,
+        "name": "Security Hardening",
+        "status": "PASS",
+        "details": "Directory exists with 16 files"
+      },
+      {
+        "week": 1,
+        "name": "Load Balancing",
+        "status": "FAIL",
+        "details": "Config 'load_balancer' not found"
+      }
+    ],
+    "P2": []
+  },
+  "ai_ml": {
+    "P0": [
+      {
+        "week": 0,
+        "name": "OpenAI Integration",
+        "status": "PASS",
+        "details": "File exists (25,630 bytes)"
+      },
+      {
+        "week": 0,
+        "name": "Script Generation",
+        "status": "PASS",
+        "details": "Function 'generate_script' found"
+      },
+      {
+        "week": 1,
+        "name": "Voice Synthesis",
+        "status": "PASS",
+        "details": "Config 'ELEVENLABS_API_KEY' found in .env.example"
+      },
+      {
+        "week": 1,
+        "name": "Thumbnail Generation",
+        "status": "PASS",
+        "details": "File exists (12,288 bytes)"
+      },
+      {
+        "week": 1,
+        "name": "Quality Scoring",
+        "status": "FAIL",
+        "details": "Function 'calculate_quality_score' not found in backend/app/services/analytics_service.py"
+      },
+      {
+        "week": 2,
+        "name": "Multi-Model Orchestration",
+        "status": "PASS",
+        "details": "File exists (24,684 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "ML Pipeline",
+        "status": "PASS",
+        "details": "File exists (1,862 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "Personalization",
+        "status": "PASS",
+        "details": "File exists (20,100 bytes)"
+      }
+    ],
+    "P1": [
+      {
+        "week": 0,
+        "name": "Prompt Templates",
+        "status": "PASS",
+        "details": "Directory exists with 1 files"
+      },
+      {
+        "week": 0,
+        "name": "Cost Optimization",
+        "status": "FAIL",
+        "details": "Function 'optimize_model_selection' not found in backend/app/services/cost_optimizer.py"
+      }
+    ],
+    "P2": []
+  },
+  "data": {
+    "P0": [
+      {
+        "week": 0,
+        "name": "Analytics Schema",
+        "status": "PASS",
+        "details": "File exists (2,010 bytes)"
+      },
+      {
+        "week": 0,
+        "name": "Data Collection",
+        "status": "FAIL",
+        "details": "Function 'track_event' not found in backend/app/services/analytics_service.py"
+      },
+      {
+        "week": 1,
+        "name": "Real-time Analytics",
+        "status": "PASS",
+        "details": "File exists (31,387 bytes)"
+      },
+      {
+        "week": 1,
+        "name": "Reporting System",
+        "status": "FAIL",
+        "details": "Function 'generate_report' not found in backend/app/services/analytics_service.py"
+      },
+      {
+        "week": 2,
+        "name": "Data Warehouse",
+        "status": "PASS",
+        "details": "File exists (31,578 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "Advanced Analytics",
+        "status": "PASS",
+        "details": "File exists (39,008 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "Data Visualization",
+        "status": "PASS",
+        "details": "File exists (22,243 bytes)"
+      }
+    ],
+    "P1": [
+      {
+        "week": 2,
+        "name": "Data Quality",
+        "status": "PASS",
+        "details": "File exists (32,118 bytes)"
+      },
+      {
+        "week": 2,
+        "name": "Data Marketplace",
+        "status": "PASS",
+        "details": "File exists (32,162 bytes)"
+      }
+    ],
+    "P2": []
+  },
+  "unit_tests": [
+    {
+      "test": "Database Models Import",
+      "status": "PASS"
+    },
+    {
+      "test": "Core Services Import",
+      "status": "PASS"
+    },
+    {
+      "test": "API Routes",
+      "status": "FAIL",
+      "error": "cannot import name 'analytics_pipeline' from 'app.services.analytics_service' (C:\\Users\\Hp\\projects\\ytempire-mvp\\backend\\app\\services\\analytics_service.py)"
+    },
+    {
+      "test": "Celery Tasks Import",
+      "status": "FAIL",
+      "error": "cannot import name 'AIServiceManager' from 'app.services.ai_services' (C:\\Users\\Hp\\projects\\ytempire-mvp\\backend\\app\\services\\ai_services.py)"
+    },
+    {
+      "test": "Configuration",
+      "status": "FAIL",
+      "error": "Missing setting: JWT_SECRET_KEY"
+    }
+  ],
+  "functionality_tests": [
+    {
+      "test": "Video Pipeline Functions",
+      "status": "FAIL",
+      "error": "AsyncClient.__init__() got an unexpected keyword argument 'proxies'"
+    },
+    {
+      "test": "Analytics Functions",
+      "status": "FAIL",
+      "error": "Missing analytics functions"
+    },
+    {
+      "test": "Cost Tracking Functions",
+      "status": "FAIL",
+      "error": "Missing cost tracking functions"
+    },
+    {
+      "test": "WebSocket Functions",
+      "status": "PASS"
+    },
+    {
+      "test": "YouTube Multi-Account",
+      "status": "FAIL",
+      "error": "Missing multi-account functions"
+    }
+  ],
+  "integration_tests": [
+    {
+      "test": "Database Connection",
+      "status": "FAIL",
+      "error": "password authentication failed for user \"ytempire\""
+    },
+    {
+      "test": "Redis Configuration",
+      "status": "PASS"
+    },
+    {
+      "test": "Service Cross-Dependencies",
+      "status": "PASS"
+    },
+    {
+      "test": "API-Service Integration",
+      "status": "PASS"
+    },
+    {
+      "test": "Celery-Service Integration",
+      "status": "PASS"
+    }
+  ],
+  "hanging_features": [
+    "channel_manager",
+    "gpu_resource_manager",
+    "room_manager",
+    "subscription_service",
+    "vector_database",
+    "vector_database_deployed"
+  ]
+}

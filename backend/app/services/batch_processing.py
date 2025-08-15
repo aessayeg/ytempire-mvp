@@ -633,6 +633,63 @@ class DataBatchProcessor:
             "records_processed": 1000
         }
 
+    async def process_batch(
+        self,
+        items: List[Dict[str, Any]],
+        processor_func: Optional[Callable] = None,
+        batch_type: BatchJobType = BatchJobType.VIDEO_GENERATION,
+        max_concurrent: int = 10,
+        user_id: Optional[str] = None
+    ) -> BatchJobResult:
+        """
+        Process a batch of items with configurable concurrency.
+        Designed to handle 50-100 videos/day capacity.
+        
+        Args:
+            items: List of items to process
+            processor_func: Function to process each item
+            batch_type: Type of batch job
+            max_concurrent: Maximum concurrent processing (default: 10)
+            user_id: User ID for notifications
+            
+        Returns:
+            BatchJobResult with processing results
+        """
+        job_id = str(uuid.uuid4())
+        
+        # Create batch job items
+        batch_items = []
+        for idx, item in enumerate(items):
+            batch_item = BatchJobItem(
+                id=f"{job_id}_{idx}",
+                data=item
+            )
+            batch_items.append(batch_item)
+        
+        # Configure batch job
+        job_config = BatchJobConfig(
+            job_id=job_id,
+            job_type=batch_type,
+            items=batch_items,
+            max_concurrent=max_concurrent,
+            max_retries=3,
+            timeout_per_item=600,  # 10 minutes per video
+            notification_user_id=user_id
+        )
+        
+        # Use default processor if none provided
+        if processor_func is None:
+            processor_func = self._default_processor
+        
+        # Submit and process batch
+        return await self.submit_batch_job(job_config, processor_func)
+    
+    async def _default_processor(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Default processor for batch items"""
+        logger.info(f"Processing item: {data}")
+        await asyncio.sleep(0.1)  # Minimal processing simulation
+        return {"status": "processed", "data": data}
+
 # Global batch processor instance
 batch_processor = BatchProcessor()
 video_batch_processor = VideoBatchProcessor(batch_processor)

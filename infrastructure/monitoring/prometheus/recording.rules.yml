@@ -1,0 +1,156 @@
+# Prometheus Recording Rules for YTEmpire
+# Pre-computed metrics for better dashboard performance
+groups:
+  - name: ytempire_aggregations
+    interval: 30s
+    rules:
+      # API Performance Aggregations
+      - record: api:request_duration_seconds:p50
+        expr: histogram_quantile(0.5, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, method, endpoint))
+      
+      - record: api:request_duration_seconds:p95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, method, endpoint))
+      
+      - record: api:request_duration_seconds:p99
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, method, endpoint))
+      
+      - record: api:request_rate
+        expr: sum(rate(http_requests_total[5m])) by (method, endpoint, status)
+      
+      - record: api:error_rate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (method, endpoint) / sum(rate(http_requests_total[5m])) by (method, endpoint)
+      
+      # Video Generation Metrics
+      - record: video:generation_rate
+        expr: sum(rate(video_generation_total[5m])) by (channel_id, status)
+      
+      - record: video:generation_duration:p50
+        expr: histogram_quantile(0.5, sum(rate(video_generation_duration_seconds_bucket[15m])) by (le, channel_id))
+      
+      - record: video:generation_duration:p95
+        expr: histogram_quantile(0.95, sum(rate(video_generation_duration_seconds_bucket[15m])) by (le, channel_id))
+      
+      - record: video:success_rate
+        expr: sum(rate(video_generation_total{status="success"}[15m])) by (channel_id) / sum(rate(video_generation_total[15m])) by (channel_id)
+      
+      - record: video:hourly_count
+        expr: sum(increase(video_generation_total[1h])) by (channel_id, status)
+      
+      - record: video:daily_count
+        expr: sum(increase(video_generation_total[24h])) by (channel_id, status)
+      
+      # Cost Metrics Aggregations
+      - record: cost:per_video_avg_5m
+        expr: avg(cost_per_video_dollars) by (service)
+      
+      - record: cost:per_video_avg_1h
+        expr: avg_over_time(cost_per_video_dollars[1h])
+      
+      - record: cost:total_hourly
+        expr: sum(increase(total_cost_dollars[1h])) by (service)
+      
+      - record: cost:total_daily
+        expr: sum(increase(total_cost_dollars[24h])) by (service)
+      
+      - record: cost:efficiency_ratio
+        expr: sum(rate(video_generation_total{status="success"}[1h])) / sum(increase(total_cost_dollars[1h]))
+      
+      # ML Model Performance Aggregations
+      - record: ml:inference_rate
+        expr: sum(rate(ml_model_inferences_total[5m])) by (model_id, model_type, status)
+      
+      - record: ml:latency:p50
+        expr: histogram_quantile(0.5, sum(rate(ml_model_latency_ms_bucket[5m])) by (le, model_id, model_type))
+      
+      - record: ml:latency:p95
+        expr: histogram_quantile(0.95, sum(rate(ml_model_latency_ms_bucket[5m])) by (le, model_id, model_type))
+      
+      - record: ml:latency:p99
+        expr: histogram_quantile(0.99, sum(rate(ml_model_latency_ms_bucket[5m])) by (le, model_id, model_type))
+      
+      - record: ml:success_rate
+        expr: sum(rate(ml_model_inferences_total{status="success"}[5m])) by (model_id, model_type) / sum(rate(ml_model_inferences_total[5m])) by (model_id, model_type)
+      
+      - record: ml:throughput
+        expr: sum(rate(ml_model_inferences_total{status="success"}[1m])) by (model_id, model_type) * 60
+      
+      # YouTube API Metrics
+      - record: youtube:api_calls_rate
+        expr: sum(rate(youtube_api_calls_total[5m])) by (endpoint, account_id)
+      
+      - record: youtube:quota_usage_rate
+        expr: sum(rate(youtube_api_quota_used[5m])) by (account_id)
+      
+      - record: youtube:upload_success_rate
+        expr: sum(rate(youtube_uploads_total{status="success"}[30m])) by (channel_id) / sum(rate(youtube_uploads_total[30m])) by (channel_id)
+      
+      - record: youtube:account_health_score
+        expr: (1 - youtube:api_error_rate) * (1 - (youtube_api_quota_used / youtube_api_quota_limit)) * youtube:upload_success_rate
+      
+      # Infrastructure Metrics
+      - record: infra:cpu_usage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+      
+      - record: infra:memory_usage_percent
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+      
+      - record: infra:disk_usage_percent
+        expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100
+      
+      - record: infra:gpu_utilization
+        expr: avg(nvidia_gpu_utilization_percent) by (gpu)
+      
+      - record: infra:gpu_memory_usage_percent
+        expr: (nvidia_gpu_memory_used_bytes / nvidia_gpu_memory_total_bytes) * 100
+      
+      # Database Performance
+      - record: db:connections_usage_percent
+        expr: (pg_stat_database_numbackends / pg_settings_max_connections) * 100
+      
+      - record: db:transaction_rate
+        expr: sum(rate(pg_stat_database_xact_commit[5m])) by (datname)
+      
+      - record: db:query_duration:p95
+        expr: histogram_quantile(0.95, sum(rate(pg_stat_statements_calls_bucket[5m])) by (le, query))
+      
+      - record: db:cache_hit_ratio
+        expr: pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read)
+      
+      # Redis Performance
+      - record: redis:operations_per_second
+        expr: sum(rate(redis_commands_total[5m])) by (cmd)
+      
+      - record: redis:memory_usage_percent
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100
+      
+      - record: redis:hit_rate
+        expr: redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total)
+      
+      - record: redis:evicted_keys_rate
+        expr: rate(redis_evicted_keys_total[5m])
+      
+      # Celery Worker Metrics
+      - record: celery:task_rate
+        expr: sum(rate(celery_tasks_total[5m])) by (name, status)
+      
+      - record: celery:task_duration:p95
+        expr: histogram_quantile(0.95, sum(rate(celery_task_duration_seconds_bucket[5m])) by (le, name))
+      
+      - record: celery:queue_depth
+        expr: sum(celery_queue_length) by (queue)
+      
+      - record: celery:worker_utilization
+        expr: sum(rate(celery_worker_busy_seconds[5m])) by (worker) / sum(rate(celery_worker_total_seconds[5m])) by (worker)
+      
+      # Business Metrics
+      - record: business:videos_per_channel_daily
+        expr: sum(increase(video_generation_total{status="success"}[24h])) by (channel_id)
+      
+      - record: business:revenue_per_video_estimate
+        expr: (sum(increase(video_views_total[24h])) * 0.002) / sum(increase(video_generation_total{status="success"}[24h]))
+      
+      - record: business:roi_estimate
+        expr: (business:revenue_per_video_estimate - cost:per_video_avg_1h) / cost:per_video_avg_1h
+      
+      - record: business:automation_percentage
+        expr: (1 - (sum(rate(manual_intervention_required_total[24h])) / sum(rate(video_generation_total[24h])))) * 100

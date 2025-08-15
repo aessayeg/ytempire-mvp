@@ -966,6 +966,169 @@ class CostOptimizer:
             recommendations.append("Daily costs are low - maintain current strategies")
         
         return recommendations
+    
+    async def optimize_model_selection(
+        self,
+        task_type: str,
+        quality_requirements: Dict[str, Any],
+        budget_constraint: float = 1.0
+    ) -> Dict[str, Any]:
+        """
+        Optimize AI model selection based on task requirements and budget.
+        Intelligently selects the most cost-effective model that meets quality thresholds.
+        
+        Args:
+            task_type: Type of task (e.g., 'script_generation', 'quality_check', 'summarization')
+            quality_requirements: Requirements like min_quality_score, max_latency, etc.
+            budget_constraint: Maximum cost allowed for this operation
+            
+        Returns:
+            Optimal model configuration and cost estimate
+        """
+        
+        # Define model capabilities and costs
+        models = {
+            "gpt-4-turbo": {
+                "cost_per_1k_tokens": 0.03,
+                "quality_score": 95,
+                "latency_ms": 2000,
+                "capabilities": ["complex_reasoning", "creative_writing", "code_generation"]
+            },
+            "gpt-3.5-turbo": {
+                "cost_per_1k_tokens": 0.001,
+                "quality_score": 80,
+                "latency_ms": 800,
+                "capabilities": ["general_tasks", "summarization", "simple_writing"]
+            },
+            "claude-3-opus": {
+                "cost_per_1k_tokens": 0.015,
+                "quality_score": 93,
+                "latency_ms": 1800,
+                "capabilities": ["complex_reasoning", "analysis", "creative_writing"]
+            },
+            "claude-3-sonnet": {
+                "cost_per_1k_tokens": 0.003,
+                "quality_score": 85,
+                "latency_ms": 1000,
+                "capabilities": ["general_tasks", "analysis", "moderate_complexity"]
+            },
+            "claude-instant": {
+                "cost_per_1k_tokens": 0.0008,
+                "quality_score": 75,
+                "latency_ms": 400,
+                "capabilities": ["simple_tasks", "quick_responses", "basic_analysis"]
+            }
+        }
+        
+        # Task-specific model preferences
+        task_preferences = {
+            "script_generation": {
+                "min_quality": 85,
+                "preferred_models": ["gpt-4-turbo", "claude-3-opus", "gpt-3.5-turbo"],
+                "avg_tokens": 2000
+            },
+            "quality_check": {
+                "min_quality": 75,
+                "preferred_models": ["claude-3-sonnet", "gpt-3.5-turbo", "claude-instant"],
+                "avg_tokens": 500
+            },
+            "summarization": {
+                "min_quality": 70,
+                "preferred_models": ["gpt-3.5-turbo", "claude-instant"],
+                "avg_tokens": 800
+            },
+            "trend_analysis": {
+                "min_quality": 80,
+                "preferred_models": ["claude-3-sonnet", "gpt-3.5-turbo"],
+                "avg_tokens": 1500
+            }
+        }
+        
+        # Get task-specific preferences
+        task_prefs = task_preferences.get(task_type, {
+            "min_quality": 75,
+            "preferred_models": list(models.keys()),
+            "avg_tokens": 1000
+        })
+        
+        # Override with user requirements
+        min_quality = quality_requirements.get("min_quality_score", task_prefs["min_quality"])
+        max_latency = quality_requirements.get("max_latency_ms", 5000)
+        avg_tokens = quality_requirements.get("estimated_tokens", task_prefs["avg_tokens"])
+        
+        # Filter models based on requirements
+        suitable_models = []
+        for model_name, model_info in models.items():
+            # Check quality threshold
+            if model_info["quality_score"] < min_quality:
+                continue
+            
+            # Check latency requirement
+            if model_info["latency_ms"] > max_latency:
+                continue
+            
+            # Check budget constraint
+            estimated_cost = (avg_tokens / 1000) * model_info["cost_per_1k_tokens"]
+            if estimated_cost > budget_constraint:
+                continue
+            
+            # Check if model is preferred for this task
+            preference_bonus = 10 if model_name in task_prefs.get("preferred_models", []) else 0
+            
+            suitable_models.append({
+                "model": model_name,
+                "cost": estimated_cost,
+                "quality_score": model_info["quality_score"] + preference_bonus,
+                "latency": model_info["latency_ms"],
+                "cost_efficiency": model_info["quality_score"] / estimated_cost if estimated_cost > 0 else 0
+            })
+        
+        if not suitable_models:
+            # No models meet all requirements, relax constraints
+            return {
+                "status": "no_suitable_model",
+                "recommendation": "Relax quality or budget constraints",
+                "fallback_model": "gpt-3.5-turbo",
+                "fallback_cost": (avg_tokens / 1000) * models["gpt-3.5-turbo"]["cost_per_1k_tokens"],
+                "constraints_not_met": {
+                    "min_quality_required": min_quality,
+                    "budget_constraint": budget_constraint,
+                    "max_latency": max_latency
+                }
+            }
+        
+        # Sort by cost efficiency (quality per dollar)
+        suitable_models.sort(key=lambda x: x["cost_efficiency"], reverse=True)
+        optimal_model = suitable_models[0]
+        
+        # Calculate potential savings
+        most_expensive = max(suitable_models, key=lambda x: x["cost"])
+        savings = most_expensive["cost"] - optimal_model["cost"]
+        
+        return {
+            "status": "success",
+            "selected_model": optimal_model["model"],
+            "estimated_cost": round(optimal_model["cost"], 4),
+            "quality_score": optimal_model["quality_score"],
+            "latency_ms": optimal_model["latency"],
+            "cost_efficiency_score": round(optimal_model["cost_efficiency"], 2),
+            "alternatives": suitable_models[1:3] if len(suitable_models) > 1 else [],
+            "potential_savings": round(savings, 4),
+            "configuration": {
+                "task_type": task_type,
+                "estimated_tokens": avg_tokens,
+                "temperature": 0.7 if "creative" in task_type else 0.3,
+                "max_tokens": min(avg_tokens * 2, 4000),
+                "cache_enabled": True,
+                "cache_ttl": 3600 if task_type in ["trend_analysis", "summarization"] else 900
+            },
+            "optimization_notes": [
+                f"Selected {optimal_model['model']} for optimal cost-efficiency",
+                f"Estimated cost: ${optimal_model['cost']:.4f} per request",
+                f"Quality score: {optimal_model['quality_score']}/100",
+                f"Saves ${savings:.4f} vs most expensive option"
+            ]
+        }
 
 
 # Singleton instance
