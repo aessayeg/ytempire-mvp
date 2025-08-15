@@ -3,7 +3,7 @@ import type { ThemeOptions } from '@mui/material/styles';
 import {  meetsWCAGAA  } from '../utils/accessibility';
 
 // WCAG AA Compliant Color Palette
-const accessibleColors = { primary: {,
+const accessibleColors = { primary: {
   main: '#5 E35 B1', // Deeper purple for better contrast
     light: '#7 E57 C2',
     dark: '#4527 A0',
@@ -16,26 +16,26 @@ const accessibleColors = { primary: {,
     light: '#EF5350',
     dark: '#B71 C1 C',
     contrastText: '#FFFFFF' },
-  warning: {,
+  warning: {
   main: '#F57 C00', // Darker orange
     light: '#FFB74 D',
     dark: '#E65100',
     contrastText: '#000000', // Black text on orange
-  },
+  }
   info: { main: '#0277 BD', // Darker blue
     light: '#4 FC3 F7',
     dark: '#01579 B',
     contrastText: '#FFFFFF' },
-  success: { main: '#2 E7 D32', // Darker green
+  success: { main: '#2E7D32', // Darker green
     light: '#66 BB6 A',
-    dark: '#1 B5 E20',
+    dark: '#1B5E20',
     contrastText: '#FFFFFF' },
   grey: { 50: '#FAFAFA',
-    100: '#F5 F5 F5',
+    100: '#F5F5F5',
     200: '#EEEEEE',
-    300: '#E0 E0 E0',
+    300: '#E0E0E0',
     400: '#BDBDBD',
-    500: '#9 E9 E9 E',
+    500: '#9E9E9 E',
     600: '#757575',
     700: '#616161',
     800: '#424242',
@@ -68,57 +68,57 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
       info: accessibleColors.info,
       success: accessibleColors.success,
       grey: accessibleColors.grey,
-      background: {,
+      background: {
   default: mode === 'light' ? '#FFFFFF' : '#121212',
-        paper: mode === 'light' ? '#FFFFFF' : '#1 E1 E1 E' },
+        paper: mode === 'light' ? '#FFFFFF' : '#1E1E1 E' },
       text: { primary: mode === 'light' ? 'rgba(0, 0, 0, 0.87)' : 'rgba(255, 255, 255, 0.87)',
         secondary: mode === 'light' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.6)',
         disabled: mode === 'light' ? 'rgba(0, 0, 0, 0.38)' : 'rgba(255, 255, 255, 0.38)' }
-    },
+    }
     typography: { // Ensure readable font sizes,
   fontSize: 14,
-      h1: {,
-  fontSize: '2.5 rem',
+      h1: {
+  fontSize: '2.5rem',
         fontWeight: 500,
         lineHeight: 1.2,
         letterSpacing: '-0.01562 em' },
-      h2: { fontSize: '2 rem',
+      h2: { fontSize: '2rem',
         fontWeight: 500,
         lineHeight: 1.2,
         letterSpacing: '-0.00833 em' },
-      h3: { fontSize: '1.75 rem',
+      h3: { fontSize: '1.75rem',
         fontWeight: 500,
         lineHeight: 1.2,
         letterSpacing: '0 em' },
-      h4: { fontSize: '1.5 rem',
+      h4: { fontSize: '1.5rem',
         fontWeight: 500,
         lineHeight: 1.3,
         letterSpacing: '0.00735 em' },
-      h5: { fontSize: '1.25 rem',
+      h5: { fontSize: '1.25rem',
         fontWeight: 500,
         lineHeight: 1.4,
         letterSpacing: '0 em' },
-      h6: { fontSize: '1.125 rem',
+      h6: { fontSize: '1.125rem',
         fontWeight: 500,
         lineHeight: 1.4,
         letterSpacing: '0.0075 em' },
-      body1: { fontSize: '1 rem',
+      body1: { fontSize: '1rem',
         lineHeight: 1.5,
         letterSpacing: '0.00938 em' },
-      body2: { fontSize: '0.875 rem',
+      body2: { fontSize: '0.875rem',
         lineHeight: 1.43,
         letterSpacing: '0.01071 em' },
-      button: { fontSize: '0.875 rem',
+      button: { fontSize: '0.875rem',
         fontWeight: 500,
         lineHeight: 1.75,
         letterSpacing: '0.02857 em',
         textTransform: 'uppercase' }
-    },
+    }
     components: { // Ensure all interactive elements have proper focus indicators,
-  MuiButton: {,
+  MuiButton: {
 
-        styleOverrides: {,
-  root: {,
+        styleOverrides: {
+  root: {
 
             minHeight: 36, // Minimum touch target size
             '&:focus-visible': {
@@ -127,9 +127,9 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
               outlineOffset: 2 }
           }
         }
-      },
-      MuiIconButton: { styleOverrides: {,
-  root: {,
+      }
+      MuiIconButton: { styleOverrides: {
+  root: {
 
             minWidth: 44, // Minimum touch target size
             minHeight: 44,
@@ -139,8 +139,8 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
               outlineOffset: 2 }
           }
         }
-      },
-      MuiTextField: { styleOverrides: {,
+      }
+      MuiTextField: { styleOverrides: {
   root: {
             '& .MuiOutlinedInput-root': {
               '&:focus-within': {
@@ -151,9 +151,9 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
             }
           }
         }
-      },
-      MuiLink: { styleOverrides: {,
-  root: {,
+      }
+      MuiLink: { styleOverrides: {
+  root: {
 
             textDecorationLine: 'underline',
             '&:focus-visible': {
@@ -162,8 +162,8 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
               outlineOffset: 2 }
           }
         }
-      },
-      MuiChip: { styleOverrides: {,
+      }
+      MuiChip: { styleOverrides: {
   root: {
             '&:focus-visible': {
               outline: '3px solid',
@@ -171,9 +171,9 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
               outlineOffset: 2 }
           }
         }
-      },
+      }
       // Add focus indicators to all focusable elements
-      MuiCheckbox: { styleOverrides: {,
+      MuiCheckbox: { styleOverrides: {
   root: {
             '&:focus-visible': {
               '& .MuiSvgIcon-root': {
@@ -183,8 +183,8 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
             }
           }
         }
-      },
-      MuiRadio: { styleOverrides: {,
+      }
+      MuiRadio: { styleOverrides: {
   root: {
             '&:focus-visible': {
               '& .MuiSvgIcon-root': {
@@ -194,8 +194,8 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
             }
           }
         }
-      },
-      MuiSwitch: { styleOverrides: {,
+      }
+      MuiSwitch: { styleOverrides: {
   root: {
             '&:focus-within': {
               '& .MuiSwitch-thumb': {
@@ -205,22 +205,22 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
             }
           }
         }
-      },
+      }
       // Ensure sufficient padding for touch targets
-      MuiListItem: { styleOverrides: {,
-  root: {,
+      MuiListItem: { styleOverrides: {
+  root: {
 
             minHeight: 48 }
         }
-      },
-      MuiMenuItem: { styleOverrides: {,
-  root: {,
+      }
+      MuiMenuItem: { styleOverrides: {
+  root: {
 
             minHeight: 48 }
         }
-      },
+      }
       // High contrast borders for inputs
-      MuiOutlinedInput: { styleOverrides: {,
+      MuiOutlinedInput: { styleOverrides: {
   root: {
             '& .MuiOutlinedInput-notchedOutline': {
               borderColor: mode === 'light' ? 'rgba(0, 0, 0, 0.23)' : 'rgba(255, 255, 255, 0.23)' },
@@ -228,7 +228,7 @@ export const createAccessibleTheme = (mode: 'light' | 'dark' = 'light'): ReturnT
           }
         }
       }
-    },
+    }
     shape: { borderRadius: 4 },
     spacing: 8
 };

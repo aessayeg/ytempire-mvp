@@ -31,7 +31,7 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
     React.useEffect(() => {
       if (!keyboardShortcut || disabled) return;
 
-      const handleKeyDown = (_: KeyboardEvent) => {
+      const handleKeyDown = (e: KeyboardEvent) => {
         const keys = keyboardShortcut.toLowerCase().split('+');
         const isMatch = keys.every((key) => {
           switch (key) {
@@ -43,16 +43,20 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
               return e.shiftKey;
             case 'meta':
               return e.metaKey;
-              return e.key.toLowerCase() === key}
+            default:
+              return e.key.toLowerCase() === key;
+          }
         });
 
         if (isMatch) {
           e.preventDefault();
-          onClick?.(e as React.MouseEvent<HTMLButtonElement>)}
+          onClick?.(e as unknown as React.MouseEvent<HTMLButtonElement>);
+        }
       };
 
       document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown)}, [keyboardShortcut, disabled, onClick]);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [keyboardShortcut, disabled, onClick]);
 
     const button = (
       <Button
@@ -69,14 +73,15 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
 
     if (tooltip) {
       const tooltipTitle = keyboardShortcut
-        ? `${tooltip} (${keyboardShortcut})
+        ? `${tooltip} (${keyboardShortcut})`
         : tooltip;
 
       return (
-    <Tooltip title={tooltipTitle} arrow>
+        <Tooltip title={tooltipTitle} arrow>
           <span>{button}</span>
         </Tooltip>
-      )}
+      );
+    }
 
     return button;
   }

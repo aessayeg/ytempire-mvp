@@ -31,10 +31,19 @@ import {
   FormControl,
   InputLabel,
   Select,
-  TextField
- } from '@mui/material';
-import {  Add as AddIcon, Refresh as RefreshIcon 
- } from '@mui/icons-material';
+  TextField,
+  Stack
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Refresh as RefreshIcon,
+  Delete as DeleteIcon,
+  Download as DownloadIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  Group as GroupIcon,
+  Info as InfoIcon
+} from '@mui/icons-material';
 import { 
   BarChart,
   Bar,
@@ -49,9 +58,10 @@ import {
   Legend,
   ResponsiveContainer,
   Area,
-  AreaChart
- } from 'recharts';
-import {  format, subDays  } from 'date-fns';
+  AreaChart,
+  Tooltip as RechartsTooltip
+} from 'recharts';
+import { format, subDays } from 'date-fns';
 
 // Types
 interface Competitor {
@@ -148,7 +158,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
   const [competitors, setCompetitors] = useState<Competitor[]>(MOCK_COMPETITORS);
   const [selectedCompetitors, setSelectedCompetitors] = useState<string[]>(['1', '2']);
   const [currentTab, setCurrentTab] = useState(0);
-  const [timeRange, setTimeRange] = useState('30 d');
+  const [timeRange, setTimeRange] = useState('30d');
   const [isLoading, setIsLoading] = useState(false);
   const [newCompetitorUrl, setNewCompetitorUrl] = useState('');
 
@@ -186,7 +196,7 @@ const metrics: Record<string, CompetitorMetrics> = {};
     {
       trend: 'Short-form content outperforming',
       impact: 'high',
-      description: 'Videos under 60 seconds seeing 2 x engagement',
+      description: 'Videos under 60 seconds seeing 2x engagement',
       recommendedAction: 'Create YouTube Shorts versions of main content',
 
     },
@@ -270,7 +280,9 @@ const dataPoint: Record<string, number | string> = { metric };
           }
         }
       });
-      return dataPoint})}, [competitors, selectedCompetitors, competitorMetrics]);
+      return dataPoint;
+    });
+  }, [competitors, selectedCompetitors, competitorMetrics]);
 
   // Generate trend data
   const trendData = useMemo(() => {
@@ -284,17 +296,20 @@ const dataPoint: Record<string, number | string> = { metric };
           // Simulate growth trend
           const baseValue = comp.subscriberCount / 1000;
           const growth = (i / 30) * (competitorMetrics[compId]?.growthRate || 5) / 100;
-          dataPoint[comp.channelName] = Math.floor(baseValue * (1 - 0.1 + growth))}
+          dataPoint[comp.channelName] = Math.floor(baseValue * (1 - 0.1 + growth));
+        }
       });
       
-      return dataPoint})}, [competitors, selectedCompetitors, competitorMetrics]);
+      return dataPoint;
+    });
+  }, [competitors, selectedCompetitors, competitorMetrics]);
 
   // Add competitor
   const addCompetitor = () => {
     if (!newCompetitorUrl) return;
     
     // Extract channel ID from URL (mock, implementation)
-const newCompetitor: Competitor = {,
+    const newCompetitor: Competitor = {
   id: Date.now().toString(),
       channelName: 'New Competitor',
       channelId: 'UC_new',
@@ -307,7 +322,7 @@ const newCompetitor: Competitor = {,
       joinedDate: new Date(),
       isTracking: false,
       lastUpdated: new Date()
-  };
+    };
     
     setCompetitors([...competitors, newCompetitor]);
     setNewCompetitorUrl('');
@@ -343,8 +358,7 @@ const newCompetitor: Competitor = {,
       metrics: selectedCompetitors.map(id => ({ id, ...competitorMetrics[id] })),
       insights: marketInsights,
       gaps: contentGaps,
-      exportDate: new Date().toISOString(),
-
+      exportDate: new Date().toISOString()
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -356,11 +370,10 @@ const newCompetitor: Competitor = {,
   };
 
   return (
-    <>
-      <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Competitive Analysis</Typography>
-      <Stack direction="row" spacing={2}>
+        <Stack direction="row" spacing={2}>
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
@@ -497,8 +510,10 @@ const newCompetitor: Competitor = {,
                       checked={selectedCompetitors.length === competitors.length}
                       onChange={(_) => {
                         if (_.target.checked) {
-                          setSelectedCompetitors(competitors.map(c => c.id))} else {
-                          setSelectedCompetitors([])}
+                          setSelectedCompetitors(competitors.map(c => c.id));
+                        } else {
+                          setSelectedCompetitors([]);
+                        }
                       }}
                     />
                   </TableCell>
@@ -516,8 +531,7 @@ const newCompetitor: Competitor = {,
                 {competitors.map((competitor) => {
                   const metrics = competitorMetrics[competitor.id];
                   return (
-    <>
-      <TableRow key={competitor.id}>
+                    <TableRow key={competitor.id}>
                       <TableCell padding="checkbox">
                         <Checkbox
                           checked={selectedCompetitors.includes(competitor.id)}
@@ -538,13 +552,13 @@ const newCompetitor: Competitor = {,
                         </Box>
                       </TableCell>
                       <TableCell align="right">
-                        {competitor.subscriberCount / 1000000).toFixed(2}M
+                        {(competitor.subscriberCount / 1000000).toFixed(2)}M
                       </TableCell>
                       <TableCell align="right">
                         {competitor.videoCount}
                       </TableCell>
                       <TableCell align="right">
-                        {competitor.viewCount / 1000000).toFixed(1}M
+                        {(competitor.viewCount / 1000000).toFixed(1)}M
                       </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
@@ -574,17 +588,18 @@ const newCompetitor: Competitor = {,
                         <IconButton
                           size="small"
                           color="error"
-                          onClick={() => removeCompetitor(competitor.id}
+                          onClick={() => removeCompetitor(competitor.id)}
                         >
                           <DeleteIcon />
                         </IconButton>
                       </TableCell>
                     </TableRow>
-                  )});
-}
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>
+        </>
       )}
       {/* Comparison Tab */}
       {currentTab === 1 && (
@@ -600,10 +615,10 @@ const newCompetitor: Competitor = {,
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <ChartTooltip />
+                  <RechartsTooltip />
                   <Legend />
                   <Bar dataKey="subscribers" fill="#8884d8" name="Subscribers (K)" />
-                  <Bar dataKey="views" fill="#82 ca9 d" name="Views (M)" />
+                  <Bar dataKey="views" fill="#82ca9d" name="Views (M)" />
                   <Bar dataKey="engagement" fill="#ffc658" name="Engagement (%)" />
                 </BarChart>
               </ResponsiveContainer>
@@ -629,12 +644,12 @@ const newCompetitor: Competitor = {,
                         key={compId}
                         name={comp.channelName}
                         dataKey={comp.channelName}
-                        stroke={colors[index % colors.length]
-                        fill={colors[index % colors.length]
+                        stroke={colors[index % colors.length]}
+                        fill={colors[index % colors.length]}
                         fillOpacity={0.3}
                       />
-                    ) : null});
-}
+                    ) : null;
+                  })}
                   <Legend />
                 </RadarChart>
               </ResponsiveContainer>
@@ -655,12 +670,11 @@ const newCompetitor: Competitor = {,
                       {selectedCompetitors.map(compId => {
                         const comp = competitors.find(c => c.id === compId);
                         return (
-    <>
-      <TableCell key={compId} align="center">
+                          <TableCell key={compId} align="center">
                             {comp?.channelName}
                           </TableCell>
-                        )});
-}
+                        );
+                      })}
                     </TableRow>
                   </TableHead>
       <TableBody>
@@ -823,7 +837,7 @@ const newCompetitor: Competitor = {,
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <ChartTooltip />
+                  <RechartsTooltip />
                   <Legend />
                   {selectedCompetitors.map((compId, index) => {
                     const comp = competitors.find(c => c.id === compId);
@@ -833,12 +847,12 @@ const newCompetitor: Competitor = {,
                         key={compId}
                         type="monotone"
                         dataKey={comp.channelName}
-                        stroke={colors[index % colors.length]
-                        fill={colors[index % colors.length]
+                        stroke={colors[index % colors.length]}
+                        fill={colors[index % colors.length]}
                         fillOpacity={0.3}
                       />
-                    ) : null});
-}
+                    ) : null;
+                  })}
                 </AreaChart>
               </ResponsiveContainer>
             </Paper>
@@ -846,4 +860,5 @@ const newCompetitor: Competitor = {,
         </Grid>
       )}
     </Box>
-  )};
+  );
+};

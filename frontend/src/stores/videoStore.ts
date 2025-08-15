@@ -34,7 +34,7 @@ export const createOptimizedRouter = () => {
   ])}
       set({ error: errorMessage, loading: false });
 }
-  },
+  }
 
   createVideo: async (videoData) => {
     set({ loading: true, error: null })
@@ -46,7 +46,7 @@ export const createOptimizedRouter = () => {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create video';
       set({ error: errorMessage, loading: false });
 }
-  },
+  }
 
   updateVideo: (id, updates) => {
     set((state) => ({
@@ -54,7 +54,7 @@ export const createOptimizedRouter = () => {
         video.id === id ? { ...video, ...updates } : video
       )
     }))
-  },
+  }
 
   deleteVideo: (id) => { set((state) => ({,
   videos: state.videos.filter((video) => video.id !== id) }))

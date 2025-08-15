@@ -36,6 +36,7 @@ import {
   AttachMoney,
   Visibility,
   Comment,
+  ThumbUp,
   PlayCircle,
   Download,
   Refresh,
@@ -120,19 +121,19 @@ interface TabPanelProps {
 
 const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
   return (
-    <>
-      <React.Fragment>
+    <React.Fragment>
       <div hidden={value !== index}>
-      { value === index && <Box sx={{ py:  3  }}>{children}</Box>}
-    </div>
-    </>
-  )};
+        {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+      </div>
+    </React.Fragment>
+  );
+};
 
 export const AnalyticsDashboard: React.FC = () => {
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [tabValue, setTabValue] = useState(0);
-  const [timeRange, setTimeRange] = useState('7 d');
+  const [timeRange, setTimeRange] = useState('7d');
   const [chartType, setChartType] = useState<'line' | 'bar' | 'area'>('line');
   const [comparisonMode, setComparisonMode] = useState(false);
 
@@ -143,8 +144,8 @@ export const AnalyticsDashboard: React.FC = () => {
 
   useEffect(() => {
     // Generate mock revenue data
-    const days = timeRange === '7 d' ? 7 : timeRange === '30 d' ? 30 : 90;
-    const revenue = Array.from({  length:  days  }, (_, i) => {
+    const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
+    const revenue = Array.from({ length: days }, (_, i) => {
      const date = subDays(new Date(), days - 1 - i);
       const baseRevenue = 100 + Math.random() * 50;
       return {
@@ -154,13 +155,13 @@ export const AnalyticsDashboard: React.FC = () => {
         membershipRevenue: baseRevenue * 0.25,
         sponsorshipRevenue: baseRevenue * 0.15,
         views: Math.floor(5000 + Math.random() * 10000),
-        rpm: 3 + Math.random() * 2 
-  
-      }});
+        rpm: 3 + Math.random() * 2
+      };
+    });
     setRevenueData(revenue);
 
     // Generate mock video performance data
-    const videos: VideoPerformance[] = Array.from({  length:  20  }, (_, i) => ({
+    const videos: VideoPerformance[] = Array.from({ length: 20 }, (_, i) => ({
       id: `video-${i}`,
       title: `Video Title ${i + 1}: Amazing Content That Gets Views`,
       thumbnail: `/thumbnail-${i}.jpg`,
@@ -174,12 +175,14 @@ export const AnalyticsDashboard: React.FC = () => {
       avd: 30 + Math.random() * 40,
       revenue: 10 + Math.random() * 200,
       impressions: Math.floor(10000 + Math.random() * 100000),
-      retention: Array.from({  length:  10  }, () => 100 - Math.random() * 50);
+      retention: Array.from({ length: 10 }, () => 100 - Math.random() * 50)
     }));
     setVideoPerformance(videos);
 
     // Generate mock channel comparison data
-    const channels: ChannelComparison[] = [ { channelId: 'ch1',
+    const channels: ChannelComparison[] = [
+      {
+        channelId: 'ch1',
         channelName: 'Tech Insights Daily',
         subscribers: 125000,
         totalViews: 8500000,
@@ -188,8 +191,10 @@ export const AnalyticsDashboard: React.FC = () => {
         avgEngagement: 4.5,
         videosPublished: 342,
         growthRate: 12.5,
-        health: 92 },
-      { channelId: 'ch2',
+        health: 92
+      },
+      {
+        channelId: 'ch2',
         channelName: 'AI Explained',
         subscribers: 89000,
         totalViews: 5200000,
@@ -198,8 +203,10 @@ export const AnalyticsDashboard: React.FC = () => {
         avgEngagement: 5.2,
         videosPublished: 289,
         growthRate: 15.3,
-        health: 88 },
-      { channelId: 'ch3',
+        health: 88
+      },
+      {
+        channelId: 'ch3',
         channelName: 'Future Tech',
         subscribers: 67000,
         totalViews: 3100000,
@@ -208,8 +215,10 @@ export const AnalyticsDashboard: React.FC = () => {
         avgEngagement: 3.8,
         videosPublished: 258,
         growthRate: 8.7,
-        health: 75 },
-      { channelId: 'ch4',
+        health: 75
+      },
+      {
+        channelId: 'ch4',
         channelName: 'Coding Masters',
         subscribers: 234000,
         totalViews: 12000000,
@@ -218,10 +227,13 @@ export const AnalyticsDashboard: React.FC = () => {
         avgEngagement: 6.1,
         videosPublished: 342,
         growthRate: 18.9,
-        health: 95 } ];
+        health: 95
+      }
+    ];
     setChannelComparison(channels);
 
-    setLoading(false)}, [timeRange]);
+    setLoading(false);
+  }, [timeRange]);
 
   // Calculate summary metrics
   const totalRevenue = revenueData.reduce((sum, d) => sum + d.revenue, 0);
@@ -232,35 +244,41 @@ export const AnalyticsDashboard: React.FC = () => {
     : 0;
 
   // Chart colors
-  const COLORS = [ theme.palette.primary.main,
+  const COLORS = [
+    theme.palette.primary.main,
     theme.palette.secondary.main,
     theme.palette.success.main,
     theme.palette.warning.main,
     theme.palette.error.main,
-    theme.palette.info.main ];
+    theme.palette.info.main
+  ];
 
   // Revenue breakdown for pie chart
-  const revenueBreakdown = [ {  name:  'Ad Revenue', value: totalRevenue * 0.6, percentage: 60  },
-    {  name:  'Memberships', value: totalRevenue * 0.25, percentage: 25  },
-    {  name:  'Sponsorships', value: totalRevenue * 0.15, percentage: 15  } ];
+  const revenueBreakdown = [
+    { name: 'Ad Revenue', value: totalRevenue * 0.6, percentage: 60 },
+    { name: 'Memberships', value: totalRevenue * 0.25, percentage: 25 },
+    { name: 'Sponsorships', value: totalRevenue * 0.15, percentage: 15 }
+  ];
 
   // Channel comparison radar data
-  const radarData = channelComparison.map(channel => ({ channel: channel.channelName,
+  const radarData = channelComparison.map(channel => ({
+    channel: channel.channelName,
     subscribers: (channel.subscribers / 250000) * 100,
     views: (channel.avgViews / 40000) * 100,
     engagement: (channel.avgEngagement / 10) * 100,
     revenue: (channel.totalRevenue / 30000) * 100,
     growth: (channel.growthRate / 20) * 100,
-    health: channel.health }));
+    health: channel.health
+  }));
 
   const renderRevenueTab = () => (
     <Grid container spacing={3}>
       {/* Summary Cards */}
-      <Grid size={ { xs:  12, sm: 6, md: 3  }}>
+      <Grid size={{ xs:  12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
-            <Box sx={ { display:  'flex', alignItems: 'center', mb: 2  }}>
-              <Avatar sx={ { bgcolor:  'success.main', mr: 2  }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
                 <AttachMoney />
               </Avatar>
       <Box>
@@ -272,7 +290,7 @@ export const AnalyticsDashboard: React.FC = () => {
                 </Typography>
               </Box>
             </Box>
-            <Box sx={ { display:  'flex', alignItems: 'center', gap: 0.5  }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               {revenueGrowth > 0 ? (
                 <TrendingUp color="success" fontSize="small" />
               ) : (
@@ -280,20 +298,20 @@ export const AnalyticsDashboard: React.FC = () => {
               )}
               <Typography
                 variant="body2"
-                color={ revenueGrowth > 0 ? 'success.main' :  'error.main' }
+                color={revenueGrowth > 0 ? 'success.main' : 'error.main'}
               >
-                { revenueGrowth > 0 ? '+' :  '' }{revenueGrowth.toFixed(1)}% vs previous period
+                {revenueGrowth > 0 ? '+' : ''}{revenueGrowth.toFixed(1)}% vs previous period
               </Typography>
             </Box>
           </CardContent>
         </Card>
       </Grid>
 
-      <Grid size={ { xs:  12, sm: 6, md: 3  }}>
+      <Grid size={{ xs:  12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
-            <Box sx={ { display:  'flex', alignItems: 'center', mb: 2  }}>
-              <Avatar sx={ { bgcolor:  'primary.main', mr: 2  }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
                 <Visibility />
               </Avatar>
               <Box>
@@ -312,11 +330,11 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </Grid>
 
-      <Grid size={ { xs:  12, sm: 6, md: 3  }}>
+      <Grid size={{ xs:  12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
-            <Box sx={ { display:  'flex', alignItems: 'center', mb: 2  }}>
-              <Avatar sx={ { bgcolor:  'warning.main', mr: 2  }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Avatar sx={{ bgcolor: 'warning.main', mr: 2 }}>
                 <Timeline />
               </Avatar>
               <Box>
@@ -335,11 +353,11 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </Grid>
 
-      <Grid size={ { xs:  12, sm: 6, md: 3  }}>
+      <Grid size={{ xs:  12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
-            <Box sx={ { display:  'flex', alignItems: 'center', mb: 2  }}>
-              <Avatar sx={ { bgcolor:  'info.main', mr: 2  }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
                 <BarChartIcon />
               </Avatar>
               <Box>
@@ -359,7 +377,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Revenue Chart */}
-      <Grid size={ { xs:  12, md: 8  }}>
+      <Grid size={{ xs:  12, md: 8 }}>
         <Card>
           <CardHeader
             title="Revenue Trend"
@@ -434,7 +452,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Revenue Breakdown Pie Chart */}
-      <Grid size={ { xs:  12, md: 4  }}>
+      <Grid size={{ xs:  12, md: 4 }}>
         <Card>
           <CardHeader title="Revenue Breakdown" />
           <CardContent>
@@ -458,18 +476,18 @@ export const AnalyticsDashboard: React.FC = () => {
               </PieChart>
             </ResponsiveContainer>
             
-            <Box sx={ { mt:  2  }}>
+            <Box sx={{ mt:  2 }}>
               {revenueBreakdown.map((item, index) => (
-                <Box key={item.name} sx={ { display:  'flex', alignItems: 'center', mb: 1  }}>
+                <Box key={item.name} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <Box
-                    sx={ {
+                    sx={{
                       width: 12,
                       height: 12,
                       borderRadius: '50%',
                       bgcolor: COLORS[index % COLORS.length],
                       mr: 1 }}
                   />
-                  <Typography variant="body2" sx={ { flex:  1  }}>
+                  <Typography variant="body2" sx={{ flex:  1 }}>
                     {item.name}
                   </Typography>
                   <Typography variant="body2" fontWeight="bold">
@@ -543,21 +561,18 @@ export const AnalyticsDashboard: React.FC = () => {
                     const performanceScore = (video.ctr * 0.3 + video.avd * 0.3 + engagementRate * 0.2 + (video.revenue / 100) * 0.2) * 10;
                     
                     return (
-    <>
-      <React.Fragment>
-      <TableRow key={video.id}>
+                      <TableRow key={video.id}>
                         <TableCell>
-                          <Box sx={ { display:  'flex', alignItems: 'center', gap: 2  }}>
-                            <Avatar variant="rounded" sx={ { width:  60, height: 34  }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Avatar variant="rounded" sx={{ width: 60, height: 34 }}>
                               <PlayCircle />
                             </Avatar>
       <Box>
-                              <Typography variant="body2" noWrap sx={ { maxWidth:  300  }}>
+                              <Typography variant="body2" noWrap sx={{ maxWidth:  300 }}>
                                 {video.title}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                {format(video.publishDate, 'MMM dd, yyyy'
-    </>)}
+                                {format(video.publishDate, 'MMM dd, yyyy')}
                               </Typography>
                             </Box>
                           </Box>
@@ -585,7 +600,7 @@ export const AnalyticsDashboard: React.FC = () => {
                           />
                         </TableCell>
                         <TableCell align="right">
-                          <Box sx={ { display:  'flex', alignItems: 'center', gap: 1  }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <ThumbUp fontSize="small" />
                             <Typography variant="caption">{video.likes}</Typography>
                             <Comment fontSize="small" />
@@ -598,11 +613,11 @@ export const AnalyticsDashboard: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
-                          <Box sx={ { display:  'flex', alignItems: 'center', gap: 1  }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <LinearProgress
                               variant="determinate"
                               value={Math.min(100, performanceScore)}
-                              sx={ { width:  60, height: 6  }}
+                              sx={{ width: 60, height: 6 }}
                               color={ performanceScore > 70 ? 'success' :  performanceScore > 40 ? 'warning' : 'error' }
                             />
                             <Typography variant="caption">
@@ -611,8 +626,8 @@ export const AnalyticsDashboard: React.FC = () => {
                           </Box>
                         </TableCell>
                       </TableRow>
-                    )});
-}
+                    );
+                  })}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -621,7 +636,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Performance Distribution Charts */}
-      <Grid size={ { xs:  12, md: 6  }}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardHeader title="Views vs Revenue Correlation" />
           <CardContent>
@@ -631,10 +646,10 @@ export const AnalyticsDashboard: React.FC = () => {
                 <XAxis dataKey="views" name="Views" />
                 <YAxis dataKey="revenue" name="Revenue" />
                 <ZAxis dataKey="engagement" range={[50, 400]} />
-                <RechartsTooltip cursor={ { strokeDasharray:  '3 3'  }} />
+                <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} />
                 <Scatter
                   name="Videos"
-                  data={ videoPerformance.map(v => ({
+                  data={videoPerformance.map(v => ({
                     views: v.views,
                     revenue: v.revenue,
                     engagement: (v.likes + v.comments) / v.views * 100 }))}
@@ -646,7 +661,7 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </Grid>
 
-      <Grid size={ { xs:  12, md: 6  }}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardHeader title="Engagement Metrics Distribution" />
           <CardContent>
@@ -710,8 +725,8 @@ export const AnalyticsDashboard: React.FC = () => {
                   {channelComparison.map((channel) => (
                     <TableRow key={channel.channelId}>
                       <TableCell>
-                        <Box sx={ { display:  'flex', alignItems: 'center', gap: 1  }}>
-                          <Avatar sx={ { bgcolor:  'primary.main', width: 32, height: 32  }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
                             <YouTube fontSize="small" />
                           </Avatar>
                           <Typography variant="body2" fontWeight="medium">
@@ -741,7 +756,7 @@ export const AnalyticsDashboard: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <Box sx={ { display:  'flex', alignItems: 'center', gap: 0.5  }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                           {channel.growthRate > 0 ? (
                             <TrendingUp color="success" fontSize="small" />
                           ) : (
@@ -756,11 +771,11 @@ export const AnalyticsDashboard: React.FC = () => {
                         </Box>
                       </TableCell>
                       <TableCell align="right">
-                        <Box sx={ { display:  'flex', alignItems: 'center', gap: 1  }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <LinearProgress
                             variant="determinate"
                             value={channel.health}
-                            sx={ { width:  60, height: 6  }}
+                            sx={{ width: 60, height: 6 }}
                             color={ channel.health > 80 ? 'success' :  channel.health > 60 ? 'warning' : 'error' }
                           />
                           <Typography variant="caption">
@@ -778,7 +793,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Channel Comparison Radar Chart */}
-      <Grid size={ { xs:  12, md: 6  }}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardHeader title="Channel Performance Radar" />
           <CardContent>
@@ -792,8 +807,8 @@ export const AnalyticsDashboard: React.FC = () => {
                     key={channel.channelId}
                     name={channel.channelName}
                     dataKey={channel.channelName.toLowerCase().replace(/\s+/g, '')}
-                    stroke={COLORS[ index % COLORS.length ]
-                    fill={COLORS[ index % COLORS.length ]
+                    stroke={COLORS[index % COLORS.length]}
+                    fill={COLORS[index % COLORS.length]}
                     fillOpacity={0.3}
                   />
                 ))}
@@ -805,7 +820,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Channel Growth Comparison */}
-      <Grid size={ { xs:  12, md: 6  }}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardHeader title="Channel Growth Comparison" />
           <CardContent>
@@ -851,26 +866,23 @@ export const AnalyticsDashboard: React.FC = () => {
   );
 
   return (
-    <>
-      <React.Fragment>
-      <Box>
+    <Box>
       {/* Header */}
-      <Box sx={ { display:  'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3  }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" fontWeight="bold">
           Analytics Dashboard
         </Typography>
-      <Box sx={ { display:  'flex', gap: 2  }}>
-          <FormControl size="small" sx={ { minWidth:  120  }}>
+      <Box sx={{ display: 'flex', gap: 2 }}>
+          <FormControl size="small" sx={{ minWidth:  120 }}>
             <InputLabel>Time Range</InputLabel>
             <Select
               value={timeRange}
-              onChange={(_) => setTimeRange(_.target.value
-    </>)}
+              onChange={(e) => setTimeRange(e.target.value)}
               label="Time Range"
             >
-              <MenuItem value="7 d">Last 7 Days</MenuItem>
-              <MenuItem value="30 d">Last 30 Days</MenuItem>
-              <MenuItem value="90 d">Last 90 Days</MenuItem>
+              <MenuItem value="7d">Last 7 Days</MenuItem>
+              <MenuItem value="30d">Last 30 Days</MenuItem>
+              <MenuItem value="90d">Last 90 Days</MenuItem>
             </Select>
           </FormControl>
           <Button startIcon={<Refresh />} variant="outlined">
@@ -883,7 +895,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Box>
 
       {/* Tabs */}
-      <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={ { mb:  3  }>
+      <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ mb: 3 }}>
         <Tab label="Revenue Analytics" icon={<AttachMoney />} iconPosition="start" />
         <Tab label="Video Performance" icon={<PlayCircle />} iconPosition="start" />
         <Tab label="Channel Comparison" icon={<CompareArrows />} iconPosition="start" />
@@ -900,4 +912,5 @@ export const AnalyticsDashboard: React.FC = () => {
         {renderChannelComparisonTab()}
       </TabPanel>
     </Box>
-  )};
+  );
+};

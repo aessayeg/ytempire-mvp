@@ -72,4 +72,4 @@ export const createOptimizedRouter = () => {
     // Router configuration would go here
   ]);
 }
-`;`
+`;

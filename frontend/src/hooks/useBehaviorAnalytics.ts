@@ -6,26 +6,26 @@ interface BehaviorOverview {
   total_events: number,
   unique_users: number,
 
-  event_breakdown: Array<{,
+  event_breakdown: Array<{
   event_type: string,
 
     count: number,
   percentage: number}>;
-  journey_stats: {,
+  journey_stats: {
   total_sessions: number,
 
     avg_events_per_session: number,
-  top_patterns: Array<{,
+  top_patterns: Array<{
 
       pattern: string,
   count: number}>;
   };
-  feature_usage: Array<{,
+  feature_usage: Array<{
   feature: string;,
 
     usage_count: number,
   adoption_rate: number}>;
-  session_stats: {,
+  session_stats: {
   total_sessions: number;,
 
     avg_duration: number,
@@ -37,7 +37,7 @@ interface BehaviorOverview {
 
 interface FunnelData {
   funnel_name: string,
-  steps: Array<{,
+  steps: Array<{
 
     step: string,
   step_number: number,
@@ -53,11 +53,11 @@ interface CohortData {
   cohort_type: string,
   metric: string,
 
-  cohorts: Array<{,
+  cohorts: Array<{
   cohort: string,
 
     size: number,
-  retention: Array<{,
+  retention: Array<{
 
       period: number,
   active_users: number,
@@ -66,7 +66,7 @@ interface CohortData {
   periods: number}
 
 interface HeatmapData {
-  heatmap: Array<{,
+  heatmap: Array<{
   date: string,
 
     hour: number,
@@ -77,7 +77,7 @@ interface HeatmapData {
 
 interface UserSegments {
   segments: {
-    [key: string]: {,
+    [key: string]: {
   count: number,
 
       user_ids: number[]};
@@ -152,7 +152,7 @@ export const useBehaviorAnalytics = ({ userId,
           '/api/v1/analytics/funnels',
           null,
           {
-            params: {,
+            params: {
   funnel_steps: funnelSteps,
               ...params },
             headers: { Authorization: `Bearer ${token}` }
@@ -162,7 +162,7 @@ export const useBehaviorAnalytics = ({ userId,
 
       // Fetch cohort data
       try { const cohortResponse = await apiClient.get('/api/v1/analytics/cohorts', {
-          params: {,
+          params: {
   cohort_type: cohortType,
             metric: 'retention',
             periods: 6 },
