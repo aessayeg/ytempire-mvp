@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import {
+import { 
   Box,
   Card,
   CardContent,
@@ -9,17 +9,13 @@ import {
   Chip,
   IconButton,
   Menu,
-  MenuItem,
-  Tooltip,
-} from '@mui/material';
-import {
+  MenuItem
+ } from '@mui/material';
+import { 
   ResponsiveContainer,
   Treemap,
   Tooltip as RechartsTooltip,
   Cell,
-  Sankey,
-  Layer,
-  Rectangle,
   Radar,
   RadarChart,
   PolarGrid,
@@ -27,23 +23,21 @@ import {
   PolarRadiusAxis,
   FunnelChart,
   Funnel,
-  LabelList,
   ScatterChart,
   Scatter,
   XAxis,
   YAxis,
   ZAxis,
   CartesianGrid,
-  Legend,
-} from 'recharts';
-import { HeatMapGrid } from 'react-grid-heatmap';
-import { MoreVert, Download, Fullscreen, Refresh } from '@mui/icons-material';
-import { format } from 'date-fns';
+  Legend
+ } from 'recharts';
+import {  HeatMapGrid  } from 'react-grid-heatmap';
+import {  MoreVert, Download, Refresh  } from '@mui/icons-material';
 
 interface ChartProps {
   title: string;
   subtitle?: string;
-  data: unknown[];
+  data: Record<string, unknown>[][];
   height?: number;
   onRefresh?: () => void;
   onExport?: () => void;
@@ -51,26 +45,17 @@ interface ChartProps {
 }
 
 // Heatmap Chart Component
-export const HeatmapChart: React.FC<ChartProps & {
-  xLabels: string[];
+export const HeatmapChart: React.FC<ChartProps & {,
+  xLabels: string[];,
+
   yLabels: string[];
-  cellRenderCallback?: (x: number, y: number, value: number) => void;
-}> = ({
-  title,
-  subtitle,
-  data,
-  xLabels,
-  yLabels,
-  height = 400,
-  cellRenderCallback,
-  onRefresh,
-  onExport,
-}) => {
+  cellRenderCallback?: (x: number, y: number, value: number) => void}> = ({ title, subtitle, data, xLabels, yLabels, height = 400, cellRenderCallback, onRefresh, onExport }) => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   return (
-    <Card>
+    <>
+      <Card>
       <CardContent>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
           <Box>
@@ -83,7 +68,7 @@ export const HeatmapChart: React.FC<ChartProps & {
               </Typography>
             )}
           </Box>
-          <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)}>
+      <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget}>
             <MoreVert />
           </IconButton>
         </Box>
@@ -98,19 +83,17 @@ export const HeatmapChart: React.FC<ChartProps & {
                 {value}
               </div>
             )}
-            xLabelsStyle={() => ({
-              fontSize: '0.75rem',
-              color: theme.palette.text.secondary,
-            })}
-            yLabelsStyle={() => ({
-              fontSize: '0.75rem',
-              color: theme.palette.text.secondary,
-            })}
-            cellStyle={(x, y, ratio) => ({
+            xLabelsStyle={ () => ({
+              fontSize: '0.75 rem',
+              color: theme.palette.text.secondary })}
+            yLabelsStyle={ () => ({
+              fontSize: '0.75 rem',
+              color: theme.palette.text.secondary })}
+            cellStyle={(x, y, ratio) => ({`
               background: `rgba(33, 150, 243, ${ratio})`,
               color: ratio > 0.5 ? '#fff' : theme.palette.text.primary,
-              fontSize: '0.7rem',
-              border: '1px solid rgba(0,0,0,0.1)',
+              fontSize: '0.7 rem',
+              border: '1px solid rgba(0,0,0,0.1)'
             })}
             cellHeight="30px"
             square
@@ -120,7 +103,7 @@ export const HeatmapChart: React.FC<ChartProps & {
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(null)}
+          onClose={() => setAnchorEl(null}
         >
           <MenuItem onClick={onRefresh}>
             <Refresh fontSize="small" sx={{ mr: 1 }} /> Refresh
@@ -131,28 +114,21 @@ export const HeatmapChart: React.FC<ChartProps & {
         </Menu>
       </CardContent>
     </Card>
-  );
-};
+  </>
+  )};
 
 // Funnel Chart Component
-export const FunnelVisualization: React.FC<ChartProps> = ({
-  title,
-  subtitle,
-  data,
-  height = 400,
-  onRefresh,
-}) => {
+export const FunnelVisualization: React.FC<ChartProps> = ({ title, subtitle, data, height = 400, onRefresh }) => {
   const theme = useTheme();
-  const COLORS = [
-    theme.palette.primary.main,
+  const COLORS = [ theme.palette.primary.main,
     theme.palette.secondary.main,
     theme.palette.warning.main,
     theme.palette.error.main,
-    theme.palette.success.main,
-  ];
+    theme.palette.success.main ];
 
   return (
-    <Card>
+    <>
+      <Card>
       <CardContent>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
           <Box>
@@ -165,7 +141,7 @@ export const FunnelVisualization: React.FC<ChartProps> = ({
               </Typography>
             )}
           </Box>
-          <Tooltip title="Refresh">
+      <Tooltip title="Refresh">
             <IconButton size="small" onClick={onRefresh}>
               <Refresh />
             </IconButton>
@@ -176,9 +152,10 @@ export const FunnelVisualization: React.FC<ChartProps> = ({
           <FunnelChart>
             <RechartsTooltip 
               contentStyle={{
-                backgroundColor: theme.palette.background.paper,
+                backgroundColor: theme.palette.background.paper,`
                 border: `1px solid ${theme.palette.divider}`,
                 borderRadius: 4,
+
               }}
             />
             <Funnel
@@ -199,56 +176,48 @@ export const FunnelVisualization: React.FC<ChartProps> = ({
         <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {data.map((item, index) => (
             <Chip
-              key={item.name}
+              key={item.name}`
               label={`${item.name}: ${item.conversion}%`}
               size="small"
-              sx={{
+              sx={ {
                 backgroundColor: COLORS[index % COLORS.length],
-                color: '#fff',
-              }}
+                color: '#fff' }}
             />
           ))}
         </Box>
       </CardContent>
     </Card>
-  );
-};
+  </>
+  )};
 
 // Treemap Chart Component
-export const TreemapVisualization: React.FC<ChartProps> = ({
-  title,
-  subtitle,
-  data,
-  height = 400,
-}) => {
+export const TreemapVisualization: React.FC<ChartProps> = ({ title, subtitle, data, height = 400 }) => {
   const theme = useTheme();
-  const COLORS = [
-    '#8889DD',
-    '#9597E4',
-    '#8DC77B',
-    '#A5D297',
-    '#E2CF45',
-    '#F8C12D',
-    '#F2A93B',
-    '#E68B3C',
-  ];
+  const COLORS = [ '#8889 DD',
+    '#9597 E4',
+    '#8 DC77 B',
+    '#A5 D297',
+    '#E2 CF45',
+    '#F8 C12 D',
+    '#F2 A93 B',
+    '#E68 B3 C' ];
 
   const CustomizedContent = (props: unknown) => {
     const { root, depth, x, y, width, height, index, colors, name, value } = props;
 
     return (
+    <>
       <g>
         <rect
           x={x}
           y={y}
           width={width}
           height={height}
-          style={{
+          style={ {
             fill: depth < 2 ? colors[Math.floor((index / root.children.length) * colors.length)] : 'none',
             stroke: '#fff',
-            strokeWidth: 2 / (depth + 1e-10),
-            strokeOpacity: 1 / (depth + 1e-10),
-          }}
+            strokeWidth: 2 / (depth + 1 e-10),
+            strokeOpacity: 1 / (depth + 1 e-10) }}
         />
         {depth === 1 && width > 50 && height > 30 && (
           <text
@@ -273,8 +242,8 @@ export const TreemapVisualization: React.FC<ChartProps> = ({
           </text>
         )}
       </g>
-    );
-  };
+    </>
+  )};
 
   return (
     <Card>
@@ -287,7 +256,6 @@ export const TreemapVisualization: React.FC<ChartProps> = ({
             {subtitle}
           </Typography>
         )}
-        
         <ResponsiveContainer width="100%" height={height}>
           <Treemap
             data={data}
@@ -300,19 +268,11 @@ export const TreemapVisualization: React.FC<ChartProps> = ({
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  );
-};
+  )};
 
 // Radar Chart Component
-export const RadarVisualization: React.FC<ChartProps & {
-  metrics: string[];
-}> = ({
-  title,
-  subtitle,
-  data,
-  metrics,
-  height = 400,
-}) => {
+export const RadarVisualization: React.FC<ChartProps & {,
+  metrics: string[]}> = ({ title, subtitle, data, metrics, height = 400 }) => {
   const theme = useTheme();
 
   return (
@@ -326,7 +286,6 @@ export const RadarVisualization: React.FC<ChartProps & {
             {subtitle}
           </Typography>
         )}
-        
         <ResponsiveContainer width="100%" height={height}>
           <RadarChart data={data}>
             <PolarGrid 
@@ -340,7 +299,7 @@ export const RadarVisualization: React.FC<ChartProps & {
             />
             <PolarRadiusAxis 
               angle={90}
-              domain={[0, 100]}
+              domain={[ 0, 100 ]
               tick={{ fontSize: 10 }}
               stroke={theme.palette.text.secondary}
             />
@@ -359,23 +318,14 @@ export const RadarVisualization: React.FC<ChartProps & {
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  );
-};
+  )};
 
 // Scatter Plot with Bubble sizes
-export const BubbleChart: React.FC<ChartProps & {
-  xKey: string;
-  yKey: string;
-  zKey: string;
-}> = ({
-  title,
-  subtitle,
-  data,
-  xKey,
-  yKey,
-  zKey,
-  height = 400,
-}) => {
+export const BubbleChart: React.FC<ChartProps & {,
+  xKey: string;,
+
+  yKey: string,
+  zKey: string}> = ({ title, subtitle, data, xKey, yKey, zKey, height = 400 }) => {
   const theme = useTheme();
 
   const renderTooltip = (props: unknown) => {
@@ -383,24 +333,24 @@ export const BubbleChart: React.FC<ChartProps & {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <Paper sx={{ p: 1, backgroundColor: 'background.paper' }}>
+    <Paper sx={{ p: 1, backgroundColor: 'background.paper' }}>
           <Typography variant="caption" display="block">
-            {xKey}: {data[xKey]}
+            {xKey}: {data[ xKey ]
+          </Typography>
+      <Typography variant="caption" display="block">
+            {yKey}: {data[ yKey ]
           </Typography>
           <Typography variant="caption" display="block">
-            {yKey}: {data[yKey]}
-          </Typography>
-          <Typography variant="caption" display="block">
-            {zKey}: {data[zKey]}
+            {zKey}: {data[ zKey ]
           </Typography>
         </Paper>
-      );
-    }
+      )}
     return null;
   };
 
   return (
-    <Card>
+    <>
+      <Card>
       <CardContent>
         <Typography variant="h6" fontWeight="bold" gutterBottom>
           {title}
@@ -410,7 +360,6 @@ export const BubbleChart: React.FC<ChartProps & {
             {subtitle}
           </Typography>
         )}
-        
         <ResponsiveContainer width="100%" height={height}>
           <ScatterChart
             margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
@@ -433,7 +382,7 @@ export const BubbleChart: React.FC<ChartProps & {
             <ZAxis 
               type="number" 
               dataKey={zKey} 
-              range={[60, 400]} 
+              range={[ 60, 400 ]
               name={zKey}
             />
             <RechartsTooltip 
@@ -450,26 +399,25 @@ export const BubbleChart: React.FC<ChartProps & {
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  );
-};
+  </>
+  )};
 
 // Cohort Retention Chart
-export const CohortChart: React.FC<{
-  title: string;
+export const CohortChart: React.FC<{,
+  title: string;,
+
   data: { cohort: string; week: number; retention: number }[];
-  height?: number;
-}> = ({ title, data, height = 400 }) => {
+  height?: number}> = ({ title, data, height = 400 }) => {
   const theme = useTheme();
   
   // Transform data for heatmap
   const cohorts = [...new Set(data.map(d => d.cohort))];
   const weeks = [...new Set(data.map(d => d.week))].sort((a, b) => a - b);
   
-  const heatmapData = weeks.map(week => 
+  const heatmapData = weeks.map(week => {}
     cohorts.map(cohort => {
       const item = data.find(d => d.cohort === cohort && d.week === week);
-      return item ? item.retention : 0;
-    })
+      return item ? item.retention : 0})
   );
 
   return (
@@ -478,34 +426,31 @@ export const CohortChart: React.FC<{
         <Typography variant="h6" fontWeight="bold" gutterBottom>
           {title}
         </Typography>
-        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+      <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
           User retention by cohort over time
         </Typography>
         
         <Box sx={{ height, overflow: 'auto' }}>
           <HeatMapGrid
             data={heatmapData}
-            xLabels={cohorts}
-            yLabels={weeks.map(w => `Week ${w}`)}
+            xLabels={cohorts}`
+            yLabels={weeks.map(w => `Week ${w}`)`
             cellRender={(x, y, value) => `${value}%`}
-            xLabelsStyle={() => ({
-              fontSize: '0.75rem',
-              color: theme.palette.text.secondary,
-            })}
-            yLabelsStyle={() => ({
-              fontSize: '0.75rem',
-              color: theme.palette.text.secondary,
-            })}
-            cellStyle={(x, y, ratio) => ({
+            xLabelsStyle={ () => ({
+              fontSize: '0.75 rem',
+              color: theme.palette.text.secondary })}
+            yLabelsStyle={ () => ({
+              fontSize: '0.75 rem',
+              color: theme.palette.text.secondary })}
+            cellStyle={ (x, y, ratio) => ({
               background: ratio > 0.7 
                 ? theme.palette.success.main
                 : ratio > 0.4
                 ? theme.palette.warning.main
                 : theme.palette.error.main,
               color: '#fff',
-              fontSize: '0.7rem',
-              border: '1px solid rgba(255,255,255,0.2)',
-            })}
+              fontSize: '0.7 rem',
+              border: '1px solid rgba(255,255,255,0.2)' })}
             cellHeight="35px"
             square
           />
@@ -531,5 +476,4 @@ export const CohortChart: React.FC<{
         </Box>
       </CardContent>
     </Card>
-  );
-};
+  )};`

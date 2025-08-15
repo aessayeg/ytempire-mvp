@@ -19,7 +19,7 @@ interface TestResult {
   errors: number;
   warnings: number;
   info: number;
-  details: any[];
+  details: unknown[];
 }
 
 class AccessibilityTester {
@@ -185,7 +185,7 @@ if (typeof window !== 'undefined') {
   const tester = new AccessibilityTester();
   
   // Add to window for manual testing
-  (window as any).accessibilityTest = () => tester.runFullTest();
+  (window as unknown as { accessibilityTest: () => void }).accessibilityTest = () => tester.runFullTest();
   
   console.log('Accessibility testing ready!');
   console.log('Run: window.accessibilityTest() to start testing');

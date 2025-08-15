@@ -3,8 +3,8 @@
  * Production-ready registration form with Material-UI styling
  */
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import {
+import {  useNavigate, Link as RouterLink  } from 'react-router-dom';
+import { 
   Box,
   Card,
   CardContent,
@@ -25,8 +25,9 @@ import {
   FormControlLabel,
   LinearProgress,
   Chip,
-} from '@mui/material';
-import {
+  FormControl
+ } from '@mui/material';
+import { 
   Visibility,
   VisibilityOff,
   Email,
@@ -40,50 +41,44 @@ import {
   Close,
   Security,
   Stars,
-  Rocket,
-} from '@mui/icons-material';
-import { useAuthStore } from '../../stores/authStore';
+  Rocket
+ } from '@mui/icons-material';
+import {  useAuthStore  } from '../../stores/authStore';
 
 interface PasswordStrength {
-  score: number;
-  feedback: string[];
-  color: 'error' | 'warning' | 'info' | 'success';
-}
+  score: number,
+  feedback: string[],
+
+  color: 'error' | 'warning' | 'info' | 'success'}
 
 export const Register: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { register, isLoading, error, clearError, isAuthenticated } = useAuthStore();
 
-  const [formData, setFormData] = useState({
-    email: '',
+  const [formData, setFormData] = useState({ email: '',
     username: '',
     full_name: '',
     password: '',
-    confirmPassword: '',
-  });
+    confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
-    score: 0,
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({ score: 0,
     feedback: [],
-    color: 'error',
-  });
+    color: 'error' });
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard', { replace: true });
-    }
+      navigate('/dashboard', { replace: true })}
   }, [isAuthenticated, navigate]);
 
   // Clear errors when component mounts
   useEffect(() => {
-    clearError();
-  }, [clearError]);
+    clearError()}, [clearError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Password strength checker
   const checkPasswordStrength = (password: string): PasswordStrength => {
@@ -102,7 +97,10 @@ export const Register: React.FC = () => {
     if (/\d/.test(password)) score += 1;
     else feedback.push('Number');
 
-    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 1;
+    if (/[!@#$%^&*(</>
+  )_+\-=\[\]{};':"\\|,.<>\/?]/.test(password</>
+  )</>
+  ) score += 1;
     else feedback.push('Special character');
 
     let color: 'error' | 'warning' | 'info' | 'success' = 'error';
@@ -113,29 +111,23 @@ export const Register: React.FC = () => {
     return { score, feedback, color };
   };
 
-  const handleInputChange = (_event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData(prev => ({ ...prev,
+      [name]: value }));
     
     // Clear field error when user starts typing
-    if (formErrors[name]) {
-      setFormErrors(prev => ({
+    if (formErrors[name]) { setFormErrors(prev => ({
         ...prev,
-        [name]: '',
-      }));
-    }
+        [name]: '' }))}
 
     // Check password strength
     if (name === 'password') {
-      setPasswordStrength(checkPasswordStrength(value));
-    }
+      setPasswordStrength(checkPasswordStrength(value))}
   };
 
   const validateForm = () => {
-    const errors: {[key: string]: string} = {};
+const errors: {[key: string]: string} = {};
 
     if (!formData.email) {
       errors.email = 'Email is required';
@@ -147,7 +139,7 @@ export const Register: React.FC = () => {
       errors.username = 'Username is required';
     } else if (formData.username.length < 3) {
       errors.username = 'Username must be at least 3 characters';
-    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+    } else if (!/^[a-zA-Z0-9 _]+$/.test(formData.username)) {
       errors.username = 'Username can only contain letters, numbers, and underscores';
     }
 
@@ -181,7 +173,7 @@ export const Register: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (_event: React.FormEvent) => {
+  const handleSubmit = async (_: React.FormEvent) => {
     event.preventDefault();
     
     if (!validateForm()) {
@@ -191,54 +183,44 @@ export const Register: React.FC = () => {
     try {
       await register(formData.email, formData.username, formData.password, formData.full_name);
       // Navigation will be handled by useEffect when isAuthenticated changes
-    } catch (_error) {
+    } catch (_) {
       // Error is handled by the store
     }
   };
 
   const handleTogglePassword = () => {
-    setShowPassword(prev => !prev);
-  };
+    setShowPassword(prev => !prev)};
 
   const handleToggleConfirmPassword = () => {
-    setShowConfirmPassword(prev => !prev);
-  };
+    setShowConfirmPassword(prev => !prev)};
 
   // Mock social login handlers
   const handleGoogleLogin = () => {
-    console.log('Google login not implemented yet');
-  };
+    console.log('Google login not implemented yet')};
 
   const handleGitHubLogin = () => {
-    console.log('GitHub login not implemented yet');
-  };
+    console.log('GitHub login not implemented yet')};
 
   const subscriptionTiers = [
-    {
-      name: 'Starter',
+    { name: 'Starter',
       price: 'Free',
       features: ['5 videos/month', '1 YouTube channel', 'Basic analytics', 'Community support'],
       icon: <Rocket color="primary" />,
-      popular: false,
-    },
-    {
-      name: 'Creator',
+      popular: false },
+    { name: 'Creator',
       price: '$29/month',
       features: ['100 videos/month', '5 YouTube channels', 'Advanced analytics', 'Priority support'],
       icon: <Stars color="warning" />,
-      popular: true,
-    },
-    {
-      name: 'Enterprise',
+      popular: true },
+    { name: 'Enterprise',
       price: '$99/month',
       features: ['Unlimited videos', 'Unlimited channels', 'White-label solution', '24/7 support'],
       icon: <Security color="success" />,
-      popular: false,
-    },
-  ];
+      popular: false }];
 
   return (
-    <Container maxWidth="lg" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', py: 4 }}>
+    <>
+      <Container maxWidth="lg" sx={{ minHeight: '100 vh', display: 'flex', alignItems: 'center', py: 4 }}>
       <Grid container spacing={4} sx={{ width: '100%' }}>
         {/* Left side - Branding and Pricing */}
         <Grid item xs={12} md={6}>
@@ -250,7 +232,7 @@ export const Register: React.FC = () => {
                   YTEmpire
                 </Typography>
               </Box>
-              <Typography variant="h5" color="text.secondary" gutterBottom>
+      <Typography variant="h5" color="text.secondary" gutterBottom>
                 Join the Creator Revolution
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
@@ -268,14 +250,13 @@ export const Register: React.FC = () => {
                 <Card 
                   key={index} 
                   variant="outlined" 
-                  sx={{ 
+                  sx={ { 
                     mb: 2, 
                     position: 'relative',
                     border: tier.popular ? '2px solid' : '1px solid',
-                    borderColor: tier.popular ? 'primary.main' : 'divider',
-                  }}
+                    borderColor: tier.popular ? 'primary.main' : 'divider' }}
                 >
-                  {tier.popular && (
+                  { tier.popular && (
                     <Chip
                       label="Most Popular"
                       color="primary"
@@ -284,8 +265,7 @@ export const Register: React.FC = () => {
                         position: 'absolute',
                         top: -10,
                         right: 16,
-                        zIndex: 1,
-                      }}
+                        zIndex: 1 }}
                     />
                   )}
                   <CardContent sx={{ p: 2 }}>
@@ -314,14 +294,13 @@ export const Register: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Paper 
             elevation={8}
-            sx={{ 
+            sx={ { 
               p: 4, 
               borderRadius: 3,
               background: theme.palette.mode === 'dark' 
                 ? 'rgba(255, 255, 255, 0.05)' 
                 : 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(10px)',
-            }}
+              backdropFilter: 'blur(10px)' }}
           >
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <PersonAdd sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
@@ -343,7 +322,6 @@ export const Register: React.FC = () => {
                 {error}
               </Alert>
             )}
-
             {/* Registration Form */}
             <form onSubmit={handleSubmit}>
               <Grid container spacing={2}>
@@ -356,13 +334,12 @@ export const Register: React.FC = () => {
                     onChange={handleInputChange}
                     error={!!formErrors.full_name}
                     helperText={formErrors.full_name}
-                    InputProps={{
+                    InputProps={ {
                       startAdornment: (
                         <InputAdornment position="start">
                           <Person color="action" />
                         </InputAdornment>
-                      ),
-                    }}
+                      ) }}
                     disabled={isLoading}
                     autoComplete="name"
                   />
@@ -392,13 +369,12 @@ export const Register: React.FC = () => {
                 error={!!formErrors.email}
                 helperText={formErrors.email}
                 margin="normal"
-                InputProps={{
+                InputProps={ {
                   startAdornment: (
                     <InputAdornment position="start">
                       <Email color="action" />
                     </InputAdornment>
-                  ),
-                }}
+                  ) }}
                 disabled={isLoading}
                 autoComplete="email"
               />
@@ -426,10 +402,10 @@ export const Register: React.FC = () => {
                         edge="end"
                         disabled={isLoading}
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? <VisibilityOff /> </>: <Visibility />}
                       </IconButton>
                     </InputAdornment>
-                  ),
+                  )
                 }}
                 disabled={isLoading}
                 autoComplete="new-password"
@@ -440,7 +416,7 @@ export const Register: React.FC = () => {
                 <Box sx={{ mt: 1, mb: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <Typography variant="body2" sx={{ mr: 1 }}>
-                      Password Strength:
+                      Password, Strength:
                     </Typography>
                     <LinearProgress
                       variant="determinate"
@@ -469,7 +445,6 @@ export const Register: React.FC = () => {
                   )}
                 </Box>
               )}
-
               <TextField
                 fullWidth
                 label="Confirm Password"
@@ -493,10 +468,10 @@ export const Register: React.FC = () => {
                         edge="end"
                         disabled={isLoading}
                       >
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        {showConfirmPassword ? <VisibilityOff /> </>: <Visibility />}
                       </IconButton>
                     </InputAdornment>
-                  ),
+                  )
                 }}
                 disabled={isLoading}
                 autoComplete="new-password"
@@ -508,7 +483,7 @@ export const Register: React.FC = () => {
                   control={
                     <Checkbox
                       checked={acceptedTerms}
-                      onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      onChange={(e) => setAcceptedTerms(e.target.checked}
                       disabled={isLoading}
                     />
                   }
@@ -533,7 +508,7 @@ export const Register: React.FC = () => {
                   control={
                     <Checkbox
                       checked={acceptedPrivacy}
-                      onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+                      onChange={(e) => setAcceptedPrivacy(e.target.checked}
                       disabled={isLoading}
                     />
                   }
@@ -559,16 +534,15 @@ export const Register: React.FC = () => {
                 variant="contained"
                 size="large"
                 disabled={isLoading}
-                sx={{ 
+                sx={ { 
                   mt: 3, 
                   mb: 2,
                   py: 1.5,
                   borderRadius: 2,
                   textTransform: 'none',
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                }}
-                startIcon={isLoading ? <CircularProgress size={20} /> : <PersonAdd />}
+                  fontSize: '1.1 rem',
+                  fontWeight: 600 }}
+                startIcon={isLoading ? <CircularProgress size={20} /> </>: <PersonAdd />}
               >
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </Button>
@@ -623,7 +597,7 @@ export const Register: React.FC = () => {
         </Grid>
       </Grid>
     </Container>
-  );
-};
+  </>
+  )};
 
-export default Register;
+export default Register;`

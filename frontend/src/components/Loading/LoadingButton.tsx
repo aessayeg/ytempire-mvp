@@ -1,6 +1,10 @@
 import React from 'react';
-import { Button, ButtonProps, CircularProgress } from '@mui/material';
-import { Check, Error } from '@mui/icons-material';
+import { 
+  Button,
+  ButtonProps,
+  CircularProgress
+ } from '@mui/material';
+import {  Check, Error  } from '@mui/icons-material';
 
 interface LoadingButtonProps extends ButtonProps {
   loading?: boolean;
@@ -8,20 +12,10 @@ interface LoadingButtonProps extends ButtonProps {
   error?: boolean;
   loadingPosition?: 'start' | 'end' | 'center';
   loadingIndicator?: React.ReactNode;
-  children: React.ReactNode;
-}
+  children: React.ReactNode}
 
 export const LoadingButton: React.FC<LoadingButtonProps> = ({
-  loading = false,
-  success = false,
-  error = false,
-  loadingPosition = 'center',
-  loadingIndicator,
-  children,
-  disabled,
-  startIcon,
-  endIcon,
-  ...props
+  loading = false, success = false, error = false, loadingPosition = 'center', loadingIndicator, children, disabled, startIcon, endIcon, ...props
 }) => {
   const getLoadingIndicator = () => {
     if (loadingIndicator) return loadingIndicator;
@@ -35,8 +29,7 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
           <Check sx={{ mr: 1 }} />
           {children}
         </>
-      );
-    }
+      )}
 
     if (error) {
       return (
@@ -44,8 +37,7 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
           <Error sx={{ mr: 1 }} />
           {children}
         </>
-      );
-    }
+      )}
 
     if (loading) {
       switch (loadingPosition) {
@@ -65,8 +57,7 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
           );
         case 'center':
         default:
-          return getLoadingIndicator();
-      }
+          return getLoadingIndicator()}
     }
 
     return children;
@@ -81,29 +72,26 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
     >
       {getContent()}
     </Button>
-  );
-};
+  )};
 
 // Button group with loading states
-export const LoadingButtonGroup: React.FC<{
-  buttons: Array<{
-    key: string;
-    label: string;
+export const LoadingButtonGroup: React.FC<{,
+  buttons: Array<{,
+
+    key: string,
+  label: string;,
+
     onClick: () => void;
     loading?: boolean;
     disabled?: boolean;
     variant?: 'text' | 'outlined' | 'contained';
-    color?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
-  }>;
-  orientation?: 'horizontal' | 'vertical';
-}> = ({ buttons, orientation = 'horizontal' }) => {
-  return (
+    color?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success'}>;
+  orientation?: 'horizontal' | 'vertical'}> = ({ buttons, orientation = 'horizontal' }) => { return (
     <div
       style={{
         display: 'flex',
         flexDirection: orientation === 'vertical' ? 'column' : 'row',
-        gap: 8,
-      }}
+        gap: 8 }}
     >
       {buttons.map((button) => (
         <LoadingButton
@@ -118,5 +106,4 @@ export const LoadingButtonGroup: React.FC<{
         </LoadingButton>
       ))}
     </div>
-  );
-};
+  )};

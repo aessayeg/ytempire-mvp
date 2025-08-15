@@ -1,35 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
+import { 
   Box,
   Grid,
   Card,
   CardContent,
   Typography,
   LinearProgress,
-  CircularProgress,
   Chip,
   Alert,
   Button,
-  IconButton,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListItemSecondaryAction,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tooltip,
-  Badge,
   Avatar,
   useTheme,
-  Divider,
-} from '@mui/material';
-import {
+  FormControl,
+  Switch,
+  FormControlLabel
+ } from '@mui/material';
+import { 
   CheckCircle,
   Error,
   Warning,
@@ -42,43 +33,32 @@ import {
   Api,
   Database,
   NetworkCheck,
-  Router,
-  Dns,
   VpnKey,
   Refresh,
-  Settings,
-  Timeline,
-  FiberManualRecord,
-  SignalWifi4Bar,
-  SignalWifi2Bar,
-  SignalWifiOff,
-  TrendingUp,
-  TrendingDown,
-  Schedule,
-  BugReport,
-  Build,
-} from '@mui/icons-material';
-import {
+  Build
+ } from '@mui/icons-material';
+import { 
   ResponsiveContainer,
   LineChart,
   Line,
-  AreaChart,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip as RechartsTooltip,
-} from 'recharts';
-import { format, subMinutes } from 'date-fns';
+  Tooltip as RechartsTooltip
+ } from 'recharts';
+import {  format, subMinutes  } from 'date-fns';
 
 interface Service {
-  id: string;
-  name: string;
-  category: string;
-  status: 'operational' | 'degraded' | 'outage' | 'maintenance';
-  uptime: number;
-  responseTime: number;
-  lastChecked: Date;
+  id: string,
+  name: string,
+
+  category: string,
+  status: 'operational' | 'degraded' | 'outage' | 'maintenance',
+
+  uptime: number,
+  responseTime: number,
+
+  lastChecked: Date,
   icon: React.ReactNode;
   endpoint?: string;
   errorRate?: number;
@@ -86,29 +66,31 @@ interface Service {
 }
 
 interface SystemMetric {
-  timestamp: Date;
-  cpu: number;
-  memory: number;
-  disk: number;
-  network: number;
-  requests: number;
-  errors: number;
-}
+  timestamp: Date,
+  cpu: number,
+
+  memory: number,
+  disk: number,
+
+  network: number,
+  requests: number,
+
+  errors: number}
 
 interface Incident {
-  id: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  service: string;
-  title: string;
-  description: string;
+  id: string,
+  severity: 'low' | 'medium' | 'high' | 'critical',
+
+  service: string,
+  title: string,
+
+  description: string,
   startTime: Date;
   endTime?: Date;
-  status: 'investigating' | 'identified' | 'monitoring' | 'resolved';
-  impact: string;
-}
+  status: 'investigating' | 'identified' | 'monitoring' | 'resolved',
+  impact: string}
 
-export const SystemHealthMonitors: React.FC = () => {
-  const theme = useTheme();
+export const SystemHealthMonitors: React.FC = () => { const theme = useTheme();
   const [services, setServices] = useState<Service[]>([]);
   const [systemMetrics, setSystemMetrics] = useState<SystemMetric[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -118,8 +100,7 @@ export const SystemHealthMonitors: React.FC = () => {
 
   useEffect(() => {
     // Initialize services
-    setServices([
-      {
+    setServices([ {
         id: 'api',
         name: 'API Gateway',
         category: 'Core',
@@ -129,10 +110,8 @@ export const SystemHealthMonitors: React.FC = () => {
         lastChecked: new Date(),
         icon: <Api />,
         endpoint: 'https://api.ytempire.com',
-        errorRate: 0.01,
-      },
-      {
-        id: 'database',
+        errorRate: 0.01 },
+      { id: 'database',
         name: 'PostgreSQL',
         category: 'Database',
         status: 'operational',
@@ -140,10 +119,8 @@ export const SystemHealthMonitors: React.FC = () => {
         responseTime: 15,
         lastChecked: new Date(),
         icon: <Database />,
-        errorRate: 0.02,
-      },
-      {
-        id: 'redis',
+        errorRate: 0.02 },
+      { id: 'redis',
         name: 'Redis Cache',
         category: 'Cache',
         status: 'operational',
@@ -151,10 +128,8 @@ export const SystemHealthMonitors: React.FC = () => {
         responseTime: 2,
         lastChecked: new Date(),
         icon: <Memory />,
-        errorRate: 0.001,
-      },
-      {
-        id: 'celery',
+        errorRate: 0.001 },
+      { id: 'celery',
         name: 'Celery Workers',
         category: 'Queue',
         status: 'operational',
@@ -162,10 +137,8 @@ export const SystemHealthMonitors: React.FC = () => {
         responseTime: 500,
         lastChecked: new Date(),
         icon: <CloudQueue />,
-        errorRate: 0.05,
-      },
-      {
-        id: 'openai',
+        errorRate: 0.05 },
+      { id: 'openai',
         name: 'OpenAI API',
         category: 'External',
         status: 'operational',
@@ -173,10 +146,8 @@ export const SystemHealthMonitors: React.FC = () => {
         responseTime: 1200,
         lastChecked: new Date(),
         icon: <Memory />,
-        errorRate: 0.1,
-      },
-      {
-        id: 'elevenlabs',
+        errorRate: 0.1 },
+      { id: 'elevenlabs',
         name: 'ElevenLabs API',
         category: 'External',
         status: 'degraded',
@@ -184,10 +155,8 @@ export const SystemHealthMonitors: React.FC = () => {
         responseTime: 2500,
         lastChecked: new Date(),
         icon: <CloudQueue />,
-        errorRate: 0.8,
-      },
-      {
-        id: 'youtube',
+        errorRate: 0.8 },
+      { id: 'youtube',
         name: 'YouTube API',
         category: 'External',
         status: 'operational',
@@ -195,10 +164,8 @@ export const SystemHealthMonitors: React.FC = () => {
         responseTime: 450,
         lastChecked: new Date(),
         icon: <Api />,
-        errorRate: 0.02,
-      },
-      {
-        id: 'storage',
+        errorRate: 0.02 },
+      { id: 'storage',
         name: 'S3 Storage',
         category: 'Storage',
         status: 'operational',
@@ -206,10 +173,8 @@ export const SystemHealthMonitors: React.FC = () => {
         responseTime: 200,
         lastChecked: new Date(),
         icon: <Storage />,
-        errorRate: 0.001,
-      },
-      {
-        id: 'cdn',
+        errorRate: 0.001 },
+      { id: 'cdn',
         name: 'CloudFront CDN',
         category: 'Network',
         status: 'operational',
@@ -217,10 +182,8 @@ export const SystemHealthMonitors: React.FC = () => {
         responseTime: 50,
         lastChecked: new Date(),
         icon: <NetworkCheck />,
-        errorRate: 0.001,
-      },
-      {
-        id: 'auth',
+        errorRate: 0.001 },
+      { id: 'auth',
         name: 'Authentication',
         category: 'Security',
         status: 'operational',
@@ -228,78 +191,59 @@ export const SystemHealthMonitors: React.FC = () => {
         responseTime: 100,
         lastChecked: new Date(),
         icon: <VpnKey />,
-        errorRate: 0.01,
-      },
-    ]);
+        errorRate: 0.01 } ]);
 
     // Initialize system metrics
-    const initialMetrics = Array.from({ length: 60 }, (_, i) => ({
-      timestamp: subMinutes(new Date(), 59 - i),
+    const initialMetrics = Array.from({ length: 60 }, (_, i) => ({ timestamp: subMinutes(new Date(), 59 - i),
       cpu: 40 + Math.random() * 30,
       memory: 50 + Math.random() * 20,
       disk: 60 + Math.random() * 10,
       network: 30 + Math.random() * 40,
       requests: Math.floor(100 + Math.random() * 50),
-      errors: Math.floor(Math.random() * 5),
-    }));
+      errors: Math.floor(Math.random() * 5) }));
     setSystemMetrics(initialMetrics);
 
     // Initialize incidents
-    setIncidents([
-      {
-        id: '1',
+    setIncidents([ { id: '1',
         severity: 'medium',
         service: 'ElevenLabs API',
         title: 'Increased Response Times',
         description: 'ElevenLabs API experiencing higher than normal response times',
         startTime: new Date(Date.now() - 1000 * 60 * 30),
         status: 'monitoring',
-        impact: 'Voice synthesis may take longer than usual',
-      },
-      {
-        id: '2',
+        impact: 'Voice synthesis may take longer than usual' },
+      { id: '2',
         severity: 'low',
         service: 'Celery Workers',
         title: 'Scheduled Maintenance',
         description: 'Routine maintenance window for worker updates',
         startTime: new Date(Date.now() + 1000 * 60 * 60 * 2),
         status: 'identified',
-        impact: 'Video processing capacity reduced by 20% during maintenance',
-      },
-    ]);
-  }, []);
+        impact: 'Video processing capacity reduced by 20% during maintenance' } ])}, []);
 
-  useEffect(() => {
-    if (autoRefresh) {
+  useEffect(() => { if (autoRefresh) {
       intervalRef.current = setInterval(() => {
         // Update services with random changes
         setServices(prev => prev.map(service => ({
           ...service,
           responseTime: Math.max(1, service.responseTime + (Math.random() - 0.5) * 20),
           lastChecked: new Date(),
-          errorRate: Math.max(0, (service.errorRate || 0) + (Math.random() - 0.5) * 0.01),
-        })));
+          errorRate: Math.max(0, (service.errorRate || 0) + (Math.random() - 0.5) * 0.01) })));
 
         // Add new metric point
-        setSystemMetrics(prev => {
-          const newMetric = {
+        setSystemMetrics(prev => { const newMetric = {
             timestamp: new Date(),
             cpu: 40 + Math.random() * 30,
             memory: 50 + Math.random() * 20,
             disk: 60 + Math.random() * 10,
             network: 30 + Math.random() * 40,
             requests: Math.floor(100 + Math.random() * 50),
-            errors: Math.floor(Math.random() * 5),
-          };
-          return [...prev.slice(1), newMetric];
-        });
-      }, refreshInterval * 1000);
-    }
+            errors: Math.floor(Math.random() * 5) };
+          return [...prev.slice(1), newMetric]})}, refreshInterval * 1000)}
 
     return () => {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+        clearInterval(intervalRef.current)}
     };
   }, [autoRefresh, refreshInterval]);
 
@@ -309,8 +253,7 @@ export const SystemHealthMonitors: React.FC = () => {
       case 'degraded': return 'warning';
       case 'outage': return 'error';
       case 'maintenance': return 'info';
-      default: return 'default';
-    }
+      default: return 'default'}
   };
 
   const getStatusIcon = (status: string) => {
@@ -319,8 +262,7 @@ export const SystemHealthMonitors: React.FC = () => {
       case 'degraded': return <Warning color="warning" />;
       case 'outage': return <Error color="error" />;
       case 'maintenance': return <Build color="info" />;
-      default: return <Info />;
-    }
+      default: return <Info />}
   };
 
   const getSeverityColor = (severity: string) => {
@@ -329,8 +271,7 @@ export const SystemHealthMonitors: React.FC = () => {
       case 'high': return 'error';
       case 'medium': return 'warning';
       case 'low': return 'info';
-      default: return 'default';
-    }
+      default: return 'default'}
   };
 
   const getUptimeColor = (uptime: number) => {
@@ -346,17 +287,16 @@ export const SystemHealthMonitors: React.FC = () => {
     ? 'partial outage'
     : 'degraded';
 
-  const latestMetric = systemMetrics[systemMetrics.length - 1] || {
-    cpu: 0,
+  const latestMetric = systemMetrics[systemMetrics.length - 1] || { cpu: 0,
     memory: 0,
     disk: 0,
     network: 0,
     requests: 0,
-    errors: 0,
-  };
+    errors: 0 };
 
   return (
-    <Box>
+    <>
+      <Box>
       {/* Overall Status */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
@@ -373,7 +313,7 @@ export const SystemHealthMonitors: React.FC = () => {
                 <Typography variant="h5" fontWeight="bold">
                   System Status: {overallStatus === 'operational' ? 'All Systems Operational' : overallStatus === 'degraded' ? 'Degraded Performance' : 'Partial Outage'}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="text.secondary">
                   {operationalCount} of {services.length} services operational
                 </Typography>
               </Box>
@@ -383,7 +323,7 @@ export const SystemHealthMonitors: React.FC = () => {
                 control={
                   <Switch
                     checked={autoRefresh}
-                    onChange={(e) => setAutoRefresh(e.target.checked)}
+                    onChange={(e) => setAutoRefresh(e.target.checked}
                   />
                 }
                 label={`Auto-refresh (${refreshInterval}s)`}
@@ -549,18 +489,18 @@ export const SystemHealthMonitors: React.FC = () => {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
-            System Performance (Last 60 Minutes)
+            System Performance (Last 60, Minutes)
           </Typography>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={systemMetrics}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="timestamp"
-                tickFormatter={(timestamp) => format(timestamp, 'HH:mm')}
+                tickFormatter={timestamp) => format(timestamp, 'HH:mm'}
               />
               <YAxis />
               <RechartsTooltip
-                labelFormatter={(timestamp) => format(timestamp, 'HH:mm:ss')}
+                labelFormatter={timestamp) => format(timestamp, 'HH:mm:ss'}
               />
               <Line type="monotone" dataKey="cpu" stroke={theme.palette.primary.main} name="CPU %" dot={false} />
               <Line type="monotone" dataKey="memory" stroke={theme.palette.secondary.main} name="Memory %" dot={false} />
@@ -623,5 +563,5 @@ export const SystemHealthMonitors: React.FC = () => {
         </Card>
       )}
     </Box>
-  );
-};
+  </>
+  )};`

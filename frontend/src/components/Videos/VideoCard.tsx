@@ -1,5 +1,5 @@
 import React from 'react';
-import {
+import { 
   Card,
   CardContent,
   CardMedia,
@@ -8,12 +8,11 @@ import {
   Chip,
   IconButton,
   Box,
-  Tooltip,
   LinearProgress,
   Menu,
-  MenuItem,
-} from '@mui/material';
-import {
+  MenuItem
+ } from '@mui/material';
+import { 
   PlayArrow,
   Edit,
   Delete,
@@ -26,62 +25,55 @@ import {
   AttachMoney,
   Visibility,
   ThumbUp,
-  Comment,
-} from '@mui/icons-material';
-import { formatDistanceToNow } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+  Comment
+ } from '@mui/icons-material';
+import {  formatDistanceToNow  } from 'date-fns';
+import {  useNavigate  } from 'react-router-dom';
 
 interface VideoCardProps {
-  video: {
-    id: string;
+  video: {,
+  id: string,
+
     title: string;
     description?: string;
     thumbnail_url?: string;
     channel_id: string;
     channel_name?: string;
-    generation_status: 'pending' | 'processing' | 'completed' | 'failed';
-    publish_status: 'draft' | 'scheduled' | 'published' | 'publishing';
+    generation_status: 'pending' | 'processing' | 'completed' | 'failed',
+  publish_status: 'draft' | 'scheduled' | 'published' | 'publishing';
     quality_score?: number;
     trend_score?: number;
-    total_cost: number;
-    view_count: number;
-    like_count: number;
-    comment_count: number;
+    total_cost: number,
+  view_count: number,
+
+    like_count: number,
+  comment_count: number,
+
     created_at: string;
     published_at?: string;
     scheduled_publish_time?: string;
     duration_seconds?: number;
     youtube_url?: string;
     progress?: number;
-    error_message?: string;
+    error_?: string;
   };
   onEdit?: (videoId: string) => void;
   onDelete?: (videoId: string) => void;
   onPublish?: (videoId: string) => void;
-  onPreview?: (videoId: string) => void;
-}
+  onPreview?: (videoId: string) => void}
 
-export const VideoCard: React.FC<VideoCardProps> = ({
-  video,
-  onEdit,
-  onDelete,
-  onPublish,
-  onPreview,
-}) => {
+export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, onPublish, onPreview }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
-  const handleMenuOpen = (_event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const handleMenuOpen = (_: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)};
 
   const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+    setAnchorEl(null)};
 
   const handleCardClick = () => {
-    navigate(`/videos/${video.id}`);
-  };
+    navigate(`/videos/${video.id}`)};
 
   const getStatusIcon = () => {
     switch (video.generation_status) {
@@ -92,8 +84,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       case 'failed':
         return <Error color="error" />;
       default:
-        return <Schedule color="action" />;
-    }
+        return <Schedule color="action" />}
   };
 
   const getStatusColor = (): unknown => {
@@ -105,8 +96,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       case 'failed':
         return 'error';
       default:
-        return 'default';
-    }
+        return 'default'}
   };
 
   const getPublishStatusColor = (): unknown => {
@@ -118,26 +108,25 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       case 'publishing':
         return 'warning';
       default:
-        return 'default';
-    }
+        return 'default'}
   };
 
-  const formatDuration = (seconds?: number) => {
+  const formatDuration = (_seconds?: number) => {
     if (!seconds) return 'N/A';
     const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+    const remainingSeconds = seconds % 60;`
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
+  const formatNumber = (num: number) => {`
+    if (num >= 1000000) return `${num / 1000000.toFixed(1}M`;`
+    if (num >= 1000) return `${num / 1000.toFixed(1}K`;
+    return num.toString()};
 
   return (
-    <Card
-      sx={{
+    <>
+      <Card
+      sx={ {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -145,8 +134,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         transition: 'transform 0.2s, box-shadow 0.2s',
         '&:hover': {
           transform: 'translateY(-4px)',
-          boxShadow: 4,
-        },
+          boxShadow: 4 }
       }}
     >
       <Box position="relative">
@@ -162,43 +150,39 @@ export const VideoCard: React.FC<VideoCardProps> = ({
           <Chip
             label={formatDuration(video.duration_seconds)}
             size="small"
-            sx={{
+            sx={ {
               position: 'absolute',
               bottom: 8,
               right: 8,
               backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              color: 'white',
-            }}
+              color: 'white' }}
           />
         )}
         {video.generation_status === 'processing' && video.progress && (
           <LinearProgress
             variant="determinate"
             value={video.progress}
-            sx={{
+            sx={ {
               position: 'absolute',
               bottom: 0,
               left: 0,
-              right: 0,
-            }}
+              right: 0 }}
           />
         )}
       </Box>
-
       <CardContent sx={{ flexGrow: 1, pb: 1 }} onClick={handleCardClick}>
         <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={1}>
           <Typography
             variant="subtitle1"
             component="h3"
-            sx={{
+            sx={ {
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               fontWeight: 500,
-              flex: 1,
-            }}
+              flex: 1 }}
           >
             {video.title}
           </Typography>
@@ -212,7 +196,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             {video.channel_name}
           </Typography>
         )}
-
         <Box display="flex" gap={1} flexWrap="wrap" mb={1}>
           <Chip
             label={video.generation_status}
@@ -246,7 +229,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             )}
           </Box>
         )}
-
         <Box display="flex" alignItems="center" gap={2} mb={1}>
           <Box display="flex" alignItems="center" gap={0.5}>
             <AttachMoney sx={{ fontSize: 16 }} />
@@ -270,12 +252,11 @@ export const VideoCard: React.FC<VideoCardProps> = ({
           )}
         </Box>
 
-        {video.error_message && (
+        {video.error_ && (
           <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
-            Error: {video.error_message}
+            Error: {video.error_}
           </Typography>
         )}
-
         <Typography variant="caption" color="text.secondary">
           Created {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
         </Typography>
@@ -289,28 +270,26 @@ export const VideoCard: React.FC<VideoCardProps> = ({
 
       <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
         <Box>
-          {video.generation_status === 'completed' && (
-            <>
+          {video.generation_status === 'completed' && (_<>
               <Tooltip title="Preview">
                 <IconButton
                   size="small"
                   onClick={(e) => {
-                    e.stopPropagation();
-                    onPreview?.(video.id);
-                  }}
+                    e.stopPropagation(</>
+  );
+                    onPreview?.(video.id)}}
                 >
                   <PlayArrow />
                 </IconButton>
               </Tooltip>
-              {video.publish_status === 'draft' && (
-                <Tooltip title="Publish">
+              {video.publish_status === 'draft' && (_<Tooltip title="Publish">
                   <IconButton
                     size="small"
                     color="primary"
                     onClick={(e) => {
-                      e.stopPropagation();
-                      onPublish?.(video.id);
-                    }}
+                      e.stopPropagation(</>
+  );
+                      onPublish?.(video.id)}}
                   >
                     <Schedule />
                   </IconButton>
@@ -318,14 +297,12 @@ export const VideoCard: React.FC<VideoCardProps> = ({
               )}
             </>
           )}
-          {video.generation_status !== 'processing' && (
-            <Tooltip title="Edit">
+          {video.generation_status !== 'processing' && (_<Tooltip title="Edit">
               <IconButton
                 size="small"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onEdit?.(video.id);
-                }}
+                  onEdit?.(video.id)}}
               >
                 <Edit />
               </IconButton>
@@ -337,8 +314,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
           size="small"
           onClick={(e) => {
             e.stopPropagation();
-            handleMenuOpen(e);
-          }}
+            handleMenuOpen(e)}}
         >
           <MoreVert />
         </IconButton>
@@ -351,18 +327,15 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         >
           <MenuItem
             onClick={() => {
-              handleMenuClose();
-              navigate(`/videos/${video.id}`);
-            }}
+              handleMenuClose();`
+              navigate(`/videos/${video.id}`)}}
           >
             View Details
           </MenuItem>
-          {video.youtube_url && (
-            <MenuItem
+          {video.youtube_url && (_<MenuItem
               onClick={() => {
                 handleMenuClose();
-                window.open(video.youtube_url, '_blank');
-              }}
+                window.open(video.youtube_url, '_blank')}}
             >
               View on YouTube
             </MenuItem>
@@ -370,16 +343,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({
           <MenuItem
             onClick={() => {
               handleMenuClose();
-              onEdit?.(video.id);
-            }}
+              onEdit?.(video.id)}}
           >
             Edit
           </MenuItem>
           <MenuItem
             onClick={() => {
               handleMenuClose();
-              onDelete?.(video.id);
-            }}
+              onDelete?.(video.id)}}
             sx={{ color: 'error.main' }}
           >
             Delete
@@ -387,5 +358,4 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         </Menu>
       </CardActions>
     </Card>
-  );
-};
+  )};`

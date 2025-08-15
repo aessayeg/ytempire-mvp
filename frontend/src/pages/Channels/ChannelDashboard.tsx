@@ -1,25 +1,32 @@
 import React, { useState } from 'react';
-import { Container, Box, Typography, Grid2 as Grid, Tabs, Tab, Paper } from '@mui/material';
-import { ChannelDashboard } from '../../components/Channels/ChannelDashboard';
-import { ChannelList } from '../../components/Channels/ChannelList';
-import { ChannelHealthDashboard } from '../../components/Channels/ChannelHealthDashboard';
-import { ChannelTemplates } from '../../components/Channels/ChannelTemplates';
-import { BulkOperations } from '../../components/Channels/BulkOperations';
+import { 
+  Container,
+  Box,
+  Typography,
+  Tabs,
+  Tab,
+  Paper
+ } from '@mui/material';
+import {  ChannelDashboard  } from '../../components/Channels/ChannelDashboard';
+import {  ChannelList  } from '../../components/Channels/ChannelList';
+import {  ChannelHealthDashboard  } from '../../components/Channels/ChannelHealthDashboard';
+import {  ChannelTemplates  } from '../../components/Channels/ChannelTemplates';
+import {  BulkOperations  } from '../../components/Channels/BulkOperations';
 
 const ChannelDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <Container maxWidth={false}>
+    <>
+      <Container maxWidth={false}>
       <Box sx={{ py: 3 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Channel Management Dashboard
         </Typography>
-        
-        <Paper sx={{ mb: 3 }}>
+      <Paper sx={{ mb: 3 }}>
           <Tabs
             value={activeTab}
-            onChange={(e, v) => setActiveTab(v)}
+            onChange={(_, v) => setActiveTab(v}
             indicatorColor="primary"
             textColor="primary"
             variant="scrollable"
@@ -43,14 +50,13 @@ const ChannelDashboardPage: React.FC = () => {
             </Grid>
           </Grid>
         )}
-
         {activeTab === 1 && <ChannelList />}
         {activeTab === 2 && <ChannelHealthDashboard />}
         {activeTab === 3 && <ChannelTemplates />}
         {activeTab === 4 && <BulkOperations />}
       </Box>
     </Container>
-  );
-};
+  </>
+  )};
 
 export default ChannelDashboardPage;

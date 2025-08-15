@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {
+import { 
   Alert,
   AlertTitle,
   Box,
@@ -12,9 +12,9 @@ import {
   ListItemIcon,
   ListItemText,
   Paper,
-  Link,
-} from '@mui/material';
-import {
+  Link
+ } from '@mui/material';
+import { 
   Close,
   ExpandMore,
   ExpandLess,
@@ -26,11 +26,11 @@ import {
   Error as ErrorIcon,
   Info,
   HelpOutline,
-  AutoFixHigh,
-} from '@mui/icons-material';
+  AutoFixHigh
+ } from '@mui/icons-material';
 
 interface ErrorAction {
-  label: string;
+  label: string,
   action: () => void;
   icon?: React.ReactNode;
 }
@@ -42,7 +42,7 @@ interface ErrorSolution {
 
 interface ErrorMessageProps {
   severity?: 'error' | 'warning' | 'info' | 'success';
-  title: string;
+  title: string,
   message: string;
   errorCode?: string;
   details?: string;
@@ -55,20 +55,7 @@ interface ErrorMessageProps {
   onRetry?: () => void;
 }
 
-export const ErrorMessage: React.FC<ErrorMessageProps> = ({
-  severity = 'error',
-  title,
-  message,
-  errorCode,
-  details,
-  solutions,
-  actions,
-  onClose,
-  autoHideDuration,
-  showReportButton = true,
-  retryable = false,
-  onRetry,
-}) => {
+export const ErrorMessage: React.FC<ErrorMessageProps> = ({ severity = 'error', title, message, errorCode, details, solutions, actions, onClose, autoHideDuration, showReportButton = true, retryable = false, onRetry }) => {
   const [showDetails, setShowDetails] = useState(false);
   const [copied, setCopied] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -77,10 +64,8 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
     if (autoHideDuration) {
       const timer = setTimeout(() => {
         setVisible(false);
-        onClose?.();
-      }, autoHideDuration);
-      return () => clearTimeout(timer);
-    }
+        onClose?.()}, autoHideDuration);
+      return () => clearTimeout(timer)}
   }, [autoHideDuration, onClose]);
 
   const handleCopyError = () => {
@@ -89,24 +74,22 @@ Error: ${title}
 Message: ${message}
 Code: ${errorCode || 'N/A'}
 Details: ${details || 'N/A'}
-Time: ${new Date().toISOString()}
+Time: ${new Date().toISOString()`
     `.trim();
     
     navigator.clipboard.writeText(errorInfo);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+    setTimeout(() => setCopied(false), 2000)};
 
-  const handleReportBug = () => {
+  const handleReportBug = () => {`
     const errorInfo = encodeURIComponent(`
 **Error Report**
 - Title: ${title}
 - Message: ${message}
 - Code: ${errorCode || 'N/A'}
-- Time: ${new Date().toISOString()}
-    `);
-    window.open(`/feedback?type=bug&details=${errorInfo}`, '_blank');
-  };
+- Time: ${new Date().toISOString()`
+    `);`
+    window.open(`/feedback?type=bug&details=${errorInfo}`, '_blank')};
 
   const getSeverityIcon = () => {
     switch (severity) {
@@ -124,26 +107,25 @@ Time: ${new Date().toISOString()}
   if (!visible) return null;
 
   return (
-    <Collapse in={visible}>
+    <>
+      <Collapse in={visible}>
       <Alert
         severity={severity}
         icon={getSeverityIcon()}
         action={
-          onClose && (
-            <IconButton
+          onClose && (_<IconButton
               size="small"
               onClick={() => {
-                setVisible(false);
-                onClose();
-              }}
+                setVisible(false</>
+  );
+                onClose()}}
             >
               <Close fontSize="small" />
             </IconButton>
-          )
-        }
+          )}
         sx={{
           mb: 2,
-          '.MuiAlert-message': { width: '100%' },
+          '.MuiAlert-message': { width: '100%' }
         }}
       >
         <AlertTitle sx={{ fontWeight: 'bold' }}>
@@ -158,8 +140,7 @@ Time: ${new Date().toISOString()}
             </Typography>
           )}
         </AlertTitle>
-        
-        <Typography variant="body2" sx={{ mb: 1 }}>
+      <Typography variant="body2" sx={{ mb: 1 }}>
           {message}
         </Typography>
 
@@ -176,7 +157,6 @@ Time: ${new Date().toISOString()}
               Retry
             </Button>
           )}
-          
           {actions?.map((action, index) => (
             <Button
               key={index}
@@ -197,7 +177,7 @@ Time: ${new Date().toISOString()}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
               <AutoFixHigh fontSize="small" color="primary" />
               <Typography variant="subtitle2" fontWeight="medium">
-                Suggested Solutions:
+                Suggested, Solutions:
               </Typography>
             </Box>
             <List dense sx={{ p: 0 }}>
@@ -224,14 +204,13 @@ Time: ${new Date().toISOString()}
             </List>
           </Paper>
         )}
-
         {/* Details Section */}
         {details && (
           <Box>
             <Button
               size="small"
-              startIcon={showDetails ? <ExpandLess /> : <ExpandMore />}
-              onClick={() => setShowDetails(!showDetails)}
+              startIcon={showDetails ? <ExpandLess /> </>: <ExpandMore />}
+              onClick={() => setShowDetails(!showDetails}
               sx={{ mb: 1 }}
             >
               {showDetails ? 'Hide' : 'Show'} Details
@@ -240,25 +219,23 @@ Time: ${new Date().toISOString()}
             <Collapse in={showDetails}>
               <Paper
                 variant="outlined"
-                sx={{
+                sx={ {
                   p: 1.5,
                   backgroundColor: 'grey.50',
                   fontFamily: 'monospace',
                   fontSize: 12,
-                  overflowX: 'auto',
-                }}
+                  overflowX: 'auto' }}
               >
                 <pre style={{ margin: 0 }}>{details}</pre>
               </Paper>
             </Collapse>
           </Box>
         )}
-
         {/* Bottom Actions */}
         <Box sx={{ display: 'flex', gap: 1, mt: 2, pt: 1, borderTop: 1, borderColor: 'divider' }}>
           <Button
             size="small"
-            startIcon={copied ? <CheckCircle /> : <ContentCopy />}
+            startIcon={copied ? <CheckCircle /> </>: <ContentCopy />}
             onClick={handleCopyError}
             disabled={copied}
           >
@@ -274,17 +251,15 @@ Time: ${new Date().toISOString()}
               Report Issue
             </Button>
           )}
-          
           <Link
             href="/help/troubleshooting"
-            sx={{
+            sx={ {
               display: 'flex',
               alignItems: 'center',
               gap: 0.5,
               ml: 'auto',
               fontSize: 12,
-              textDecoration: 'none',
-            }}
+              textDecoration: 'none' }}
           >
             <HelpOutline fontSize="small" />
             Troubleshooting Guide
@@ -292,5 +267,4 @@ Time: ${new Date().toISOString()}
         </Box>
       </Alert>
     </Collapse>
-  );
-};
+  )};`

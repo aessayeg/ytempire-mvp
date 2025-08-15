@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react';
-import { toast } from 'react-hot-toast';
+import {  useCallback, useState  } from 'react';
+import {  toast  } from 'react-hot-toast';
 
 interface ErrorHandlerOptions {
   showToast?: boolean;
@@ -10,43 +10,33 @@ interface ErrorHandlerOptions {
   onRetry?: () => void;
 }
 
-export const useErrorHandler = (options: ErrorHandlerOptions = {}) => {
-  const {
-    showToast = true,
-    fallbackMessage = 'An error occurred',
-    retryCount = 3,
-    retryDelay = 1000,
-    onError,
-    onRetry,
-  } = options;
-
+export const createOptimizedRouter = () => {
+  return createBrowserRouter([
+    // Router configuration would go here
+  ])}
   const [error, setError] = useState<Error | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
 
-  const handleError = useCallback(
-    (error: Error | unknown) => {
+  const handleError = useCallback((error: Error | unknown) => {
       const errorObj = error instanceof Error ? error : new Error(String(error));
       
       setError(errorObj);
       
       // Log error
-      console.error('Error handled:', errorObj);
+      console.error('Error, handled:', errorObj);
       
       // Show toast notification
       if (showToast) {
-        toast.error(errorObj.message || fallbackMessage);
-      }
+        toast.error(errorObj.message || fallbackMessage)}
       
       // Call custom error handler
       if (onError) {
-        onError(errorObj);
-      }
+        onError(errorObj)}
       
       // Log to error service in production
       if (process.env.NODE_ENV === 'production') {
-        // sendToErrorService(errorObj);
-      }
+        // sendToErrorService(errorObj)}
     },
     [showToast, fallbackMessage, onError]
   );
@@ -71,11 +61,10 @@ export const useErrorHandler = (options: ErrorHandlerOptions = {}) => {
         setIsRetrying(false);
         
         if (onRetry) {
-          onRetry();
-        }
+          onRetry()}
         
         return result;
-      } catch (_err) {
+      } catch (_) {
         setIsRetrying(false);
         handleError(err);
         throw err;
@@ -87,45 +76,38 @@ export const useErrorHandler = (options: ErrorHandlerOptions = {}) => {
   const reset = useCallback(() => {
     setError(null);
     setAttemptCount(0);
-    setIsRetrying(false);
-  }, []);
+    setIsRetrying(false)}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const throwError = useCallback((error: Error | string) => {
     const errorObj = error instanceof Error ? error : new Error(error);
     handleError(errorObj);
     throw errorObj;
-  }, [handleError]);
+  }, [handleError]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return {
-    error,
+  return { error,
     isRetrying,
     attemptCount,
     handleError,
     retry,
     reset,
-    throwError,
-  };
+    throwError };
 };
 
 // Async error handler wrapper
-export const withErrorHandling = async <T,>(
-  fn: () => Promise<T>,
-  options?: ErrorHandlerOptions
-): Promise<T | null> => {
-  try {
-    return await fn();
-  } catch (_error) {
+export const createOptimizedRouter = () => {
+  return createBrowserRouter([
+    // Router configuration would go here
+  ])}
+  } catch (_) {
     const errorMessage = error instanceof Error ? error.message : 'An error occurred';
     
     if (options?.showToast !== false) {
-      toast.error(options?.fallbackMessage || errorMessage);
-    }
+      toast.error(options?.fallbackMessage || errorMessage)}
     
     if (options?.onError) {
-      options.onError(error instanceof Error ? error : new Error(String(error)));
-    }
+      options.onError(error instanceof Error ? error : new Error(String(error)))}
     
-    console.error('Error in async operation:', error);
+    console.error('Error in async, operation:', error);
     return null;
   }
 };

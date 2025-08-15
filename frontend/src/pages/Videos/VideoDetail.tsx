@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import {
+import {  useParams, useNavigate  } from 'react-router-dom';
+import { 
   Box,
   Paper,
   Grid,
@@ -22,9 +22,9 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-} from '@mui/material';
-import {
+  DialogActions
+ } from '@mui/material';
+import { 
   ArrowBack,
   Edit,
   Delete,
@@ -33,44 +33,39 @@ import {
   PlayArrow,
   ContentCopy,
   OpenInNew,
-  Download,
   Refresh,
   CheckCircle,
-  Error as ErrorIcon,
   AttachMoney,
-  TrendingUp,
-  Speed,
-  AccessTime,
-} from '@mui/icons-material';
-import { api } from '../../services/api';
-import { VideoPlayer } from '../../components/Videos/VideoPlayer';
-import { VideoMetrics } from '../../components/Videos/VideoMetrics';
-import { formatDistanceToNow } from 'date-fns';
+  Speed
+ } from '@mui/icons-material';
+import {  api  } from '../../services/api';
+import {  VideoPlayer  } from '../../components/Videos/VideoPlayer';
+import {  VideoMetrics  } from '../../components/Videos/VideoMetrics';
 
 interface TabPanelProps {
   children?: React.ReactNode;
-  index: number;
-  value: number;
-}
+  index: number,
+  value: number}
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
-    <div
+    <>
+      <div
       role="tabpanel"
       hidden={value !== index}
-      id={`video-tabpanel-${index}`}
+      id={`video-tabpanel-${index}`}`
       aria-labelledby={`video-tab-${index}`}
       {...other}
     >
       {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
-  );
-}
+  )}
 
 export const VideoDetail: React.FC = () => {
-  const { videoId } = useParams<{ videoId: string }>();
+  const { videoId } = useParams<{ videoId: string }>(</>
+  );
   const navigate = useNavigate();
   const [video, setVideo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -79,21 +74,17 @@ export const VideoDetail: React.FC = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [editForm, setEditForm] = useState({
-    title: '',
+  const [editForm, setEditForm] = useState({ title: '',
     description: '',
-    tags: [],
-  });
+    tags: [] });
   const [publishSchedule, setPublishSchedule] = useState('');
 
   useEffect(() => {
     if (videoId) {
-      fetchVideoDetails();
-    }
-  }, [videoId]);
+      fetchVideoDetails()}
+  }, [videoId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchVideoDetails = async () => {
-    setLoading(true);
+  const fetchVideoDetails = async () => { setLoading(true);
     setError(null);
     try {
       const response = await api.videos.get(videoId!);
@@ -101,27 +92,20 @@ export const VideoDetail: React.FC = () => {
       setEditForm({
         title: response.title,
         description: response.description || '',
-        tags: response.tags || [],
-      });
-    } catch (err: unknown) {
-      setError(err.message || 'Failed to load video details');
-    } finally {
-      setLoading(false);
-    }
+        tags: response.tags || [] })} catch (_err: unknown) {
+      setError(err.message || 'Failed to load video details')} finally {
+      setLoading(false)}
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue)};
 
   const handleEdit = async () => {
     try {
       await api.videos.update(videoId!, editForm);
       await fetchVideoDetails();
-      setEditDialogOpen(false);
-    } catch (err: unknown) {
-      setError(err.message || 'Failed to update video');
-    }
+      setEditDialogOpen(false)} catch (_err: unknown) {
+      setError(err.message || 'Failed to update video')}
   };
 
   const handlePublish = async () => {
@@ -129,29 +113,23 @@ export const VideoDetail: React.FC = () => {
       const scheduledTime = publishSchedule ? new Date(publishSchedule) : undefined;
       await api.videos.publish(videoId!, scheduledTime);
       await fetchVideoDetails();
-      setPublishDialogOpen(false);
-    } catch (err: unknown) {
-      setError(err.message || 'Failed to publish video');
-    }
+      setPublishDialogOpen(false)} catch (_err: unknown) {
+      setError(err.message || 'Failed to publish video')}
   };
 
   const handleDelete = async () => {
     try {
       await api.videos.delete(videoId!);
-      navigate('/videos');
-    } catch (err: unknown) {
-      setError(err.message || 'Failed to delete video');
-    }
+      navigate('/videos')} catch (_err: unknown) {
+      setError(err.message || 'Failed to delete video')}
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-  };
+    navigator.clipboard.writeText(window.location.href)};
 
   const handleOpenYouTube = () => {
     if (video?.youtube_url) {
-      window.open(video.youtube_url, '_blank');
-    }
+      window.open(video.youtube_url, '_blank')}
   };
 
   const getStatusColor = (status: string): unknown => {
@@ -163,8 +141,7 @@ export const VideoDetail: React.FC = () => {
       case 'failed':
         return 'error';
       default:
-        return 'default';
-    }
+        return 'default'}
   };
 
   const getPublishStatusColor = (status: string): unknown => {
@@ -176,33 +153,29 @@ export const VideoDetail: React.FC = () => {
       case 'publishing':
         return 'warning';
       default:
-        return 'default';
-    }
+        return 'default'}
   };
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="60 vh">
         <CircularProgress />
       </Box>
-    );
-  }
+    )}
 
   if (error) {
     return (
-      <Box p={3}>
+    <Box p={3}>
         <Alert severity="error">{error}</Alert>
       </Box>
-    );
-  }
+    )}
 
   if (!video) {
     return (
-      <Box p={3}>
+    <Box p={3}>
         <Alert severity="warning">Video not found</Alert>
       </Box>
-    );
-  }
+    )}
 
   return (
     <Box p={3}>
@@ -212,7 +185,7 @@ export const VideoDetail: React.FC = () => {
           <IconButton onClick={() => navigate('/videos')}>
             <ArrowBack />
           </IconButton>
-          <Typography variant="h4">{video.title}</Typography>
+      <Typography variant="h4">{video.title}</Typography>
         </Box>
         <Box display="flex" gap={1}>
           <IconButton onClick={fetchVideoDetails}>
@@ -473,7 +446,7 @@ export const VideoDetail: React.FC = () => {
                     <ListItem>
                       <ListItemText primary="Generation Time" />
                       <Typography variant="body2">
-                        {video.generation_time_seconds
+                        {video.generation_time_seconds`
                           ? `${Math.round(video.generation_time_seconds / 60)} min`
                           : 'N/A'}
                       </Typography>
@@ -508,11 +481,11 @@ export const VideoDetail: React.FC = () => {
                     <ListItem>
                       <ListItemText primary="Duration" />
                       <Typography variant="body2">
-                        {video.duration_seconds
-                          ? `${Math.floor(video.duration_seconds / 60)}:${(
+                        {video.duration_seconds`
+                          ? `${Math.floor(video.duration_seconds / 60)}:${(`
                               video.duration_seconds % 60
                             )
-                              .toString()
+                              .toString()`
                               .padStart(2, '0')}`
                           : 'N/A'}
                       </Typography>
@@ -537,25 +510,24 @@ export const VideoDetail: React.FC = () => {
             fullWidth
             label="Title"
             value={editForm.title}
-            onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+            onChange={(e) => setEditForm({ ...editForm, title: e.target.value)})}
             margin="normal"
           />
           <TextField
             fullWidth
             label="Description"
             value={editForm.description}
-            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+            onChange={(e) => setEditForm({ ...editForm, description: e.target.value)})}
             multiline
             rows={4}
             margin="normal"
           />
           <TextField
             fullWidth
-            label="Tags (comma separated)"
+            label="Tags (comma, separated)"
             value={editForm.tags.join(', ')}
-            onChange={(e) =>
-              setEditForm({ ...editForm, tags: e.target.value.split(',').map((t) => t.trim()) })
-            }
+            onChange={(e) => {}
+              setEditForm({ ...editForm, tags: e.target.value.split(',').map((t) => t.trim()) })}
             margin="normal"
           />
         </DialogContent>
@@ -580,8 +552,7 @@ export const VideoDetail: React.FC = () => {
               variant="contained"
               onClick={() => {
                 setPublishSchedule('');
-                handlePublish();
-              }}
+                handlePublish()}}
               sx={{ mb: 2 }}
             >
               Publish Now
@@ -627,5 +598,4 @@ export const VideoDetail: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  );
-};
+  )};`

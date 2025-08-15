@@ -1,19 +1,21 @@
 import React from 'react';
-import { Box, Link } from '@mui/material';
+import { 
+  Box,
+  Link
+ } from '@mui/material';
 
 interface SkipNavigationProps {
   links?: Array<{
-    href: string;
-    label: string;
-  }>;
+    href: string,
+  label: string}>;
 }
 
 export const SkipNavigation: React.FC<SkipNavigationProps> = ({
   links = [
     { href: '#main-content', label: 'Skip to main content' },
     { href: '#navigation', label: 'Skip to navigation' },
-    { href: '#footer', label: 'Skip to footer' },
-  ],
+    { href: '#footer', label: 'Skip to footer' }
+  ]
 }) => {
   return (
     <Box
@@ -43,8 +45,9 @@ export const SkipNavigation: React.FC<SkipNavigationProps> = ({
             textDecoration: 'none',
             zIndex: 10000,
             borderRadius: '0 0 4px 0',
-          },
-        },
+
+          }
+        }
       }}
     >
       {links.map((link) => (
@@ -57,13 +60,11 @@ export const SkipNavigation: React.FC<SkipNavigationProps> = ({
             const target = document.querySelector(link.href);
             if (target) {
               (target as HTMLElement).focus();
-              target.scrollIntoView({ behavior: 'smooth' });
-            }
+              target.scrollIntoView({ behavior: 'smooth' })}
           }}
         >
           {link.label}
         </Link>
       ))}
     </Box>
-  );
-};
+  )};

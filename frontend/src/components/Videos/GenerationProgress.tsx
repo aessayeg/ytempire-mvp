@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Paper,
   Typography,
@@ -19,11 +19,10 @@ import {
   Card,
   CardContent,
   Grid,
-  Divider,
-} from '@mui/material';
-import {
+  Divider
+ } from '@mui/material';
+import { 
   CheckCircle,
-  Error as ErrorIcon,
   HourglassEmpty,
   Psychology,
   RecordVoiceOver,
@@ -34,23 +33,24 @@ import {
   AttachMoney,
   Timer,
   PlayArrow,
-  Cancel,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { api } from '../../services/api';
-import { useWebSocket } from '../../hooks/useWebSocket';
+  Cancel
+ } from '@mui/icons-material';
+import {  useNavigate  } from 'react-router-dom';
+import {  api  } from '../../services/api';
+import {  useWebSocket  } from '../../hooks/useWebSocket';
 
 interface GenerationProgressProps {
   generationId: string;
   onComplete?: (videoId: string) => void;
-  onError?: (error: string) => void;
-}
+  onError?: (error: string) => void}
 
 interface GenerationStep {
-  id: string;
-  label: string;
-  description: string;
-  icon: React.ReactNode;
+  id: string,
+  label: string,
+
+  description: string,
+  icon: React.ReactNode,
+
   status: 'pending' | 'processing' | 'completed' | 'error';
   progress?: number;
   startTime?: Date;
@@ -59,11 +59,7 @@ interface GenerationStep {
   details?: string;
 }
 
-export const GenerationProgress: React.FC<GenerationProgressProps> = ({
-  generationId,
-  onComplete,
-  onError,
-}) => {
+export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generationId, onComplete, onError }) => {
   const navigate = useNavigate();
   const { subscribe, unsubscribe } = useWebSocket();
   const [overallProgress, setOverallProgress] = useState(0);
@@ -75,56 +71,42 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
   const [estimatedTime, setEstimatedTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   
-  const [steps, setSteps] = useState<GenerationStep[]>([
-    {
-      id: 'script',
+  const [steps, setSteps] = useState<GenerationStep[]>([ { id: 'script',
       label: 'Script Generation',
       description: 'Creating engaging script content',
       icon: <Psychology />,
       status: 'pending',
-      progress: 0,
-    },
-    {
-      id: 'voice',
+      progress: 0 },
+    { id: 'voice',
       label: 'Voice Synthesis',
       description: 'Converting script to natural speech',
       icon: <RecordVoiceOver />,
       status: 'pending',
-      progress: 0,
-    },
-    {
-      id: 'visuals',
+      progress: 0 },
+    { id: 'visuals',
       label: 'Visual Generation',
       description: 'Creating video frames and animations',
       icon: <VideoLibrary />,
       status: 'pending',
-      progress: 0,
-    },
-    {
-      id: 'assembly',
+      progress: 0 },
+    { id: 'assembly',
       label: 'Video Assembly',
       description: 'Combining all elements',
       icon: <AutoAwesome />,
       status: 'pending',
-      progress: 0,
-    },
-    {
-      id: 'thumbnail',
+      progress: 0 },
+    { id: 'thumbnail',
       label: 'Thumbnail Creation',
       description: 'Generating eye-catching thumbnail',
       icon: <Image />,
       status: 'pending',
-      progress: 0,
-    },
-    {
-      id: 'quality',
+      progress: 0 },
+    { id: 'quality',
       label: 'Quality Check',
       description: 'Verifying video quality',
       icon: <CheckCircle />,
       status: 'pending',
-      progress: 0,
-    },
-  ]);
+      progress: 0 } ]);
 
   useEffect(() => {
     // Subscribe to WebSocket updates
@@ -135,32 +117,27 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
     
     // Start elapsed time counter
     const timeInterval = setInterval(() => {
-      setElapsedTime((prev) => prev + 1);
-    }, 1000);
+      setElapsedTime((prev) => prev + 1)}, 1000);
     
     // Initial fetch
     fetchGenerationStatus();
     
     return () => {
+    
       unsubscribeWs();
       clearInterval(pollInterval);
-      clearInterval(timeInterval);
-    };
-  }, [generationId]);
+      clearInterval(timeInterval)}, [generationId]);
 
   const fetchGenerationStatus = async () => {
     try {
       const response = await api.videos.getGenerationStatus(generationId);
-      updateProgress(response);
-    } catch (_error) {
-      console.error('Failed to fetch generation status:', error);
-    }
+      updateProgress(response)} catch (_) {
+      console.error('Failed to fetch generation, status:', error)}
   };
 
   const handleWebSocketUpdate = (data: unknown) => {
     if (data.generationId === generationId) {
-      updateProgress(data);
-    }
+      updateProgress(data)}
   };
 
   const updateProgress = (data: unknown) => {
@@ -169,13 +146,12 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
     
     // Update current step
     if (data.currentStep !== undefined) {
-      setCurrentStep(data.currentStep);
-    }
+      setCurrentStep(data.currentStep)}
     
     // Update steps
-    if (data.steps) {
-      setSteps((prevSteps) =>
-        prevSteps.map((step, index) => {
+    if (data.steps) { setSteps((prevSteps) => {}
+        prevSteps.map((_(step, index) => {
+    
           const updatedStep = data.steps[index];
           if (updatedStep) {
             return {
@@ -186,12 +162,10 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
               endTime: updatedStep.endTime,
               cost: updatedStep.cost,
               details: updatedStep.details,
-            };
-          }
-          return step;
-        })
-      );
-    }
+
+  }
+          return step})
+      )}
     
     // Update status
     if (data.status) {
@@ -199,46 +173,38 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
       
       if (data.status === 'completed' && data.videoId) {
         setVideoId(data.videoId);
-        onComplete?.(data.videoId);
-      } else if (data.status === 'failed' && data.error) {
+        onComplete?.(data.videoId)} else if (data.status === 'failed' && data.error) {
         setError(data.error);
-        onError?.(data.error);
-      }
+        onError?.(data.error)}
     }
     
     // Update costs and time
     if (data.totalCost !== undefined) {
-      setTotalCost(data.totalCost);
-    }
+      setTotalCost(data.totalCost)}
     if (data.estimatedTime !== undefined) {
-      setEstimatedTime(data.estimatedTime);
-    }
+      setEstimatedTime(data.estimatedTime)}
   };
 
   const handleCancel = async () => {
     try {
       await api.videos.cancelGeneration(generationId);
       setStatus('cancelled');
-      navigate('/videos');
-    } catch (_error) {
-      console.error('Failed to cancel generation:', error);
-    }
+      navigate('/videos')} catch (_) {
+      console.error('Failed to cancel, generation:', error)}
   };
 
   const handleViewVideo = () => {
-    if (videoId) {
-      navigate(`/videos/${videoId}`);
-    }
+    if (videoId) {`
+      navigate(`/videos/${videoId}`)}
   };
 
   const handleRetry = () => {
     // Implement retry logic
-    window.location.reload();
-  };
+    window.location.reload()};
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+    const remainingSeconds = seconds % 60;`
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
@@ -254,13 +220,14 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
   };
 
   return (
-    <Box p={3}>
+    <>
+      <Box p={3}>
       <Paper sx={{ p: 3 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Typography variant="h5">
             Video Generation Progress
           </Typography>
-          <Box display="flex" gap={2}>
+      <Box display="flex" gap={2}>
             {status === 'processing' && (
               <Button
                 variant="outlined"
@@ -325,7 +292,6 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
             Video generation was cancelled.
           </Alert>
         )}
-
         <Grid container spacing={3}>
           {/* Steps Progress */}
           <Grid item xs={12} md={8}>
@@ -505,5 +471,5 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({
         </Grid>
       </Paper>
     </Box>
-  );
-};
+  </>
+  )};`

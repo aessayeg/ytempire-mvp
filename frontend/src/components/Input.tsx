@@ -1,5 +1,5 @@
 import React from 'react';
-import { clsx } from 'clsx';
+import {  clsx  } from 'clsx';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -9,13 +9,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input: React.FC<InputProps> = ({
-  label,
-  error,
-  helperText,
-  icon,
-  className,
-  id,
-  ...props
+  label, error, helperText, icon, className, id, ...props
 }) => {
   const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -34,30 +28,28 @@ export const Input: React.FC<InputProps> = ({
         )}
         <input
           id={inputId}
-          className={clsx(
-            'block w-full rounded-md shadow-sm sm:text-sm',
+          className={ clsx(
+            'block w-full rounded-md shadow-sm, sm:text-sm',
             {
               'pl-10': icon,
-              'border-gray-300 focus:border-primary-500 focus:ring-primary-500': !error,
-              'border-red-300 focus:border-red-500 focus:ring-red-500': error,
-            },
+              'border-gray-300, focus:border-primary-500, focus:ring-primary-500': !error,
+              'border-red-300, focus:border-red-500, focus:ring-red-500': error },
             className
           )}
-          aria-invalid={error ? 'true' : 'false'}
+          aria-invalid={error ? 'true' : 'false'}`
           aria-describedby={error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined}
           {...props}
         />
       </div>
-      {error && (
+      {error && (`
         <p className="mt-1 text-sm text-red-600" id={`${inputId}-error`}>
           {error}
         </p>
       )}
-      {helperText && !error && (
+      {helperText && !error && (`
         <p className="mt-1 text-sm text-gray-500" id={`${inputId}-helper`}>
           {helperText}
         </p>
       )}
     </div>
-  );
-};
+  )};`

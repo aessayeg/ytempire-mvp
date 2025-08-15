@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {
+import { 
   Box,
   Card,
   CardContent,
@@ -12,21 +12,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListItemSecondaryAction,
   Alert,
   LinearProgress,
-  Stepper,
-  Step,
-  StepLabel,
   Table,
   TableHead,
   TableBody,
@@ -34,16 +25,10 @@ import {
   TableCell,
   TableContainer,
   Paper,
-  Tooltip,
-  Badge,
-  Avatar,
-  Divider,
-} from '@mui/material';
-import {
+  Avatar
+ } from '@mui/material';
+import { 
   YouTube,
-  CheckBox,
-  CheckBoxOutlineBlank,
-  IndeterminateCheckBox,
   Edit,
   Delete,
   Pause,
@@ -51,44 +36,40 @@ import {
   Schedule,
   Settings,
   CloudUpload,
-  Warning,
-  CheckCircle,
   ContentCopy,
   Label,
-  Category,
-  Visibility,
   MonetizationOn,
-  Update,
-  BatchPrediction,
-} from '@mui/icons-material';
+  Update
+ } from '@mui/icons-material';
 
 interface Channel {
-  id: string;
-  name: string;
-  status: 'active' | 'paused' | 'error';
-  videos: number;
-  subscribers: number;
+  id: string,
+  name: string,
+
+  status: 'active' | 'paused' | 'error',
+  videos: number,
+
+  subscribers: number,
   health: number;
   selected?: boolean;
 }
 
 interface BulkAction {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
+  id: string,
+  label: string,
+
+  icon: React.ReactNode,
   action: (channels: string[]) => void;
   requiresConfirmation?: boolean;
   dangerous?: boolean;
 }
 
 export const BulkOperations: React.FC = () => {
-  const [channels, setChannels] = useState<Channel[]>([
-    { id: '1', name: 'Tech Insights', status: 'active', videos: 234, subscribers: 125000, health: 85 },
+  const [channels, setChannels] = useState<Channel[]>([ { id: '1', name: 'Tech Insights', status: 'active', videos: 234, subscribers: 125000, health: 85 },
     { id: '2', name: 'AI Daily', status: 'active', videos: 189, subscribers: 89000, health: 92 },
     { id: '3', name: 'Future Tech', status: 'paused', videos: 156, subscribers: 67000, health: 78 },
     { id: '4', name: 'Coding Tips', status: 'active', videos: 342, subscribers: 234000, health: 95 },
-    { id: '5', name: 'Tech Reviews', status: 'error', videos: 89, subscribers: 45000, health: 45 },
-  ]);
+    { id: '5', name: 'Tech Reviews', status: 'error', videos: 89, subscribers: 45000, health: 45 } ]);
 
   const [selectedChannels, setSelectedChannels] = useState<string[]>([]);
   const [actionDialog, setActionDialog] = useState(false);
@@ -97,135 +78,107 @@ export const BulkOperations: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
 
   // Bulk Actions
-  const bulkActions: BulkAction[] = [
-    {
-      id: 'activate',
+  const bulkActions: BulkAction[] = [ { id: 'activate',
       label: 'Activate Channels',
       icon: <PlayArrow />,
-      action: (channelIds) => handleBulkStatusChange(channelIds, 'active'),
-    },
-    {
-      id: 'pause',
+      action: (channelIds) => handleBulkStatusChange(channelIds, 'active') },
+    { id: 'pause',
       label: 'Pause Channels',
       icon: <Pause />,
-      action: (channelIds) => handleBulkStatusChange(channelIds, 'paused'),
-    },
-    {
-      id: 'schedule',
+      action: (channelIds) => handleBulkStatusChange(channelIds, 'paused') },
+    { id: 'schedule',
       label: 'Bulk Schedule Videos',
       icon: <Schedule />,
-      action: (channelIds) => handleBulkSchedule(channelIds),
-    },
-    {
-      id: 'upload',
+      action: (channelIds) => handleBulkSchedule(channelIds) },
+    { id: 'upload',
       label: 'Bulk Upload Settings',
       icon: <CloudUpload />,
-      action: (channelIds) => handleBulkUploadSettings(channelIds),
-    },
-    {
-      id: 'monetization',
+      action: (channelIds) => handleBulkUploadSettings(channelIds) },
+    { id: 'monetization',
       label: 'Update Monetization',
       icon: <MonetizationOn />,
-      action: (channelIds) => handleBulkMonetization(channelIds),
-    },
-    {
-      id: 'tags',
+      action: (channelIds) => handleBulkMonetization(channelIds) },
+    { id: 'tags',
       label: 'Update Tags & Categories',
       icon: <Label />,
-      action: (channelIds) => handleBulkTags(channelIds),
-    },
-    {
-      id: 'duplicate',
+      action: (channelIds) => handleBulkTags(channelIds) },
+    { id: 'duplicate',
       label: 'Duplicate Settings',
       icon: <ContentCopy />,
-      action: (channelIds) => handleDuplicateSettings(channelIds),
-    },
-    {
-      id: 'delete',
+      action: (channelIds) => handleDuplicateSettings(channelIds) },
+    { id: 'delete',
       label: 'Delete Channels',
       icon: <Delete />,
       action: (channelIds) => handleBulkDelete(channelIds),
       requiresConfirmation: true,
-      dangerous: true,
-    },
-  ];
+      dangerous: true } ];
 
-  const handleSelectAll = (_event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSelectAll = (_: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      setSelectedChannels(channels.map(c => c.id));
-    } else {
-      setSelectedChannels([]);
-    }
+      setSelectedChannels(channels.map(c => c.id))} else {
+      setSelectedChannels([])}
   };
 
   const handleSelectChannel = (channelId: string) => {
-    setSelectedChannels(prev =>
+    setSelectedChannels(prev => {}
       prev.includes(channelId)
         ? prev.filter(id => id !== channelId)
         : [...prev, channelId]
-    );
-  };
+    )};
 
-  const handleBulkAction = (action: BulkAction) => {
+  const handleBulkAction = (_action: BulkAction) => {
     if (selectedChannels.length === 0) {
       alert('Please select at least one channel');
       return;
     }
     setCurrentAction(action);
-    setActionDialog(true);
-  };
+    setActionDialog(true)};
 
   const handleBulkStatusChange = async (channelIds: string[], status: string) => {
     setProcessing(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
-    setChannels(prev => prev.map(c =>
+    setChannels(prev => prev.map(c => {}
       channelIds.includes(c.id) ? { ...c, status: status as any } : c
     ));
     setProcessing(false);
     setActionDialog(false);
-    setSelectedChannels([]);
-  };
+    setSelectedChannels([])};
 
-  const handleBulkSchedule = async (channelIds: string[]) => {
+  const handleBulkSchedule = async (_channelIds: string[]) => {
     setProcessing(true);
     // Implementation for bulk scheduling
     await new Promise(resolve => setTimeout(resolve, 2000));
     setProcessing(false);
-    setActionDialog(false);
-  };
+    setActionDialog(false)};
 
-  const handleBulkUploadSettings = async (channelIds: string[]) => {
+  const handleBulkUploadSettings = async (_channelIds: string[]) => {
     setProcessing(true);
     // Implementation for bulk upload settings
     await new Promise(resolve => setTimeout(resolve, 2000));
     setProcessing(false);
-    setActionDialog(false);
-  };
+    setActionDialog(false)};
 
-  const handleBulkMonetization = async (channelIds: string[]) => {
+  const handleBulkMonetization = async (_channelIds: string[]) => {
     setProcessing(true);
     // Implementation for bulk monetization
     await new Promise(resolve => setTimeout(resolve, 2000));
     setProcessing(false);
-    setActionDialog(false);
-  };
+    setActionDialog(false)};
 
-  const handleBulkTags = async (channelIds: string[]) => {
+  const handleBulkTags = async (_channelIds: string[]) => {
     setProcessing(true);
     // Implementation for bulk tags
     await new Promise(resolve => setTimeout(resolve, 2000));
     setProcessing(false);
-    setActionDialog(false);
-  };
+    setActionDialog(false)};
 
-  const handleDuplicateSettings = async (channelIds: string[]) => {
+  const handleDuplicateSettings = async (_channelIds: string[]) => {
     setProcessing(true);
     // Implementation for duplicate settings
     await new Promise(resolve => setTimeout(resolve, 2000));
     setProcessing(false);
-    setActionDialog(false);
-  };
+    setActionDialog(false)};
 
   const handleBulkDelete = async (channelIds: string[]) => {
     setProcessing(true);
@@ -234,20 +187,19 @@ export const BulkOperations: React.FC = () => {
     setChannels(prev => prev.filter(c => !channelIds.includes(c.id)));
     setProcessing(false);
     setActionDialog(false);
-    setSelectedChannels([]);
-  };
+    setSelectedChannels([])};
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'success';
       case 'paused': return 'warning';
       case 'error': return 'error';
-      default: return 'default';
-    }
+      default: return 'default'}
   };
 
   return (
-    <Box>
+    <>
+      <Box>
       {/* Header with Actions */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
@@ -255,7 +207,7 @@ export const BulkOperations: React.FC = () => {
             <Typography variant="h5" fontWeight="bold">
               Channel Bulk Operations
             </Typography>
-            <Badge badgeContent={selectedChannels.length} color="primary">
+      <Badge badgeContent={selectedChannels.length} color="primary">
               <Chip
                 label={`${selectedChannels.length} selected`}
                 color={selectedChannels.length > 0 ? 'primary' : 'default'}
@@ -272,7 +224,7 @@ export const BulkOperations: React.FC = () => {
                   color={action.dangerous ? 'error' : 'primary'}
                   size="small"
                   startIcon={action.icon}
-                  onClick={() => handleBulkAction(action)}
+                  onClick={() => handleBulkAction(action}
                 >
                   {action.label}
                 </Button>
@@ -312,7 +264,7 @@ export const BulkOperations: React.FC = () => {
                 <TableCell padding="checkbox">
                   <Checkbox
                     checked={selectedChannels.includes(channel.id)}
-                    onChange={() => handleSelectChannel(channel.id)}
+                    onChange={() => handleSelectChannel(channel.id}
                   />
                 </TableCell>
                 <TableCell>
@@ -362,7 +314,7 @@ export const BulkOperations: React.FC = () => {
       {/* Bulk Action Dialog */}
       <Dialog
         open={actionDialog}
-        onClose={() => !processing && setActionDialog(false)}
+        onClose={() => !processing && setActionDialog(false}
         maxWidth="sm"
         fullWidth
       >
@@ -375,14 +327,14 @@ export const BulkOperations: React.FC = () => {
               This action cannot be undone. Are you sure you want to proceed?
             </Alert>
           )}
-          
           <Typography variant="body2" gutterBottom>
             This action will be applied to {selectedChannels.length} channel(s):
           </Typography>
           
           <List dense>
             {selectedChannels.map(id => {
-              const channel = channels.find(c => c.id === id);
+              const channel = channels.find(c => c.id === id</>
+  );
               return channel ? (
                 <ListItem key={id}>
                   <ListItemIcon>
@@ -390,8 +342,7 @@ export const BulkOperations: React.FC = () => {
                   </ListItemIcon>
                   <ListItemText primary={channel.name} />
                 </ListItem>
-              ) : null;
-            })}
+              ) : null})}
           </List>
 
           {processing && (
@@ -404,13 +355,13 @@ export const BulkOperations: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setActionDialog(false)} disabled={processing}>
+          <Button onClick={() => setActionDialog(false} disabled={processing}>
             Cancel
           </Button>
           <Button
             variant="contained"
             color={currentAction?.dangerous ? 'error' : 'primary'}
-            onClick={() => currentAction?.action(selectedChannels)}
+            onClick={() => currentAction?.action(selectedChannels}
             disabled={processing}
           >
             Confirm
@@ -418,5 +369,4 @@ export const BulkOperations: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  );
-};
+  )};`

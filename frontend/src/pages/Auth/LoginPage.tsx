@@ -3,8 +3,8 @@
  * P0 Task: Authentication Flow UI
  */
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import {
+import {  useNavigate, Link  } from 'react-router-dom';
+import { 
   Box,
   Paper,
   TextField,
@@ -19,45 +19,41 @@ import {
   CircularProgress,
   Container,
   Grid,
-} from '@mui/material';
-import {
+  FormControl
+ } from '@mui/material';
+import { 
   Email,
   Lock,
   Visibility,
   VisibilityOff,
   Google,
   GitHub,
-  PlayCircle,
-} from '@mui/icons-material';
-import { useAuthStore } from '../../stores/authStore';
-import { api } from '../../services/api';
+  PlayCircle
+ } from '@mui/icons-material';
+import {  useAuthStore  } from '../../stores/authStore';
+import {  api  } from '../../services/api';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login, loginWithGoogle, loading, error } = useAuthStore();
   
-  const [formData, setFormData] = useState({
-    email: '',
+  const [formData, setFormData] = useState({ email: '',
     password: '',
-    rememberMe: false,
-  });
+    rememberMe: false });
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<any>({});
 
-  const handleChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'rememberMe' ? checked : value,
-    }));
+    setFormData(prev => ({ ...prev,
+      [name]: name === 'rememberMe' ? checked : value }));
     // Clear validation error for this field
     if (validationErrors[name]) {
-      setValidationErrors((prev: unknown) => ({ ...prev, [name]: '' }));
-    }
+      setValidationErrors((prev: React.ChangeEvent<HTMLInputElement>) => ({ ...prev, [name]: '' }))}
   };
 
   const validateForm = () => {
-    const errors: unknown = {};
+const errors: unknown = {};
     
     if (!formData.email) {
       errors.email = 'Email is required';
@@ -75,62 +71,53 @@ export const LoginPage: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (_e: React.FormEvent) => {
+  const handleSubmit = async (_: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     
     try {
       await login(formData.email, formData.password, formData.rememberMe);
-      navigate('/dashboard');
-    } catch (_err) {
-      console.error('Login failed:', err);
-    }
+      navigate('/dashboard')} catch (_) {
+      console.error('Login, failed:', err)}
   };
 
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      navigate('/dashboard');
-    } catch (_err) {
-      console.error('Google login failed:', err);
-    }
+      navigate('/dashboard')} catch (_) {
+      console.error('Google login, failed:', err)}
   };
 
-  const handleDemoLogin = async () => {
-    setFormData({
+  const handleDemoLogin = async () => { setFormData({
       email: 'demo@ytempire.com',
       password: 'demo123',
-      rememberMe: false,
-    });
+      rememberMe: false });
     try {
       await login('demo@ytempire.com', 'demo123', false);
-      navigate('/dashboard');
-    } catch (_err) {
-      console.error('Demo login failed:', err);
-    }
+      navigate('/dashboard')} catch (_) {
+      console.error('Demo login, failed:', err)}
   };
 
   return (
-    <Container component="main" maxWidth="sm">
+    <>
+      <Container component="main" maxWidth="sm">
       <Box
-        sx={{
-          minHeight: '100vh',
+        sx={ {
+          minHeight: '100 vh',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          py: 4,
-        }}
+          py: 4 }}
       >
         <Paper
           elevation={3}
-          sx={{
+          sx={ {
             p: 4,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            borderRadius: 2,
-          }}
+            borderRadius: 2 }}
         >
           {/* Logo and Title */}
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -139,8 +126,7 @@ export const LoginPage: React.FC = () => {
               YTEmpire
             </Typography>
           </Box>
-          
-          <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom>
             Welcome Back
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -153,7 +139,6 @@ export const LoginPage: React.FC = () => {
               {error}
             </Alert>
           )}
-
           {/* Login Form */}
           <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
             <TextField
@@ -169,13 +154,12 @@ export const LoginPage: React.FC = () => {
               required
               autoComplete="email"
               autoFocus
-              InputProps={{
+              InputProps={ {
                 startAdornment: (
                   <InputAdornment position="start">
                     <Email color="action" />
                   </InputAdornment>
-                ),
-              }}
+                ) }}
             />
 
             <TextField
@@ -199,14 +183,14 @@ export const LoginPage: React.FC = () => {
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowPassword(!showPassword}
                       edge="end"
                       size="small"
                     >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                      {showPassword ? <VisibilityOff /> </>: <Visibility />}
                     </IconButton>
                   </InputAdornment>
-                ),
+                )
               }}
             />
 
@@ -314,5 +298,5 @@ export const LoginPage: React.FC = () => {
         </Box>
       </Box>
     </Container>
-  );
-};
+  </>
+  )};

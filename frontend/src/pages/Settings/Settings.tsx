@@ -19,307 +19,9 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Divider,
-  Alert,
-  Tab,
-  Tabs,
-  Avatar,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Chip,
-  LinearProgress,
-  useTheme,
-  Slider,
-  RadioGroup,
-  Radio,
-  FormLabel,
-} from '@mui/material';
-import {
-  Person,
-  Security,
-  Notifications,
-  Palette,
-  Language,
-  Storage,
-  Api,
-  Billing,
-  Team,
-  Analytics,
-  SmartToy,
-  YouTube,
-  Edit,
-  Delete,
-  Add,
-  Save,
-  Cancel,
-  Warning,
-  CheckCircle,
-  Info,
-  Upload,
-  Download,
-  Refresh,
-  VpnKey,
-  AccountBalance,
-  CreditCard,
-  Receipt,
-  Schedule,
-  Tune,
-  Psychology,
-  VideoLibrary,
-  Mic,
-  Image as ImageIcon,
-} from '@mui/icons-material';
-import { useAuthStore } from '../../stores/authStore';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`settings-tabpanel-${index}`}
-      aria-labelledby={`settings-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ py: 3 }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-}
-
-const mockAPIKeys = [
-  { id: 1, name: 'OpenAI API', service: 'GPT-4', status: 'active', lastUsed: '2 hours ago', usage: 75 },
-  { id: 2, name: 'ElevenLabs API', service: 'Voice Synthesis', status: 'active', lastUsed: '5 hours ago', usage: 60 },
-  { id: 3, name: 'YouTube API', service: 'Channel Management', status: 'active', lastUsed: '1 hour ago', usage: 45 },
-  { id: 4, name: 'Claude API', service: 'Content Generation', status: 'warning', lastUsed: '1 day ago', usage: 90 },
-  { id: 5, name: 'DALL-E API', service: 'Image Generation', status: 'inactive', lastUsed: '3 days ago', usage: 0 },
-];
-
-const mockSubscriptionPlan = {
-  name: 'Creator Pro',
-  price: '$29/month',
-  features: [
-    '100 videos per month',
-    '5 YouTube channels',
-    'Advanced AI models',
-    'Priority support',
-    'Custom voice training',
-    'Advanced analytics'
-  ],
-  usage: {
-    videos: { current: 67, limit: 100 },
-    channels: { current: 3, limit: 5 },
-    storage: { current: 45, limit: 100 },
-  }
-};
-
-export const Settings: React.FC = () => {
-  const theme = useTheme();
-  const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [showApiDialog, setShowApiDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedApi, setSelectedApi] = useState<any>(null);
-
-  // Settings state
-  const [settings, setSettings] = useState({
-    profile: {
-      displayName: user?.full_name || '',
-      email: user?.email || '',
-      timezone: 'America/New_York',
-      language: 'en',
-    },
-    notifications: {
-      emailNotifications: true,
-      pushNotifications: true,
-      videoComplete: true,
-      costAlerts: true,
-      weeklyReports: false,
-      marketingEmails: false,
-    },
-    appearance: {
-      theme: 'auto',
-      density: 'comfortable',
-      sidebar: 'expanded',
-    },
-    privacy: {
-      dataSharing: false,
-      analytics: true,
-      errorReporting: true,
-      usageStatistics: false,
-    },
-    automation: {
-      autoPublish: true,
-      smartScheduling: true,
-      autoThumbnails: true,
-      autoTranscripts: false,
-      qualityThreshold: 75,
-      costLimit: 500,
-    },
-    ai: {
-      preferredModel: 'gpt-4',
-      creativity: 70,
-      voiceStyle: 'professional',
-      thumbnailStyle: 'modern',
-      contentLength: 'medium',
-      generateDescription: true,
-      generateTags: true,
-    },
-  });
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
-
-  const handleSettingChange = (section: string, key: string, value: unknown) => {
-    setSettings(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section as keyof typeof prev],
-        [key]: value,
-      },
-    }));
-  };
-
-  const handleSaveSettings = async () => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-  };
-
-  const handleAddApiKey = () => {
-    setSelectedApi(null);
-    setShowApiDialog(true);
-  };
-
-  const handleEditApiKey = (api: unknown) => {
-    setSelectedApi(api);
-    setShowApiDialog(true);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'success';
-      case 'warning': return 'warning';
-      case 'inactive': return 'error';
-      default: return 'default';
-    }
-  };
-
-  const tabs = [
-    { label: 'Profile', icon: <Person /> },
-    { label: 'Notifications', icon: <Notifications /> },
-    { label: 'Appearance', icon: <Palette /> },
-    { label: 'Privacy', icon: <Security /> },
-    { label: 'API Keys', icon: <Api /> },
-    { label: 'Automation', icon: <SmartToy /> },
-    { label: 'AI Settings', icon: <Psychology /> },
-    { label: 'Billing', icon: <Billing /> },
-  ];
-
-  return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Settings
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Manage your account preferences and system configuration
-          </Typography>
-        </Box>
-        
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="outlined" startIcon={<Download />}>
-            Export Settings
-          </Button>
-          <Button 
-            variant="contained" 
-            startIcon={<Save />}
-            onClick={handleSaveSettings}
-            disabled={loading}
-          >
-            {loading ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </Box>
-      </Box>
-
-      <Grid container spacing={3}>
-        {/* Settings Tabs */}
-        <Grid item xs={12} md={3}>
-          <Paper sx={{ p: 1 }}>
-            <Tabs
-              orientation="vertical"
-              variant="scrollable"
-              value={activeTab}
-              onChange={handleTabChange}
-              sx={{
-                borderRight: 1,
-                borderColor: 'divider',
-                '& .MuiTab-root': {
-                  minHeight: 48,
-                  alignItems: 'flex-start',
-                  textAlign: 'left',
-                },
-              }}
-            >
-              {tabs.map((tab, index) => (
-                <Tab
-                  key={index}
-                  icon={tab.icon}
-                  label={tab.label}
-                  iconPosition="start"
-                  sx={{ justifyContent: 'flex-start', minHeight: 48 }}
-                />
-              ))}
-            </Tabs>
-          </Paper>
-        </Grid>
-
-        {/* Settings Content */}
-        <Grid item xs={12} md={9}>
-          <Paper sx={{ minHeight: 600 }}>
-            {/* Profile Settings */}
-            <TabPanel value={activeTab} index={0}>
-              <CardHeader title="Profile Settings" />
-              <CardContent>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={4}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <Avatar sx={{ width: 120, height: 120, mb: 2, fontSize: '3rem' }}>
-                        {user?.full_name?.charAt(0) || 'U'}
-                      </Avatar>
-                      <Button variant="outlined" startIcon={<Upload />}>
-                        Change Avatar
-                      </Button>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} md={8}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <TextField
+  Select,
+  MenuItem,
+  TextField
                           fullWidth
                           label="Display Name"
                           value={settings.profile.displayName}
@@ -461,7 +163,7 @@ export const Settings: React.FC = () => {
                         <Security />
                       </ListItemIcon>
                       <ListItemText
-                        primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                        primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())`
                         secondary={`Allow ${key.toLowerCase().replace(/([A-Z])/g, ' $1')} to improve service quality`}
                       />
                       <ListItemSecondaryAction>
@@ -600,11 +302,9 @@ export const Settings: React.FC = () => {
                         onChange={(e, value) => handleSettingChange('automation', 'qualityThreshold', value)}
                         min={0}
                         max={100}
-                        marks={[
-                          { value: 0, label: '0%' },
+                        marks={[ { value: 0, label: '0%' },
                           { value: 50, label: '50%' },
-                          { value: 100, label: '100%' },
-                        ]}
+                          { value: 100, label: '100%' }  ]
                       />
                     </Box>
                   </Grid>
@@ -616,10 +316,9 @@ export const Settings: React.FC = () => {
                       type="number"
                       value={settings.automation.costLimit}
                       onChange={(e) => handleSettingChange('automation', 'costLimit', parseInt(e.target.value))}
-                      InputProps={{
+                      InputProps={ {
                         startAdornment: '$',
-                        endAdornment: 'USD',
-                      }}
+                        endAdornment: 'USD' }}
                       helperText="Videos will be paused when this limit is reached"
                     />
                   </Grid>
@@ -673,11 +372,9 @@ export const Settings: React.FC = () => {
                       onChange={(e, value) => handleSettingChange('ai', 'creativity', value)}
                       min={0}
                       max={100}
-                      marks={[
-                        { value: 0, label: 'Conservative' },
+                      marks={[ { value: 0, label: 'Conservative' },
                         { value: 50, label: 'Balanced' },
-                        { value: 100, label: 'Creative' },
-                      ]}
+                        { value: 100, label: 'Creative' }  ]
                     />
                   </Grid>
 
@@ -759,7 +456,6 @@ export const Settings: React.FC = () => {
                         />
                       </Box>
                     ))}
-                    
                     <Divider sx={{ my: 2 }} />
                     
                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -832,7 +528,6 @@ export const Settings: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  );
-};
+  )};
 
-export default Settings;
+export default Settings;`

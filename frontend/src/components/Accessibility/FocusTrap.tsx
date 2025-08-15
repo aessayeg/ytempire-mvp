@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { getFocusableElements } from '../../utils/accessibility';
+import {  getFocusableElements  } from '../../utils/accessibility';
 
 interface FocusTrapProps {
   children: React.ReactNode;
@@ -10,14 +10,7 @@ interface FocusTrapProps {
   allowEscape?: boolean;
 }
 
-export const FocusTrap: React.FC<FocusTrapProps> = ({
-  children,
-  active = true,
-  returnFocus = true,
-  initialFocus,
-  finalFocus,
-  allowEscape = false,
-}) => {
+export const FocusTrap: React.FC<FocusTrapProps> = ({ children, active = true, returnFocus = true, initialFocus, finalFocus, allowEscape = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
@@ -39,12 +32,10 @@ export const FocusTrap: React.FC<FocusTrapProps> = ({
     // Set initial focus
     if (initialFocus) {
       const initialElement = container.querySelector(initialFocus) as HTMLElement;
-      initialElement?.focus();
-    } else {
-      firstElement?.focus();
-    }
+      initialElement?.focus()} else {
+      firstElement?.focus()}
 
-    const handleKeyDown = (_e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && allowEscape) {
         previousFocusRef.current?.focus();
         return;
@@ -52,7 +43,7 @@ export const FocusTrap: React.FC<FocusTrapProps> = ({
 
       if (e.key !== 'Tab') return;
 
-      // Refresh focusable elements (they might have changed)
+      // Refresh focusable elements (they might have, changed)
       const currentFocusableElements = getFocusableElements(container);
       const currentFirst = currentFocusableElements[0];
       const currentLast = currentFocusableElements[currentFocusableElements.length - 1];
@@ -60,13 +51,11 @@ export const FocusTrap: React.FC<FocusTrapProps> = ({
       if (e.shiftKey) {
         if (document.activeElement === currentFirst) {
           e.preventDefault();
-          currentLast?.focus();
-        }
+          currentLast?.focus()}
       } else {
         if (document.activeElement === currentLast) {
           e.preventDefault();
-          currentFirst?.focus();
-        }
+          currentFirst?.focus()}
       }
     };
 
@@ -80,10 +69,8 @@ export const FocusTrap: React.FC<FocusTrapProps> = ({
       if (returnFocus && previousFocusRef.current) {
         if (finalFocus) {
           const finalElement = document.querySelector(finalFocus) as HTMLElement;
-          finalElement?.focus();
-        } else {
-          previousFocusRef.current.focus();
-        }
+          finalElement?.focus()} else {
+          previousFocusRef.current.focus()}
       }
     };
   }, [active, returnFocus, initialFocus, finalFocus, allowEscape]);
@@ -92,6 +79,5 @@ export const FocusTrap: React.FC<FocusTrapProps> = ({
     <div ref={containerRef} data-focus-trap={active}>
       {children}
     </div>
-  );
-};
+  )};
 

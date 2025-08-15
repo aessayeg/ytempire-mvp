@@ -3,7 +3,7 @@
  * Handles WebSocket connections with automatic reconnection and message handling
  */
 
-import { EventEmitter } from '../utils/EventEmitter';
+import {  EventEmitter  } from '../utils/EventEmitter';
 
 export interface WebSocketConfig {
   url: string;
@@ -15,22 +15,20 @@ export interface WebSocketConfig {
 }
 
 export interface WebSocketMessage {
-  type: string;
-  data: unknown;
+  type: string,
+  data: unknown;,
+
   timestamp: number;
   id?: string;
 }
 
-export enum WebSocketStatus {
-  CONNECTING = 'CONNECTING',
+export enum WebSocketStatus { CONNECTING = 'CONNECTING',
   CONNECTED = 'CONNECTED',
   DISCONNECTED = 'DISCONNECTED',
   RECONNECTING = 'RECONNECTING',
-  ERROR = 'ERROR',
-}
+  ERROR = 'ERROR' }
 
-export class WebSocketService extends EventEmitter {
-  private ws: WebSocket | null = null;
+export class WebSocketService extends EventEmitter { private ws: WebSocket | null = null;
   private config: Required<WebSocketConfig>;
   private reconnectAttempts = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -48,8 +46,7 @@ export class WebSocketService extends EventEmitter {
       heartbeatInterval: 30000,
       enableHeartbeat: true,
       debug: false,
-      ...config,
-    };
+      ...config };
   }
 
   /**
@@ -72,10 +69,8 @@ export class WebSocketService extends EventEmitter {
         : this.config.url;
 
       this.ws = new WebSocket(url);
-      this.setupEventHandlers();
-    } catch (_error) {
-      this.handleError(_error);
-    }
+      this.setupEventHandlers()} catch (_) {
+      this.handleError(_)}
   }
 
   /**
@@ -90,47 +85,40 @@ export class WebSocketService extends EventEmitter {
     }
 
     this.status = WebSocketStatus.DISCONNECTED;
-    this.emit('status', this.status);
-  }
+    this.emit('status', this.status)}
 
   /**
    * Send message through WebSocket
    */
-  public send(type: string, data: unknown): void {
-    const _message: WebSocketMessage = {
+  public send(type: string, data: unknown): void { const _: WebSocketMessage = {
       type,
       data,
       timestamp: Date.now(),
-      id: this.generateMessageId(),
-    };
+      id: this.generateMessageId() };
 
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(_message));
-      this.emit('sent', _message);
-    } else {
+      this.ws.send(JSON.stringify(_));
+      this.emit('sent', _)} else {
       // Queue message for later sending
-      this.messageQueue.push(_message);
-      this.log('Message queued (not connected):', _message);
-    }
+      this.messageQueue.push(_);
+      this.log('Message queued (not, connected):', _)}
   }
 
   /**
    * Subscribe to specific message types
    */
-  public subscribe(type: string, callback: (data: unknown) => void): () => void {
-    const handler = (_message: WebSocketMessage) => {
+  public subscribe(type: string, callback: (data: React.ChangeEvent<HTMLInputElement>) => void): () => void {
+    const handler = (_: WebSocketMessage) => {
       if (message.type === type) {
-        callback(message.data);
-      }
+        callback(message.data)}
     };
 
     this.on('message', handler);
 
     // Return unsubscribe function
     return () => {
-      this.off('message', handler);
-    };
-  }
+    
+      this.off('message', handler)}
 
   /**
    * Get current connection status
@@ -155,8 +143,7 @@ export class WebSocketService extends EventEmitter {
     this.ws.onopen = this.handleOpen.bind(this);
     this.ws.onclose = this.handleClose.bind(this);
     this.ws.onerror = this.handleError.bind(this);
-    this.ws.onmessage = this.handleMessage.bind(this);
-  }
+    this.ws.onmessage = this.handleMessage.bind(this)}
 
   /**
    * Handle WebSocket open event
@@ -171,18 +158,16 @@ export class WebSocketService extends EventEmitter {
 
     // Start heartbeat
     if (this.config.enableHeartbeat) {
-      this.startHeartbeat();
-    }
+      this.startHeartbeat()}
 
     // Send queued messages
-    this.flushMessageQueue();
-  }
+    this.flushMessageQueue()}
 
   /**
    * Handle WebSocket close event
    */
-  private handleClose(_event: CloseEvent): void {
-    this.log('WebSocket closed:', event.code, event.reason);
+  private handleClose(_: CloseEvent): void {
+    this.log('WebSocket, closed:', event.code, event.reason);
     
     this.ws = null;
     this.clearTimers();
@@ -191,35 +176,32 @@ export class WebSocketService extends EventEmitter {
       // Normal closure
       this.status = WebSocketStatus.DISCONNECTED;
       this.emit('status', this.status);
-      this.emit('disconnected');
-    } else {
+      this.emit('disconnected')} else {
       // Unexpected closure - attempt reconnect
-      this.attemptReconnect();
-    }
+      this.attemptReconnect()}
   }
 
   /**
    * Handle WebSocket error event
    */
-  private handleError(_error: Event): void {
-    this.log('WebSocket _error:', _error);
+  private handleError(_: Event): void {
+    this.log('WebSocket, _:', _);
     
     this.status = WebSocketStatus.ERROR;
     this.emit('status', this.status);
-    this.emit('error', _error);
-  }
+    this.emit('error', _)}
 
   /**
    * Handle incoming WebSocket message
    */
-  private handleMessage(_event: MessageEvent): void {
+  private handleMessage(_: MessageEvent): void {
     try {
       const message = JSON.parse(event.data) as WebSocketMessage;
       
       // Handle different message types
       switch (message.type) {
         case 'pong':
-          this.handlePong(_message);
+          this.handlePong(_);
           break;
         
         case 'error':
@@ -227,15 +209,13 @@ export class WebSocketService extends EventEmitter {
           break;
         
         default:
-          this.emit('message', _message);
-          this.emit(`_message:${message.type}`, message.data);
+          this.emit('message', _);`
+          this.emit(`_:${message.type}`, message.data);
           break;
       }
 
-      this.log('Received _message:', _message);
-    } catch (_error) {
-      this.log('Failed to parse _message:', event.data, _error);
-    }
+      this.log('Received, _:', _)} catch (_) {
+      this.log('Failed to parse, _:', event.data, _)}
   }
 
   /**
@@ -254,13 +234,11 @@ export class WebSocketService extends EventEmitter {
     this.emit('status', this.status);
     this.reconnectAttempts++;
 
-    const delay = this.getReconnectDelay();
+    const delay = this.getReconnectDelay();`
     this.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
 
     this.reconnectTimer = setTimeout(() => {
-      this.connect();
-    }, delay);
-  }
+      this.connect()}, delay)}
 
   /**
    * Get reconnection delay with exponential backoff
@@ -268,8 +246,7 @@ export class WebSocketService extends EventEmitter {
   private getReconnectDelay(): number {
     const baseDelay = this.config.reconnectInterval;
     const factor = Math.min(this.reconnectAttempts, 5);
-    return baseDelay * Math.pow(1.5, factor);
-  }
+    return baseDelay * Math.pow(1.5, factor)}
 
   /**
    * Start heartbeat mechanism
@@ -278,19 +255,16 @@ export class WebSocketService extends EventEmitter {
     this.heartbeatTimer = setInterval(() => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.lastPing = Date.now();
-        this.send('ping', { timestamp: this.lastPing });
-      }
-    }, this.config.heartbeatInterval);
-  }
+        this.send('ping', { timestamp: this.lastPing })}
+    }, this.config.heartbeatInterval)}
 
   /**
    * Handle pong response
    */
-  private handlePong(_message: WebSocketMessage): void {
+  private handlePong(_: WebSocketMessage): void {
     if (this.lastPing) {
       this.latency = Date.now() - this.lastPing;
-      this.emit('latency', this.latency);
-    }
+      this.emit('latency', this.latency)}
   }
 
   /**
@@ -314,16 +288,15 @@ export class WebSocketService extends EventEmitter {
   private flushMessageQueue(): void {
     while (this.messageQueue.length > 0) {
       const message = this.messageQueue.shift();
-      if (_message) {
-        this.send(message.type, message.data);
-      }
+      if (_) {
+        this.send(message.type, message.data)}
     }
   }
 
   /**
    * Generate unique message ID
    */
-  private generateMessageId(): string {
+  private generateMessageId(): string {`
     return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
@@ -332,8 +305,7 @@ export class WebSocketService extends EventEmitter {
    */
   private log(...args: unknown[]): void {
     if (this.config.debug) {
-      console.log('[WebSocket]', ...args);
-    }
+      console.log('[WebSocket]', ...args)}
   }
 }
 
@@ -345,12 +317,10 @@ let wsInstance: WebSocketService | null = null;
  */
 export function getWebSocketService(config?: WebSocketConfig): WebSocketService {
   if (!wsInstance && config) {
-    wsInstance = new WebSocketService(config);
-  }
+    wsInstance = new WebSocketService(config)}
   
   if (!wsInstance) {
-    throw new Error('WebSocket service not initialized');
-  }
+    throw new Error('WebSocket service not initialized')}
   
   return wsInstance;
 }
@@ -360,9 +330,8 @@ export function getWebSocketService(config?: WebSocketConfig): WebSocketService 
  */
 export function initializeWebSocket(config: WebSocketConfig): WebSocketService {
   if (wsInstance) {
-    wsInstance.disconnect();
-  }
+    wsInstance.disconnect()}
   
   wsInstance = new WebSocketService(config);
   return wsInstance;
-}
+}`

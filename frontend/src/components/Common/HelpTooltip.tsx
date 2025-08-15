@@ -1,6 +1,11 @@
 import React from 'react';
-import { Tooltip, IconButton, Box, Typography } from '@mui/material';
-import { HelpOutline, Info } from '@mui/icons-material';
+import { 
+  Tooltip,
+  IconButton,
+  Box,
+  Typography
+ } from '@mui/material';
+import {  HelpOutline, Info  } from '@mui/icons-material';
 
 interface HelpTooltipProps {
   title: string;
@@ -12,15 +17,7 @@ interface HelpTooltipProps {
   interactive?: boolean;
 }
 
-export const HelpTooltip: React.FC<HelpTooltipProps> = ({
-  title,
-  description,
-  placement = 'top',
-  size = 'small',
-  variant = 'help',
-  children,
-  interactive = false,
-}) => {
+export const HelpTooltip: React.FC<HelpTooltipProps> = ({ title, description, placement = 'top', size = 'small', variant = 'help', children, interactive = false }) => {
   const Icon = variant === 'help' ? HelpOutline : Info;
   
   const tooltipContent = (
@@ -38,7 +35,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
 
   if (children) {
     return (
-      <Tooltip 
+    <Tooltip 
         title={tooltipContent} 
         placement={placement}
         arrow
@@ -50,8 +47,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
           {children}
         </Box>
       </Tooltip>
-    );
-  }
+    )}
 
   return (
     <Tooltip 
@@ -66,5 +62,4 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
         <Icon fontSize={size} />
       </IconButton>
     </Tooltip>
-  );
-};
+  )};

@@ -1,26 +1,22 @@
 import React, { useState } from 'react';
-import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
-import {
+import {  ThemeToggle  } from '../ThemeToggle/ThemeToggle';
+import { 
   AppBar,
   Toolbar,
   IconButton,
   Typography,
-  Badge,
   Menu,
   MenuItem,
   Box,
   Avatar,
-  Tooltip,
   Divider,
   ListItemIcon,
   ListItemText,
-  Switch,
   TextField,
-  InputAdornment,
   Chip,
-  LinearProgress,
-} from '@mui/material';
-import {
+  LinearProgress
+ } from '@mui/material';
+import { 
   Notifications,
   Search,
   Settings,
@@ -30,17 +26,16 @@ import {
   LightMode,
   Help,
   Feedback,
-  Speed,
   CloudQueue,
   CheckCircle,
   Error,
   Warning,
   Info,
   TrendingUp,
-  AttachMoney,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../stores/authStore';
+  AttachMoney
+ } from '@mui/icons-material';
+import {  useNavigate  } from 'react-router-dom';
+import {  useAuthStore  } from '../../stores/authStore';
 
 interface HeaderProps {
   darkMode?: boolean;
@@ -48,13 +43,14 @@ interface HeaderProps {
 }
 
 interface Notification {
-  id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
-  title: string;
-  message: string;
-  timestamp: Date;
-  read: boolean;
-}
+  id: string,
+  type: 'success' | 'error' | 'warning' | 'info',
+
+  title: string,
+  message: string,
+
+  timestamp: Date,
+  read: boolean}
 
 export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMode }) => {
   const navigate = useNavigate();
@@ -66,66 +62,51 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
   const [isProcessing, setIsProcessing] = useState(false);
   
   // Mock notifications - in production, these would come from the backend
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
+  const [notifications, setNotifications] = useState<Notification[]>([ { id: '1',
       type: 'success',
       title: 'Video Published',
       message: 'Your video "10 AI Tools" was successfully published',
       timestamp: new Date(Date.now() - 1000 * 60 * 5),
-      read: false,
-    },
-    {
-      id: '2',
+      read: false },
+    { id: '2',
       type: 'info',
       title: 'Processing Complete',
       message: 'Video generation completed for 3 videos',
       timestamp: new Date(Date.now() - 1000 * 60 * 30),
-      read: false,
-    },
-    {
-      id: '3',
+      read: false },
+    { id: '3',
       type: 'warning',
       title: 'Daily Limit Warning',
       message: 'You have 2 videos remaining for today',
       timestamp: new Date(Date.now() - 1000 * 60 * 60),
-      read: true,
-    },
-  ]);
+      read: true } ]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const handleOpenUserMenu = (_event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget);
-  };
+  const handleOpenUserMenu = (_: React.MouseEvent<HTMLElement>) => {
+    setAnchorElUser(event.currentTarget)};
 
   const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+    setAnchorElUser(null)};
 
-  const handleOpenNotifications = (_event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNotif(event.currentTarget);
-  };
+  const handleOpenNotifications = (_: React.MouseEvent<HTMLElement>) => {
+    setAnchorElNotif(event.currentTarget)};
 
   const handleCloseNotifications = () => {
-    setAnchorElNotif(null);
-  };
+    setAnchorElNotif(null)};
 
   const handleMarkAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))};
 
   const handleLogout = () => {
     handleCloseUserMenu();
     logout();
-    navigate('/auth/login');
-  };
+    navigate('/auth/login')};
 
-  const handleSearch = (_e: React.FormEvent) => {
+  const handleSearch = (_: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-    }
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`)}
   };
 
   const getNotificationIcon = (type: Notification['type']) => {
@@ -147,9 +128,9 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
     
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
+    if (minutes < 1) return 'Just now';`
+    if (minutes < 60) return `${minutes}m ago`;`
+    if (hours < 24) return `${hours}h ago`;`
     return `${days}d ago`;
   };
 
@@ -157,14 +138,13 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
     <>
       <AppBar
         position="fixed"
-        sx={{
+        sx={ {
           zIndex: (theme) => theme.zIndex.drawer + 1,
           backdropFilter: 'blur(8px)',
-          backgroundColor: (theme) => 
+          backgroundColor: (theme) => {}
             theme.palette.mode === 'dark' 
               ? 'rgba(18, 18, 18, 0.9)' 
-              : 'rgba(255, 255, 255, 0.9)',
-        }}
+              : 'rgba(255, 255, 255, 0.9)' }}
         elevation={0}
       >
         <Toolbar>
@@ -172,15 +152,14 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
             <Box
               component="form"
               onSubmit={handleSearch}
-              sx={{
+              sx={ {
                 display: 'flex',
                 alignItems: 'center',
                 backgroundColor: 'action.hover',
                 borderRadius: 2,
                 px: 2,
                 py: 0.5,
-                minWidth: 300,
-              }}
+                minWidth: 300 }}
             >
               <Search sx={{ color: 'text.secondary', mr: 1 }} />
               <TextField
@@ -188,9 +167,8 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
                 variant="standard"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  disableUnderline: true,
-                }}
+                InputProps={ {
+                  disableUnderline: true }}
                 sx={{ flex: 1 }}
               />
             </Box>
@@ -229,15 +207,14 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
             {onToggleDarkMode && (
               <Tooltip title="Toggle Dark Mode">
                 <IconButton onClick={onToggleDarkMode} color="inherit">
-                  {darkMode ? <LightMode /> : <DarkMode />}
+                  {darkMode ? <LightMode /> </>: <DarkMode />}
                 </IconButton>
               </Tooltip>
             )}
-
             {/* Help */}
             <Tooltip title="Help & Documentation">
               <IconButton
-                onClick={() => navigate('/help')}
+                onClick={() => navigate('/help'}
                 color="inherit"
               >
                 <Help />
@@ -267,14 +244,13 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
           </Box>
         </Toolbar>
         
-        {isProcessing && (
+        { isProcessing && (
           <LinearProgress
             sx={{
               position: 'absolute',
               bottom: 0,
               left: 0,
-              right: 0,
-            }}
+              right: 0 }}
           />
         )}
       </AppBar>
@@ -305,21 +281,21 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
         
         <Divider />
         
-        <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/settings/profile'); }}>
+        <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/settings/profile')}}>
           <ListItemIcon>
             <Person fontSize="small" />
           </ListItemIcon>
           <ListItemText>My Profile</ListItemText>
         </MenuItem>
         
-        <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/settings'); }}>
+        <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/settings')}}>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
           <ListItemText>Settings</ListItemText>
         </MenuItem>
         
-        <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/feedback'); }}>
+        <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/feedback')}}>
           <ListItemIcon>
             <Feedback fontSize="small" />
           </ListItemIcon>
@@ -367,20 +343,17 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
               No notifications
             </Typography>
           </Box>
-        ) : (
-          notifications.map(notification => (
+        ) : (_notifications.map((notification => (
             <MenuItem
               key={notification.id}
               onClick={() => {
-                setNotifications(prev =>
+                setNotifications(prev => {}
                   prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
-                );
-              }}
-              sx={{
+                )}}
+              sx={ {
                 backgroundColor: notification.read ? 'transparent' : 'action.hover',
                 '&:hover': {
-                  backgroundColor: 'action.selected',
-                },
+                  backgroundColor: 'action.selected' }
               }}
             >
               <ListItemIcon>
@@ -400,14 +373,12 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
             </MenuItem>
           ))
         )}
-        
         <Divider />
         
         <MenuItem
           onClick={() => {
             handleCloseNotifications();
-            navigate('/notifications');
-          }}
+            navigate('/notifications')}}
           sx={{ justifyContent: 'center' }}
         >
           <Typography variant="body2" color="primary">
@@ -416,5 +387,4 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
         </MenuItem>
       </Menu>
     </>
-  );
-};
+  )};`

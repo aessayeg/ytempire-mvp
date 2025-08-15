@@ -1,45 +1,51 @@
 import React, { useState } from 'react';
-import {
+import { 
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControlLabel,
+  Switch,
+  Tooltip as RechartsTooltip,
   Box,
   Tabs,
   Tab,
   Paper,
   Typography,
-  Container,
-} from '@mui/material';
-import { RevenueDashboard } from '../../components/Dashboard/RevenueDashboard';
-import { UserBehaviorDashboard } from '../../components/Analytics/UserBehaviorDashboard';
-import { PerformanceDashboard } from '../../components/Performance/PerformanceDashboard';
-import { ABTestDashboard } from '../../components/Experiments/ABTestDashboard';
+  Container
+ } from '@mui/material';
+import {  RevenueDashboard  } from '../../components/Dashboard/RevenueDashboard';
+import {  UserBehaviorDashboard  } from '../../components/Analytics/UserBehaviorDashboard';
+import {  PerformanceDashboard  } from '../../components/Performance/PerformanceDashboard';
+import {  ABTestDashboard  } from '../../components/Experiments/ABTestDashboard';
 
 interface TabPanelProps {
   children?: React.ReactNode;
-  index: number;
-  value: number;
-}
+  index: number,
+  value: number}
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
-    <div
+    <>
+      <div
       role="tabpanel"
       hidden={value !== index}
-      id={`analytics-tabpanel-${index}`}
+      id={`analytics-tabpanel-${index}`}`
       aria-labelledby={`analytics-tab-${index}`}
       {...other}
     >
       {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
-  );
-}
+  )}
 
 export const AnalyticsDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(0</>
+  );
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue)};
 
   return (
     <Container maxWidth="xl">
@@ -47,8 +53,8 @@ export const AnalyticsDashboard: React.FC = () => {
         <Typography variant="h3" component="h1" gutterBottom>
           Analytics & Metrics Dashboard
         </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph>
-          Comprehensive analytics for revenue, user behavior, performance, and experiments
+      <Typography variant="body1" color="text.secondary" paragraph>
+          Comprehensive analytics for, revenue, user, behavior, performance, and experiments
         </Typography>
 
         <Paper sx={{ width: '100%', mt: 3 }}>
@@ -83,5 +89,4 @@ export const AnalyticsDashboard: React.FC = () => {
         </Paper>
       </Box>
     </Container>
-  );
-};
+  )};`

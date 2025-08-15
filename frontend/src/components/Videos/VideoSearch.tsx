@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { Box, TextField, InputAdornment, IconButton, Menu, MenuItem, Chip, Button } from '@mui/material';
-import { Search, FilterList, Clear, CalendarToday, Sort } from '@mui/icons-material';
+import { 
+  Box,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Menu,
+  MenuItem,
+  Chip,
+  Button
+ } from '@mui/material';
+import {  Search, FilterList, Clear, Sort  } from '@mui/icons-material';
 
 interface VideoSearchProps {
-  onSearch: (query: string, filters: unknown) => void;
-  onClear: () => void;
-}
+  onSearch: (query: string, filters: React.ChangeEvent<HTMLInputElement>) => void,
+  onClear: () => void}
 
 export const VideoSearch: React.FC<VideoSearchProps> = ({ onSearch, onClear }) => {
   const [query, setQuery] = useState('');
@@ -13,23 +21,22 @@ export const VideoSearch: React.FC<VideoSearchProps> = ({ onSearch, onClear }) =
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleSearch = () => {
-    onSearch(query, filters);
-  };
+    onSearch(query, filters)};
 
   const handleClear = () => {
     setQuery('');
     setFilters({ dateRange: 'all', sortBy: 'relevance', status: 'all' });
-    onClear();
-  };
+    onClear()};
 
   return (
-    <Box display="flex" gap={2} alignItems="center">
+    <>
+      <Box display="flex" gap={2} alignItems="center">
       <TextField
         fullWidth
         placeholder="Search videos..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+        onKeyPress={e) => e.key === 'Enter' && handleSearch(}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -46,13 +53,12 @@ export const VideoSearch: React.FC<VideoSearchProps> = ({ onSearch, onClear }) =
         }}
       />
       
-      <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+      <IconButton onClick={(e) => setAnchorEl(e.currentTarget}>
         <FilterList />
       </IconButton>
-      
       <Button variant="contained" onClick={handleSearch}>Search</Button>
       
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null}>
         <MenuItem>Date Range</MenuItem>
         <MenuItem>Sort By</MenuItem>
         <MenuItem>Status</MenuItem>
@@ -66,5 +72,5 @@ export const VideoSearch: React.FC<VideoSearchProps> = ({ onSearch, onClear }) =
         </Box>
       )}
     </Box>
-  );
-};
+  </>
+  )};

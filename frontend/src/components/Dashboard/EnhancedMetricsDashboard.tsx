@@ -4,14 +4,13 @@
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import {
+import { 
   Box,
   Grid,
   Paper,
   Typography,
   Card,
   CardContent,
-  CardHeader,
   IconButton,
   Select,
   MenuItem,
@@ -19,63 +18,39 @@ import {
   InputLabel,
   Skeleton,
   Tooltip,
-  Chip,
   Button,
-  ButtonGroup,
-  Alert,
   LinearProgress,
-  Tab,
-  Tabs,
   Switch,
   FormControlLabel,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Divider,
   Badge,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   List,
   ListItem,
   ListItemText,
   ListItemIcon,
-  Avatar,
-} from '@mui/material';
-import {
+  Avatar
+ } from '@mui/material';
+import { 
   TrendingUp,
   TrendingDown,
   TrendingFlat,
   Refresh,
   Download,
-  Info,
   AttachMoney,
   Visibility,
   ThumbUp,
-  People,
   VideoLibrary,
   Speed,
-  Warning,
-  CheckCircle,
-  Error,
-  MoreVert,
-  DateRange,
-  Assessment,
   Timeline,
-  ExpandMore,
-  Share,
-  CloudDownload,
   Fullscreen,
-  FilterList,
   ShowChart,
   PieChart,
-  BarChart as BarChartIcon,
-  TableChart,
-  Settings,
-} from '@mui/icons-material';
-import {
+  BarChart as BarChartIcon
+ } from '@mui/icons-material';
+import { 
   LineChart,
   Line,
   AreaChart,
@@ -84,38 +59,31 @@ import {
   Bar,
   PieChart as RechartsPie,
   Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip as ChartTooltip,
   Legend,
   ResponsiveContainer,
-  RadialBarChart,
-  RadialBar,
-  ComposedChart,
-  ScatterChart,
-  Scatter,
-  FunnelChart,
-  Funnel,
-  LabelList,
-  TreeMap,
-  Sankey,
-} from 'recharts';
-import { format, subDays, startOfDay, endOfDay, addHours } from 'date-fns';
-import { useOptimizedStore } from '../../stores/optimizedStore';
-import { useRealtimeData } from '../../hooks/useRealtimeData';
-import { api } from '../../services/api';
+  ComposedChart
+ } from 'recharts';
+import {  format  } from 'date-fns';
+import {  useOptimizedStore  } from '../../stores/optimizedStore';
+import {  useRealtimeData  } from '../../hooks/useRealtimeData';
+import {  api  } from '../../services/api';
 
 // Types
 interface MetricCard {
-  id: string;
-  title: string;
-  value: number | string;
-  change: number;
-  changePercent: number;
-  trend: 'up' | 'down' | 'flat';
-  icon: React.ReactNode;
+  id: string,
+  title: string,
+
+  value: number | string,
+  change: number,
+
+  changePercent: number,
+  trend: 'up' | 'down' | 'flat',
+
+  icon: React.ReactNode,
   color: string;
   suffix?: string;
   prefix?: string;
@@ -125,73 +93,76 @@ interface MetricCard {
 }
 
 interface ChartData {
-  timestamp: string;
+  timestamp: string,
   date: string;
   hour?: number;
-  views: number;
-  revenue: number;
-  subscribers: number;
-  engagement: number;
-  cost: number;
-  profit: number;
-  ctr: number;
-  watchTime: number;
-  impressions: number;
-}
+  views: number,
+  revenue: number,
+
+  subscribers: number,
+  engagement: number,
+
+  cost: number,
+  profit: number,
+
+  ctr: number,
+  watchTime: number,
+
+  impressions: number}
 
 interface ChannelPerformance {
-  channelId: string;
-  channelName: string;
-  videos: number;
-  views: number;
-  revenue: number;
-  subscribers: number;
-  avgEngagement: number;
+  channelId: string,
+  channelName: string,
+
+  videos: number,
+  views: number,
+
+  revenue: number,
+  subscribers: number,
+
+  avgEngagement: number,
   growth: number;
   avatar?: string;
 }
 
 interface VideoPerformance {
-  videoId: string;
-  title: string;
-  channelName: string;
-  views: number;
-  engagement: number;
-  revenue: number;
-  publishedAt: string;
-  duration: number;
-  thumbnail: string;
-}
+  videoId: string,
+  title: string,
 
-const CHART_COLORS = {
-  views: '#3f51b5',
-  revenue: '#4caf50',
+  channelName: string,
+  views: number,
+
+  engagement: number,
+  revenue: number,
+
+  publishedAt: string,
+  duration: number,
+
+  thumbnail: string}
+
+const CHART_COLORS = { views: '#3 f51 b5',
+  revenue: '#4 caf50',
   subscribers: '#ff9800',
-  engagement: '#e91e63',
+  engagement: '#e91 e63',
   cost: '#f44336',
-  profit: '#2e7d32',
-  ctr: '#9c27b0',
-  watchTime: '#00bcd4',
-};
+  profit: '#2 e7 d32',
+  ctr: '#9 c27 b0',
+  watchTime: '#00 bcd4' };
 
-const TIME_RANGES = [
-  { value: '24h', label: '24 Hours' },
-  { value: '7d', label: '7 Days' },
-  { value: '30d', label: '30 Days' },
-  { value: '90d', label: '90 Days' },
-  { value: '1y', label: '1 Year' },
-];
+const TIME_RANGES = [ { value: '24 h', label: '24 Hours' },
+  { value: '7 d', label: '7 Days' },
+  { value: '30 d', label: '30 Days' },
+  { value: '90 d', label: '90 Days' },
+  { value: '1 y', label: '1 Year' } ];
 
-const CHART_TYPES = [
-  { value: 'line', label: 'Line Chart', icon: <ShowChart /> },
+const CHART_TYPES = [ { value: 'line', label: 'Line Chart', icon: <ShowChart /> },
   { value: 'area', label: 'Area Chart', icon: <Timeline /> },
   { value: 'bar', label: 'Bar Chart', icon: <BarChartIcon /> },
-  { value: 'pie', label: 'Pie Chart', icon: <PieChart /> },
-];
+  { value: 'pie', label: 'Pie Chart', icon: <PieChart /> } ];
 
 export const EnhancedMetricsDashboard: React.FC = () => {
   // State management
-  const [timeRange, setTimeRange] = useState<string>('7d');
+  const [timeRange, setTimeRange] = useState<string>('7 d');
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState(0);
   const [chartType, setChartType] = useState<string>('line');
@@ -201,7 +172,8 @@ export const EnhancedMetricsDashboard: React.FC = () => {
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(['views', 'revenue', 'engagement']);
   const [customDateRange, setCustomDateRange] = useState<{start: string, end: string}>({
     start: '',
-    end: ''
+    end: '',
+
   });
 
   // Data state
@@ -217,30 +189,24 @@ export const EnhancedMetricsDashboard: React.FC = () => {
   const realtime = useRealtimeData('/ws/analytics');
 
   // Memoized calculations
-  const processedChartData = useMemo(() => {
-    return chartData.map(item => ({
+  const processedChartData = useMemo(() => { return chartData.map(item => ({
       ...item,
-      date: format(new Date(item.timestamp), timeRange === '24h' ? 'HH:mm' : 'MMM dd'),
+      date: format(new Date(item.timestamp), timeRange === '24 h' ? 'HH:mm' : 'MMM dd'),
       profit: item.revenue - item.cost,
-      roi: item.cost > 0 ? ((item.revenue - item.cost) / item.cost) * 100 : 0,
-    }));
-  }, [chartData, timeRange]);
+      roi: item.cost > 0 ? ((item.revenue - item.cost) / item.cost) * 100 : 0 }))}, [chartData, timeRange]);
 
   const totalMetrics = useMemo(() => {
     if (!chartData.length) return {};
     
-    return chartData.reduce((acc, curr) => ({
-      views: (acc.views || 0) + curr.views,
+    return chartData.reduce((acc, curr) => ({ views: (acc.views || 0) + curr.views,
       revenue: (acc.revenue || 0) + curr.revenue,
       cost: (acc.cost || 0) + curr.cost,
       subscribers: Math.max(acc.subscribers || 0, curr.subscribers),
       engagement: (acc.engagement || 0) + curr.engagement,
-      watchTime: (acc.watchTime || 0) + curr.watchTime,
-    }), {});
-  }, [chartData]);
+      watchTime: (acc.watchTime || 0) + curr.watchTime }), {})}, [chartData]);
 
   // Fetch comprehensive dashboard data
-  const fetchDashboardData = useCallback(async () => {
+  const fetchDashboardData = useCallback(_async () => {
     try {
       setLoading(true);
 
@@ -252,7 +218,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
         videosResponse,
         realtimeResponse
       ] = await Promise.all([
-        api.get(`/dashboard/overview`),
+        api.get(`/dashboard/overview`),`
         api.get(`/dashboard/performance?period=${timeRange}`),
         api.get('/dashboard/channels'),
         api.get('/videos/top?limit=10'),
@@ -260,45 +226,37 @@ export const EnhancedMetricsDashboard: React.FC = () => {
       ]);
 
       // Process metric cards
-      const cards: MetricCard[] = [
-        {
-          id: 'views',
+      const cards: MetricCard[] = [ { id: 'views',
           title: 'Total Views',
           value: overviewResponse.data.total_views,
-          change: overviewResponse.data.views_change_24h,
+          change: overviewResponse.data.views_change_24 h,
           changePercent: overviewResponse.data.views_change_percent,
-          trend: overviewResponse.data.views_change_24h >= 0 ? 'up' : 'down',
+          trend: overviewResponse.data.views_change_24 h >= 0 ? 'up' : 'down',
           icon: <Visibility />,
           color: CHART_COLORS.views,
           target: 1000000,
-          description: 'Total video views across all channels',
-        },
-        {
-          id: 'revenue',
+          description: 'Total video views across all channels' },
+        { id: 'revenue',
           title: 'Revenue',
           value: overviewResponse.data.total_revenue,
-          change: overviewResponse.data.revenue_change_24h,
+          change: overviewResponse.data.revenue_change_24 h,
           changePercent: overviewResponse.data.revenue_change_percent,
-          trend: overviewResponse.data.revenue_change_24h >= 0 ? 'up' : 'down',
+          trend: overviewResponse.data.revenue_change_24 h >= 0 ? 'up' : 'down',
           icon: <AttachMoney />,
           color: CHART_COLORS.revenue,
           prefix: '$',
           target: 10000,
-          description: 'Total revenue generated',
-        },
-        {
-          id: 'videos',
+          description: 'Total revenue generated' },
+        { id: 'videos',
           title: 'Videos Generated',
           value: overviewResponse.data.videos_today,
           change: overviewResponse.data.videos_change,
           changePercent: overviewResponse.data.videos_change_percent,
           trend: overviewResponse.data.videos_change >= 0 ? 'up' : 'down',
           icon: <VideoLibrary />,
-          color: '#9c27b0',
-          description: 'Videos generated today',
-        },
-        {
-          id: 'engagement',
+          color: '#9 c27 b0',
+          description: 'Videos generated today' },
+        { id: 'engagement',
           title: 'Avg Engagement',
           value: overviewResponse.data.avg_video_performance,
           change: overviewResponse.data.engagement_change,
@@ -308,23 +266,19 @@ export const EnhancedMetricsDashboard: React.FC = () => {
           color: CHART_COLORS.engagement,
           suffix: '%',
           target: 5.0,
-          description: 'Average engagement rate',
-        },
-        {
-          id: 'cost',
+          description: 'Average engagement rate' },
+        { id: 'cost',
           title: 'Total Cost',
           value: overviewResponse.data.total_cost,
-          change: overviewResponse.data.cost_change_24h,
+          change: overviewResponse.data.cost_change_24 h,
           changePercent: overviewResponse.data.cost_change_percent,
-          trend: overviewResponse.data.cost_change_24h <= 0 ? 'up' : 'down', // Inverted for cost
+          trend: overviewResponse.data.cost_change_24 h <= 0 ? 'up' : 'down', // Inverted for cost
           icon: <Speed />,
           color: CHART_COLORS.cost,
           prefix: '$',
           target: 3000,
-          description: 'Total operational costs',
-        },
-        {
-          id: 'profit',
+          description: 'Total operational costs' },
+        { id: 'profit',
           title: 'Profit Margin',
           value: overviewResponse.data.profit_margin,
           change: overviewResponse.data.profit_change,
@@ -334,36 +288,31 @@ export const EnhancedMetricsDashboard: React.FC = () => {
           color: CHART_COLORS.profit,
           suffix: '%',
           target: 70,
-          description: 'Profit margin percentage',
-        },
-      ];
+          description: 'Profit margin percentage' } ];
 
       setMetricCards(cards);
 
       // Process chart data
-      const chartDataProcessed = performanceResponse.data.map((item: unknown) => ({
-        timestamp: item.period,
+      const chartDataProcessed = performanceResponse.data.map((item: React.ChangeEvent<HTMLInputElement>) => ({,
+  timestamp: item.period,
         date: item.period,
         views: item.views,
         revenue: item.revenue,
         subscribers: item.subscriber_growth,
         engagement: item.engagement_rate,
         cost: item.cost,
-        watchTime: item.watch_time_hours * 60, // Convert to minutes
-        impressions: item.views * 1.2, // Estimated
-        ctr: (item.views / (item.views * 1.2)) * 100, // Estimated CTR
+        watchTime: item.watch_time_hours * 60, // Convert to minutes, impressions: item.views * 1.2, // Estimated, ctr: (item.views / (item.views * 1.2)) * 100, // Estimated CTR
       }));
 
       setChartData(chartDataProcessed);
 
       // Process channel performance
-      const channelData: ChannelPerformance[] = channelsResponse.data.map((channel: unknown) => ({
-        channelId: channel.channel_id,
+      const channelData: ChannelPerformance[] = channelsResponse.data.map((channel: React.ChangeEvent<HTMLInputElement>) => ({,
+  channelId: channel.channel_id,
         channelName: channel.channel_name,
         videos: channel.video_count,
         views: channel.total_views,
-        revenue: channel.total_views * 0.002, // Estimated revenue
-        subscribers: channel.subscriber_count,
+        revenue: channel.total_views * 0.002, // Estimated revenue, subscribers: channel.subscriber_count,
         avgEngagement: channel.performance_score,
         growth: Math.random() * 20 - 10, // Mock growth data
       }));
@@ -371,8 +320,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
       setChannelPerformance(channelData);
 
       // Process top videos
-      const videoData: VideoPerformance[] = videosResponse.data.slice(0, 10).map((video: unknown) => ({
-        videoId: video.id,
+      const videoData: VideoPerformance[] = videosResponse.data.slice(0, 10).map((video: React.ChangeEvent<HTMLInputElement>) => ({ videoId: video.id,
         title: video.title,
         channelName: channels.list.find(c => c.id === video.channel_id)?.name || 'Unknown',
         views: video.view_count || Math.floor(Math.random() * 50000),
@@ -380,54 +328,45 @@ export const EnhancedMetricsDashboard: React.FC = () => {
         revenue: (video.view_count || 0) * 0.002,
         publishedAt: video.created_at,
         duration: video.duration || Math.floor(Math.random() * 600) + 300,
-        thumbnail: video.thumbnail_url || '/placeholder-thumbnail.jpg',
-      }));
+        thumbnail: video.thumbnail_url || '/placeholder-thumbnail.jpg' }));
 
       setTopVideos(videoData);
       setRealtimeMetrics(realtimeResponse.data);
       
-      setLoading(false);
-    } catch (_error) {
-      console.error('Failed to fetch dashboard data:', error);
+      setLoading(false)} catch (_) { console.error('Failed to fetch dashboard, data:', error);
       addNotification({
         type: 'error',
-        message: 'Failed to load dashboard data',
-      });
-      setLoading(false);
-    }
+        message: 'Failed to load dashboard data' });
+      setLoading(false)}
   }, [timeRange, channels.list, addNotification]);
 
   // Effects
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+    fetchDashboardData()}, [fetchDashboardData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-refresh effect
   useEffect(() => {
     if (!autoRefresh) return;
     
     const interval = setInterval(fetchDashboardData, 60000); // Refresh every minute
-    return () => clearInterval(interval);
-  }, [autoRefresh, fetchDashboardData]);
+    return () => clearInterval(interval)}, [autoRefresh, fetchDashboardData]);
 
   // Real-time updates effect
   useEffect(() => {
     if (realtime.lastMessage && realtime.lastMessage.type === 'dashboard_update') {
       setRealtimeMetrics(realtime.lastMessage.data);
       if (autoRefresh) {
-        fetchDashboardData();
-      }
+        fetchDashboardData()}
     }
-  }, [realtime.lastMessage, autoRefresh, fetchDashboardData]);
+  }, [realtime.lastMessage, autoRefresh, fetchDashboardData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Render metric card
   const renderMetricCard = (metric: MetricCard) => {
     const formatValue = (value: number | string) => {
-      if (typeof value === 'string') return value;
-      if (metric.prefix === '$') return `$${value.toLocaleString()}`;
+      if (typeof value === 'string') return value;`
+      if (metric.prefix === '$') return `$${value.toLocaleString()}`;`
       if (metric.suffix === '%') return `${value.toFixed(1)}%`;
-      return value.toLocaleString();
-    };
+      return value.toLocaleString()};
 
     const getTrendIcon = () => {
       switch (metric.trend) {
@@ -436,8 +375,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
         case 'down':
           return <TrendingDown color="error" />;
         default:
-          return <TrendingFlat color="action" />;
-      }
+          return <TrendingFlat color="action" />}
     };
 
     const getTrendColor = () => {
@@ -447,11 +385,11 @@ export const EnhancedMetricsDashboard: React.FC = () => {
         case 'down':
           return metric.id === 'cost' ? 'success.main' : 'error.main';
         default:
-          return 'text.secondary';
-      }
+          return 'text.secondary'}
     };
 
     return (
+    <>
       <Card key={metric.id} sx={{ height: '100%' }}>
         <CardContent>
           <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -459,17 +397,16 @@ export const EnhancedMetricsDashboard: React.FC = () => {
               <Typography color="text.secondary" gutterBottom variant="body2">
                 {metric.title}
               </Typography>
-              <Typography variant="h4" component="div" sx={{ color: metric.color }}>
+      <Typography variant="h4" component="div" sx={{ color: metric.color }}>
                 {formatValue(metric.value)}
               </Typography>
               <Box display="flex" alignItems="center" mt={1}>
                 {getTrendIcon()}
                 <Typography
                   variant="body2"
-                  sx={{
+                  sx={ {
                     color: getTrendColor(),
-                    ml: 0.5,
-                  }}
+                    ml: 0.5 }}
                 >
                   {metric.changePercent >= 0 ? '+' : ''}{metric.changePercent.toFixed(1)}%
                 </Typography>
@@ -497,16 +434,13 @@ export const EnhancedMetricsDashboard: React.FC = () => {
                 variant="determinate"
                 value={Math.min((Number(metric.value) / metric.target) * 100, 100)}
                 sx={{
-                  mt: 1,
+                  mt: 1,`
                   backgroundColor: `${metric.color}20`,
-                  '& .MuiLinearProgress-bar': {
-                    backgroundColor: metric.color,
-                  },
+                  '& .MuiLinearProgress-bar': { backgroundColor: metric.color }
                 }}
               />
             </Box>
           )}
-          
           {metric.description && (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
               {metric.description}
@@ -514,20 +448,21 @@ export const EnhancedMetricsDashboard: React.FC = () => {
           )}
         </CardContent>
       </Card>
-    );
-  };
+    </>
+  )};
 
   // Render chart based on selected type
-  const renderChart = (data: ChartData[], metrics: string[]) => {
+  const renderChart = (data: ChartData[], _metrics: string[]) => {
     const commonProps = {
       data: processedChartData,
-      margin: { top: 5, right: 30, left: 20, bottom: 5 },
+      margin: { top: 5, right: 30, left: 20, bottom: 5 }
     };
 
     switch (chartType) {
       case 'area':
         return (
-          <ResponsiveContainer width="100%" height={400}>
+    <>
+      <ResponsiveContainer width="100%" height={400}>
             <AreaChart {...commonProps}>
               <defs>
                 {metrics.map((metric) => (
@@ -537,7 +472,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
                   </linearGradient>
                 ))}
               </defs>
-              <CartesianGrid strokeDasharray="3 3" />
+      <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
               <ChartTooltip />
@@ -547,18 +482,20 @@ export const EnhancedMetricsDashboard: React.FC = () => {
                   key={metric}
                   type="monotone"
                   dataKey={metric}
-                  stroke={CHART_COLORS[metric]}
-                  fillOpacity={1}
+                  stroke={CHART_COLORS[ metric ]
+                  fillOpacity={1}`
                   fill={`url(#gradient-${metric})`}
                 />
               ))}
             </AreaChart>
           </ResponsiveContainer>
-        );
+        </>
+  );
       
       case 'bar':
         return (
-          <ResponsiveContainer width="100%" height={400}>
+    <>
+      <ResponsiveContainer width="100%" height={400}>
             <BarChart {...commonProps}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
@@ -570,12 +507,13 @@ export const EnhancedMetricsDashboard: React.FC = () => {
               ))}
             </BarChart>
           </ResponsiveContainer>
-        );
+        </>
+  );
       
       case 'line':
       default:
         return (
-          <ResponsiveContainer width="100%" height={400}>
+    <ResponsiveContainer width="100%" height={400}>
             <LineChart {...commonProps}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
@@ -587,7 +525,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
                   key={metric}
                   type="monotone"
                   dataKey={metric}
-                  stroke={CHART_COLORS[metric]}
+                  stroke={CHART_COLORS[ metric ]
                   strokeWidth={2}
                   dot={{ fill: CHART_COLORS[metric], strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6 }}
@@ -595,8 +533,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
               ))}
             </LineChart>
           </ResponsiveContainer>
-        );
-    }
+        )}
   };
 
   // Render performance comparison chart
@@ -617,7 +554,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <Box p={3}>
+    <Box p={3}>
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Grid item xs={12} sm={6} md={4} key={i}>
@@ -626,8 +563,7 @@ export const EnhancedMetricsDashboard: React.FC = () => {
           ))}
         </Grid>
       </Box>
-    );
-  }
+    )}
 
   return (
     <Box p={3}>
@@ -638,14 +574,13 @@ export const EnhancedMetricsDashboard: React.FC = () => {
             <Typography variant="h5">Analytics Dashboard</Typography>
             {realtimeMetrics && (
               <Typography variant="body2" color="text.secondary">
-                Last updated: {format(new Date(), 'MMM d, h:mm:ss a')} • 
+                Last, updated: {format(new Date(), 'MMM d, h:mm:ss a')} • 
                 {realtimeMetrics.videos_generated_today} videos today • 
                 ${realtimeMetrics.cost_today} spent
               </Typography>
             )}
           </Grid>
-          
-          <Grid item>
+      <Grid item>
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>Time Range</InputLabel>
               <Select
@@ -813,5 +748,4 @@ export const EnhancedMetricsDashboard: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  );
-};
+  )};`

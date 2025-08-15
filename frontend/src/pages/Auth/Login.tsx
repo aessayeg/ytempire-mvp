@@ -3,11 +3,9 @@
  * Production-ready login form with Material-UI styling
  */
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
-import {
+import {  useNavigate, Link as RouterLink, useLocation  } from 'react-router-dom';
+import { 
   Box,
-  Card,
-  CardContent,
   TextField,
   Button,
   Typography,
@@ -20,9 +18,9 @@ import {
   Container,
   Paper,
   Grid,
-  useTheme,
-} from '@mui/material';
-import {
+  useTheme
+ } from '@mui/material';
+import { 
   Visibility,
   VisibilityOff,
   Email,
@@ -33,14 +31,13 @@ import {
   YouTube,
   TrendingUp,
   VideoLibrary,
-  AutoAwesome,
-} from '@mui/icons-material';
-import { useAuthStore } from '../../stores/authStore';
+  AutoAwesome
+ } from '@mui/icons-material';
+import {  useAuthStore  } from '../../stores/authStore';
 
 interface LocationState {
   from?: {
-    pathname: string;
-  };
+    pathname: string};
   message?: string;
 }
 
@@ -52,10 +49,8 @@ export const Login: React.FC = () => {
 
   const { login, isLoading, error, clearError, isAuthenticated } = useAuthStore();
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ email: '',
+    password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
@@ -63,33 +58,26 @@ export const Login: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated) {
       const from = state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
-    }
+      navigate(from, { replace: true })}
   }, [isAuthenticated, navigate, state]);
 
   // Clear errors when component mounts
   useEffect(() => {
-    clearError();
-  }, [clearError]);
+    clearError()}, [clearError]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleInputChange = (_event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData(prev => ({ ...prev,
+      [name]: value }));
     
     // Clear field error when user starts typing
-    if (formErrors[name]) {
-      setFormErrors(prev => ({
+    if (formErrors[name]) { setFormErrors(prev => ({
         ...prev,
-        [name]: '',
-      }));
-    }
+        [name]: '' }))}
   };
 
   const validateForm = () => {
-    const errors: {[key: string]: string} = {};
+const errors: {[key: string]: string} = {};
 
     if (!formData.email) {
       errors.email = 'Email is required';
@@ -107,7 +95,7 @@ export const Login: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (_event: React.FormEvent) => {
+  const handleSubmit = async (_: React.FormEvent) => {
     event.preventDefault();
     
     if (!validateForm()) {
@@ -117,31 +105,29 @@ export const Login: React.FC = () => {
     try {
       await login(formData.email, formData.password);
       // Navigation will be handled by useEffect when isAuthenticated changes
-    } catch (_error) {
+    } catch (_) {
       // Error is handled by the store
     }
   };
 
   const handleTogglePassword = () => {
-    setShowPassword(prev => !prev);
-  };
+    setShowPassword(prev => !prev)};
 
   // Mock social login handlers
   const handleGoogleLogin = () => {
     // TODO: Implement Google OAuth
-    console.log('Google login not implemented yet');
-  };
+    console.log('Google login not implemented yet')};
 
   const handleGitHubLogin = () => {
     // TODO: Implement GitHub OAuth
-    console.log('GitHub login not implemented yet');
-  };
+    console.log('GitHub login not implemented yet')};
 
   const features = [
     {
       icon: <VideoLibrary color="primary" />,
       title: "Automated Video Creation",
-      description: "AI-powered content generation for YouTube channels"
+      description: "AI-powered content generation for YouTube channels",
+
     },
     {
       icon: <TrendingUp color="success" />,
@@ -151,12 +137,14 @@ export const Login: React.FC = () => {
     {
       icon: <AutoAwesome color="warning" />,
       title: "Smart Optimization",
-      description: "AI-driven thumbnail and title optimization"
+      description: "AI-driven thumbnail and title optimization",
+
     }
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+    <>
+      <Container maxWidth="lg" sx={{ minHeight: '100 vh', display: 'flex', alignItems: 'center' }}>
       <Grid container spacing={4} sx={{ width: '100%' }}>
         {/* Left side - Branding and Features */}
         <Grid item xs={12} md={6}>
@@ -168,11 +156,11 @@ export const Login: React.FC = () => {
                   YTEmpire
                 </Typography>
               </Box>
-              <Typography variant="h5" color="text.secondary" gutterBottom>
+      <Typography variant="h5" color="text.secondary" gutterBottom>
                 Scale Your YouTube Success with AI
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                The all-in-one platform for automated YouTube content creation, 
+                The all-in-one platform for automated YouTube content, creation, 
                 analytics, and channel management. Join thousands of creators 
                 who've scaled their channels with our AI-powered tools.
               </Typography>
@@ -203,14 +191,13 @@ export const Login: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Paper 
             elevation={8}
-            sx={{ 
+            sx={ { 
               p: 4, 
               borderRadius: 3,
               background: theme.palette.mode === 'dark' 
                 ? 'rgba(255, 255, 255, 0.05)' 
                 : 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(10px)',
-            }}
+              backdropFilter: 'blur(10px)' }}
           >
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <LoginIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
@@ -228,7 +215,6 @@ export const Login: React.FC = () => {
                 {state.message}
               </Alert>
             )}
-
             {/* Error Alert */}
             {error && (
               <Alert 
@@ -239,7 +225,6 @@ export const Login: React.FC = () => {
                 {error}
               </Alert>
             )}
-
             {/* Login Form */}
             <form onSubmit={handleSubmit}>
               <TextField
@@ -252,13 +237,12 @@ export const Login: React.FC = () => {
                 error={!!formErrors.email}
                 helperText={formErrors.email}
                 margin="normal"
-                InputProps={{
+                InputProps={ {
                   startAdornment: (
                     <InputAdornment position="start">
                       <Email color="action" />
                     </InputAdornment>
-                  ),
-                }}
+                  ) }}
                 disabled={isLoading}
                 autoComplete="email"
                 autoFocus
@@ -287,10 +271,10 @@ export const Login: React.FC = () => {
                         edge="end"
                         disabled={isLoading}
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? <VisibilityOff /> </>: <Visibility />}
                       </IconButton>
                     </InputAdornment>
-                  ),
+                  )
                 }}
                 disabled={isLoading}
                 autoComplete="current-password"
@@ -302,16 +286,15 @@ export const Login: React.FC = () => {
                 variant="contained"
                 size="large"
                 disabled={isLoading}
-                sx={{ 
+                sx={ { 
                   mt: 3, 
                   mb: 2,
                   py: 1.5,
                   borderRadius: 2,
                   textTransform: 'none',
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                }}
-                startIcon={isLoading ? <CircularProgress size={20} /> : <LoginIcon />}
+                  fontSize: '1.1 rem',
+                  fontWeight: 600 }}
+                startIcon={isLoading ? <CircularProgress size={20} /> </>: <LoginIcon />}
               >
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
@@ -377,7 +360,7 @@ export const Login: React.FC = () => {
         </Grid>
       </Grid>
     </Container>
-  );
-};
+  </>
+  )};
 
 export default Login;

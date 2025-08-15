@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuthStore } from '../../stores/authStore';
-import {
+import {  useNavigate, Link  } from 'react-router-dom';
+import {  useAuthStore  } from '../../stores/authStore';
+import { 
   Box,
   Button,
   TextField,
@@ -10,23 +10,21 @@ import {
   Paper,
   InputAdornment,
   IconButton,
-  CircularProgress,
-} from '@mui/material';
-import {
+  CircularProgress
+ } from '@mui/material';
+import { 
   Visibility,
   VisibilityOff,
   Email,
-  Lock,
-} from '@mui/icons-material';
+  Lock
+ } from '@mui/icons-material';
 
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const { login, isLoading, error, clearError } = useAuthStore();
   
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ email: '',
+    password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -49,59 +47,54 @@ export const LoginForm: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (_e: React.FormEvent) => {
+  const handleSubmit = async (_: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     
     try {
       await login(formData.email, formData.password);
-      navigate('/dashboard');
-    } catch (_error) {
-      console.error('Login failed:', error);
-    }
+      navigate('/dashboard')} catch (_) {
+      console.error('Login, failed:', error)}
   };
 
-  const handleChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
     // Clear validation error when user starts typing
     if (validationErrors[name]) {
-      setValidationErrors(prev => ({ ...prev, [name]: '' }));
-    }
+      setValidationErrors(prev => ({ ...prev, [name]: '' }))}
     
     // Clear auth error
     if (error) {
-      clearError();
-    }
+      clearError()}
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
+    <>
+      <Box
+      sx={ {
+        minHeight: '100 vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: 2,
-      }}
+        background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+        padding: 2 }}
     >
       <Paper
         elevation={10}
-        sx={{
+        sx={ {
           padding: 4,
           maxWidth: 400,
           width: '100%',
-          borderRadius: 2,
-        }}
+          borderRadius: 2 }}
       >
         <Box sx={{ mb: 4, textAlign: 'center' }}>
           <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
             YTEmpire
           </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
+      <Typography variant="subtitle1" color="text.secondary">
             Sign in to your account
           </Typography>
         </Box>
@@ -111,7 +104,6 @@ export const LoginForm: React.FC = () => {
             {error}
           </Alert>
         )}
-
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
@@ -123,13 +115,12 @@ export const LoginForm: React.FC = () => {
             onChange={handleChange}
             error={!!validationErrors.email}
             helperText={validationErrors.email}
-            InputProps={{
+            InputProps={ {
               startAdornment: (
                 <InputAdornment position="start">
                   <Email color="action" />
                 </InputAdornment>
-              ),
-            }}
+              ) }}
             autoComplete="email"
             autoFocus
           />
@@ -154,13 +145,13 @@ export const LoginForm: React.FC = () => {
                 <InputAdornment position="end">
                   <IconButton
                     aria-label="toggle password visibility"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setShowPassword(!showPassword}
                     edge="end"
                   >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                    {showPassword ? <VisibilityOff /> </>: <Visibility />}
                   </IconButton>
                 </InputAdornment>
-              ),
+              )
             }}
             autoComplete="current-password"
           />
@@ -168,11 +159,10 @@ export const LoginForm: React.FC = () => {
           <Box sx={{ mt: 1, mb: 2, textAlign: 'right' }}>
             <Link
               to="/auth/forgot-password"
-              style={{
-                color: '#667eea',
+              style={ {
+                color: '#667 eea',
                 textDecoration: 'none',
-                fontSize: '0.875rem',
-              }}
+                fontSize: '0.875 rem' }}
             >
               Forgot password?
             </Link>
@@ -184,13 +174,12 @@ export const LoginForm: React.FC = () => {
             variant="contained"
             size="large"
             disabled={isLoading}
-            sx={{
+            sx={ {
               mt: 2,
               mb: 2,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4290 100%)',
-              },
+                background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
             }}
           >
             {isLoading ? (
@@ -205,11 +194,10 @@ export const LoginForm: React.FC = () => {
               Don't have an account?{' '}
               <Link
                 to="/auth/register"
-                style={{
-                  color: '#667eea',
+                style={ {
+                  color: '#667 eea',
                   textDecoration: 'none',
-                  fontWeight: 'bold',
-                }}
+                  fontWeight: 'bold' }}
               >
                 Sign Up
               </Link>
@@ -218,5 +206,5 @@ export const LoginForm: React.FC = () => {
         </form>
       </Paper>
     </Box>
-  );
-};
+  </>
+  )};

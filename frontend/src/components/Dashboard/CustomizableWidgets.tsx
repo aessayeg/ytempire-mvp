@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import {
+import { 
   Box,
   Card,
   CardContent,
@@ -15,10 +15,6 @@ import {
   DialogActions,
   Button,
   Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  TextField,
   Switch,
   FormControlLabel,
   Divider,
@@ -27,48 +23,42 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
-  Checkbox,
-  Tooltip,
   Paper,
   Fab,
   Zoom,
-} from '@mui/material';
-import {
+  FormControl
+ } from '@mui/material';
+import { 
   DragIndicator,
-  Close,
   Settings,
   Add,
   MoreVert,
   Fullscreen,
-  FullscreenExit,
   Refresh,
   Download,
-  Visibility,
   VisibilityOff,
   Edit,
   Delete,
   ContentCopy,
   Lock,
-  LockOpen,
   TrendingUp,
   AttachMoney,
   VideoLibrary,
-  Analytics,
   Speed,
-  Warning,
-  CheckCircle,
   CloudQueue,
-  Schedule,
-} from '@mui/icons-material';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { format } from 'date-fns';
+  Schedule
+ } from '@mui/icons-material';
+import {  DragDropContext, Droppable, Draggable  } from 'react-beautiful-dnd';
+import {  format  } from 'date-fns';
 
 // Widget Types
 export interface Widget {
-  id: string;
-  type: 'metric' | 'chart' | 'list' | 'progress' | 'custom';
-  title: string;
-  size: 'small' | 'medium' | 'large' | 'full';
+  id: string,
+  type: 'metric' | 'chart' | 'list' | 'progress' | 'custom';,
+
+  title: string,
+  size: 'small' | 'medium' | 'large' | 'full';,
+
   position: { x: number; y: number };
   config: unknown;
   locked?: boolean;
@@ -78,14 +68,16 @@ export interface Widget {
 }
 
 interface WidgetLibraryItem {
-  id: string;
-  type: Widget['type'];
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  defaultConfig: unknown;
-  sizes: Widget['size'][];
-}
+  id: string,
+  type: Widget['type'],
+
+  title: string,
+  description: string,
+
+  icon: React.ReactNode,
+  defaultConfig: unknown,
+
+  sizes: Widget['size'][]}
 
 const widgetLibrary: WidgetLibraryItem[] = [
   {
@@ -95,7 +87,7 @@ const widgetLibrary: WidgetLibraryItem[] = [
     description: 'Track daily, weekly, and monthly revenue',
     icon: <AttachMoney />,
     defaultConfig: { metric: 'revenue', period: 'daily' },
-    sizes: ['small', 'medium'],
+    sizes: ['small', 'medium']
   },
   {
     id: 'video-performance',
@@ -104,7 +96,7 @@ const widgetLibrary: WidgetLibraryItem[] = [
     description: 'View performance metrics for your videos',
     icon: <VideoLibrary />,
     defaultConfig: { chartType: 'line', metrics: ['views', 'engagement'] },
-    sizes: ['medium', 'large', 'full'],
+    sizes: ['medium', 'large', 'full']
   },
   {
     id: 'processing-queue',
@@ -113,7 +105,7 @@ const widgetLibrary: WidgetLibraryItem[] = [
     description: 'Monitor videos currently being processed',
     icon: <CloudQueue />,
     defaultConfig: { maxItems: 5, showStatus: true },
-    sizes: ['medium', 'large'],
+    sizes: ['medium', 'large']
   },
   {
     id: 'channel-health',
@@ -122,7 +114,7 @@ const widgetLibrary: WidgetLibraryItem[] = [
     description: 'Overall health score of your channels',
     icon: <Speed />,
     defaultConfig: { showBreakdown: true },
-    sizes: ['small', 'medium'],
+    sizes: ['small', 'medium']
   },
   {
     id: 'trend-analysis',
@@ -130,8 +122,8 @@ const widgetLibrary: WidgetLibraryItem[] = [
     title: 'Trend Analysis',
     description: 'Analyze trending topics and niches',
     icon: <TrendingUp />,
-    defaultConfig: { chartType: 'heatmap', period: '7d' },
-    sizes: ['large', 'full'],
+    defaultConfig: { chartType: 'heatmap', period: '7 d' },
+    sizes: ['large', 'full']
   },
   {
     id: 'scheduled-uploads',
@@ -140,9 +132,8 @@ const widgetLibrary: WidgetLibraryItem[] = [
     description: 'View upcoming scheduled video uploads',
     icon: <Schedule />,
     defaultConfig: { maxItems: 10, groupByDay: true },
-    sizes: ['medium', 'large'],
-  },
-];
+    sizes: ['medium', 'large']
+  }];
 
 interface CustomizableWidgetsProps {
   initialWidgets?: Widget[];
@@ -150,11 +141,7 @@ interface CustomizableWidgetsProps {
   allowEdit?: boolean;
 }
 
-export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
-  initialWidgets = [],
-  onSave,
-  allowEdit = true,
-}) => {
+export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({ initialWidgets = [], onSave, allowEdit = true }) => {
   const [widgets, setWidgets] = useState<Widget[]>(initialWidgets);
   const [editMode, setEditMode] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -165,20 +152,19 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
   const [menuWidget, setMenuWidget] = useState<string | null>(null);
 
   // Handle drag and drop
-  const handleDragEnd = (result: unknown) => {
+  const handleDragEnd = (result: React.ChangeEvent<HTMLInputElement>) => {
     if (!result.destination) return;
 
     const items = Array.from(widgets);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    setWidgets(items);
-  };
+    setWidgets(items)};
 
   // Add new widget
-  const handleAddWidget = (libraryItem: WidgetLibraryItem, size: Widget['size']) => {
-    const newWidget: Widget = {
-      id: `widget-${Date.now()}`,
+  const handleAddWidget = (_libraryItem: WidgetLibraryItem, _size: Widget['size']) => {
+const newWidget: Widget = {,
+  id: `widget-${Date.now()}`,
       type: libraryItem.type,
       title: libraryItem.title,
       size,
@@ -186,49 +172,44 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
       config: libraryItem.defaultConfig,
       visible: true,
       lastUpdated: new Date(),
+
     };
 
     setWidgets([...widgets, newWidget]);
-    setAddDialogOpen(false);
-  };
+    setAddDialogOpen(false)};
 
   // Remove widget
   const handleRemoveWidget = (widgetId: string) => {
     setWidgets(widgets.filter(w => w.id !== widgetId));
-    setAnchorEl(null);
-  };
+    setAnchorEl(null)};
 
   // Toggle widget visibility
   const handleToggleVisibility = (widgetId: string) => {
-    setWidgets(widgets.map(w =>
+    setWidgets(widgets.map(w => {}
       w.id === widgetId ? { ...w, visible: !w.visible } : w
-    ));
-  };
+    ))};
 
   // Toggle widget lock
   const handleToggleLock = (widgetId: string) => {
-    setWidgets(widgets.map(w =>
+    setWidgets(widgets.map(w => {}
       w.id === widgetId ? { ...w, locked: !w.locked } : w
-    ));
-  };
+    ))};
 
   // Duplicate widget
   const handleDuplicateWidget = (widgetId: string) => {
     const widget = widgets.find(w => w.id === widgetId);
     if (widget) {
-      const newWidget: Widget = {
-        ...widget,
+const newWidget: Widget = {
+        ...widget,`
         id: `widget-${Date.now()}`,
-        title: `${widget.title} (Copy)`,
+        title: `${widget.title} (Copy)`
       };
-      setWidgets([...widgets, newWidget]);
-    }
-    setAnchorEl(null);
-  };
+      setWidgets([...widgets, newWidget])}
+    setAnchorEl(null)};
 
   // Refresh widget data
   const handleRefreshWidget = (widgetId: string) => {
-    setWidgets(widgets.map(w =>
+    setWidgets(widgets.map(w => {}
       w.id === widgetId ? { ...w, lastUpdated: new Date() } : w
     ));
     // Trigger actual data refresh here
@@ -242,70 +223,63 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
+      a.href = url;`
       a.download = `${widget.title.replace(/\s+/g, '-')}-${format(new Date(), 'yyyy-MM-dd')}.json`;
       a.click();
-      URL.revokeObjectURL(url);
-    }
-    setAnchorEl(null);
-  };
+      URL.revokeObjectURL(url)}
+    setAnchorEl(null)};
 
   // Widget menu actions
   const handleWidgetMenu = (event: React.MouseEvent<HTMLElement>, widgetId: string) => {
     setAnchorEl(event.currentTarget);
-    setMenuWidget(widgetId);
-  };
+    setMenuWidget(widgetId)};
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
-    setMenuWidget(null);
-  };
+    setMenuWidget(null)};
 
   // Save widgets configuration
   const handleSaveConfiguration = () => {
     onSave?.(widgets);
-    setEditMode(false);
-  };
+    setEditMode(false)};
 
   // Render individual widget
-  const renderWidget = (widget: Widget) => {
+  const renderWidget = (_widget: Widget) => {
     const gridSizes = {
       small: { xs: 12, sm: 6, md: 3 },
       medium: { xs: 12, sm: 12, md: 6 },
       large: { xs: 12, sm: 12, md: 9 },
-      full: { xs: 12, sm: 12, md: 12 },
+      full: { xs: 12, sm: 12, md: 12 }
     };
 
     const size = gridSizes[widget.size];
 
     return (
+    <>
       <Grid item {...size} key={widget.id}>
         <Card
-          sx={{
+          sx={ {
             height: '100%',
             opacity: widget.visible ? 1 : 0.5,
             position: 'relative',
             ...(editMode && !widget.locked && {
               cursor: 'move',
               '&:hover': {
-                boxShadow: 4,
-              },
-            }),
+                boxShadow: 4 }
+            })
           }}
         >
-          {editMode && !widget.locked && (
+          { editMode && !widget.locked && (
             <Box
               sx={{
                 position: 'absolute',
                 top: 8,
                 left: 8,
-                zIndex: 1,
-              }}
+                zIndex: 1 }}
             >
               <DragIndicator color="action" />
             </Box>
           )}
-
           <CardHeader
             title={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -333,7 +307,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
                 )}
                 <IconButton
                   size="small"
-                  onClick={(e) => handleWidgetMenu(e, widget.id)}
+                  onClick={(e) => handleWidgetMenu(e, widget.id}
                 >
                   <MoreVert fontSize="small" />
                 </IconButton>
@@ -349,7 +323,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
                 <Typography variant="h3" fontWeight="bold">
                   $1,234.56
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
                   <TrendingUp color="success" fontSize="small" />
                   <Typography variant="body2" color="success.main">
                     +12.5% from yesterday
@@ -357,7 +331,6 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
                 </Box>
               </Box>
             )}
-
             {widget.type === 'progress' && (
               <Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -366,17 +339,15 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
                 </Box>
                 <Box sx={{ width: '100%', bgcolor: 'grey.200', borderRadius: 1, height: 8 }}>
                   <Box
-                    sx={{
+                    sx={ {
                       width: '85%',
                       bgcolor: 'success.main',
                       borderRadius: 1,
-                      height: '100%',
-                    }}
+                      height: '100%' }}
                   />
                 </Box>
               </Box>
             )}
-
             {widget.type === 'list' && (
               <List dense>
                 {[1, 2, 3].map((item) => (
@@ -384,7 +355,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
                     <ListItemIcon>
                       <CloudQueue color="primary" />
                     </ListItemIcon>
-                    <ListItemText
+                    <ListItemText`
                       primary={`Video ${item}`}
                       secondary="Processing..."
                     />
@@ -395,7 +366,6 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
                 ))}
               </List>
             )}
-
             {widget.type === 'chart' && (
               <Box sx={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Typography variant="body2" color="text.secondary">
@@ -406,11 +376,12 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
           </CardContent>
         </Card>
       </Grid>
-    );
-  };
+    </>
+  )};
 
   return (
-    <Box>
+    <>
+      <Box>
       {/* Edit Mode Toggle */}
       {allowEdit && (
         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -418,7 +389,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
             control={
               <Switch
                 checked={editMode}
-                onChange={(e) => setEditMode(e.target.checked)}
+                onChange={(e) => setEditMode(e.target.checked}
               />
             }
             label="Edit Dashboard"
@@ -429,11 +400,11 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
               <Button
                 variant="outlined"
                 startIcon={<Add />}
-                onClick={() => setAddDialogOpen(true)}
+                onClick={() => setAddDialogOpen(true}
               >
                 Add Widget
               </Button>
-              <Button
+      <Button
                 variant="contained"
                 onClick={handleSaveConfiguration}
               >
@@ -443,7 +414,6 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
           )}
         </Box>
       )}
-
       {/* Widgets Grid */}
       {editMode ? (
         <DragDropContext onDragEnd={handleDragEnd}>
@@ -467,10 +437,9 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
-                        style={{
+                        style={ {
                           ...provided.draggableProps.style,
-                          width: '100%',
-                        }}
+                          width: '100%' }}
                       >
                         {renderWidget(widget)}
                       </div>
@@ -487,7 +456,6 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
           {widgets.filter(w => w.visible).map(renderWidget)}
         </Grid>
       )}
-
       {/* Widget Menu */}
       <Menu
         anchorEl={anchorEl}
@@ -496,9 +464,9 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
       >
         <MenuItem onClick={() => {
           if (menuWidget) {
-            setFullscreenWidget(menuWidget);
-            handleCloseMenu();
-          }
+            setFullscreenWidget(menuWidget</>
+  );
+            handleCloseMenu()}
         }}>
           <ListItemIcon>
             <Fullscreen fontSize="small" />
@@ -509,8 +477,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
         <MenuItem onClick={() => {
           if (menuWidget) {
             handleRefreshWidget(menuWidget);
-            handleCloseMenu();
-          }
+            handleCloseMenu()}
         }}>
           <ListItemIcon>
             <Refresh fontSize="small" />
@@ -522,8 +489,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
           if (menuWidget) {
             setSelectedWidget(widgets.find(w => w.id === menuWidget) || null);
             setConfigDialogOpen(true);
-            handleCloseMenu();
-          }
+            handleCloseMenu()}
         }}>
           <ListItemIcon>
             <Settings fontSize="small" />
@@ -536,8 +502,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
         <MenuItem onClick={() => {
           if (menuWidget) {
             handleToggleVisibility(menuWidget);
-            handleCloseMenu();
-          }
+            handleCloseMenu()}
         }}>
           <ListItemIcon>
             <VisibilityOff fontSize="small" />
@@ -548,8 +513,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
         <MenuItem onClick={() => {
           if (menuWidget) {
             handleToggleLock(menuWidget);
-            handleCloseMenu();
-          }
+            handleCloseMenu()}
         }}>
           <ListItemIcon>
             <Lock fontSize="small" />
@@ -559,8 +523,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
         
         <MenuItem onClick={() => {
           if (menuWidget) {
-            handleDuplicateWidget(menuWidget);
-          }
+            handleDuplicateWidget(menuWidget)}
         }}>
           <ListItemIcon>
             <ContentCopy fontSize="small" />
@@ -570,8 +533,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
         
         <MenuItem onClick={() => {
           if (menuWidget) {
-            handleExportWidget(menuWidget);
-          }
+            handleExportWidget(menuWidget)}
         }}>
           <ListItemIcon>
             <Download fontSize="small" />
@@ -583,8 +545,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
         
         <MenuItem onClick={() => {
           if (menuWidget) {
-            handleRemoveWidget(menuWidget);
-          }
+            handleRemoveWidget(menuWidget)}
         }} sx={{ color: 'error.main' }}>
           <ListItemIcon>
             <Delete fontSize="small" color="error" />
@@ -596,7 +557,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
       {/* Add Widget Dialog */}
       <Dialog
         open={addDialogOpen}
-        onClose={() => setAddDialogOpen(false)}
+        onClose={() => setAddDialogOpen(false}
         maxWidth="md"
         fullWidth
       >
@@ -609,7 +570,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
                   sx={{
                     p: 2,
                     cursor: 'pointer',
-                    '&:hover': { bgcolor: 'action.hover' },
+                    '&:hover': { bgcolor: 'action.hover' }
                   }}
                 >
                   <Box sx={{ display: 'flex', gap: 2 }}>
@@ -629,7 +590,7 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
                             key={size}
                             size="small"
                             variant="outlined"
-                            onClick={() => handleAddWidget(item, size)}
+                            onClick={() => handleAddWidget(item, size}
                           >
                             {size}
                           </Button>
@@ -643,26 +604,24 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setAddDialogOpen(false}>Cancel</Button>
         </DialogActions>
       </Dialog>
 
       {/* Floating Action Button for mobile */}
-      {allowEdit && !editMode && (
+      { allowEdit && !editMode && (
         <Zoom in>
           <Fab
             color="primary"
             sx={{
               position: 'fixed',
               bottom: 16,
-              right: 16,
-            }}
-            onClick={() => setEditMode(true)}
+              right: 16 }}
+            onClick={() => setEditMode(true}
           >
             <Edit />
           </Fab>
         </Zoom>
       )}
     </Box>
-  );
-};
+  )};`

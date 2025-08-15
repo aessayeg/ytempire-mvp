@@ -1,0 +1,400 @@
+
+> frontend@0.0.0 lint
+> eslint .
+
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Accessibility\AccessibleButton.tsx
+  19:12  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Accessibility\FocusTrap.tsx
+  40:28  error  '_e' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Accessibility\SkipNavigation.tsx
+  52:24  error  Parsing error: Type expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Accessibility\announcementManager.ts
+  10:9  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Accessibility\useFocusManagement.ts
+  11:57  error  Parsing error: Type expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Analytics\AnalyticsDashboard.tsx
+  681:75  error  Parsing error: ')' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Analytics\CompetitiveAnalysisDashboard.tsx
+  148:12  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Analytics\UserBehaviorDashboard.tsx
+  157:62  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Animations\AdvancedAnimations.tsx
+  212:37  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Animations\styledComponents.ts
+  72:2  error  Parsing error: Unterminated template literal
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Auth\EmailVerification.tsx
+  22:59  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Auth\ForgotPasswordForm.tsx
+  241:47  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Auth\LoginForm.tsx
+  154:65  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Auth\RegisterForm.tsx
+  226:67  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Auth\TwoFactorAuth.tsx
+  190:26  error  Parsing error: '}' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\BatchOperations\BatchOperations.tsx
+  88:9  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\BulkOperations\EnhancedBulkOperations.tsx
+  163:8  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\ChannelManager\ChannelManager.tsx
+  47:5  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Channels\BulkOperations.tsx
+  64:12  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Channels\ChannelDashboard.tsx
+  30:10  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Channels\ChannelHealthDashboard.tsx
+  286:50  error  Parsing error: ')' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Channels\ChannelList.tsx
+  27:14  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Channels\ChannelTemplates.tsx
+  218:6  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Charts\AdvancedCharts.tsx
+  13:0  error  Parsing error: Identifier expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Charts\ChannelPerformanceCharts.tsx
+  72:5  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Charts\ChartComponents.tsx
+  62:30  error  Parsing error: '}' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Charts\index.tsx
+  47:31  error  Parsing error: '}' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Common\ErrorMessage.tsx
+  120:14  error  Parsing error: ')' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Common\InlineHelp.tsx
+  44:5  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\CostTracking\CostVisualization.tsx
+  185:6  error  Parsing error: Property assignment expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Dashboard\BusinessIntelligenceDashboard.tsx
+  185:44  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Dashboard\CustomizableWidgets.tsx
+  145:12  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Dashboard\DashboardLayout.tsx
+  25:53  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Dashboard\EnhancedMetricsDashboard.tsx
+  198:51  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Dashboard\MainDashboard.tsx
+  298:56  error  Parsing error: ')' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Dashboard\MetricsDashboard.tsx
+  309:49  error  Parsing error: ')' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Dashboard\RealTimeMetrics.tsx
+  84:25  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Dashboard\RevenueDashboard.tsx
+  146:32  error  Parsing error: '}' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\ErrorBoundary\ErrorBoundary.tsx
+  22:61  error  Parsing error: Unexpected keyword or identifier
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\ErrorBoundary\ErrorFallback.tsx
+  35:12  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\ErrorBoundary\index.tsx
+  1:25  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  6:10  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\ErrorBoundary\useErrorHandler.tsx
+  100:0  error  Parsing error: Declaration or statement expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Experiments\ABTestDashboard.tsx
+  27:16  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Export\UniversalExportManager.tsx
+  172:11  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Layout\Header.tsx
+  57:12  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Layout\MobileLayout.tsx
+  67:6  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Layout\Sidebar.tsx
+  250:8  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Loading\LoadingOverlay.tsx
+  155:24  error  Parsing error: '}' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Mobile\MobileOptimizedDashboard.tsx
+  183:49  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Mobile\MobileResponsiveSystem.tsx
+  251:51  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Monitoring\CostTrackingDashboard.tsx
+  391:63  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Monitoring\LiveVideoGenerationMonitor.tsx
+  246:6  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Monitoring\SystemHealthMonitors.tsx
+  328:68  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Navigation\EnhancedNavigation.tsx
+  75:12  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Onboarding\OnboardingFlow.tsx
+  19:12  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\PWA\InstallPrompt.tsx
+  82:38  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Performance\PerformanceDashboard.tsx
+   94:23  error    'setAutoRefresh' is assigned a value but never used                                                                      @typescript-eslint/no-unused-vars
+  125:14  error    '_error' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  141:6   warning  React Hook useEffect has a missing dependency: 'fetchPerformanceData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Reports\CustomReports.tsx
+  163:51  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\ThemeToggle\ThemeToggle.tsx
+  62:14  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\UILibrary\ComponentLibrary.tsx
+  296:12  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\UserJourney\BetaUserJourneyOptimizer.tsx
+  366:60  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\VideoEditor\VideoEditor.tsx
+  137:40  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\VideoQueue\VideoQueueInterface.tsx
+  127:43  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\GenerationProgress.tsx
+  158:8  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\PublishingControls.tsx
+  18:12  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\VideoApproval.tsx
+  16:12  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\VideoCard.tsx
+  128:48  error  Parsing error: An identifier or keyword cannot immediately follow a numeric literal
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\VideoFilters.tsx
+  58:103  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\VideoGenerationForm.tsx
+  17:14  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\VideoList.tsx
+  36:12  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\VideoMetrics.tsx
+  11:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:14  error  '_error' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\VideoPerformanceChart.tsx
+  31:107  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\VideoPlayer.tsx
+  221:20  error  Parsing error: Expression expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\VideoPreview.tsx
+  13:12  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\components\Videos\VideoSearch.tsx
+  35:21  error  Parsing error: '}' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\contexts\EnhancedThemeContext.tsx
+  451:41  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\contexts\PWAContext.tsx
+  123:43  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\contexts\ThemeContext.tsx
+  27:14  error    Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  52:33  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  63:21  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  73:11  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  79:27  error    '_e' is defined but never used                                                                                                  @typescript-eslint/no-unused-vars
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\hooks\useBehaviorAnalytics.ts
+  119:51  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\hooks\useRealtimeData.ts
+  67:38  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\hooks\useRevenueData.ts
+  98:49  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\hooks\useWebSocket.ts
+  40:15  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\hooks\useWebSocket.tsx
+  199:28  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\layouts\DashboardLayout.tsx
+  12:6  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\AI\AITools.tsx
+  28:16  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Analytics\AdvancedAnalytics.tsx
+  39:47  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Analytics\Analytics.tsx
+  197:33  error  Parsing error: An identifier or keyword cannot immediately follow a numeric literal
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Analytics\AnalyticsDashboard.tsx
+  3:3   error  'FormControl' is defined but never used       @typescript-eslint/no-unused-vars
+  4:3   error  'InputLabel' is defined but never used        @typescript-eslint/no-unused-vars
+  5:3   error  'Select' is defined but never used            @typescript-eslint/no-unused-vars
+  6:3   error  'MenuItem' is defined but never used          @typescript-eslint/no-unused-vars
+  7:3   error  'FormControlLabel' is defined but never used  @typescript-eslint/no-unused-vars
+  8:3   error  'Switch' is defined but never used            @typescript-eslint/no-unused-vars
+  9:14  error  'RechartsTooltip' is defined but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Auth\Login.tsx
+  86:9  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Auth\LoginPage.tsx
+  60:9  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Auth\Register.tsx
+  134:9  error  Parsing error: Variable declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\BetaSignup.tsx
+  79:37  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\BulkOperations\BulkOperationsPage.tsx
+  36:24  error  Parsing error: Type expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Channels\ChannelDashboard.tsx
+  22:47  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Channels\ChannelManagement.tsx
+  177:6  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Costs\CostTracking.tsx
+  273:70  error  Parsing error: ')' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Dashboard\Dashboard.tsx
+  131:33  error  Parsing error: An identifier or keyword cannot immediately follow a numeric literal
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Dashboard\DashboardRealtime.tsx
+  146:57  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Login\Login.tsx
+  109:77  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Monitoring\SystemMonitoring.tsx
+  25:47  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Profile\Profile.tsx
+  199:33  error  Parsing error: An identifier or keyword cannot immediately follow a numeric literal
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Settings\Settings.tsx
+  25:26  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Settings\UserSettings.tsx
+  28:28  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Videos\VideoDetail.tsx
+  203:57  error  Parsing error: ')' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Videos\VideoEditor.tsx
+  27:37  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Videos\VideoGeneration.tsx
+  15:44  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Videos\VideoGenerator.tsx
+  177:89  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\pages\Videos\VideoQueue.tsx
+  212:27  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\router\optimizedRouter.tsx
+  69:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\router\routerUtils.ts
+  9:0  error  Parsing error: Declaration or statement expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\services\analytics_tracker.ts
+  47:29  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\services\offlineStorage.ts
+  208:24  error  Parsing error: Expression expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\services\websocket.ts
+  129:20  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\services\websocketService.ts
+  115:22  error  '_message' is defined but never used  @typescript-eslint/no-unused-vars
+  178:23  error  '_event' is defined but never used    @typescript-eslint/no-unused-vars
+  209:25  error  '_event' is defined but never used    @typescript-eslint/no-unused-vars
+  283:22  error  '_message' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\stores\authStore.ts
+  52:23  error  Parsing error: Type expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\stores\optimizedStore.ts
+  220:16  error  Parsing error: Parameter declaration expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\stores\useChannelStore.ts
+  52:10  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\stores\videoStore.ts
+  33:4  error  Parsing error: Declaration or statement expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\theme\accessibleTheme.ts
+  54:37  error  Parsing error: ',' expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\theme\darkMode.ts
+  397:2  error  Parsing error: Declaration or statement expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\utils\EventEmitter.ts
+  9:2  error  Parsing error: Unexpected keyword or identifier
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\utils\accessibility.ts
+  32:0  error  Parsing error: Declaration or statement expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\utils\accessibilityTesting.ts
+  82:55  error  Parsing error: Type expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\utils\formatters.ts
+  13:0  error  Parsing error: Declaration or statement expected
+
+C:\Users\Hp\projects\ytempire-mvp\frontend\src\utils\lazyWithRetry.ts
+  62:34  error  Parsing error: Type expected
+
+✖ 142 problems (138 errors, 4 warnings)
+  0 errors and 3 warnings potentially fixable with the `--fix` option.
+

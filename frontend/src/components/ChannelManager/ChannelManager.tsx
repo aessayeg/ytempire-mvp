@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Card,
   CardContent,
@@ -18,36 +18,30 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Alert,
-  Tooltip,
-  Badge,
   Switch,
   FormControlLabel
-} from '@mui/material';
-import {
+ } from '@mui/material';
+import { 
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
-  CheckCircle as CheckCircleIcon,
-  Warning as WarningIcon,
-  Error as ErrorIcon,
   YouTube as YouTubeIcon,
   Settings as SettingsIcon,
-  Analytics as AnalyticsIcon,
-  SwapHoriz as SwapIcon
-} from '@mui/icons-material';
-import { useChannelStore } from '../../stores/channelStore';
-import { Channel, ChannelHealth } from '../../types/channel';
+  Analytics as AnalyticsIcon
+,
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon
+ } from '@mui/icons-material';
+import {  Channel, ChannelHealth  } from '../../types/channel';
 
 interface ChannelManagerProps {
   onChannelSelect?: (channel: Channel) => void;
   maxChannels?: number;
 }
-
 const ChannelManager: React.FC<ChannelManagerProps> = ({ 
-  onChannelSelect,
-  maxChannels = 15 
+  onChannelSelect, maxChannels = 15 
 }) => {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
@@ -60,7 +54,8 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
     youtubeId: '',
     apiKey: '',
     category: '',
-    description: ''
+    description: '',
+
   });
 
   // Mock channel health status
@@ -73,8 +68,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
       case 'critical':
         return <ErrorIcon color="error" />;
       default:
-        return <CheckCircleIcon color="disabled" />;
-    }
+        return <CheckCircleIcon color="disabled" />}
   };
 
   const getHealthColor = (health: ChannelHealth) => {
@@ -86,13 +80,11 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
       case 'critical':
         return 'error';
       default:
-        return 'default';
-    }
+        return 'default'}
   };
 
   useEffect(() => {
-    loadChannels();
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
+    loadChannels()}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadChannels = async () => {
     setIsLoading(true);
@@ -109,7 +101,8 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
           subscribers: 15420,
           videoCount: 145,
           isActive: true,
-          lastSync: new Date().toISOString()
+          lastSync: new Date().toISOString(),
+
         },
         {
           id: '2',
@@ -121,7 +114,8 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
           subscribers: 28300,
           videoCount: 312,
           isActive: true,
-          lastSync: new Date().toISOString()
+          lastSync: new Date().toISOString(),
+
         },
         {
           id: '3',
@@ -133,15 +127,11 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
           subscribers: 8900,
           videoCount: 89,
           isActive: false,
-          lastSync: new Date().toISOString()
-        }
+          lastSync: new Date().toISOString()}
       ];
-      setChannels(mockChannels);
-    } catch (_error) {
-      console.error('Failed to load channels:', error);
-    } finally {
-      setIsLoading(false);
-    }
+      setChannels(mockChannels)} catch (_) {
+      console.error('Failed to load, channels:', error)} finally {
+      setIsLoading(false)}
   };
 
   const handleAddChannel = async () => {
@@ -151,8 +141,8 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
     }
     
     // TODO: Add channel via API
-    const newChannelData: Channel = {
-      id: Date.now().toString(),
+    const newChannelData: Channel = {,
+  id: Date.now().toString(),
       name: newChannel.name,
       youtubeId: newChannel.youtubeId,
       category: newChannel.category,
@@ -161,44 +151,42 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
       subscribers: 0,
       videoCount: 0,
       isActive: true,
-      lastSync: new Date().toISOString()
+      lastSync: new Date().toISOString(),
+
     };
     
     setChannels([...channels, newChannelData]);
     setIsAddDialogOpen(false);
-    setNewChannel({ name: '', youtubeId: '', apiKey: '', category: '', description: '' });
-  };
+    setNewChannel({ name: '', youtubeId: '', apiKey: '', category: '', description: '' })};
 
   const handleDeleteChannel = async (channelId: string) => {
     if (confirm('Are you sure you want to delete this channel?')) {
-      setChannels(channels.filter(c => c.id !== channelId));
-    }
+      setChannels(channels.filter(c => c.id !== channelId))}
   };
 
   const handleToggleChannel = async (channelId: string) => {
-    setChannels(channels.map(c => 
+    setChannels(channels.map(c => {}
       c.id === channelId ? { ...c, isActive: !c.isActive } : c
-    ));
-  };
+    ))};
 
   const handleRefreshChannel = async (channelId: string) => {
     // TODO: Refresh channel data from YouTube API
-    console.log('Refreshing channel:', channelId);
-  };
+    console.log('Refreshing, channel:', channelId)};
 
   return (
-    <Box>
+    <>
+      <Box>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
           Multi-Channel Manager
         </Typography>
-        <Box display="flex" gap={2} alignItems="center">
+      <Box display="flex" gap={2} alignItems="center">
           <FormControlLabel
             control={
               <Switch
                 checked={autoRotate}
-                onChange={(e) => setAutoRotate(e.target.checked)}
+                onChange={(e) => setAutoRotate(e.target.checked}
                 color="primary"
               />
             }
@@ -211,7 +199,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => setIsAddDialogOpen(true)}
+            onClick={() => setIsAddDialogOpen(true}
             disabled={channels.length >= maxChannels}
           >
             Add Channel
@@ -225,7 +213,6 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
           Some channels have critical quota usage. Consider rotating to other channels.
         </Alert>
       )}
-
       {/* Channels Grid */}
       {isLoading ? (
         <LinearProgress />
@@ -238,7 +225,8 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
                   position: 'relative',
                   opacity: channel.isActive ? 1 : 0.6,
                   border: selectedChannel?.id === channel.id ? 2 : 0,
-                  borderColor: 'primary.main'
+                  borderColor: 'primary.main',
+
                 }}
               >
                 <CardContent>
@@ -249,7 +237,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
                       <Typography variant="h6" component="h2">
                         {channel.name}
                       </Typography>
-                    </Box>
+                    </Box>`
                     <Tooltip title={`Health: ${channel.health}`}>
                       {getHealthIcon(channel.health)}
                     </Tooltip>
@@ -264,12 +252,12 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
                       Category: {channel.category}
                     </Typography>
                     <Box display="flex" gap={2} mt={1}>
-                      <Chip 
+                      <Chip `
                         label={`${channel.subscribers.toLocaleString()} subs`} 
                         size="small" 
                         variant="outlined"
                       />
-                      <Chip 
+                      <Chip `
                         label={`${channel.videoCount} videos`} 
                         size="small" 
                         variant="outlined"
@@ -298,7 +286,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
                     <Box>
                       <Switch
                         checked={channel.isActive}
-                        onChange={() => handleToggleChannel(channel.id)}
+                        onChange={() => handleToggleChannel(channel.id}
                         size="small"
                       />
                       <Typography variant="caption" ml={1}>
@@ -308,7 +296,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
                     <Box>
                       <IconButton 
                         size="small" 
-                        onClick={() => handleRefreshChannel(channel.id)}
+                        onClick={() => handleRefreshChannel(channel.id}
                         title="Refresh"
                       >
                         <RefreshIcon />
@@ -316,9 +304,9 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
                       <IconButton 
                         size="small"
                         onClick={() => {
-                          setSelectedChannel(channel);
-                          onChannelSelect?.(channel);
-                        }}
+                          setSelectedChannel(channel</>
+  );
+                          onChannelSelect?.(channel)}}
                         title="Analytics"
                       >
                         <AnalyticsIcon />
@@ -327,15 +315,14 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
                         size="small"
                         onClick={() => {
                           setSelectedChannel(channel);
-                          setIsEditDialogOpen(true);
-                        }}
+                          setIsEditDialogOpen(true)}}
                         title="Edit"
                       >
                         <EditIcon />
                       </IconButton>
                       <IconButton 
                         size="small"
-                        onClick={() => handleDeleteChannel(channel.id)}
+                        onClick={() => handleDeleteChannel(channel.id}
                         color="error"
                         title="Delete"
                       >
@@ -349,23 +336,22 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
           ))}
         </Grid>
       )}
-
       {/* Add Channel Dialog */}
-      <Dialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false} maxWidth="sm" fullWidth>
         <DialogTitle>Add New Channel</DialogTitle>
         <DialogContent>
           <Box display="flex" flexDirection="column" gap={2} mt={2}>
             <TextField
               label="Channel Name"
               value={newChannel.name}
-              onChange={(e) => setNewChannel({ ...newChannel, name: e.target.value })}
+              onChange={(e) => setNewChannel({ ...newChannel, name: e.target.value)})}
               fullWidth
               required
             />
             <TextField
               label="YouTube Channel ID"
               value={newChannel.youtubeId}
-              onChange={(e) => setNewChannel({ ...newChannel, youtubeId: e.target.value })}
+              onChange={(e) => setNewChannel({ ...newChannel, youtubeId: e.target.value)})}
               fullWidth
               required
               helperText="Found in YouTube Studio > Settings"
@@ -373,7 +359,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
             <TextField
               label="API Key"
               value={newChannel.apiKey}
-              onChange={(e) => setNewChannel({ ...newChannel, apiKey: e.target.value })}
+              onChange={(e) => setNewChannel({ ...newChannel, apiKey: e.target.value)})}
               fullWidth
               required
               type="password"
@@ -383,7 +369,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
               <InputLabel>Category</InputLabel>
               <Select
                 value={newChannel.category}
-                onChange={(e) => setNewChannel({ ...newChannel, category: e.target.value })}
+                onChange={(e) => setNewChannel({ ...newChannel, category: e.target.value)})}
                 label="Category"
               >
                 <MenuItem value="Technology">Technology</MenuItem>
@@ -397,7 +383,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
             <TextField
               label="Description"
               value={newChannel.description}
-              onChange={(e) => setNewChannel({ ...newChannel, description: e.target.value })}
+              onChange={(e) => setNewChannel({ ...newChannel, description: e.target.value)})}
               fullWidth
               multiline
               rows={3}
@@ -405,7 +391,7 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setIsAddDialogOpen(false}>Cancel</Button>
           <Button 
             onClick={handleAddChannel} 
             variant="contained"
@@ -416,7 +402,6 @@ const ChannelManager: React.FC<ChannelManagerProps> = ({
         </DialogActions>
       </Dialog>
     </Box>
-  );
-};
+  )};
 
-export default ChannelManager;
+export default ChannelManager;`

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   AppBar,
   Toolbar,
@@ -12,7 +12,6 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
-  Badge,
   Avatar,
   Collapse,
   Chip,
@@ -25,15 +24,13 @@ import {
   BottomNavigationAction,
   Fab,
   Zoom,
-  Tooltip,
   Menu,
   MenuItem,
-  alpha,
-} from '@mui/material';
-import {
+  alpha
+ } from '@mui/material';
+import { 
   Menu as MenuIcon,
   Search as SearchIcon,
-  Close as CloseIcon,
   Dashboard,
   VideoLibrary,
   Analytics,
@@ -55,14 +52,17 @@ import {
   BarChart,
   Help,
   Feedback,
-  Logout,
-} from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { HelpTooltip } from '../Common/HelpTooltip';
+  Logout
+,
+  Search as SearchIcon
+ } from '@mui/icons-material';
+import {  useNavigate, useLocation  } from 'react-router-dom';
+import {  HelpTooltip  } from '../Common/HelpTooltip';
 
 interface NavigationItem {
-  id: string;
-  label: string;
+  id: string,
+  label: string,
+
   icon: React.ReactNode;
   path?: string;
   children?: NavigationItem[];
@@ -71,10 +71,9 @@ interface NavigationItem {
   quickAction?: () => void;
 }
 
-export const EnhancedNavigation: React.FC = () => {
-  const theme = useTheme();
+export const EnhancedNavigation: React.FC = () => { const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -88,16 +87,13 @@ export const EnhancedNavigation: React.FC = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
 
   // Navigation items with help text
-  const navigationItems: NavigationItem[] = [
-    {
-      id: 'dashboard',
+  const navigationItems: NavigationItem[] = [ {,
+  id: 'dashboard',
       label: 'Dashboard',
       icon: <Dashboard />,
       path: '/dashboard',
-      helpText: 'View your overall performance metrics and activity',
-    },
-    {
-      id: 'videos',
+      helpText: 'View your overall performance metrics and activity' },
+    { id: 'videos',
       label: 'Videos',
       icon: <VideoLibrary />,
       badge: '3',
@@ -108,153 +104,123 @@ export const EnhancedNavigation: React.FC = () => {
           label: 'Create New',
           icon: <Add />,
           path: '/videos/create',
-          helpText: 'Start creating a new video with AI assistance',
-        },
-        {
-          id: 'library',
+          helpText: 'Start creating a new video with AI assistance' },
+        { id: 'library',
           label: 'Video Library',
           icon: <PlayCircle />,
           path: '/videos/library',
-          helpText: 'Browse all your created videos',
-        },
-        {
-          id: 'scheduled',
+          helpText: 'Browse all your created videos' },
+        { id: 'scheduled',
           label: 'Scheduled',
           icon: <Schedule />,
           path: '/videos/scheduled',
           badge: '5',
-          helpText: 'View and manage scheduled uploads',
-        },
-        {
-          id: 'processing',
+          helpText: 'View and manage scheduled uploads' },
+        { id: 'processing',
           label: 'Processing',
           icon: <CloudQueue />,
           path: '/videos/processing',
           badge: '2',
-          helpText: 'Track videos currently being generated',
-        },
-      ],
+          helpText: 'Track videos currently being generated' } ]
     },
-    {
-      id: 'channels',
+    { id: 'channels',
       label: 'Channels',
       icon: <YouTube />,
       path: '/channels',
-      helpText: 'Manage your YouTube channels',
-    },
-    {
-      id: 'analytics',
+      helpText: 'Manage your YouTube channels' },
+    { id: 'analytics',
       label: 'Analytics',
       icon: <Analytics />,
       path: '/analytics',
       helpText: 'Deep dive into your performance data',
-      children: [
-        {
-          id: 'overview',
+      children: [ {,
+  id: 'overview',
           label: 'Overview',
           icon: <BarChart />,
-          path: '/analytics/overview',
-        },
-        {
-          id: 'trends',
+          path: '/analytics/overview' },
+        { id: 'trends',
           label: 'Trends',
           icon: <TrendingUp />,
-          path: '/analytics/trends',
-        },
-      ],
+          path: '/analytics/trends' } ]
     },
-    {
-      id: 'monetization',
+    { id: 'monetization',
       label: 'Monetization',
       icon: <AttachMoney />,
       path: '/monetization',
-      helpText: 'Track revenue and manage billing',
-    },
-  ];
+      helpText: 'Track revenue and manage billing' }];
 
   // Handle scroll for FAB visibility
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       setShowFab(currentScrollY < lastScrollY || currentScrollY < 100);
-      setLastScrollY(currentScrollY);
-    };
+      setLastScrollY(currentScrollY)};
 
     if (isMobile) {
       window.addEventListener('scroll', handleScroll, { passive: true });
-      return () => window.removeEventListener('scroll', handleScroll);
-    }
+      return () => window.removeEventListener('scroll', handleScroll)}
   }, [lastScrollY, isMobile]);
 
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+    setMobileOpen(!mobileOpen)};
 
   const handleSearchToggle = () => {
     setSearchOpen(!searchOpen);
     if (!searchOpen) {
       setTimeout(() => {
-        document.getElementById('search-input')?.focus();
-      }, 100);
-    }
+        document.getElementById('search-input')?.focus()}, 100)}
   };
 
   const handleExpandClick = (itemId: string) => {
-    setExpandedItems(prev =>
+    setExpandedItems(prev => {}
       prev.includes(itemId)
         ? prev.filter(id => id !== itemId)
         : [...prev, itemId]
-    );
-  };
+    )};
 
-  const handleQuickAction = (_event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const handleQuickAction = (_: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)};
 
   const handleQuickActionClose = () => {
-    setAnchorEl(null);
-  };
+    setAnchorEl(null)};
 
-  const isActive = (path?: string) => {
+  const isActive = (_path?: string) => {
     return path === location.pathname;
   };
 
-  const renderNavigationItem = (item: NavigationItem, depth = 0) => {
+  const renderNavigationItem = (item: NavigationItem, _depth = 0) => {
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = expandedItems.includes(item.id);
     const active = isActive(item.path);
 
     return (
+    <>
       <React.Fragment key={item.id}>
         <ListItem disablePadding sx={{ display: 'block' }}>
           <ListItemButton
             onClick={() => {
               if (item.path) {
-                navigate(item.path);
-                if (isMobile) setMobileOpen(false);
-              } else if (hasChildren) {
-                handleExpandClick(item.id);
-              }
+                navigate(item.path</>
+  );
+                if (isMobile) setMobileOpen(false)} else if (hasChildren) {
+                handleExpandClick(item.id)}
             }}
             sx={{
               minHeight: 48,
               px: depth > 0 ? 4 : 2.5,
               backgroundColor: active ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
               borderLeft: active ? `3px solid ${theme.palette.primary.main}` : '3px solid transparent',
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.04),
-              },
+              '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.04) }
             }}
           >
             <ListItemIcon
-              sx={{
+              sx={ {
                 minWidth: 40,
-                color: active ? 'primary.main' : 'text.secondary',
-              }}
+                color: active ? 'primary.main' : 'text.secondary' }}
             >
               {item.icon}
             </ListItemIcon>
-            <ListItemText
+      <ListItemText
               primary={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Typography variant="body2" fontWeight={active ? 600 : 400}>
@@ -279,7 +245,7 @@ export const EnhancedNavigation: React.FC = () => {
             />
             {hasChildren && (
               <IconButton size="small" edge="end">
-                {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                {isExpanded ? <ExpandLess /> </>: <ExpandMore />}
               </IconButton>
             )}
           </ListItemButton>
@@ -292,8 +258,7 @@ export const EnhancedNavigation: React.FC = () => {
           </Collapse>
         )}
       </React.Fragment>
-    );
-  };
+    )};
 
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -338,13 +303,13 @@ export const EnhancedNavigation: React.FC = () => {
       
       {/* Bottom Actions */}
       <List>
-        <ListItemButton onClick={() => navigate('/help')}>
+        <ListItemButton onClick={() => navigate('/help'}>
           <ListItemIcon>
             <Help />
           </ListItemIcon>
           <ListItemText primary="Help & Support" />
         </ListItemButton>
-        <ListItemButton onClick={() => navigate('/settings')}>
+        <ListItemButton onClick={() => navigate('/settings'}>
           <ListItemIcon>
             <Settings />
           </ListItemIcon>
@@ -360,12 +325,11 @@ export const EnhancedNavigation: React.FC = () => {
       <AppBar
         position="fixed"
         elevation={0}
-        sx={{
+        sx={ {
           backgroundColor: 'background.paper',
           borderBottom: 1,
           borderColor: 'divider',
-          backdropFilter: 'blur(10px)',
-        }}
+          backdropFilter: 'blur(10px)' }}
       >
         <Toolbar>
           {isMobile && (
@@ -377,7 +341,6 @@ export const EnhancedNavigation: React.FC = () => {
               <MenuIcon />
             </IconButton>
           )}
-          
           {!searchOpen ? (
             <>
               <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
@@ -405,28 +368,26 @@ export const EnhancedNavigation: React.FC = () => {
             </>
           ) : (
             <Paper
-              sx={{
+              sx={ {
                 display: 'flex',
                 alignItems: 'center',
                 width: '100%',
                 px: 2,
                 py: 0.5,
-                backgroundColor: 'background.default',
-              }}
+                backgroundColor: 'background.default' }}
               elevation={0}
             >
               <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />
               <InputBase
                 id="search-input"
-                placeholder="Search videos, channels, analytics..."
+                placeholder="Search, videos, channels, analytics..."
                 fullWidth
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     // Handle search
-                    setSearchOpen(false);
-                  }
+                    setSearchOpen(false)}
                 }}
               />
               <IconButton onClick={handleSearchToggle}>
@@ -442,13 +403,12 @@ export const EnhancedNavigation: React.FC = () => {
         <SwipeableDrawer
           anchor="left"
           open={mobileOpen}
-          onClose={() => setMobileOpen(false)}
-          onOpen={() => setMobileOpen(true)}
-          sx={{
+          onClose={() => setMobileOpen(false}
+          onOpen={() => setMobileOpen(true}
+          sx={ {
             '& .MuiDrawer-paper': {
               width: 280,
-              boxSizing: 'border-box',
-            },
+              boxSizing: 'border-box' }
           }}
         >
           {drawer}
@@ -456,54 +416,45 @@ export const EnhancedNavigation: React.FC = () => {
       ) : (
         <Drawer
           variant="permanent"
-          sx={{
+          sx={ {
             width: 280,
             flexShrink: 0,
             '& .MuiDrawer-paper': {
               width: 280,
               boxSizing: 'border-box',
               top: 64,
-              height: 'calc(100% - 64px)',
-            },
+              height: 'calc(100% - 64px)' }
           }}
         >
           {drawer}
         </Drawer>
       )}
-      
       {/* Mobile Bottom Navigation */}
-      {isMobile && (
-        <Paper
+      { isMobile && (_<Paper
           sx={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: theme.zIndex.appBar,
-          }}
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: theme.zIndex.appBar }}
           elevation={3}
         >
           <BottomNavigation
             value={bottomNavValue}
             onChange={(event, newValue) => {
-              setBottomNavValue(newValue);
-            }}
+              setBottomNavValue(newValue)}}
             showLabels
           >
             <BottomNavigationAction
               label="Home"
               icon={<Home />}
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/dashboard'}
             />
             <BottomNavigationAction
               label="Videos"
               icon={<VideoLibrary />}
-              onClick={() => navigate('/videos')}
+              onClick={() => navigate('/videos'}
             />
             <BottomNavigationAction
               label="Analytics"
               icon={<Analytics />}
-              onClick={() => navigate('/analytics')}
+              onClick={() => navigate('/analytics'}
             />
             <BottomNavigationAction
               label="More"
@@ -513,44 +464,44 @@ export const EnhancedNavigation: React.FC = () => {
           </BottomNavigation>
         </Paper>
       )}
-      
       {/* Floating Action Button */}
       {isMobile && (
         <Zoom in={showFab}>
           <Fab
             color="primary"
-            sx={{
+            sx={ {
               position: 'fixed',
               bottom: 72,
-              right: 16,
-            }}
-            onClick={() => navigate('/videos/create')}
+              right: 16 }}
+            onClick={() => navigate('/videos/create'}
           >
             <Add />
           </Fab>
         </Zoom>
       )}
-      
       {/* Quick Actions Menu */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleQuickActionClose}
       >
-        <MenuItem onClick={() => { navigate('/settings'); handleQuickActionClose(); }}>
+        <MenuItem onClick={(</>
+  ) => { navigate('/settings'</>
+  ); handleQuickActionClose(</>
+  )}}>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
           <ListItemText>Settings</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => { navigate('/feedback'); handleQuickActionClose(); }}>
+        <MenuItem onClick={() => { navigate('/feedback'); handleQuickActionClose()}}>
           <ListItemIcon>
             <Feedback fontSize="small" />
           </ListItemIcon>
           <ListItemText>Feedback</ListItemText>
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => { /* logout */ handleQuickActionClose(); }}>
+        <MenuItem onClick={() => { /* logout */ handleQuickActionClose()}}>
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>
@@ -558,5 +509,4 @@ export const EnhancedNavigation: React.FC = () => {
         </MenuItem>
       </Menu>
     </>
-  );
-};
+  )};`

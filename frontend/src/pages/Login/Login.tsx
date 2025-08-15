@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import {
+import {  useNavigate, Link  } from 'react-router-dom';
+import { 
   Container,
   Paper,
   TextField,
@@ -14,18 +14,18 @@ import {
   Divider,
   Checkbox,
   FormControlLabel,
-  Grid
-} from '@mui/material';
-import {
+  Grid,
+  FormControl
+ } from '@mui/material';
+import { 
   Visibility,
   VisibilityOff,
   Google as GoogleIcon,
   YouTube as YouTubeIcon,
-  Email as EmailIcon,
-  Lock as LockIcon
-} from '@mui/icons-material';
-import { useAuthStore } from '../../stores/authStore';
-import { authService } from '../../services/authService';
+  Email as EmailIcon
+ } from '@mui/icons-material';
+import {  useAuthStore  } from '../../stores/authStore';
+import {  authService  } from '../../services/authService';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -33,22 +33,22 @@ const Login: React.FC = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    rememberMe: false
+    rememberMe: false,
+
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: name === 'rememberMe' ? checked : value
     }));
-    setError('');
-  };
+    setError('')};
 
-  const handleSubmit = async (_e: React.FormEvent) => {
+  const handleSubmit = async (_: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
@@ -56,39 +56,34 @@ const Login: React.FC = () => {
     try {
       const response = await authService.login(formData.email, formData.password);
       login(response.user, response.token, formData.rememberMe);
-      navigate('/dashboard');
-    } catch (err: unknown) {
-      setError(err.response?.data?.message || 'Invalid email or password');
-    } finally {
-      setIsLoading(false);
-    }
+      navigate('/dashboard')} catch (_err: unknown) {
+      setError(err.response?.data?.message || 'Invalid email or password')} finally {
+      setIsLoading(false)}
   };
 
   const handleGoogleLogin = async () => {
     try {
       window.location.href = '/api/v1/auth/google';
-    } catch (_err) {
-      setError('Google login failed. Please try again.');
-    }
+    } catch (_) {
+      setError('Google login failed. Please try again.')}
   };
 
   const handleYouTubeLogin = async () => {
     try {
       window.location.href = '/api/v1/auth/youtube';
-    } catch (_err) {
-      setError('YouTube login failed. Please try again.');
-    }
+    } catch (_) {
+      setError('YouTube login failed. Please try again.')}
   };
 
   return (
-    <Container component="main" maxWidth="xs">
+    <>
+      <Container component="main" maxWidth="xs">
       <Box
-        sx={{
+        sx={ {
           marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-        }}
+          alignItems: 'center' }}
       >
         <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
           {/* Logo and Title */}
@@ -97,18 +92,17 @@ const Login: React.FC = () => {
             <Typography component="h1" variant="h4" fontWeight="bold">
               YTEmpire
             </Typography>
-            <Typography variant="body2" color="text.secondary" mt={1}>
+      <Typography variant="body2" color="text.secondary" mt={1}>
               Sign in to your account
             </Typography>
           </Box>
 
           {/* Error Alert */}
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(''}>
               {error}
             </Alert>
           )}
-
           {/* Login Form */}
           <Box component="form" onSubmit={handleSubmit} noValidate>
             <TextField
@@ -122,13 +116,12 @@ const Login: React.FC = () => {
               autoFocus
               value={formData.email}
               onChange={handleChange}
-              InputProps={{
+              InputProps={ {
                 startAdornment: (
                   <InputAdornment position="start">
                     <EmailIcon color="action" />
                   </InputAdornment>
-                ),
-              }}
+                ) }}
             />
             <TextField
               margin="normal"
@@ -151,13 +144,13 @@ const Login: React.FC = () => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowPassword(!showPassword}
                       edge="end"
                     >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                      {showPassword ? <VisibilityOff /> </>: <Visibility />}
                     </IconButton>
                   </InputAdornment>
-                ),
+                )
               }}
             />
 
@@ -221,7 +214,8 @@ const Login: React.FC = () => {
                     '&:hover': {
                       borderColor: 'error.dark',
                       backgroundColor: 'error.light',
-                      opacity: 0.1
+                      opacity: 0.1,
+
                     }
                   }}
                 >
@@ -263,7 +257,7 @@ const Login: React.FC = () => {
         </Box>
       </Box>
     </Container>
-  );
-};
+  </>
+  )};
 
 export default Login;

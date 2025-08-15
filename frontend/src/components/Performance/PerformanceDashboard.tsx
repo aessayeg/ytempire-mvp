@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Card,
   CardContent,
@@ -14,15 +14,13 @@ import {
   Divider,
   Paper,
   IconButton,
-  Tooltip,
-} from '@mui/material';
-import {
+  Tooltip
+ } from '@mui/material';
+import { 
   LineChart,
   Line,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -31,63 +29,68 @@ import {
   CartesianGrid,
   Tooltip as RechartsTooltip,
   Legend,
-  ResponsiveContainer,
-} from 'recharts';
+  ResponsiveContainer
+ } from 'recharts';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SpeedIcon from '@mui/icons-material/Speed';
 import ErrorIcon from '@mui/icons-material/Error';
 import WarningIcon from '@mui/icons-material/Warning';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { authStore } from '../../stores/authStore';
+import {  authStore  } from '../../stores/authStore';
 
 interface PerformanceMetrics {
-  current: {
-    request_rate: number;
-    average_latency: number;
-    error_rate: number;
-    throughput: number;
-  };
-  historical: Array<{
-    timestamp: string;
-    request_rate: number;
-    average_latency: number;
-    error_rate: number;
-  }>;
-  slow_endpoints: Array<{
-    endpoint: string;
-    method: string;
-    avg_duration: number;
-    count: number;
-  }>;
+  current: {,
+  request_rate: number,
+
+    average_latency: number,
+  error_rate: number,
+
+    throughput: number};
+  historical: Array<{,
+  timestamp: string,
+
+    request_rate: number,
+  average_latency: number,
+
+    error_rate: number}>;
+  slow_endpoints: Array<{,
+  endpoint: string,
+
+    method: string,
+  avg_duration: number,
+
+    count: number}>;
   error_rates: {
-    '4xx_errors': number;
-    '5xx_errors': number;
-    timeout_errors: number;
-    total_errors: number;
-  };
-  database: {
-    average_query_time: number;
-    slow_query_count: number;
-    connection_pool_usage: number;
-    deadlock_count: number;
-  };
-  system: {
-    cpu_usage: number;
-    memory_usage: number;
-    disk_usage: number;
-    network_io: {
-      bytes_sent: number;
-      bytes_recv: number;
-    };
+    '4 xx_errors': number;
+    '5 xx_errors': number;
+    timeout_errors: number,
+  total_errors: number};
+  database: {,
+  average_query_time: number,
+
+    slow_query_count: number,
+  connection_pool_usage: number,
+
+    deadlock_count: number};
+  system: {,
+  cpu_usage: number,
+
+    memory_usage: number,
+  disk_usage: number,
+
+    network_io: {,
+  bytes_sent: number,
+
+      bytes_recv: number};
   };
 }
 
 interface PerformanceAlert {
-  type: string;
-  severity: 'warning' | 'critical' | 'info';
-  message: string;
-  timestamp: string;
-}
+  type: string,
+  severity: 'warning' | 'critical' | 'info',
+
+  message: string,
+  timestamp: string}
 
 export const PerformanceDashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
@@ -100,50 +103,45 @@ export const PerformanceDashboard: React.FC = () => {
     try {
       const headers = {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       };
 
       // Fetch performance overview
-      const overviewResponse = await fetch(
+      const overviewResponse = await fetch(`
         `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/performance/overview`,
         { headers }
       );
       
       if (overviewResponse.ok) {
         const data = await overviewResponse.json();
-        setMetrics(data);
-      }
+        setMetrics(data)}
 
       // Fetch alerts
-      const alertsResponse = await fetch(
+      const alertsResponse = await fetch(`
         `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/performance/alerts`,
         { headers }
       );
       
       if (alertsResponse.ok) {
         const alertData = await alertsResponse.json();
-        setAlerts(alertData);
-      }
-    } catch (_error) {
-      console.error('Error fetching performance data:', error);
-    } finally {
-      setLoading(false);
-    }
+        setAlerts(alertData)}
+    } catch (_) {
+      console.error('Error fetching performance, data:', error)} finally {
+      setLoading(false)}
   };
 
   useEffect(() => {
+    
     fetchPerformanceData();
     
     // Auto-refresh every 30 seconds
     const interval = autoRefresh ? setInterval(fetchPerformanceData, 30000) : null;
     
     return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [token, autoRefresh]);
+      if (interval) clearInterval(interval)}, [token, autoRefresh]);
 
   const getStatusColor = (value: number, thresholds: { good: number; warning: number }) => {
-    if (value < thresholds.good) return '#4caf50';
+    if (value < thresholds.good) return '#4 caf50';
     if (value < thresholds.warning) return '#ff9800';
     return '#f44336';
   };
@@ -157,26 +155,24 @@ export const PerformanceDashboard: React.FC = () => {
 
   if (loading) {
     return (
+    <>
       <Box sx={{ width: '100%' }}>
         <LinearProgress />
       </Box>
-    );
-  }
+    )}
 
   if (!metrics) {
     return (
-      <Alert severity="error">
+    <Alert severity="error">
         Failed to load performance metrics. Please try again later.
       </Alert>
-    );
-  }
+    )}
 
   // Prepare chart data
   const errorPieData = [
-    { name: '4xx Errors', value: metrics.error_rates['4xx_errors'], color: '#ff9800' },
-    { name: '5xx Errors', value: metrics.error_rates['5xx_errors'], color: '#f44336' },
-    { name: 'Timeouts', value: metrics.error_rates.timeout_errors, color: '#9c27b0' },
-  ];
+    { name: '4 xx Errors', value: metrics.error_rates['4 xx_errors'], color: '#ff9800' },
+    { name: '5 xx Errors', value: metrics.error_rates['5 xx_errors'], color: '#f44336' },
+    { name: 'Timeouts', value: metrics.error_rates.timeout_errors, color: '#9 c27 b0' }];
 
   return (
     <Box>
@@ -185,7 +181,7 @@ export const PerformanceDashboard: React.FC = () => {
         <Typography variant="h4" component="h2">
           Performance Monitoring
         </Typography>
-        <Box>
+      <Box>
           <Tooltip title="Refresh">
             <IconButton onClick={fetchPerformanceData}>
               <RefreshIcon />
@@ -204,7 +200,7 @@ export const PerformanceDashboard: React.FC = () => {
               sx={{ mb: 1 }}
               icon={
                 alert.severity === 'critical' ? <ErrorIcon /> :
-                alert.severity === 'warning' ? <WarningIcon /> :
+                alert.severity === 'warning' ? <WarningIcon /> </>:
                 <CheckCircleIcon />
               }
             >
@@ -213,7 +209,6 @@ export const PerformanceDashboard: React.FC = () => {
           ))}
         </Box>
       )}
-
       {/* Key Metrics */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
@@ -314,7 +309,7 @@ export const PerformanceDashboard: React.FC = () => {
                 <Line 
                   type="monotone" 
                   dataKey="average_latency" 
-                  stroke="#8884d8" 
+                  stroke="#8884 d8" 
                   name="Latency (ms)"
                 />
               </LineChart>
@@ -340,8 +335,8 @@ export const PerformanceDashboard: React.FC = () => {
                 <Area 
                   type="monotone" 
                   dataKey="request_rate" 
-                  stroke="#82ca9d" 
-                  fill="#82ca9d"
+                  stroke="#82 ca9 d" 
+                  fill="#82 ca9 d"
                   name="Requests/s"
                 />
               </AreaChart>
@@ -418,7 +413,7 @@ export const PerformanceDashboard: React.FC = () => {
             <List>
               <ListItem>
                 <ListItemText 
-                  primary="Avg Query Time"
+                  primary="Avg Query Time"`
                   secondary={`${metrics.database.average_query_time.toFixed(2)} ms`}
                 />
               </ListItem>
@@ -525,7 +520,7 @@ export const PerformanceDashboard: React.FC = () => {
                   <SpeedIcon 
                     sx={{ 
                       color: endpoint.avg_duration > 2 ? '#f44336' : 
-                             endpoint.avg_duration > 1 ? '#ff9800' : '#4caf50'
+                             endpoint.avg_duration > 1 ? '#ff9800' : '#4 caf50'
                     }}
                   />
                 </Box>
@@ -536,5 +531,5 @@ export const PerformanceDashboard: React.FC = () => {
         </List>
       </Paper>
     </Box>
-  );
-};
+  </>
+  )};`

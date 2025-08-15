@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
+import { 
   Box,
   Card,
   CardContent,
   Typography,
   Grid,
   Chip,
-  LinearProgress,
   CircularProgress,
   IconButton,
   Tooltip,
@@ -15,12 +14,9 @@ import {
   useTheme,
   Paper,
   Skeleton,
-  Fade,
-  Grow,
-  Alert,
-  Button,
-} from '@mui/material';
-import {
+  Alert
+ } from '@mui/material';
+import { 
   TrendingUp,
   TrendingDown,
   TrendingFlat,
@@ -29,30 +25,28 @@ import {
   ThumbUp,
   Schedule,
   CloudQueue,
-  CheckCircle,
   Error,
-  Warning,
   Refresh,
   FiberManualRecord,
   Speed,
-  Timer,
-  Update,
-  NotificationImportant,
-} from '@mui/icons-material';
-import { format, formatDistanceToNow } from 'date-fns';
-import { useWebSocket } from '../../hooks/useWebSocket';
-import { AnimatePresence, motion } from 'framer-motion';
+  NotificationImportant
+ } from '@mui/icons-material';
+import {  format, formatDistanceToNow  } from 'date-fns';
+import {  useWebSocket  } from '../../hooks/useWebSocket';
+import {  AnimatePresence, motion  } from 'framer-motion';
 import CountUp from 'react-countup';
 
 interface MetricData {
-  id: string;
-  label: string;
-  value: number;
+  id: string,
+  label: string,
+
+  value: number,
   previousValue: number;
   unit?: string;
-  trend: 'up' | 'down' | 'flat';
-  changePercent: number;
-  icon: React.ReactNode;
+  trend: 'up' | 'down' | 'flat',
+  changePercent: number,
+
+  icon: React.ReactNode,
   color: string;
   sparklineData?: number[];
   lastUpdated: Date;
@@ -60,13 +54,14 @@ interface MetricData {
 }
 
 interface LiveEvent {
-  id: string;
-  type: 'video_published' | 'revenue_earned' | 'milestone_reached' | 'error' | 'warning';
-  title: string;
-  description: string;
-  timestamp: Date;
-  severity: 'info' | 'success' | 'warning' | 'error';
-}
+  id: string,
+  type: 'video_published' | 'revenue_earned' | 'milestone_reached' | 'error' | 'warning',
+
+  title: string,
+  description: string,
+
+  timestamp: Date,
+  severity: 'info' | 'success' | 'warning' | 'error'}
 
 interface RealTimeMetricsProps {
   channelId?: string;
@@ -75,12 +70,7 @@ interface RealTimeMetricsProps {
   compactMode?: boolean;
 }
 
-export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
-  channelId,
-  refreshInterval = 5000,
-  showSparklines = true,
-  compactMode = false,
-}) => {
+export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({ channelId, refreshInterval = 5000, showSparklines = true, compactMode = false }) => {
   const theme = useTheme();
   const [metrics, setMetrics] = useState<MetricData[]>([]);
   const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
@@ -90,14 +80,11 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
   const animationRef = useRef<number>();
 
   // WebSocket connection for real-time updates
-  const { sendMessage, lastMessage, readyState } = useWebSocket('/ws/metrics', {
-    shouldReconnect: () => true,
-    reconnectInterval: 3000,
-  });
+  const { sendMessage, lastMessage, readyState } = useWebSocket('/ws/metrics', { shouldReconnect: () => true,
+    reconnectInterval: 3000 });
 
   // Initialize metrics
-  useEffect(() => {
-    const initialMetrics: MetricData[] = [
+  useEffect(() => { const initialMetrics: MetricData[] = [
       {
         id: 'revenue',
         label: 'Revenue Today',
@@ -110,10 +97,8 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
         color: theme.palette.success.main,
         sparklineData: [100, 105, 110, 108, 115, 120, 127],
         lastUpdated: new Date(),
-        isLive: true,
-      },
-      {
-        id: 'views',
+        isLive: true },
+      { id: 'views',
         label: 'Total Views',
         value: 15234,
         previousValue: 14500,
@@ -123,10 +108,8 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
         color: theme.palette.primary.main,
         sparklineData: [14000, 14200, 14500, 14600, 14900, 15000, 15234],
         lastUpdated: new Date(),
-        isLive: true,
-      },
-      {
-        id: 'engagement',
+        isLive: true },
+      { id: 'engagement',
         label: 'Engagement Rate',
         value: 4.7,
         previousValue: 4.2,
@@ -137,10 +120,8 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
         color: theme.palette.secondary.main,
         sparklineData: [4.0, 4.1, 4.2, 4.3, 4.5, 4.6, 4.7],
         lastUpdated: new Date(),
-        isLive: true,
-      },
-      {
-        id: 'processing',
+        isLive: true },
+      { id: 'processing',
         label: 'Videos Processing',
         value: 3,
         previousValue: 5,
@@ -149,10 +130,8 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
         icon: <CloudQueue />,
         color: theme.palette.warning.main,
         lastUpdated: new Date(),
-        isLive: true,
-      },
-      {
-        id: 'scheduled',
+        isLive: true },
+      { id: 'scheduled',
         label: 'Scheduled Today',
         value: 8,
         previousValue: 6,
@@ -160,10 +139,8 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
         changePercent: 33.3,
         icon: <Schedule />,
         color: theme.palette.info.main,
-        lastUpdated: new Date(),
-      },
-      {
-        id: 'health',
+        lastUpdated: new Date() },
+      { id: 'health',
         label: 'System Health',
         value: 98,
         previousValue: 95,
@@ -173,22 +150,18 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
         icon: <Speed />,
         color: theme.palette.success.main,
         lastUpdated: new Date(),
-        isLive: true,
-      },
-    ];
+        isLive: true }];
 
     setMetrics(initialMetrics);
-    setLoading(false);
-  }, [theme]);
+    setLoading(false)}, [theme]);
 
   // Handle WebSocket messages
-  useEffect(() => {
-    if (lastMessage) {
+  useEffect(() => { if (lastMessage) {
       try {
         const data = JSON.parse(lastMessage.data);
         
         if (data.type === 'metric_update') {
-          setMetrics(prev => prev.map(metric =>
+          setMetrics(prev => prev.map(metric => {}
             metric.id === data.metricId
               ? {
                   ...metric,
@@ -197,44 +170,38 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
                   trend: data.value > metric.value ? 'up' : data.value < metric.value ? 'down' : 'flat',
                   changePercent: ((data.value - metric.value) / metric.value) * 100,
                   lastUpdated: new Date(),
-                  sparklineData: metric.sparklineData ? [...metric.sparklineData.slice(1), data.value] : undefined,
-                }
+                  sparklineData: metric.sparklineData ? [...metric.sparklineData.slice(1), data.value] : undefined }
               : metric
           ));
-          setLastUpdate(new Date());
-        }
+          setLastUpdate(new Date())}
         
-        if (data.type === 'live_event') {
-          const newEvent: LiveEvent = {
-            id: `event-${Date.now()}`,
+        if (data.type === 'live_') {
+const newEvent: LiveEvent = {,
+  id: `event-${Date.now()}`,
             type: data.eventType,
             title: data.title,
             description: data.description,
             timestamp: new Date(),
             severity: data.severity || 'info',
+
           };
-          setLiveEvents(prev => [newEvent, ...prev].slice(0, 10));
-        }
-      } catch (_error) {
-        console.error('Error parsing WebSocket message:', error);
-      }
+          setLiveEvents(prev => [newEvent, ...prev].slice(0, 10))}
+      } catch (_) {
+        console.error('Error parsing WebSocket, message:', error)}
     }
   }, [lastMessage]);
 
   // Connection status monitoring
   useEffect(() => {
     if (readyState === WebSocket.OPEN) {
-      setConnectionStatus('connected');
-    } else if (readyState === WebSocket.CONNECTING) {
-      setConnectionStatus('connecting');
-    } else {
-      setConnectionStatus('disconnected');
-    }
-  }, [readyState]);
+      setConnectionStatus('connected')} else if (readyState === WebSocket.CONNECTING) {
+      setConnectionStatus('connecting')} else {
+      setConnectionStatus('disconnected')}
+  }, [readyState]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Simulate real-time updates (for demo)
+  // Simulate real-time updates (for, demo)
   useEffect(() => {
-    const interval = setInterval(() => {
+     const interval = setInterval(() => {
       setMetrics(prev => prev.map(metric => {
         if (metric.isLive) {
           const change = (Math.random() - 0.5) * 10;
@@ -248,16 +215,12 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
             lastUpdated: new Date(),
             sparklineData: metric.sparklineData 
               ? [...metric.sparklineData.slice(1), newValue]
-              : undefined,
-          };
-        }
-        return metric;
-      }));
-      setLastUpdate(new Date());
-    }, refreshInterval);
+              : undefined 
+  }
+        return metric}));
+      setLastUpdate(new Date())}, refreshInterval);
 
-    return () => clearInterval(interval);
-  }, [refreshInterval]);
+    return () => clearInterval(interval)}, [refreshInterval]);
 
   // Render trend icon
   const getTrendIcon = (trend: 'up' | 'down' | 'flat', color: string) => {
@@ -272,7 +235,7 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
   };
 
   // Render sparkline
-  const renderSparkline = (data?: number[]) => {
+  const renderSparkline = (_data?: number[]) => {
     if (!data || !showSparklines) return null;
     
     const max = Math.max(...data);
@@ -283,11 +246,11 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
     
     const points = data.map((value, index) => {
       const x = (index / (data.length - 1)) * width;
-      const y = height - ((value - min) / range) * height;
-      return `${x},${y}`;
-    }).join(' ');
+      const y = height - ((value - min) / range) * height;`
+      return `${x},${y}`}).join(' ');
 
     return (
+    <>
       <svg width={width} height={height} style={{ marginLeft: 'auto' }}>
         <polyline
           points={points}
@@ -296,8 +259,8 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
           strokeWidth="2"
         />
       </svg>
-    );
-  };
+    </>
+  )};
 
   // Render metric card
   const renderMetricCard = (metric: MetricData) => (
@@ -308,7 +271,7 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
         transition={{ duration: 0.3 }}
       >
         <Card
-          sx={{
+          sx={ {
             height: '100%',
             position: 'relative',
             overflow: 'visible',
@@ -322,9 +285,8 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
                 height: 8,
                 borderRadius: '50%',
                 backgroundColor: theme.palette.success.main,
-                animation: 'pulse 2s infinite',
-              },
-            }),
+                animation: 'pulse 2s infinite' }
+            })
           }}
         >
           <CardContent sx={{ p: compactMode ? 1.5 : 2 }}>
@@ -332,28 +294,27 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
               <Avatar
                 sx={{
                   width: 32,
-                  height: 32,
+                  height: 32,`
                   backgroundColor: `${metric.color}20`,
                   color: metric.color,
+
                 }}
               >
                 {metric.icon}
               </Avatar>
-              {metric.isLive && (
+              { metric.isLive && (
                 <Tooltip title="Live data">
                   <FiberManualRecord
                     sx={{
                       fontSize: 10,
                       color: theme.palette.success.main,
                       ml: 'auto',
-                      animation: 'pulse 2s infinite',
-                    }}
+                      animation: 'pulse 2s infinite' }}
                   />
                 </Tooltip>
               )}
             </Box>
-            
-            <Typography variant="caption" color="text.secondary" display="block">
+      <Typography variant="caption" color="text.secondary" display="block">
               {metric.label}
             </Typography>
             
@@ -375,13 +336,12 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
               {getTrendIcon(metric.trend, metric.color)}
               <Typography
                 variant="caption"
-                sx={{
+                sx={ {
                   color: metric.trend === 'up' 
                     ? theme.palette.success.main 
                     : metric.trend === 'down'
                     ? theme.palette.error.main
-                    : theme.palette.text.secondary,
-                }}
+                    : theme.palette.text.secondary }}
               >
                 {metric.changePercent > 0 ? '+' : ''}{metric.changePercent.toFixed(1)}%
               </Typography>
@@ -417,8 +377,7 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
       
       <Box sx={{ maxHeight: 200, overflow: 'auto' }}>
         <AnimatePresence>
-          {liveEvents.map((event) => (
-            <motion.div
+          {liveEvents.map((event) => (_<motion.div
               key={event.id}
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -429,8 +388,7 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
                 severity={event.severity}
                 sx={{ mb: 1 }}
                 onClose={() => {
-                  setLiveEvents(prev => prev.filter(e => e.id !== event.id));
-                }}
+                  setLiveEvents(prev => prev.filter(e => e.id !== event.id))}}
               >
                 <Typography variant="subtitle2" fontWeight="medium">
                   {event.title}
@@ -457,6 +415,7 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
 
   if (loading) {
     return (
+    <>
       <Grid container spacing={2}>
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <Grid item xs={12} sm={6} md={4} lg={2} key={i}>
@@ -471,8 +430,7 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
           </Grid>
         ))}
       </Grid>
-    );
-  }
+    )}
 
   return (
     <Box>
@@ -486,8 +444,7 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
               <CircularProgress size={12} />
             ) : (
               <Error sx={{ fontSize: 12 }} />
-            )
-          }
+            )}
           label={
             connectionStatus === 'connected'
               ? 'Live'
@@ -506,10 +463,9 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
         />
         
         <Typography variant="caption" color="text.secondary">
-          Last updated: {format(lastUpdate, 'HH:mm:ss')}
+          Last, updated: {format(lastUpdate, 'HH:mm:ss')}
         </Typography>
-        
-        <IconButton size="small" onClick={() => window.location.reload()}>
+      <IconButton size="small" onClick={() => window.location.reload()}>
           <Refresh fontSize="small" />
         </IconButton>
       </Box>
@@ -521,15 +477,14 @@ export const RealTimeMetrics: React.FC<RealTimeMetricsProps> = ({
 
       {/* Live Events */}
       {!compactMode && renderLiveEvents()}
-
-      {/* CSS for pulse animation */}
+      {/* CSS for pulse animation */}`
       <style>{`
         @keyframes pulse {
-          0% { opacity: 1; }
-          50% { opacity: 0.5; }
-          100% { opacity: 1; }
-        }
-      `}</style>
+          0% { opacity: 1}
+          50% { opacity: 0.5}
+          100% { opacity: 1}
+        }`
+      `}</style>`
     </Box>
-  );
-};
+  </>
+  )};`

@@ -1,25 +1,34 @@
 import React from 'react';
-import { Paper, Box, Typography, LinearProgress, List, ListItem, ListItemText, Chip, Grid } from '@mui/material';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { 
+  Paper,
+  Box,
+  Typography,
+  LinearProgress,
+  Chip,
+  Grid
+ } from '@mui/material';
+import {  PieChart, Pie, Cell, ResponsiveContainer, Tooltip  } from 'recharts';
 
 interface VideoEngagementStatsProps {
-  stats: {
-    likeRatio: number;
-    commentRate: number;
-    shareRate: number;
-    avgViewDuration: number;
-    clickThroughRate: number;
-    audienceRetention: number[];
-  };
+  stats: {,
+  likeRatio: number,
+
+    commentRate: number,
+  shareRate: number,
+
+    avgViewDuration: number,
+  clickThroughRate: number,
+
+    audienceRetention: number[]};
 }
 
 export const VideoEngagementStats: React.FC<VideoEngagementStatsProps> = ({ stats }) => {
   const engagementData = [
-    { name: 'Likes', value: stats.likeRatio || 85, color: '#4CAF50' },
+    { name: 'Likes', value: stats.likeRatio || 85, color: '#4 CAF50' },
     { name: 'Dislikes', value: 100 - (stats.likeRatio || 85), color: '#F44336' }
   ];
 
-  const StatItem = ({ label, value, max = 100, color = 'primary' }: unknown) => (
+  const StatItem = ({ label, value, max = 100, color = 'primary' }: React.ChangeEvent<HTMLInputElement>) => (
     <Box mb={2}>
       <Box display="flex" justifyContent="space-between" mb={1}>
         <Typography variant="body2">{label}</Typography>
@@ -30,9 +39,9 @@ export const VideoEngagementStats: React.FC<VideoEngagementStatsProps> = ({ stat
   );
 
   return (
-    <Paper sx={{ p: 3 }}>
+    <>
+      <Paper sx={{ p: 3 }}>
       <Typography variant="h6" gutterBottom>Engagement Statistics</Typography>
-      
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
           <StatItem label="Like/Dislike Ratio" value={stats.likeRatio || 85} />
@@ -63,5 +72,5 @@ export const VideoEngagementStats: React.FC<VideoEngagementStatsProps> = ({ stat
         </Grid>
       </Grid>
     </Paper>
-  );
-};
+  </>
+  )};`

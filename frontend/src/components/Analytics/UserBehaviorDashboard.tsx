@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {
+import { 
   Box,
   Card,
   CardContent,
@@ -19,41 +19,39 @@ import {
   TableHead,
   TableRow,
   Paper,
-} from '@mui/material';
-import {
+  FormControl,
+  InputLabel,
+  Select
+ } from '@mui/material';
+import { 
   Timeline,
   People,
   TouchApp,
-  Assessment,
-} from '@mui/icons-material';
-import {
+  Assessment
+ } from '@mui/icons-material';
+import { 
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip as RechartsTooltip,
   ResponsiveContainer,
-  Cell,
-} from 'recharts';
-import { useBehaviorAnalytics } from '../../hooks/useBehaviorAnalytics';
-import { formatNumber, formatPercentage, formatDuration } from '../../utils/formatters';
+  Cell
+ } from 'recharts';
+import {  useBehaviorAnalytics  } from '../../hooks/useBehaviorAnalytics';
+import {  formatNumber, formatPercentage, formatDuration  } from '../../utils/formatters';
 
 interface UserBehaviorDashboardProps {
   userId?: number;
   dateRange?: {
-    start: Date;
-    end: Date;
-  };
+    start: Date,
+  end: Date};
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+const COLORS = ['#0088 FE', '#00 C49 F', '#FFBB28', '#FF8042', '#8884 D8'];
 
 export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
-  userId,
-  dateRange,
-}) => {
-  const [activeTab, setActiveTab] = useState(0);
+  userId, dateRange }) => { const [activeTab, setActiveTab] = useState(0);
   const [selectedFunnel, setSelectedFunnel] = useState('signup');
   const [cohortType, setCohortType] = useState('signup');
 
@@ -65,13 +63,10 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
     segments,
     loading,
     error,
-    refetch,
-  } = useBehaviorAnalytics({
-    userId,
+    refetch } = useBehaviorAnalytics({ userId,
     dateRange,
     funnelSteps: getFunnelSteps(selectedFunnel),
-    cohortType,
-  });
+    cohortType });
 
   function getFunnelSteps(funnelType: string): string[] {
     switch (funnelType) {
@@ -82,8 +77,7 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
       case 'upgrade':
         return ['pricing_view', 'plan_select', 'checkout', 'payment_complete'];
       default:
-        return [];
-    }
+        return []}
   }
 
   const renderMetricCard = (title: string, value: number | string, icon: React.ReactNode, color: string = 'primary') => (
@@ -106,6 +100,7 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
     if (!overview?.event_breakdown) return null;
 
     return (
+    <>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={overview.event_breakdown}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -119,26 +114,24 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    );
-  };
+    </>
+  )};
 
-  const renderFunnelChart = () => {
-    if (!funnelData?.steps) return null;
+  const renderFunnelChart = () => { if (!funnelData?.steps) return null;
 
     const funnelChartData = funnelData.steps.map(step => ({
       name: step.step,
       value: step.users,
-      rate: step.conversion_rate,
-    }));
+      rate: step.conversion_rate }));
 
     return (
-      <Box>
+    <Box>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <FormControl size="small" sx={{ minWidth: 200 }}>
             <InputLabel>Funnel Type</InputLabel>
-            <Select
+      <Select
               value={selectedFunnel}
-              onChange={(_e) => setSelectedFunnel(_e.target.value)}
+              onChange={(_) => setSelectedFunnel(_.target.value)}
               label="Funnel Type"
             >
               <MenuItem value="signup">Signup Flow</MenuItem>
@@ -157,7 +150,7 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
             <XAxis type="number" />
             <YAxis dataKey="name" type="category" width={120} />
             <RechartsTooltip
-              formatter={(value: number) => formatNumber(value)}
+              formatter={(value: number) => formatNumber(value}`
               labelFormatter={(label) => `${label}: ${formatPercentage(funnelChartData.find(d => d.name === label)?.rate || 0)}`}
             />
             <Bar dataKey="value" fill="#8884d8">
@@ -198,20 +191,20 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
           </Table>
         </TableContainer>
       </Box>
-    );
-  };
+    )};
 
   const renderCohortAnalysis = () => {
     if (!cohortData?.cohorts) return null;
 
     return (
+    <>
       <Box>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <FormControl size="small" sx={{ minWidth: 200 }}>
             <InputLabel>Cohort Type</InputLabel>
-            <Select
+      <Select
               value={cohortType}
-              onChange={(_e) => setCohortType(_e.target.value)}
+              onChange={(_) => setCohortType(_.target.value)}
               label="Cohort Type"
             >
               <MenuItem value="signup">By Signup Date</MenuItem>
@@ -241,29 +234,31 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
                   <TableCell>{cohort.cohort}</TableCell>
                   <TableCell align="right">{cohort.size}</TableCell>
                   {[0, 1, 2, 3, 4, 5].map((week) => {
-                    const retention = cohort.retention.find(r => r.period === week);
+                    const retention = cohort.retention.find(r => r.period === week</>
+  );
                     const rate = retention?.retention_rate || 0;
                     return (
-                      <TableCell key={week} align="center">
+    <>
+      <TableCell key={week} align="center">
                         <Chip
                           label={formatPercentage(rate)}
                           size="small"
-                          sx={{
+                          sx={{`
                             backgroundColor: `rgba(0, 136, 254, ${rate / 100})`,
                             color: rate > 50 ? 'white' : 'inherit',
+
                           }}
                         />
                       </TableCell>
-                    );
-                  })}
+                    )})}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       </Box>
-    );
-  };
+    </>
+  )};
 
   const renderHeatmap = () => {
     if (!heatmapData?.heatmap) return null;
@@ -275,13 +270,12 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
     heatmapData.heatmap.forEach((item) => {
       const date = new Date(item.date);
       const dayOfWeek = date.getDay();
-      heatmapMatrix[dayOfWeek][item.hour] = item.intensity;
-    });
+      heatmapMatrix[dayOfWeek][item.hour] = item.intensity});
 
     return (
-      <Box>
+    <Box>
         <Typography variant="h6" mb={2}>Feature Usage Heatmap</Typography>
-        <Box sx={{ overflowX: 'auto' }}>
+      <Box sx={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
@@ -301,13 +295,14 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
                     <td
                       key={hour}
                       style={{
-                        padding: 4,
+                        padding: 4,`
                         backgroundColor: `rgba(0, 136, 254, ${intensity})`,
-                        border: '1px solid #f0f0f0',
+                        border: '1px solid #f0 f0 f0',
                         width: 20,
                         height: 20,
-                      }}
-                      title={`${day} ${hour}:00 - Intensity: ${(intensity * 100).toFixed(0)}%`}
+
+                      }}`
+                      title={`${day} ${hour}:00 - Intensity: ${intensity * 100.toFixed(0}%`}
                     />
                   ))}
                 </tr>
@@ -319,28 +314,26 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
           <Typography variant="body2" color="textSecondary" mr={2}>
             Low Activity
           </Typography>
-          <Box sx={{ flexGrow: 1, height: 10, background: 'linear-gradient(to right, rgba(0,136,254,0.1), rgba(0,136,254,1))' }} />
+          <Box sx={{ flexGrow: 1, height: 10, background: 'linear-gradient(to, right, rgba(0,136,254,0.1), rgba(0,136,254,1))' }} />
           <Typography variant="body2" color="textSecondary" ml={2}>
             High Activity
           </Typography>
         </Box>
       </Box>
-    );
-  };
+    )};
 
-  const renderUserSegments = () => {
-    if (!segments?.segments) return null;
+  const renderUserSegments = () => { if (!segments?.segments) return null;
 
     const segmentData = Object.entries(segments.segments).map(([name, data]) => ({
       name: name.replace('_', ' ').toUpperCase(),
       count: data.count,
-      percentage: (data.count / segments.total_users) * 100,
-    }));
+      percentage: (data.count / segments.total_users) * 100 }));
 
     return (
+    <>
       <Box>
         <Typography variant="h6" mb={2}>User Segments</Typography>
-        <Grid container spacing={2}>
+      <Grid container spacing={2}>
           {segmentData.map((segment) => (
             <Grid item xs={12} sm={6} md={3} key={segment.name}>
               <Card>
@@ -364,8 +357,8 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
           ))}
         </Grid>
       </Box>
-    );
-  };
+    </>
+  )};
 
   if (loading) {
     return <LinearProgress />;
@@ -376,13 +369,14 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <>
+      <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" fontWeight="bold">
           User Behavior Analytics
         </Typography>
-        <Button variant="outlined" onClick={refetch}>
+      <Button variant="outlined" onClick={refetch}>
           Refresh
         </Button>
       </Box>
@@ -412,7 +406,7 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
 
       {/* Tabs */}
       <Card>
-        <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)}>
+        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v}>
           <Tab label="Overview" />
           <Tab label="Funnels" />
           <Tab label="Cohorts" />
@@ -425,7 +419,6 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
             <Box>
               <Typography variant="h6" mb={2}>Event Breakdown</Typography>
               {renderEventBreakdown()}
-              
               {overview?.journey_stats && (
                 <Box mt={4}>
                   <Typography variant="h6" mb={2}>User Journey Insights</Typography>
@@ -471,7 +464,6 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
               )}
             </Box>
           )}
-          
           {activeTab === 1 && renderFunnelChart()}
           {activeTab === 2 && renderCohortAnalysis()}
           {activeTab === 3 && renderHeatmap()}
@@ -479,5 +471,5 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
         </CardContent>
       </Card>
     </Box>
-  );
-};
+  </>
+  )};`

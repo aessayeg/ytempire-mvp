@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Grid,
   Card,
@@ -25,11 +25,6 @@ import {
   ListItemSecondaryAction,
   Avatar,
   LinearProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Rating,
   Stepper,
   Step,
@@ -37,12 +32,10 @@ import {
   StepContent,
   Tabs,
   Tab,
-  Badge,
-  Tooltip,
   useTheme,
-  Divider,
-} from '@mui/material';
-import {
+  Divider
+ } from '@mui/material';
+import { 
   PlayCircle,
   Pause,
   FastForward,
@@ -51,97 +44,96 @@ import {
   CheckCircle,
   Warning,
   Error,
-  AccessTime,
   Mouse,
   TouchApp,
   Visibility,
-  VisibilityOff,
-  ThumbUp,
-  ThumbDown,
-  Comment,
-  Share,
   Timeline as TimelineIcon,
-  Assessment,
-  Psychology,
   EmojiEmotions,
   SentimentDissatisfied,
   SentimentNeutral,
   NavigateNext,
-  NavigateBefore,
   Person,
-  Groups,
-  TrendingUp,
-  TrendingDown,
-  Edit,
-  Delete,
-} from '@mui/icons-material';
-import { format, formatDuration } from 'date-fns';
+  Edit
+ } from '@mui/icons-material';
+import {  format  } from 'date-fns';
 
 interface SessionRecording {
-  id: string;
-  userId: string;
-  userName: string;
-  startTime: Date;
-  endTime: Date;
-  duration: number;
-  pages: string[];
-  actions: UserAction[];
-  painPoints: PainPoint[];
-  sentiment: 'positive' | 'neutral' | 'negative';
-  completionRate: number;
-  device: 'desktop' | 'mobile' | 'tablet';
-}
+  id: string,
+  userId: string,
+
+  userName: string,
+  startTime: Date,
+
+  endTime: Date,
+  duration: number,
+
+  pages: string[],
+  actions: UserAction[],
+
+  painPoints: PainPoint[],
+  sentiment: 'positive' | 'neutral' | 'negative',
+
+  completionRate: number,
+  device: 'desktop' | 'mobile' | 'tablet'}
 
 interface UserAction {
-  id: string;
-  timestamp: Date;
-  type: 'click' | 'scroll' | 'input' | 'navigation' | 'error' | 'rage_click' | 'dead_click';
-  element: string;
+  id: string,
+  timestamp: Date,
+
+  type: 'click' | 'scroll' | 'input' | 'navigation' | 'error' | 'rage_click' | 'dead_click',
+  element: string,
+
   page: string;
   value?: string;
   duration?: number;
   coordinates?: { x: number; y: number };
-  success: boolean;
-}
+  success: boolean}
 
 interface PainPoint {
-  id: string;
-  type: 'confusion' | 'frustration' | 'error' | 'abandonment' | 'slow_task';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  page: string;
-  element: string;
-  description: string;
-  timestamp: Date;
-  duration: number;
-  recommendation: string;
-  impactedUsers: number;
-}
+  id: string,
+  type: 'confusion' | 'frustration' | 'error' | 'abandonment' | 'slow_task',
+
+  severity: 'low' | 'medium' | 'high' | 'critical',
+  page: string,
+
+  element: string,
+  description: string,
+
+  timestamp: Date,
+  duration: number,
+
+  recommendation: string,
+  impactedUsers: number}
 
 interface JourneyStep {
-  id: string;
-  name: string;
-  expectedDuration: number;
-  actualDuration: number;
-  completionRate: number;
-  dropoffRate: number;
-  painPoints: number;
-  satisfaction: number;
-}
+  id: string,
+  name: string,
+
+  expectedDuration: number,
+  actualDuration: number,
+
+  completionRate: number,
+  dropoffRate: number,
+
+  painPoints: number,
+  satisfaction: number}
 
 interface WireframeImprovement {
-  id: string;
-  page: string;
-  component: string;
-  currentDesign: string;
-  proposedDesign: string;
-  reason: string;
-  impact: 'high' | 'medium' | 'low';
-  effort: 'high' | 'medium' | 'low';
-  status: 'pending' | 'in_progress' | 'completed' | 'tested';
-}
+  id: string,
+  page: string,
 
-export const BetaUserJourneyOptimizer: React.FC = () => {
-  const theme = useTheme();
+  component: string,
+  currentDesign: string,
+
+  proposedDesign: string,
+  reason: string,
+
+  impact: 'high' | 'medium' | 'low',
+  effort: 'high' | 'medium' | 'low',
+
+  status: 'pending' | 'in_progress' | 'completed' | 'tested'}
+
+export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme();
   const [selectedSession, setSelectedSession] = useState<SessionRecording | null>(null);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -156,106 +148,86 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
       id: '1',
       userId: 'beta_user_1',
       userName: 'John Doe',
-      startTime: new Date('2024-01-15T10:30:00'),
-      endTime: new Date('2024-01-15T10:45:00'),
+      startTime: new Date('2024-01-15 T10:30:00'),
+      endTime: new Date('2024-01-15 T10:45:00'),
       duration: 900,
       pages: ['/dashboard', '/videos/create', '/channels', '/analytics'],
-      actions: [
-        {
-          id: 'a1',
-          timestamp: new Date('2024-01-15T10:30:00'),
+      actions: [ {,
+  id: 'a1',
+          timestamp: new Date('2024-01-15 T10:30:00'),
           type: 'navigation',
           element: 'dashboard',
           page: '/dashboard',
-          success: true,
-        },
-        {
-          id: 'a2',
-          timestamp: new Date('2024-01-15T10:31:00'),
+          success: true },
+        { id: 'a2',
+          timestamp: new Date('2024-01-15 T10:31:00'),
           type: 'click',
           element: 'create_video_button',
           page: '/dashboard',
-          success: true,
-        },
-        {
-          id: 'a3',
-          timestamp: new Date('2024-01-15T10:32:00'),
+          success: true },
+        { id: 'a3',
+          timestamp: new Date('2024-01-15 T10:32:00'),
           type: 'rage_click',
           element: 'generate_script_button',
           page: '/videos/create',
-          success: false,
-        },
-        {
-          id: 'a4',
-          timestamp: new Date('2024-01-15T10:33:00'),
+          success: false },
+        { id: 'a4',
+          timestamp: new Date('2024-01-15 T10:33:00'),
           type: 'error',
           element: 'script_generation',
           page: '/videos/create',
-          success: false,
-        },
-      ],
-      painPoints: [
-        {
-          id: 'pp1',
+          success: false } ],
+      painPoints: [ { id: 'pp1',
           type: 'frustration',
           severity: 'high',
           page: '/videos/create',
           element: 'generate_script_button',
           description: 'User clicked multiple times on generate button with no response',
-          timestamp: new Date('2024-01-15T10:32:00'),
+          timestamp: new Date('2024-01-15 T10:32:00'),
           duration: 15,
           recommendation: 'Add loading indicator and disable button during processing',
-          impactedUsers: 12,
-        },
-        {
-          id: 'pp2',
+          impactedUsers: 12 },
+        { id: 'pp2',
           type: 'confusion',
           severity: 'medium',
           page: '/dashboard',
           element: 'metrics_section',
           description: 'User hovered over metrics without understanding what they mean',
-          timestamp: new Date('2024-01-15T10:30:30'),
+          timestamp: new Date('2024-01-15 T10:30:30'),
           duration: 8,
           recommendation: 'Add tooltips explaining each metric',
-          impactedUsers: 8,
-        },
-      ],
+          impactedUsers: 8 } ],
       sentiment: 'negative',
       completionRate: 65,
       device: 'desktop',
+
     },
-    {
-      id: '2',
+    { id: '2',
       userId: 'beta_user_2',
       userName: 'Jane Smith',
-      startTime: new Date('2024-01-15T11:00:00'),
-      endTime: new Date('2024-01-15T11:20:00'),
+      startTime: new Date('2024-01-15 T11:00:00'),
+      endTime: new Date('2024-01-15 T11:20:00'),
       duration: 1200,
       pages: ['/onboarding', '/dashboard', '/channels', '/videos/create', '/analytics'],
       actions: [],
-      painPoints: [
-        {
-          id: 'pp3',
+      painPoints: [{,
+  id: 'pp3',
           type: 'slow_task',
           severity: 'medium',
           page: '/channels',
           element: 'channel_setup',
           description: 'Channel connection took longer than expected',
-          timestamp: new Date('2024-01-15T11:05:00'),
+          timestamp: new Date('2024-01-15 T11:05:00'),
           duration: 45,
           recommendation: 'Optimize API calls and add progress indicator',
-          impactedUsers: 15,
-        },
-      ],
+          impactedUsers: 15 }],
       sentiment: 'positive',
       completionRate: 85,
       device: 'desktop',
-    },
-  ]);
 
-  const [painPointsSummary] = useState<PainPoint[]>([
-    {
-      id: 'pp_summary_1',
+    }]);
+
+  const [painPointsSummary] = useState<PainPoint[]>([ { id: 'pp_summary_1',
       type: 'frustration',
       severity: 'critical',
       page: '/videos/create',
@@ -264,10 +236,8 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
       timestamp: new Date(),
       duration: 0,
       recommendation: 'Implement proper error handling with actionable messages',
-      impactedUsers: 25,
-    },
-    {
-      id: 'pp_summary_2',
+      impactedUsers: 25 },
+    { id: 'pp_summary_2',
       type: 'confusion',
       severity: 'high',
       page: '/onboarding',
@@ -276,10 +246,8 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
       timestamp: new Date(),
       duration: 0,
       recommendation: 'Add step-by-step visual guide for authorization',
-      impactedUsers: 18,
-    },
-    {
-      id: 'pp_summary_3',
+      impactedUsers: 18 },
+    { id: 'pp_summary_3',
       type: 'abandonment',
       severity: 'high',
       page: '/analytics',
@@ -288,88 +256,68 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
       timestamp: new Date(),
       duration: 0,
       recommendation: 'Simplify initial view with progressive disclosure',
-      impactedUsers: 15,
-    },
-  ]);
+      impactedUsers: 15 } ]);
 
-  const [journeySteps] = useState<JourneyStep[]>([
-    {
-      id: 'step1',
+  const [journeySteps] = useState<JourneyStep[]>([ { id: 'step1',
       name: 'Sign Up & Onboarding',
       expectedDuration: 300,
       actualDuration: 480,
       completionRate: 92,
       dropoffRate: 8,
       painPoints: 3,
-      satisfaction: 3.5,
-    },
-    {
-      id: 'step2',
+      satisfaction: 3.5 },
+    { id: 'step2',
       name: 'Channel Connection',
       expectedDuration: 120,
       actualDuration: 240,
       completionRate: 85,
       dropoffRate: 15,
       painPoints: 5,
-      satisfaction: 3.0,
-    },
-    {
-      id: 'step3',
+      satisfaction: 3.0 },
+    { id: 'step3',
       name: 'First Video Creation',
       expectedDuration: 600,
       actualDuration: 900,
       completionRate: 72,
       dropoffRate: 28,
       painPoints: 8,
-      satisfaction: 2.8,
-    },
-    {
-      id: 'step4',
+      satisfaction: 2.8 },
+    { id: 'step4',
       name: 'Video Publishing',
       expectedDuration: 180,
       actualDuration: 200,
       completionRate: 95,
       dropoffRate: 5,
       painPoints: 1,
-      satisfaction: 4.2,
-    },
-    {
-      id: 'step5',
+      satisfaction: 4.2 },
+    { id: 'step5',
       name: 'Analytics Review',
       expectedDuration: 300,
       actualDuration: 180,
       completionRate: 88,
       dropoffRate: 12,
       painPoints: 4,
-      satisfaction: 3.8,
-    },
-  ]);
+      satisfaction: 3.8 } ]);
 
-  const [wireframeImprovements] = useState<WireframeImprovement[]>([
-    {
-      id: 'wi1',
+  const [wireframeImprovements] = useState<WireframeImprovement[]>([ { id: 'wi1',
       page: '/videos/create',
       component: 'Script Generation Button',
       currentDesign: 'Single button with no feedback',
-      proposedDesign: 'Button with loading state, progress indicator, and disable on click',
+      proposedDesign: 'Button with loading, state, progress, indicator, and disable on click',
       reason: 'Users clicking multiple times due to no feedback',
       impact: 'high',
       effort: 'low',
-      status: 'in_progress',
-    },
-    {
-      id: 'wi2',
+      status: 'in_progress' },
+    { id: 'wi2',
       page: '/dashboard',
       component: 'Metrics Cards',
       currentDesign: 'Numbers only without context',
-      proposedDesign: 'Add tooltips, trend indicators, and comparison to previous period',
+      proposedDesign: 'Add, tooltips, trend, indicators, and comparison to previous period',
       reason: 'Users confused about metric meanings',
       impact: 'medium',
       effort: 'low',
-      status: 'pending',
-    },
-    {
-      id: 'wi3',
+      status: 'pending' },
+    { id: 'wi3',
       page: '/onboarding',
       component: 'Channel Authorization',
       currentDesign: 'Text instructions only',
@@ -377,10 +325,8 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
       reason: 'High dropout rate during authorization',
       impact: 'high',
       effort: 'medium',
-      status: 'pending',
-    },
-    {
-      id: 'wi4',
+      status: 'pending' },
+    { id: 'wi4',
       page: '/analytics',
       component: 'Initial View',
       currentDesign: 'All charts visible at once',
@@ -388,9 +334,7 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
       reason: 'Information overload causing abandonment',
       impact: 'high',
       effort: 'medium',
-      status: 'tested',
-    },
-  ]);
+      status: 'tested' } ]);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -398,16 +342,14 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
       case 'high': return theme.palette.warning.main;
       case 'medium': return theme.palette.info.main;
       case 'low': return theme.palette.success.main;
-      default: return theme.palette.grey[500];
-    }
+      default: return theme.palette.grey[500]}
   };
 
   const getSentimentIcon = (sentiment: string) => {
     switch (sentiment) {
       case 'positive': return <EmojiEmotions color="success" />;
       case 'negative': return <SentimentDissatisfied color="error" />;
-      default: return <SentimentNeutral color="action" />;
-    }
+      default: return <SentimentNeutral color="action" />}
   };
 
   const getActionIcon = (type: string) => {
@@ -416,8 +358,7 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
       case 'rage_click': return <Warning color="error" />;
       case 'error': return <Error color="error" />;
       case 'navigation': return <NavigateNext />;
-      default: return <TouchApp />;
-    }
+      default: return <TouchApp />}
   };
 
   const renderSessionRecordings = () => (
@@ -433,7 +374,7 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
                   key={session.id}
                   button
                   selected={selectedSession?.id === session.id}
-                  onClick={() => setSelectedSession(session)}
+                  onClick={() => setSelectedSession(session}
                 >
                   <ListItemIcon>
                     <Avatar>
@@ -473,17 +414,17 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
         {selectedSession ? (
           <Card>
             <CardHeader
-              title={`Session: ${selectedSession.userName}`}
+              title={`Session: ${selectedSession.userName}`}`
               subheader={`${format(selectedSession.startTime, 'PPP')} • ${selectedSession.device}`}
               action={
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  <IconButton onClick={() => setPlaybackSpeed(0.5)}>
+                  <IconButton onClick={() => setPlaybackSpeed(0.5}>
                     <FastRewind />
                   </IconButton>
-                  <IconButton onClick={() => setIsPlaying(!isPlaying)}>
-                    {isPlaying ? <Pause /> : <PlayCircle />}
+                  <IconButton onClick={() => setIsPlaying(!isPlaying}>
+                    {isPlaying ? <Pause /> </>: <PlayCircle />}
                   </IconButton>
-                  <IconButton onClick={() => setPlaybackSpeed(2)}>
+                  <IconButton onClick={() => setPlaybackSpeed(2}>
                     <FastForward />
                   </IconButton>
                 </Box>
@@ -582,10 +523,9 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
                       <Chip
                         label={painPoint.type.replace('_', ' ').toUpperCase()}
                         size="small"
-                        sx={{
+                        sx={ {
                           backgroundColor: getSeverityColor(painPoint.severity),
-                          color: 'white',
-                        }}
+                          color: 'white' }}
                       />
                       <Chip
                         label={`${painPoint.impactedUsers} users affected`}
@@ -766,12 +706,12 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
   );
 
   return (
-    <Box>
+    <>
+      <Box>
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         Beta User Journey Optimization
       </Typography>
-      
-      <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ mb: 3 }}>
+      <Tabs value={tabValue} onChange={(_, v) => setTabValue(v} sx={{ mb: 3 }>
         <Tab label="Session Recordings" />
         <Tab label="Pain Points" />
         <Tab label="Wireframe Improvements" />
@@ -781,5 +721,5 @@ export const BetaUserJourneyOptimizer: React.FC = () => {
       {tabValue === 1 && renderPainPoints()}
       {tabValue === 2 && renderWireframeImprovements()}
     </Box>
-  );
-};
+  </>
+  )};`

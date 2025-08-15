@@ -3,13 +3,11 @@
  * P0 Task: Dashboard Implementation with real-time updates
  */
 import React, { useEffect, useState, useCallback } from 'react';
-import {
+import { 
   Box,
   Grid,
   Paper,
   Typography,
-  Card,
-  CardContent,
   LinearProgress,
   Chip,
   Alert,
@@ -20,84 +18,80 @@ import {
   ListItemAvatar,
   ListItemText,
   Divider,
-  CircularProgress,
-} from '@mui/material';
-import {
+  CircularProgress
+ } from '@mui/material';
+import { 
   TrendingUp,
   VideoLibrary,
   AttachMoney,
-  People,
   Schedule,
-  Refresh,
   CheckCircle,
   Warning,
-  Error as ErrorIcon,
   PlayCircle,
-  Pause,
-  Stop,
-  FiberManualRecord,
-} from '@mui/icons-material';
-import { useTheme } from '@mui/material/styles';
-import {
+  FiberManualRecord
+ } from '@mui/icons-material';
+import {  useTheme  } from '@mui/material/styles';
+import { 
   LineChart,
   Line,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip as RechartsTooltip,
   Legend,
-  ResponsiveContainer,
-} from 'recharts';
+  ResponsiveContainer
+ } from 'recharts';
 
-import { useDashboardWebSocket, useMetricsWebSocket } from '../../hooks/useWebSocket';
-import { useAuthStore } from '../../stores/authStore';
-import { DashboardHeader } from '../../components/Dashboard/DashboardHeader';
-import { MetricCard } from '../../components/Dashboard/MetricCard';
-import { api } from '../../services/api';
+import {  useDashboardWebSocket, useMetricsWebSocket  } from '../../hooks/useWebSocket';
+import {  useAuthStore  } from '../../stores/authStore';
+import {  DashboardHeader  } from '../../components/Dashboard/DashboardHeader';
+import {  MetricCard  } from '../../components/Dashboard/MetricCard';
+import {  api  } from '../../services/api';
 
 interface RealTimeMetrics {
-  totalVideos: number;
-  totalViews: number;
-  totalRevenue: number;
-  totalCosts: number;
-  activeChannels: number;
-  queuedVideos: number;
-  processingVideos: number;
-  completedToday: number;
-  averageCostPerVideo: number;
-  engagementRate: number;
-  activeGenerations: Array<{
-    videoId: string;
-    channelId: string;
-    phase: string;
-    progress: number;
-    startTime: string;
-    estimatedCompletion: string;
-  }>;
-  recentCosts: Array<{
-    service: string;
-    amount: number;
-    timestamp: string;
-  }>;
-  quotaStatus: {
-    used: number;
-    total: number;
-    percentage: number;
-  };
+  totalVideos: number,
+  totalViews: number,
+
+  totalRevenue: number,
+  totalCosts: number,
+
+  activeChannels: number,
+  queuedVideos: number,
+
+  processingVideos: number,
+  completedToday: number,
+
+  averageCostPerVideo: number,
+  engagementRate: number,
+
+  activeGenerations: Array<{,
+  videoId: string,
+
+    channelId: string,
+  phase: string,
+
+    progress: number,
+  startTime: string,
+
+    estimatedCompletion: string}>;
+  recentCosts: Array<{,
+  service: string,
+
+    amount: number,
+  timestamp: string}>;
+  quotaStatus: {,
+  used: number,
+
+    total: number,
+  percentage: number};
 }
 
 interface VideoGenerationStatus {
-  videoId: string;
-  phase: string;
-  progress: number;
-  currentCost: number;
+  videoId: string,
+  phase: string,
+
+  progress: number,
+  currentCost: number,
+
   estimatedTime: string;
   quality?: number;
 }
@@ -123,60 +117,50 @@ export const DashboardRealtime: React.FC = () => {
     engagementRate: 0,
     activeGenerations: [],
     recentCosts: [],
-    quotaStatus: { used: 0, total: 150000, percentage: 0 },
+    quotaStatus: { used: 0, total: 150000, percentage: 0 }
   });
   
   const [videoGenerations, setVideoGenerations] = useState<VideoGenerationStatus[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [chartData, setChartData] = useState<any>({
-    views: [],
+  const [chartData, setChartData] = useState<any>({ views: [],
     costs: [],
-    revenue: [],
-  });
+    revenue: [] });
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   // Fetch initial metrics
   useEffect(() => {
-    fetchInitialMetrics();
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
+    fetchInitialMetrics()}, []); // eslint-disable-line react-hooks/exhaustive-deps // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle WebSocket messages
   useEffect(() => {
     if (dashboardWs.lastMessage) {
-      handleWebSocketMessage(dashboardWs.lastMessage);
-    }
-  }, [dashboardWs.lastMessage]);
+      handleWebSocketMessage(dashboardWs.lastMessage)}
+  }, [dashboardWs.lastMessage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (metricsWs.lastMessage) {
-      handleMetricsUpdate(metricsWs.lastMessage);
-    }
-  }, [metricsWs.lastMessage]);
+      handleMetricsUpdate(metricsWs.lastMessage)}
+  }, [metricsWs.lastMessage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Subscribe to specific WebSocket events
   useEffect(() => {
     const unsubscribeVideoUpdate = dashboardWs.subscribe('video-update', (data) => {
-      handleVideoUpdate(data);
-    });
+      handleVideoUpdate(data)});
 
-    const unsubscribeCostUpdate = dashboardWs.subscribe('cost-update', (data) => {
-      handleCostUpdate(data);
-    });
+    const unsubscribeCostUpdate = dashboardWs.subscribe(_'cost-update', (data) => {
+      handleCostUpdate(data)});
 
-    const unsubscribeGenerationStatus = dashboardWs.subscribe('generation-status', (data) => {
-      handleGenerationStatus(data);
-    });
+    const unsubscribeGenerationStatus = dashboardWs.subscribe(_'generation-status', (data) => {
+      handleGenerationStatus(data)});
 
     return () => {
+    
       unsubscribeVideoUpdate?.();
       unsubscribeCostUpdate?.();
-      unsubscribeGenerationStatus?.();
-    };
-  }, [dashboardWs]);
+      unsubscribeGenerationStatus?.()}, [dashboardWs]);
 
-  const fetchInitialMetrics = async () => {
-    setLoading(true);
+  const fetchInitialMetrics = async () => { setLoading(true);
     try {
       // Fetch dashboard metrics
       const response = await api.get('/dashboard/metrics');
@@ -195,50 +179,37 @@ export const DashboardRealtime: React.FC = () => {
             phase: phase as string,
             progress: calculateProgressFromPhase(phase as string),
             currentCost: 0,
-            estimatedTime: '5 min',
-          })
+            estimatedTime: '5 min' })
         );
-        setVideoGenerations(generations);
-      }
+        setVideoGenerations(generations)}
       
-      setLastUpdated(new Date());
-    } catch (_error) {
-      console.error('Failed to fetch metrics:', error);
-    } finally {
-      setLoading(false);
-    }
+      setLastUpdated(new Date())} catch (_) {
+      console.error('Failed to fetch, metrics:', error)} finally {
+      setLoading(false)}
   };
 
-  const handleWebSocketMessage = (message: unknown) => {
-    console.log('Dashboard WebSocket message:', message);
+  const handleWebSocketMessage = (message: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('Dashboard WebSocket, message:', message);
     
     if (message.type === 'metrics-update') {
-      setMetrics(prev => ({ ...prev, ...message.data }));
-    } else if (message.type === 'notification') {
-      setNotifications(prev => [message, ...prev].slice(0, 10));
-    }
+      setMetrics(prev => ({ ...prev, ...message.data }))} else if (message.type === 'notification') {
+      setNotifications(prev => [message, ...prev].slice(0, 10))}
     
-    setLastUpdated(new Date());
-  };
+    setLastUpdated(new Date())};
 
   const handleMetricsUpdate = (data: unknown) => {
     if (data.metrics) {
-      setMetrics(prev => ({ ...prev, ...data.metrics }));
-    }
+      setMetrics(prev => ({ ...prev, ...data.metrics }))}
     if (data.chartData) {
-      setChartData(prev => ({ ...prev, ...data.chartData }));
-    }
+      setChartData(prev => ({ ...prev, ...data.chartData }))}
   };
 
-  const handleVideoUpdate = (data: unknown) => {
-    setMetrics(prev => ({
+  const handleVideoUpdate = (data: unknown) => { setMetrics(prev => ({
       ...prev,
       totalVideos: prev.totalVideos + (data.increment || 0),
       processingVideos: data.processingCount || prev.processingVideos,
       queuedVideos: data.queuedCount || prev.queuedVideos,
-      completedToday: data.completedToday || prev.completedToday,
-    }));
-  };
+      completedToday: data.completedToday || prev.completedToday }))};
 
   const handleCostUpdate = (data: unknown) => {
     setMetrics(prev => ({
@@ -248,31 +219,28 @@ export const DashboardRealtime: React.FC = () => {
         { 
           service: data.service, 
           amount: data.amount, 
-          timestamp: new Date().toISOString() 
+          timestamp: new Date().toISOString(),
+
         },
         ...prev.recentCosts
-      ].slice(0, 10),
-    }));
-  };
+      ].slice(0, 10)
+    }))};
 
   const handleGenerationStatus = (data: unknown) => {
     setVideoGenerations(prev => {
       const existing = prev.find(g => g.videoId === data.videoId);
       if (existing) {
-        return prev.map(g => 
+        return prev.map(g => {}
           g.videoId === data.videoId 
             ? { ...g, ...data } 
             : g
-        );
-      } else {
+        )} else {
         return [...prev, data];
       }
-    });
-  };
+    })};
 
   const calculateProgressFromPhase = (phase: string): number => {
-    const phaseProgress: { [key: string]: number } = {
-      'initialization': 5,
+    const phaseProgress: { [key: string]: number } = { 'initialization': 5,
       'trend_analysis': 15,
       'script_generation': 30,
       'voice_synthesis': 45,
@@ -280,8 +248,7 @@ export const DashboardRealtime: React.FC = () => {
       'video_assembly': 75,
       'quality_check': 85,
       'publishing': 95,
-      'completed': 100,
-    };
+      'completed': 100 };
     return phaseProgress[phase] || 0;
   };
 
@@ -292,30 +259,27 @@ export const DashboardRealtime: React.FC = () => {
     return theme.palette.info.main;
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+  const formatCurrency = (_value: number) => { return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  };
+      maximumFractionDigits: 2 }).format(value)};
 
   const formatNumber = (value: number) => {
     if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(1)}M`;
-    } else if (value >= 1000) {
-      return `${(value / 1000).toFixed(1)}K`;
+      return `${(value / 1000000.toFixed(1)}M`;
+    } else if (value >= 1000) {`
+      return `${(value / 1000.toFixed(1)}K`;
     }
-    return value.toString();
-  };
+    return value.toString()};
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
+    <>
+      <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Header with WebSocket Status */}
       <DashboardHeader
-        title="Real-time Dashboard"
-        subtitle={`Welcome back, ${user?.name || 'User'}`}
+        title="Real-time Dashboard"`
+        subtitle={`Welcome, back, ${user?.name || 'User'}`}
         lastUpdated={lastUpdated}
         onRefresh={fetchInitialMetrics}
         loading={loading}
@@ -344,28 +308,27 @@ export const DashboardRealtime: React.FC = () => {
           icon={<Warning />}
           sx={{ mb: 3 }}
         >
-          Cost ratio high: {((metrics.totalCosts / metrics.totalRevenue) * 100).toFixed(1)}% of revenue
+          Cost ratio, high: {((metrics.totalCosts / metrics.totalRevenue) * 100).toFixed(1)}% of revenue
         </Alert>
       )}
-
       {/* Real-time Metrics Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
           <MetricCard
             title="Videos Today"
             value={metrics.completedToday}
-            icon={<VideoLibrary />}
+            icon={<VideoLibrary />}`
             trend={metrics.processingVideos > 0 ? `+${metrics.processingVideos} processing` : ''}
             trendDirection="up"
-            color="#8884d8"
+            color="#8884 d8"
             realtime
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+      <Grid item xs={12} sm={6} md={3}>
           <MetricCard
             title="Live Cost"
             value={formatCurrency(metrics.totalCosts)}
-            icon={<AttachMoney />}
+            icon={<AttachMoney />}`
             trend={`Avg: ${formatCurrency(metrics.averageCostPerVideo)}/video`}
             trendDirection={metrics.averageCostPerVideo < 3 ? 'down' : 'up'}
             color={metrics.averageCostPerVideo < 3 ? '#82ca9d' : '#ff7c7c'}
@@ -376,7 +339,7 @@ export const DashboardRealtime: React.FC = () => {
           <MetricCard
             title="Queue Status"
             value={metrics.queuedVideos}
-            icon={<Schedule />}
+            icon={<Schedule />}`
             trend={`${metrics.processingVideos} processing`}
             color="#ffc658"
             realtime
@@ -384,9 +347,9 @@ export const DashboardRealtime: React.FC = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <MetricCard
-            title="API Quota"
+            title="API Quota"`
             value={`${metrics.quotaStatus.percentage.toFixed(1)}%`}
-            icon={<TrendingUp />}
+            icon={<TrendingUp />}`
             trend={`${formatNumber(metrics.quotaStatus.used)}/${formatNumber(metrics.quotaStatus.total)}`}
             trendDirection={metrics.quotaStatus.percentage > 80 ? 'up' : 'down'}
             color={metrics.quotaStatus.percentage > 80 ? '#ff7c7c' : '#82ca9d'}
@@ -407,7 +370,7 @@ export const DashboardRealtime: React.FC = () => {
                 <ListItem>
                   <ListItemAvatar>
                     <Avatar sx={{ bgcolor: getPhaseColor(generation.phase) }}>
-                      {generation.progress < 100 ? <PlayCircle /> : <CheckCircle />}
+                      {generation.progress < 100 ? <PlayCircle /> </>: <CheckCircle />}
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
@@ -417,7 +380,7 @@ export const DashboardRealtime: React.FC = () => {
                           {generation.videoId}
                         </Typography>
                         <Chip 
-                          label={generation.phase.replace('_', ' ')} 
+                          label={generation.phase.replace('_', ' ')}
                           size="small" 
                           color={generation.progress === 100 ? 'success' : 'primary'}
                         />
@@ -452,7 +415,6 @@ export const DashboardRealtime: React.FC = () => {
           </List>
         </Paper>
       )}
-
       {/* Real-time Cost Breakdown */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} md={6}>
@@ -499,7 +461,7 @@ export const DashboardRealtime: React.FC = () => {
                                'success.main' 
                     }}>
                       {notif.severity === 'error' ? <ErrorIcon /> : 
-                       notif.severity === 'warning' ? <Warning /> : 
+                       notif.severity === 'warning' ? <Warning /> </>: 
                        <CheckCircle />}
                     </Avatar>
                   </ListItemAvatar>
@@ -531,7 +493,7 @@ export const DashboardRealtime: React.FC = () => {
                 <Line 
                   type="monotone" 
                   dataKey="views" 
-                  stroke="#8884d8" 
+                  stroke="#8884 d8" 
                   strokeWidth={2}
                   dot={false}
                   isAnimationActive={true}
@@ -539,7 +501,7 @@ export const DashboardRealtime: React.FC = () => {
                 <Line 
                   type="monotone" 
                   dataKey="engagement" 
-                  stroke="#82ca9d" 
+                  stroke="#82 ca9 d" 
                   strokeWidth={2}
                   dot={false}
                   isAnimationActive={true}
@@ -547,7 +509,7 @@ export const DashboardRealtime: React.FC = () => {
                 <Line 
                   type="monotone" 
                   dataKey="cost" 
-                  stroke="#ff7c7c" 
+                  stroke="#ff7 c7 c" 
                   strokeWidth={2}
                   dot={false}
                   isAnimationActive={true}
@@ -558,5 +520,5 @@ export const DashboardRealtime: React.FC = () => {
         </Grid>
       </Grid>
     </Box>
-  );
-};
+  </>
+  )};`

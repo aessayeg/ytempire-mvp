@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
+import { 
   Box,
   Grid,
   Card,
@@ -11,11 +11,6 @@ import {
   Alert,
   Button,
   IconButton,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
   Paper,
   Stepper,
   Step,
@@ -23,75 +18,70 @@ import {
   StepContent,
   Collapse,
   Avatar,
-  Badge,
-  Tooltip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   useTheme,
   Divider,
-} from '@mui/material';
-import {
+  TextField
+ } from '@mui/material';
+import { 
   PlayCircle,
   Pause,
-  Stop,
   CheckCircle,
   Error,
-  Warning,
-  Schedule,
-  CloudQueue,
   Movie,
   Mic,
   Image,
   TextFields,
   Upload,
-  Analytics,
   Cancel,
-  Refresh,
   ExpandMore,
   ExpandLess,
   Speed,
   Timer,
   AttachMoney,
   Memory,
-  Storage,
   TrendingUp,
-  VideoCall,
-  AutoFixHigh,
-  BugReport,
-} from '@mui/icons-material';
-import { format, formatDistanceToNow, addMinutes } from 'date-fns';
-import { AnimatePresence, motion } from 'framer-motion';
+  VideoCall
+ } from '@mui/icons-material';
+import {  format, formatDistanceToNow, addMinutes  } from 'date-fns';
+import {  motion  } from 'framer-motion';
 
 interface VideoGenerationTask {
-  id: string;
-  title: string;
-  channelId: string;
-  channelName: string;
-  status: 'queued' | 'processing' | 'completed' | 'failed' | 'paused';
-  currentStep: number;
-  totalSteps: number;
-  progress: number;
-  startTime: Date;
-  estimatedCompletion: Date;
-  steps: GenerationStep[];
-  metrics: {
-    costSoFar: number;
-    estimatedTotalCost: number;
-    processingTime: number;
-    gpuUsage: number;
-    memoryUsage: number;
-  };
+  id: string,
+  title: string,
+
+  channelId: string,
+  channelName: string,
+
+  status: 'queued' | 'processing' | 'completed' | 'failed' | 'paused',
+  currentStep: number,
+
+  totalSteps: number,
+  progress: number,
+
+  startTime: Date,
+  estimatedCompletion: Date,
+
+  steps: GenerationStep[],
+  metrics: {,
+
+    costSoFar: number,
+  estimatedTotalCost: number,
+
+    processingTime: number,
+  gpuUsage: number,
+
+    memoryUsage: number};
   errors?: string[];
   warnings?: string[];
 }
 
 interface GenerationStep {
-  id: string;
-  name: string;
-  description: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'skipped';
+  id: string,
+  name: string,
+
+  description: string,
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'skipped',
+
   progress: number;
   startTime?: Date;
   endTime?: Date;
@@ -103,61 +93,43 @@ interface GenerationStep {
   maxRetries?: number;
 }
 
-const generationSteps: GenerationStep[] = [
-  {
-    id: 'analyze',
+const generationSteps: GenerationStep[] = [ { id: 'analyze',
     name: 'Trend Analysis',
     description: 'Analyzing trending topics and keywords',
     status: 'pending',
-    progress: 0,
-  },
-  {
-    id: 'script',
+    progress: 0 },
+  { id: 'script',
     name: 'Script Generation',
     description: 'Creating optimized script with AI',
     status: 'pending',
-    progress: 0,
-  },
-  {
-    id: 'voice',
+    progress: 0 },
+  { id: 'voice',
     name: 'Voice Synthesis',
     description: 'Converting script to natural speech',
     status: 'pending',
-    progress: 0,
-  },
-  {
-    id: 'visuals',
+    progress: 0 },
+  { id: 'visuals',
     name: 'Visual Generation',
     description: 'Creating thumbnail and visual assets',
     status: 'pending',
-    progress: 0,
-  },
-  {
-    id: 'render',
+    progress: 0 },
+  { id: 'render',
     name: 'Video Rendering',
     description: 'Assembling final video file',
     status: 'pending',
-    progress: 0,
-  },
-  {
-    id: 'quality',
+    progress: 0 },
+  { id: 'quality',
     name: 'Quality Check',
     description: 'Validating content quality and compliance',
     status: 'pending',
-    progress: 0,
-  },
-  {
-    id: 'upload',
+    progress: 0 },
+  { id: 'upload',
     name: 'YouTube Upload',
     description: 'Publishing to YouTube channel',
     status: 'pending',
-    progress: 0,
-  },
-];
+    progress: 0 } ];
 
-export const LiveVideoGenerationMonitor: React.FC = () => {
-  const theme = useTheme();
-  const [tasks, setTasks] = useState<VideoGenerationTask[]>([]);
+export const LiveVideoGenerationMonitor: React.FC = () => { const [tasks, setTasks] = useState<VideoGenerationTask[]>([]);
   const [selectedTask, setSelectedTask] = useState<VideoGenerationTask | null>(null);
   const [expandedTasks, setExpandedTasks] = useState<string[]>([]);
   const [detailsDialog, setDetailsDialog] = useState(false);
@@ -169,14 +141,11 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
     avgProcessingTime: 8.5,
     totalCostToday: 127.50,
     gpuUtilization: 75,
-    memoryUsage: 62,
-  });
+    memoryUsage: 62 });
   const intervalRef = useRef<NodeJS.Timeout>();
 
-  useEffect(() => {
-    // Initialize with mock data
-    setTasks([
-      {
+  useEffect(() => { // Initialize with mock data
+    setTasks([ {
         id: '1',
         title: '10 AI Tools That Will Change Your Life',
         channelId: 'ch1',
@@ -190,18 +159,14 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
         steps: generationSteps.map((step, index) => ({
           ...step,
           status: index < 3 ? 'completed' : index === 3 ? 'processing' : 'pending',
-          progress: index < 3 ? 100 : index === 3 ? 60 : 0,
-        })),
-        metrics: {
-          costSoFar: 0.45,
+          progress: index < 3 ? 100 : index === 3 ? 60 : 0 })),
+        metrics: { costSoFar: 0.45,
           estimatedTotalCost: 1.20,
           processingTime: 300,
           gpuUsage: 82,
-          memoryUsage: 4096,
-        },
+          memoryUsage: 4096 }
       },
-      {
-        id: '2',
+      { id: '2',
         title: 'Quantum Computing Explained Simply',
         channelId: 'ch2',
         channelName: 'Science Daily',
@@ -214,15 +179,12 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
         steps: generationSteps.map((step, index) => ({
           ...step,
           status: index === 0 ? 'processing' : 'pending',
-          progress: index === 0 ? 75 : 0,
-        })),
-        metrics: {
-          costSoFar: 0.12,
+          progress: index === 0 ? 75 : 0 })),
+        metrics: { costSoFar: 0.12,
           estimatedTotalCost: 1.15,
           processingTime: 120,
           gpuUsage: 45,
-          memoryUsage: 2048,
-        },
+          memoryUsage: 2048 }
       },
       {
         id: '3',
@@ -236,15 +198,12 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
         startTime: new Date(),
         estimatedCompletion: addMinutes(new Date(), 12),
         steps: generationSteps.map(step => ({ ...step })),
-        metrics: {
-          costSoFar: 0,
+        metrics: { costSoFar: 0,
           estimatedTotalCost: 1.10,
           processingTime: 0,
           gpuUsage: 0,
-          memoryUsage: 0,
-        },
-      },
-    ]);
+          memoryUsage: 0 }
+      } ]);
 
     // Simulate real-time updates
     intervalRef.current = setInterval(() => {
@@ -268,58 +227,49 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
             }
           }
 
-          return {
-            ...task,
+          return { ...task,
             progress: newProgress,
             currentStep: updatedSteps.filter(s => s.status === 'completed').length + 1,
             steps: updatedSteps,
             metrics: {
               ...task.metrics,
               costSoFar: task.metrics.costSoFar + Math.random() * 0.01,
-              processingTime: task.metrics.processingTime + 1,
-            },
+              processingTime: task.metrics.processingTime + 1 },
             status: newProgress >= 100 ? 'completed' : 'processing',
+
           };
         }
-        return task;
-      }));
-    }, 1000);
+        return task}))}, 1000);
 
     return () => {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+        clearInterval(intervalRef.current)}
     };
   }, []);
 
   const handleToggleExpand = (taskId: string) => {
-    setExpandedTasks(prev =>
+    setExpandedTasks(prev => {}
       prev.includes(taskId)
         ? prev.filter(id => id !== taskId)
         : [...prev, taskId]
-    );
-  };
+    )};
 
   const handlePauseTask = (taskId: string) => {
-    setTasks(prev => prev.map(task =>
+    setTasks(prev => prev.map(task => {}
       task.id === taskId ? { ...task, status: 'paused' } : task
-    ));
-  };
+    ))};
 
   const handleResumeTask = (taskId: string) => {
-    setTasks(prev => prev.map(task =>
+    setTasks(prev => prev.map(task => {}
       task.id === taskId ? { ...task, status: 'processing' } : task
-    ));
-  };
+    ))};
 
   const handleCancelTask = (taskId: string) => {
-    setTasks(prev => prev.filter(task => task.id !== taskId));
-  };
+    setTasks(prev => prev.filter(task => task.id !== taskId))};
 
   const handleRetryStep = (taskId: string, stepId: string) => {
     // Retry logic
-    console.log('Retrying step', stepId, 'for task', taskId);
-  };
+    console.log('Retrying step', stepId, 'for task', taskId)};
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -328,8 +278,7 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
       case 'failed': return 'error';
       case 'paused': return 'warning';
       case 'queued': return 'default';
-      default: return 'default';
-    }
+      default: return 'default'}
   };
 
   const getStepIcon = (stepId: string) => {
@@ -341,14 +290,14 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
       case 'render': return <Movie />;
       case 'quality': return <CheckCircle />;
       case 'upload': return <Upload />;
-      default: return <PlayCircle />;
-    }
+      default: return <PlayCircle />}
   };
 
   const renderTaskCard = (task: VideoGenerationTask) => {
     const isExpanded = expandedTasks.includes(task.id);
 
     return (
+    <>
       <Card key={task.id} sx={{ mb: 2 }}>
         <CardContent>
           {/* Task Header */}
@@ -356,7 +305,7 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
             <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
               <VideoCall />
             </Avatar>
-            <Box sx={{ flex: 1 }}>
+      <Box sx={{ flex: 1 }}>
               <Typography variant="subtitle1" fontWeight="bold">
                 {task.title}
               </Typography>
@@ -376,23 +325,23 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
               {task.status === 'processing' && (
-                <IconButton size="small" onClick={() => handlePauseTask(task.id)}>
+                <IconButton size="small" onClick={() => handlePauseTask(task.id}>
                   <Pause />
                 </IconButton>
               )}
               {task.status === 'paused' && (
-                <IconButton size="small" onClick={() => handleResumeTask(task.id)}>
+                <IconButton size="small" onClick={() => handleResumeTask(task.id}>
                   <PlayCircle />
                 </IconButton>
               )}
-              <IconButton size="small" onClick={() => handleCancelTask(task.id)}>
+              <IconButton size="small" onClick={() => handleCancelTask(task.id}>
                 <Cancel />
               </IconButton>
               <IconButton
                 size="small"
-                onClick={() => handleToggleExpand(task.id)}
+                onClick={() => handleToggleExpand(task.id}
               >
-                {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                {isExpanded ? <ExpandLess /> </>: <ExpandMore />}
               </IconButton>
             </Box>
           </Box>
@@ -463,7 +412,7 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
                     Memory
                   </Typography>
                   <Typography variant="body2" fontWeight="bold">
-                    {(task.metrics.memoryUsage / 1024).toFixed(1)} GB
+                    {task.metrics.memoryUsage / 1024).toFixed(1} GB
                   </Typography>
                 </Box>
               </Box>
@@ -514,7 +463,7 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
                         {step.error}
                         <Button
                           size="small"
-                          onClick={() => handleRetryStep(task.id, step.id)}
+                          onClick={() => handleRetryStep(task.id, step.id}
                           sx={{ ml: 1 }}
                         >
                           Retry
@@ -528,11 +477,12 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
           </Collapse>
         </CardContent>
       </Card>
-    );
-  };
+    </>
+  )};
 
   return (
-    <Box>
+    <>
+      <Box>
       {/* System Metrics */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={6} sm={3}>
@@ -540,7 +490,7 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
             <Typography variant="h4" fontWeight="bold" color="primary">
               {systemMetrics.activeJobs}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="text.secondary">
               Active Jobs
             </Typography>
           </Paper>
@@ -624,5 +574,5 @@ export const LiveVideoGenerationMonitor: React.FC = () => {
       </Typography>
       {tasks.map(renderTaskCard)}
     </Box>
-  );
-};
+  </>
+  )};

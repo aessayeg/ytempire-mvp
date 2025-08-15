@@ -4,19 +4,14 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import {
+import { 
   Box,
   Grid,
   Paper,
   Typography,
   Card,
   CardContent,
-  CardHeader,
   IconButton,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Skeleton,
   Tooltip,
   Chip,
@@ -25,15 +20,14 @@ import {
   Alert,
   LinearProgress,
   Tab,
-  Tabs,
-} from '@mui/material';
-import {
+  Tabs
+ } from '@mui/material';
+import { 
   TrendingUp,
   TrendingDown,
   TrendingFlat,
   Refresh,
   Download,
-  Info,
   AttachMoney,
   Visibility,
   ThumbUp,
@@ -43,21 +37,14 @@ import {
   Warning,
   CheckCircle,
   Error,
-  MoreVert,
-  DateRange,
-  Assessment,
-  Timeline,
-} from '@mui/icons-material';
-import {
+  Timeline
+ } from '@mui/icons-material';
+import { 
   LineChart,
   Line,
   AreaChart,
   Area,
-  BarChart,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -66,44 +53,47 @@ import {
   ResponsiveContainer,
   RadialBarChart,
   RadialBar,
-  ComposedChart,
-} from 'recharts';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
-import { useOptimizedStore } from '../../stores/optimizedStore';
-import { useAnalyticsUpdates } from '../../hooks/useWebSocket';
-import { api } from '../../services/api';
+  ComposedChart
+ } from 'recharts';
+import {  format, subDays  } from 'date-fns';
+import {  useOptimizedStore  } from '../../stores/optimizedStore';
+import {  useAnalyticsUpdates  } from '../../hooks/useWebSocket';
+import {  api  } from '../../services/api';
 
 // Types
 interface MetricCard {
-  title: string;
-  value: number | string;
-  change: number;
-  trend: 'up' | 'down' | 'flat';
-  icon: React.ReactNode;
+  title: string,
+  value: number | string,
+
+  change: number,
+  trend: 'up' | 'down' | 'flat',
+
+  icon: React.ReactNode,
   color: string;
   suffix?: string;
   prefix?: string;
 }
 
 interface ChartData {
-  date: string;
-  views: number;
-  revenue: number;
-  subscribers: number;
-  engagement: number;
-}
+  date: string,
+  views: number,
+
+  revenue: number,
+  subscribers: number,
+
+  engagement: number}
 
 interface PerformanceMetric {
-  name: string;
-  value: number;
-  target: number;
-  unit: string;
-}
+  name: string,
+  value: number,
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+  target: number,
+  unit: string}
+
+const COLORS = ['#0088 FE', '#00 C49 F', '#FFBB28', '#FF8042', '#8884 D8'];
 
 export const MetricsDashboard: React.FC = () => {
-  const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | '90d'>('7d');
+  const [timeRange, setTimeRange] = useState<'24 h' | '7 d' | '30 d' | '90 d'>('7 d');
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState(0);
   const [metrics, setMetrics] = useState<any>(null);
@@ -125,69 +115,58 @@ export const MetricsDashboard: React.FC = () => {
       const endDate = new Date();
       
       switch (timeRange) {
-        case '24h':
+        case '24 h':
           startDate = subDays(endDate, 1);
           break;
-        case '7d':
+        case '7 d':
           startDate = subDays(endDate, 7);
           break;
-        case '30d':
+        case '30 d':
           startDate = subDays(endDate, 30);
           break;
-        case '90d':
+        case '90 d':
           startDate = subDays(endDate, 90);
           break;
         default:
-          startDate = subDays(endDate, 7);
-      }
+          startDate = subDays(endDate, 7)}
 
       // Fetch data from API
-      const response = await api.post('/analytics/query', {
-        metric_types: ['views', 'revenue', 'subscribers', 'engagement_rate'],
-        time_range: timeRange === '24h' ? 'last_24_hours' : 
-                     timeRange === '7d' ? 'last_7_days' :
-                     timeRange === '30d' ? 'last_30_days' : 'last_90_days',
-        aggregation_level: timeRange === '24h' ? 'hour' : 'day',
-      });
+      const response = await api.post('/analytics/query', { metric_types: ['views', 'revenue', 'subscribers', 'engagement_rate'],
+        time_range: timeRange === '24 h' ? 'last_24 _hours' : 
+                     timeRange === '7 d' ? 'last_7 _days' :
+                     timeRange === '30 d' ? 'last_30 _days' : 'last_90 _days',
+        aggregation_level: timeRange === '24 h' ? 'hour' : 'day' });
 
       setMetrics(response.data);
 
       // Generate chart data
-      const days = timeRange === '24h' ? 1 : 
-                   timeRange === '7d' ? 7 :
-                   timeRange === '30d' ? 30 : 90;
+      const days = timeRange === '24 h' ? 1 : 
+                   timeRange === '7 d' ? 7 :
+                   timeRange === '30 d' ? 30 : 90;
       
       const newChartData: ChartData[] = [];
-      for (let i = days - 1; i >= 0; i--) {
-        const date = subDays(new Date(), i);
+      for (let i = days - 1; i >= 0; i--) { const date = subDays(new Date(), i);
         newChartData.push({
-          date: format(date, timeRange === '24h' ? 'HH:mm' : 'MMM dd'),
+          date: format(date, timeRange === '24 h' ? 'HH:mm' : 'MMM dd'),
           views: Math.floor(Math.random() * 10000) + 1000,
           revenue: Math.random() * 500 + 100,
           subscribers: Math.floor(Math.random() * 100) + 10,
-          engagement: Math.random() * 10 + 2,
-        });
-      }
+          engagement: Math.random() * 10 + 2 })}
       setChartData(newChartData);
 
       // Set performance data
-      setPerformanceData([
-        { name: 'CTR', value: 3.2, target: 4.0, unit: '%' },
+      setPerformanceData([ { name: 'CTR', value: 3.2, target: 4.0, unit: '%' },
         { name: 'Watch Time', value: 4.5, target: 5.0, unit: 'min' },
         { name: 'Retention', value: 65, target: 70, unit: '%' },
-        { name: 'Engagement', value: 8.5, target: 10, unit: '%' },
-      ]);
+        { name: 'Engagement', value: 8.5, target: 10, unit: '%' } ]);
 
-      setLoading(false);
-    } catch (_error) {
-      console.error('Failed to fetch metrics:', error);
-      setLoading(false);
-    }
+      setLoading(false)} catch (_) {
+      console.error('Failed to fetch, metrics:', error);
+      setLoading(false)}
   };
 
   useEffect(() => {
-    fetchMetrics();
-  }, [timeRange]);
+    fetchMetrics()}, [timeRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Calculate metric cards
   const metricCards: MetricCard[] = useMemo(() => {
@@ -201,42 +180,32 @@ export const MetricsDashboard: React.FC = () => {
       return ((current - previous) / previous) * 100;
     };
 
-    return [
-      {
-        title: 'Total Views',
+    return [ { title: 'Total Views',
         value: current.views.toLocaleString(),
         change: calculateChange(current.views, previous.views),
         trend: current.views > previous.views ? 'up' : current.views < previous.views ? 'down' : 'flat',
         icon: <Visibility />,
-        color: '#4CAF50',
-      },
-      {
-        title: 'Revenue',
+        color: '#4 CAF50' },
+      { title: 'Revenue',
         value: current.revenue.toFixed(2),
         change: calculateChange(current.revenue, previous.revenue),
         trend: current.revenue > previous.revenue ? 'up' : current.revenue < previous.revenue ? 'down' : 'flat',
         icon: <AttachMoney />,
-        color: '#2196F3',
-        prefix: '$',
-      },
-      {
-        title: 'New Subscribers',
+        color: '#2196 F3',
+        prefix: '$' },
+      { title: 'New Subscribers',
         value: current.subscribers.toLocaleString(),
         change: calculateChange(current.subscribers, previous.subscribers),
         trend: current.subscribers > previous.subscribers ? 'up' : current.subscribers < previous.subscribers ? 'down' : 'flat',
         icon: <People />,
-        color: '#FF9800',
-      },
-      {
-        title: 'Engagement Rate',
+        color: '#FF9800' },
+      { title: 'Engagement Rate',
         value: current.engagement.toFixed(1),
         change: calculateChange(current.engagement, previous.engagement),
         trend: current.engagement > previous.engagement ? 'up' : current.engagement < previous.engagement ? 'down' : 'flat',
         icon: <ThumbUp />,
-        color: '#9C27B0',
-        suffix: '%',
-      },
-    ];
+        color: '#9 C27 B0',
+        suffix: '%' } ];
   }, [chartData]);
 
   // Render metric card
@@ -272,10 +241,11 @@ export const MetricsDashboard: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+
             }}
           >
             {React.cloneElement(card.icon as React.ReactElement, {
-              sx: { color: card.color, fontSize: 32 },
+              sx: { color: card.color, fontSize: 32 }
             })}
           </Box>
         </Box>
@@ -286,21 +256,22 @@ export const MetricsDashboard: React.FC = () => {
   // Render performance gauge
   const renderPerformanceGauge = (metric: PerformanceMetric) => {
     const percentage = (metric.value / metric.target) * 100;
-    const color = percentage >= 90 ? '#4CAF50' : percentage >= 70 ? '#FF9800' : '#F44336';
+    const color = percentage >= 90 ? '#4 CAF50' : percentage >= 70 ? '#FF9800' : '#F44336';
 
     return (
+    <>
       <Box key={metric.name} textAlign="center">
         <Typography variant="body2" color="text.secondary">
           {metric.name}
         </Typography>
-        <Box position="relative" display="inline-flex" mt={1}>
+      <Box position="relative" display="inline-flex" mt={1}>
           <ResponsiveContainer width={100} height={100}>
             <RadialBarChart
               cx="50%"
               cy="50%"
               innerRadius="60%"
               outerRadius="90%"
-              data={[{ value: percentage, fill: color }]}
+              data={[{ value: percentage, fill: color }]
               startAngle={90}
               endAngle={-270}
             >
@@ -311,9 +282,8 @@ export const MetricsDashboard: React.FC = () => {
             position="absolute"
             top="50%"
             left="50%"
-            sx={{
-              transform: 'translate(-50%, -50%)',
-            }}
+            sx={ {
+              transform: 'translate(-50%, -50%)' }}
           >
             <Typography variant="h6">
               {metric.value}{metric.unit}
@@ -324,39 +294,40 @@ export const MetricsDashboard: React.FC = () => {
           Target: {metric.target}{metric.unit}
         </Typography>
       </Box>
-    );
-  };
+    </>
+  )};
 
   return (
-    <Box>
+    <>
+      <Box>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Analytics Dashboard</Typography>
-        <Box display="flex" gap={2}>
+      <Box display="flex" gap={2}>
           <ButtonGroup size="small">
             <Button
-              variant={timeRange === '24h' ? 'contained' : 'outlined'}
-              onClick={() => setTimeRange('24h')}
+              variant={timeRange === '24 h' ? 'contained' : 'outlined'}
+              onClick={() => setTimeRange('24 h')}
             >
-              24H
+              24 H
             </Button>
             <Button
-              variant={timeRange === '7d' ? 'contained' : 'outlined'}
-              onClick={() => setTimeRange('7d')}
+              variant={timeRange === '7 d' ? 'contained' : 'outlined'}
+              onClick={() => setTimeRange('7 d')}
             >
-              7D
+              7 D
             </Button>
             <Button
-              variant={timeRange === '30d' ? 'contained' : 'outlined'}
-              onClick={() => setTimeRange('30d')}
+              variant={timeRange === '30 d' ? 'contained' : 'outlined'}
+              onClick={() => setTimeRange('30 d')}
             >
-              30D
+              30 D
             </Button>
             <Button
-              variant={timeRange === '90d' ? 'contained' : 'outlined'}
-              onClick={() => setTimeRange('90d')}
+              variant={timeRange === '90 d' ? 'contained' : 'outlined'}
+              onClick={() => setTimeRange('90 d')}
             >
-              90D
+              90 D
             </Button>
           </ButtonGroup>
           <Button startIcon={<Download />} variant="outlined">
@@ -373,30 +344,29 @@ export const MetricsDashboard: React.FC = () => {
         <Alert severity="info" sx={{ mb: 3 }}>
           <Box display="flex" gap={3}>
             <Chip
-              icon={<Speed />}
+              icon={<Speed />}`
               label={`${analytics.realtime.activeViewers} Active Viewers`}
               size="small"
             />
             <Chip
-              icon={<VideoLibrary />}
+              icon={<VideoLibrary />}`
               label={`${analytics.realtime.videosProcessing} Videos Processing`}
               size="small"
             />
             <Chip
-              icon={<Timeline />}
+              icon={<Timeline />}`
               label={`${analytics.realtime.apiCallsPerMinute} API Calls/min`}
               size="small"
             />
             <Chip
-              icon={analytics.realtime.errorRate < 0.01 ? <CheckCircle /> : <Warning />}
-              label={`${(analytics.realtime.errorRate * 100).toFixed(2)}% Error Rate`}
+              icon={analytics.realtime.errorRate < 0.01 ? <CheckCircle /> </>: <Warning />}`
+              label={`${(analytics.realtime.errorRate * 100.toFixed(2)}% Error Rate`}
               size="small"
               color={analytics.realtime.errorRate < 0.01 ? 'success' : 'warning'}
             />
           </Box>
         </Alert>
       )}
-
       {/* Metric Cards */}
       <Grid container spacing={3} mb={3}>
         {loading ? (
@@ -443,7 +413,7 @@ export const MetricsDashboard: React.FC = () => {
                   <Area
                     type="monotone"
                     dataKey="views"
-                    stroke="#8884d8"
+                    stroke="#8884 d8"
                     fill="#8884d8"
                     fillOpacity={0.6}
                   />
@@ -482,7 +452,7 @@ export const MetricsDashboard: React.FC = () => {
                   <YAxis yAxisId="right" orientation="right" />
                   <ChartTooltip />
                   <Legend />
-                  <Bar yAxisId="left" dataKey="revenue" fill="#82ca9d" name="Revenue ($)" />
+                  <Bar yAxisId="left" dataKey="revenue" fill="#82 ca9 d" name="Revenue ($)" />
                   <Line
                     yAxisId="right"
                     type="monotone"
@@ -510,7 +480,7 @@ export const MetricsDashboard: React.FC = () => {
                   <Line
                     type="monotone"
                     dataKey="engagement"
-                    stroke="#8884d8"
+                    stroke="#8884 d8"
                     strokeWidth={2}
                     dot={{ fill: '#8884d8' }}
                   />
@@ -553,5 +523,5 @@ export const MetricsDashboard: React.FC = () => {
         </Grid>
       )}
     </Box>
-  );
-};
+  </>
+  )};`

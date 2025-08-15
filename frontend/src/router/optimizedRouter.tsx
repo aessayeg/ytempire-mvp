@@ -4,10 +4,10 @@
  */
 
 import React, { Suspense, useEffect } from 'react';
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
-import { lazyWithRetry, setupPredictivePreloading } from '../utils/lazyWithRetry';
-import { LoadingSkeleton } from '../components/Loading';
-import { ErrorBoundary } from '../components/ErrorBoundary';
+import {  createBrowserRouter, RouterProvider, Outlet  } from 'react-router-dom';
+import {  lazyWithRetry, setupPredictivePreloading  } from '../utils/lazyWithRetry';
+import {  LoadingSkeleton  } from '../components/Loading';
+import {  ErrorBoundary  } from '../components/ErrorBoundary';
 
 // Lazy load all route components with retry logic
 const Login = lazyWithRetry(() => import('../pages/Auth/Login'), 'Login');
@@ -42,8 +42,7 @@ const preloadMap = new Map([
 const RouteWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
     // Setup predictive preloading for visible links
-    setupPredictivePreloading('a[href^="/"]', preloadMap);
-  }, []);
+    setupPredictivePreloading('a[href^="/"]', preloadMap)}, []);
 
   return (
     <ErrorBoundary>
@@ -51,8 +50,7 @@ const RouteWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         {children}
       </Suspense>
     </ErrorBoundary>
-  );
-};
+  )};
 
 // Protected route wrapper
 const ProtectedRoute: React.FC = () => {
@@ -62,11 +60,10 @@ const ProtectedRoute: React.FC = () => {
         <Outlet />
       </DashboardLayout>
     </RouteWrapper>
-  );
-};
+  )};
 
 // Create router with optimized lazy loading
-export const optimizedRouter = createBrowserRouter([
+// export const optimizedRouter = createBrowserRouter([
   {
     path: '/login',
     element: (
@@ -144,8 +141,7 @@ export const optimizedRouter = createBrowserRouter([
               <RouteWrapper>
                 <VideoDetail />
               </RouteWrapper>
-            )
-          }
+            )}
         ]
       },
       {
@@ -165,8 +161,7 @@ export const optimizedRouter = createBrowserRouter([
               <RouteWrapper>
                 <AnalyticsDashboard />
               </RouteWrapper>
-            )
-          }
+            )}
         ]
       },
       {
@@ -199,12 +194,11 @@ export const optimizedRouter = createBrowserRouter([
           <RouteWrapper>
             <Settings />
           </RouteWrapper>
-        )
-      }
+        )}
     ]
   }
 ]);
 
-export const OptimizedRouter: React.FC = () => {
+// export const OptimizedRouter: React.FC = () => {
   return <RouterProvider router={optimizedRouter} />;
 };

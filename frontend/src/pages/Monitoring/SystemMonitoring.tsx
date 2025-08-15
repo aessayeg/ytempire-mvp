@@ -1,28 +1,35 @@
 import React, { useState } from 'react';
-import { Container, Box, Typography, Grid2 as Grid, Paper, Tabs, Tab } from '@mui/material';
-import { LiveVideoGenerationMonitor } from '../../components/Monitoring/LiveVideoGenerationMonitor';
-import { SystemHealthMonitors } from '../../components/Monitoring/SystemHealthMonitors';
-import { CostTrackingDashboard } from '../../components/Monitoring/CostTrackingDashboard';
-import { PerformanceDashboard } from '../../components/Performance/PerformanceDashboard';
+import { 
+  Container,
+  Box,
+  Typography,
+  Paper,
+  Tabs,
+  Tab
+ } from '@mui/material';
+import {  LiveVideoGenerationMonitor  } from '../../components/Monitoring/LiveVideoGenerationMonitor';
+import {  SystemHealthMonitors  } from '../../components/Monitoring/SystemHealthMonitors';
+import {  CostTrackingDashboard  } from '../../components/Monitoring/CostTrackingDashboard';
+import {  PerformanceDashboard  } from '../../components/Performance/PerformanceDashboard';
 
 const SystemMonitoringPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <Container maxWidth={false}>
+    <>
+      <Container maxWidth={false}>
       <Box sx={{ py: 3 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           System Monitoring
         </Typography>
-        
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          Real-time monitoring of system health, performance, and costs
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          Real-time monitoring of system, health, performance, and costs
         </Typography>
 
         <Paper sx={{ mb: 3 }}>
           <Tabs
             value={activeTab}
-            onChange={(e, v) => setActiveTab(v)}
+            onChange={(_, v) => setActiveTab(v}
             indicatorColor="primary"
             textColor="primary"
           >
@@ -47,14 +54,13 @@ const SystemMonitoringPage: React.FC = () => {
             </Grid>
           </Grid>
         )}
-
         {activeTab === 1 && <LiveVideoGenerationMonitor />}
         {activeTab === 2 && <SystemHealthMonitors />}
         {activeTab === 3 && <CostTrackingDashboard />}
         {activeTab === 4 && <PerformanceDashboard />}
       </Box>
     </Container>
-  );
-};
+  </>
+  )};
 
 export default SystemMonitoringPage;

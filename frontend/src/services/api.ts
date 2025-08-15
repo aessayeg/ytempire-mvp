@@ -3,11 +3,9 @@ import axios, { AxiosInstance } from 'axios'
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
 // Create axios instance
-const apiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+const apiClient: AxiosInstance = axios.create({ baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json' }
 })
 
 // Request interceptor to add auth token
@@ -19,21 +17,19 @@ apiClient.interceptors.request.use(
     }
     return config
   },
-  (_error) => {
-    return Promise.reject(_error)
-  }
+  (_) => {
+    return Promise.reject(_)}
 )
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => response,
-  (_error) => {
+  (_) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       window.location.href = '/login'
     }
-    return Promise.reject(_error)
-  }
+    return Promise.reject(_)}
 )
 
 // Auth API
@@ -43,17 +39,15 @@ export const authApi = {
     return response.data
   },
   
-  register: async (userData: {
-    email: string
-    username: string
-    password: string
+  register: async (userData: {,
+  email: string, username: string, password: string
     full_name?: string
   }) => {
     const response = await apiClient.post('/auth/register', userData)
     return response.data
   },
   
-  getCurrentUser: async (token?: string) => {
+  getCurrentUser: async (token?: string) => {`
     const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {}
     const response = await apiClient.get('/auth/me', config)
     return response.data
@@ -62,7 +56,7 @@ export const authApi = {
   updateProfile: async (userData: unknown) => {
     const response = await apiClient.put('/auth/profile', userData)
     return response.data
-  },
+  }
 }
 
 // Channels API
@@ -72,7 +66,7 @@ export const channelsApi = {
     return response.data
   },
   
-  getById: async (id: string) => {
+  getById: async (id: string) => {`
     const response = await apiClient.get(`/channels/${id}`)
     return response.data
   },
@@ -82,15 +76,15 @@ export const channelsApi = {
     return response.data
   },
   
-  update: async (id: string, channelData: unknown) => {
+  update: async (id: string, channelData: unknown) => {`
     const response = await apiClient.put(`/channels/${id}`, channelData)
     return response.data
   },
   
-  delete: async (id: string) => {
+  delete: async (id: string) => {`
     const response = await apiClient.delete(`/channels/${id}`)
     return response.data
-  },
+  }
 }
 
 // Videos API
@@ -101,7 +95,7 @@ export const videosApi = {
     return response.data
   },
   
-  getById: async (id: string) => {
+  getById: async (id: string) => {`
     const response = await apiClient.get(`/videos/${id}`)
     return response.data
   },
@@ -116,10 +110,10 @@ export const videosApi = {
     return response.data
   },
   
-  updateStatus: async (id: string, status: string) => {
+  updateStatus: async (id: string, status: string) => {`
     const response = await apiClient.patch(`/videos/${id}/status`, { status })
     return response.data
-  },
+  }
 }
 
 // Analytics API
@@ -131,15 +125,15 @@ export const analyticsApi = {
   },
   
   getChannelAnalytics: async (channelId: string, dateRange?: unknown) => {
-    const params = dateRange || {}
+    const params = dateRange || {}`
     const response = await apiClient.get(`/analytics/channels/${channelId}`, { params })
     return response.data
   },
   
-  getVideoAnalytics: async (videoId: string) => {
+  getVideoAnalytics: async (videoId: string) => {`
     const response = await apiClient.get(`/analytics/videos/${videoId}`)
     return response.data
-  },
+  }
 }
 
 // Costs API
@@ -154,27 +148,24 @@ export const costsApi = {
     return response.data
   },
   
-  getByVideo: async (videoId: string) => {
+  getByVideo: async (videoId: string) => {`
     const response = await apiClient.get(`/costs/videos/${videoId}`)
     return response.data
-  },
+  }
 }
 
 // AI Tools API
 export const aiToolsApi = {
-  generateScript: async (params: {
-    topic: string
-    style: string
-    length: string
+  generateScript: async (params: {,
+  topic: string, style: string, length: string
     keywords?: string[]
   }) => {
     const response = await apiClient.post('/ai/generate-script', params)
     return response.data
   },
   
-  generateThumbnail: async (params: {
-    title: string
-    style: string
+  generateThumbnail: async (params: {,
+  title: string, style: string
   }) => {
     const response = await apiClient.post('/ai/generate-thumbnail', params)
     return response.data
@@ -188,7 +179,7 @@ export const aiToolsApi = {
   optimizeTitle: async (title: string) => {
     const response = await apiClient.post('/ai/optimize-title', { title })
     return response.data
-  },
+  }
 }
 
-export default apiClient
+export default apiClient`

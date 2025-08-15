@@ -1,9 +1,16 @@
 import React from 'react';
-import { Box, Paper, Typography, LinearProgress, List, ListItem, ListItemText, Chip, Alert } from '@mui/material';
-import { CloudUpload, CheckCircle, Error } from '@mui/icons-material';
+import { 
+  Box,
+  Paper,
+  Typography,
+  LinearProgress,
+  Chip,
+  Alert
+ } from '@mui/material';
+import {  CloudUpload  } from '@mui/icons-material';
 
 interface UploadProgressProps {
-  progress: number;
+  progress: number,
   status: 'preparing' | 'uploading' | 'processing' | 'completed' | 'failed';
   fileName?: string;
   fileSize?: number;
@@ -21,11 +28,12 @@ export const VideoUploadProgress: React.FC<UploadProgressProps> = ({ progress, s
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
+    <>
+      <Paper sx={{ p: 3 }}>
       <Box display="flex" alignItems="center" gap={2} mb={2}>
         <CloudUpload color="primary" />
         <Typography variant="h6">Upload Progress</Typography>
-        <Chip label={status} size="small" color={status === 'completed' ? 'success' : status === 'failed' ? 'error' : 'primary'} />
+      <Chip label={status} size="small" color={status === 'completed' ? 'success' : status === 'failed' ? 'error' : 'primary'} />
       </Box>
       
       <LinearProgress variant="determinate" value={progress} sx={{ height: 10, borderRadius: 5, mb: 2 }} />
@@ -37,5 +45,5 @@ export const VideoUploadProgress: React.FC<UploadProgressProps> = ({ progress, s
       {timeRemaining && <Typography variant="body2">Time remaining: {Math.ceil(timeRemaining / 60)} minutes</Typography>}
       {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
     </Paper>
-  );
-};
+  </>
+  )};

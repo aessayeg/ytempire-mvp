@@ -3,7 +3,7 @@
  * Advanced analytics visualization for individual channel performance
  */
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Card,
   CardContent,
@@ -19,75 +19,63 @@ import {
   CircularProgress,
   Alert,
   Button
-} from '@mui/material';
-import {
-  Info as InfoIcon,
-  Download as DownloadIcon,
-  Share as ShareIcon,
-  Refresh as RefreshIcon,
-  TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon
-} from '@mui/icons-material';
-import {
-  LineChart,
-  Line,
+ } from '@mui/material';
+import {  Share as ShareIcon  } from '@mui/icons-material';
+import { 
   AreaChart,
   Area,
   XAxis,
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
   ComposedChart,
-  Legend,
   Scatter,
   ScatterChart,
   ZAxis
-} from 'recharts';
+ } from 'recharts';
 
 interface ChannelMetrics {
-  date: string;
-  views: number;
-  subscribers: number;
-  revenue: number;
-  watchTime: number;
-  engagement: number;
-  ctr: number; // Click-through rate
-  avgViewDuration: number;
-  likes: number;
-  comments: number;
-  shares: number;
-}
+  date: string,
+  views: number,
+
+  subscribers: number,
+  revenue: number,
+
+  watchTime: number,
+  engagement: number,
+
+  ctr: number; // Click-through rate,
+  avgViewDuration: number,
+
+  likes: number,
+  comments: number,
+
+  shares: number}
 
 interface VideoPerformance {
-  id: string;
-  title: string;
-  views: number;
-  revenue: number;
-  engagement: number;
-  publishedAt: string;
-  category: string;
-}
+  id: string,
+  title: string,
+
+  views: number,
+  revenue: number,
+
+  engagement: number,
+  publishedAt: string,
+
+  category: string}
 
 interface ChannelPerformanceChartsProps {
-  channelId: string;
-  timeRange: '7d' | '30d' | '90d' | '1y';
-  onTimeRangeChange: (range: '7d' | '30d' | '90d' | '1y') => void;
-}
+  channelId: string,
+  timeRange: '7 d' | '30 d' | '90 d' | '1 y',
 
+  onTimeRangeChange: (range: '7 d' | '30 d' | '90 d' | '1 y') => void}
 const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
-  channelId,
-  timeRange,
-  onTimeRangeChange
+  channelId, timeRange, onTimeRangeChange
 }) => {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<ChannelMetrics[]>([]);
@@ -101,8 +89,8 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
     
     // Generate sample data based on time range
     const generateSampleData = () => {
-      const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365;
-      const data: ChannelMetrics[] = [];
+      const days = timeRange === '7 d' ? 7 : timeRange === '30 d' ? 30 : timeRange === '90 d' ? 90 : 365;
+const data: ChannelMetrics[] = [];
       
       for (let i = 0; i < days; i++) {
         const date = new Date();
@@ -119,9 +107,9 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
           avgViewDuration: Math.random() * 300 + 60,
           likes: Math.floor(Math.random() * 2000) + 100,
           comments: Math.floor(Math.random() * 500) + 20,
-          shares: Math.floor(Math.random() * 200) + 10
-        });
-      }
+          shares: Math.floor(Math.random() * 200) + 10,
+
+        })}
       
       return data;
     };
@@ -140,52 +128,51 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
     setTimeout(() => {
       setMetrics(generateSampleData());
       setVideos(generateVideoData());
-      setLoading(false);
-    }, 1000);
-  }, [channelId, timeRange]);
+      setLoading(false)}, 1000)}, [channelId, timeRange]);
 
   const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
-
+    if (num >= 1000000) return `${(num / 1000000.toFixed(1)}M`;`
+    if (num >= 1000) return `${(num / 1000.toFixed(1)}K`;
+    return num.toString()};
+`
   const formatCurrency = (num: number) => `$${num.toFixed(2)}`;
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
+    const secs = Math.floor(seconds % 60);`
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const getMetricColor = (value: number, baseline: number) => {
-    return value >= baseline ? '#10b981' : '#ef4444';
+    return value >= baseline ? '#10 b981' : '#ef4444';
   };
 
-  const CustomTooltip = ({ active, payload, label }: unknown) => {
+  const CustomTooltip = ({ active, payload, label }: React.ChangeEvent<HTMLInputElement>) => {
     if (active && payload && payload.length) {
       return (
-        <Box sx={{
+    <>
+      <Box sx={{
           background: 'white',
-          border: '1px solid #e5e7eb',
+          border: '1px solid #e5 e7 eb',
           borderRadius: 1,
           p: 2,
-          boxShadow: 2
+          boxShadow: 2,
+
         }}>
           <Typography variant="subtitle2">{label}</Typography>
-          {payload.map((entry: unknown, index: number) => (
-            <Typography key={index} sx={{ color: entry.color }}>
+          {payload.map((entry: React.ChangeEvent<HTMLInputElement>, index: number) => (
+            <Typography key={index} sx={{ color: entry.color }}>`
               {`${entry.dataKey}: ${entry.dataKey === 'revenue' ? formatCurrency(entry.value) : formatNumber(entry.value)}`}
             </Typography>
           ))}
         </Box>
-      );
-    }
+      )}
     return null;
   };
 
   const renderOverviewMetrics = () => {
-    if (loading) return <CircularProgress />;
+    if (loading</>
+  ) return <CircularProgress />;
 
     const totalViews = metrics.reduce((sum, m) => sum + m.views, 0);
     const totalRevenue = metrics.reduce((sum, m) => sum + m.revenue, 0);
@@ -193,12 +180,12 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
     const avgCTR = metrics.reduce((sum, m) => sum + m.ctr, 0) / metrics.length;
 
     return (
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+    <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
-          { label: 'Total Views', value: formatNumber(totalViews), color: '#3b82f6', trend: 12.5 },
-          { label: 'Revenue', value: formatCurrency(totalRevenue), color: '#10b981', trend: 8.3 },
-          { label: 'Avg. Engagement', value: `${avgEngagement.toFixed(1)}%`, color: '#f59e0b', trend: -2.1 },
-          { label: 'Avg. CTR', value: `${avgCTR.toFixed(2)}%`, color: '#8b5cf6', trend: 5.7 }
+          { label: 'Total Views', value: formatNumber(totalViews), color: '#3 b82 f6', trend: 12.5 },
+          { label: 'Revenue', value: formatCurrency(totalRevenue), color: '#10 b981', trend: 8.3 },`
+          { label: 'Avg. Engagement', value: `${avgEngagement.toFixed(1)}%`, color: '#f59 e0 b', trend: -2.1 },`
+          { label: 'Avg. CTR', value: `${avgCTR.toFixed(2)}%`, color: '#8 b5 cf6', trend: 5.7 }
         ].map((metric, index) => (
           <Grid item xs={6} sm={3} key={index}>
             <Card>
@@ -207,12 +194,12 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
                   <Typography variant="caption" color="textSecondary">
                     {metric.label}
                   </Typography>
-                  <Chip
+      <Chip
                     size="small"
-                    icon={metric.trend >= 0 ? <TrendingUpIcon /> : <TrendingDownIcon />}
+                    icon={metric.trend >= 0 ? <TrendingUpIcon /> </>: <TrendingDownIcon />}`
                     label={`${metric.trend >= 0 ? '+' : ''}${metric.trend}%`}
                     color={metric.trend >= 0 ? 'success' : 'error'}
-                    sx={{ height: 20, fontSize: '0.75rem' }}
+                    sx={{ height: 20, fontSize: '0.75 rem' }}
                   />
                 </Box>
                 <Typography variant="h6" sx={{ color: metric.color, fontWeight: 'bold' }}>
@@ -223,24 +210,23 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
           </Grid>
         ))}
       </Grid>
-    );
-  };
+    )};
 
   const renderMainPerformanceChart = () => {
     if (loading) {
       return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+    <>
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
         </Box>
-      );
-    }
+      )}
 
     return (
-      <Card sx={{ mb: 3 }}>
+    <Card sx={{ mb: 3 }}>
         <CardContent>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="h6">Performance Trends</Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', gap: 1 }}>
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <Select
                   value={selectedMetric}
@@ -260,7 +246,7 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
           
           <ResponsiveContainer width="100%" height={300}>
             <ComposedChart data={metrics}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0 f0 f0" />
               <XAxis 
                 dataKey="date" 
                 stroke="#666"
@@ -276,17 +262,17 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
               <Area
                 type="monotone"
                 dataKey={selectedMetric}
-                fill="#3b82f6"
+                fill="#3 b82 f6"
                 fillOpacity={0.1}
-                stroke="#3b82f6"
+                stroke="#3 b82 f6"
                 strokeWidth={2}
               />
             </ComposedChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
-    );
-  };
+    </>
+  )};
 
   const renderEngagementRadar = () => {
     if (loading) return <CircularProgress />;
@@ -301,12 +287,13 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
     ];
 
     return (
+    <>
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
             Channel Performance Radar
           </Typography>
-          <ResponsiveContainer width="100%" height={250}>
+      <ResponsiveContainer width="100%" height={250}>
             <RadarChart data={radarData}>
               <PolarGrid />
               <PolarAngleAxis dataKey="subject" fontSize={12} />
@@ -314,8 +301,8 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
               <Radar
                 name="Performance"
                 dataKey="A"
-                stroke="#3b82f6"
-                fill="#3b82f6"
+                stroke="#3 b82 f6"
+                fill="#3 b82 f6"
                 fillOpacity={0.2}
                 strokeWidth={2}
               />
@@ -323,14 +310,13 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
           </ResponsiveContainer>
         </CardContent>
       </Card>
-    );
-  };
+    </>
+  )};
 
   const renderVideoPerformanceScatter = () => {
     if (loading) return <CircularProgress />;
 
-    return (
-      <Card>
+    return (_<Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
             Video Performance Matrix
@@ -343,9 +329,9 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
               <ZAxis dataKey="engagement" name="Engagement" range={[50, 200]} />
               <Tooltip 
                 cursor={{ strokeDasharray: '3 3' }}
-                formatter={(value: unknown, name: string) => {
+                formatter={(value: React.ChangeEvent<HTMLInputElement>, name: string) => {
                   if (name === 'views') return [formatNumber(value), 'Views'];
-                  if (name === 'revenue') return [formatCurrency(value), 'Revenue'];
+                  if (name === 'revenue') return [formatCurrency(value), 'Revenue'];`
                   if (name === 'engagement') return [`${value}%`, 'Engagement'];
                   return [value, name];
                 }}
@@ -354,29 +340,29 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
               <Scatter 
                 name="Videos" 
                 dataKey="revenue" 
-                fill="#10b981"
+                fill="#10 b981"
                 fillOpacity={0.8}
               />
             </ScatterChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
-    );
-  };
+    )};
 
   const renderTopVideosTable = () => {
     if (loading) return <CircularProgress />;
 
     return (
+    <>
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
             Top Performing Videos
           </Typography>
-          <Box sx={{ overflowX: 'auto' }}>
+      <Box sx={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+                <tr style={{ borderBottom: '2px solid #e5 e7 eb' }}>
                   <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: 600 }}>Video</th>
                   <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: 600 }}>Views</th>
                   <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: 600 }}>Revenue</th>
@@ -386,7 +372,7 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
               </thead>
               <tbody>
                 {videos.slice(0, 5).map((video, index) => (
-                  <tr key={video.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                  <tr key={video.id} style={{ borderBottom: '1px solid #f3 f4 f6' }}>
                     <td style={{ padding: '12px 8px' }}>
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -425,27 +411,28 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
           </Box>
         </CardContent>
       </Card>
-    );
-  };
+    </>
+  )};
 
   const renderRevenueTrendChart = () => {
     if (loading) return <CircularProgress />;
 
     return (
+    <>
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
             Revenue Trend
           </Typography>
-          <ResponsiveContainer width="100%" height={200}>
+      <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={metrics}>
               <defs>
                 <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#10 b981" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#10 b981" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0 f0 f0" />
               <XAxis 
                 dataKey="date" 
                 fontSize={12}
@@ -456,7 +443,7 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="#10b981"
+                stroke="#10 b981"
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#revenueGradient)"
@@ -465,17 +452,18 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
           </ResponsiveContainer>
         </CardContent>
       </Card>
-    );
-  };
+    </>
+  )};
 
   return (
-    <Box>
+    <>
+      <Box>
       {/* Header Controls */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5" fontWeight="bold">
           Channel Performance Analytics
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ display: 'flex', gap: 2 }}>
           <FormControl size="small">
             <InputLabel>Time Range</InputLabel>
             <Select
@@ -484,10 +472,10 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
               onChange={(e) => onTimeRangeChange(e.target.value as any)}
               sx={{ minWidth: 120 }}
             >
-              <MenuItem value="7d">Last 7 Days</MenuItem>
-              <MenuItem value="30d">Last 30 Days</MenuItem>
-              <MenuItem value="90d">Last 90 Days</MenuItem>
-              <MenuItem value="1y">Last Year</MenuItem>
+              <MenuItem value="7 d">Last 7 Days</MenuItem>
+              <MenuItem value="30 d">Last 30 Days</MenuItem>
+              <MenuItem value="90 d">Last 90 Days</MenuItem>
+              <MenuItem value="1 y">Last Year</MenuItem>
             </Select>
           </FormControl>
           <Button
@@ -509,10 +497,8 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
 
       {/* Overview Metrics */}
       {renderOverviewMetrics()}
-
       {/* Main Performance Chart */}
       {renderMainPerformanceChart()}
-
       {/* Secondary Charts Grid */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} md={6}>
@@ -561,7 +547,7 @@ const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
         </CardContent>
       </Card>
     </Box>
-  );
-};
+  </>
+  )};
 
-export default ChannelPerformanceCharts;
+export default ChannelPerformanceCharts;`

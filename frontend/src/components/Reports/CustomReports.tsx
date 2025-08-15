@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import {
+import { 
   Box,
   Paper,
   Typography,
@@ -14,91 +14,76 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-  DatePicker,
-  Tabs,
-  Tab,
-  IconButton,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
-  Tooltip,
-  Alert,
   LinearProgress,
   Card,
   CardContent,
   Stack,
-  Divider
-} from '@mui/material';
-import {
+  FormControlLabel
+ } from '@mui/material';
+import { 
   Download as DownloadIcon,
   Schedule as ScheduleIcon,
   Share as ShareIcon,
   Save as SaveIcon,
   Add as AddIcon,
-  Delete as DeleteIcon,
-  Settings as SettingsIcon,
-  FilterList as FilterIcon,
-  PictureAsPdf as PdfIcon,
-  TableChart as ExcelIcon,
   Description as CsvIcon,
-  Email as EmailIcon,
-  Refresh as RefreshIcon,
-  Dashboard as DashboardIcon
-} from '@mui/icons-material';
-import { DateRangePicker } from '@mui/x-date-pickers-pro';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend, ResponsiveContainer } from 'recharts';
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+  Email as EmailIcon
+,
+  Add as AddIcon,
+  Delete as DeleteIcon
+ } from '@mui/icons-material';
+import {  DateRangePicker  } from '@mui/x-date-pickers-pro';
+import {  LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend, ResponsiveContainer  } from 'recharts';
+import {  format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth  } from 'date-fns';
 
 // Types
 interface ReportMetric {
-  id: string;
-  name: string;
-  category: string;
-  selected: boolean;
-  aggregation: 'sum' | 'avg' | 'min' | 'max' | 'count';
-}
+  id: string,
+  name: string,
+
+  category: string,
+  selected: boolean,
+
+  aggregation: 'sum' | 'avg' | 'min' | 'max' | 'count'}
 
 interface ReportFilter {
-  field: string;
-  operator: 'equals' | 'contains' | 'greater' | 'less' | 'between';
-  value: unknown;
-}
+  field: string,
+  operator: 'equals' | 'contains' | 'greater' | 'less' | 'between',
+
+  value: unknown}
 
 interface ReportSchedule {
-  frequency: 'daily' | 'weekly' | 'monthly';
-  time: string;
-  recipients: string[];
-  format: 'pdf' | 'excel' | 'csv';
-}
+  frequency: 'daily' | 'weekly' | 'monthly',
+  time: string,
+
+  recipients: string[],
+  format: 'pdf' | 'excel' | 'csv'}
 
 interface SavedReport {
-  id: string;
-  name: string;
-  description: string;
-  metrics: string[];
-  filters: ReportFilter[];
+  id: string,
+  name: string,
+
+  description: string,
+  metrics: string[],
+
+  filters: ReportFilter[],
   dateRange: [Date, Date];
-  createdAt: Date;
+  createdAt: Date,
   lastRun: Date;
   schedule?: ReportSchedule;
 }
 
 interface ReportData {
   metrics: Record<string, number>;
-  charts: {
-    type: 'line' | 'bar' | 'pie';
-    data: unknown[];
-  }[];
-  tables: {
-    headers: string[];
-    rows: unknown[][];
-  }[];
+  charts: {,
+  type: 'line' | 'bar' | 'pie',
+
+    data: unknown[]}[];
+  tables: {,
+  headers: string[],
+
+    rows: unknown[][]}[];
 }
 
 const AVAILABLE_METRICS: ReportMetric[] = [
@@ -166,11 +151,12 @@ export const CustomReports: React.FC = () => {
     frequency: 'weekly',
     time: '09:00',
     recipients: [],
-    format: 'pdf'
+    format: 'pdf',
+
   });
 
   // Generate mock report data
-  const generateReportData = useCallback(async () => {
+  const generateReportData = useCallback(_async () => {
     setIsGenerating(true);
     
     // Simulate API call
@@ -182,15 +168,15 @@ export const CustomReports: React.FC = () => {
       const baseValue = Math.random() * 10000;
       metrics[metric.id] = metric.aggregation === 'avg' 
         ? parseFloat((Math.random() * 100).toFixed(2))
-        : Math.floor(baseValue);
-    });
+        : Math.floor(baseValue)});
     
     // Generate chart data
     const chartData = Array.from({ length: 30 }, (_, i) => ({
       date: format(subDays(new Date(), 30 - i), 'MMM dd'),
       views: Math.floor(Math.random() * 5000),
       revenue: parseFloat((Math.random() * 500).toFixed(2)),
-      videos: Math.floor(Math.random() * 10)
+      videos: Math.floor(Math.random() * 10),
+
     }));
     
     // Generate table data
@@ -203,8 +189,7 @@ export const CustomReports: React.FC = () => {
     
     setReportData({
       metrics,
-      charts: [
-        { type: 'line', data: chartData },
+      charts: [ { type: 'line', data: chartData },
         { 
           type: 'pie', 
           data: [
@@ -212,30 +197,27 @@ export const CustomReports: React.FC = () => {
             { name: 'Sponsorships', value: 2200 },
             { name: 'Affiliates', value: 1800 },
             { name: 'Other', value: 500 }
-          ]
-        }
+           ]
       ],
-      tables: [{
-        headers: ['Video Title', 'Views', 'Revenue ($)', 'Published Date'],
-        rows: tableData
+      tables: [{,
+  headers: ['Video Title', 'Views', 'Revenue ($)', 'Published Date'],
+        rows: tableData,
+
       }]
     });
     
-    setIsGenerating(false);
-  }, [selectedMetrics]);
+    setIsGenerating(false)}, [selectedMetrics]);
 
   // Export functions
   const exportToPDF = useCallback(() => {
-    // In production, use jsPDF or similar
+    // In, production, use jsPDF or similar
     console.log('Exporting to PDF...');
-    alert('PDF export initiated. Report will be downloaded shortly.');
-  }, [reportData]);
+    alert('PDF export initiated. Report will be downloaded shortly.')}, [reportData]);
 
   const exportToExcel = useCallback(() => {
-    // In production, use xlsx or similar
+    // In, production, use xlsx or similar
     console.log('Exporting to Excel...');
-    alert('Excel export initiated. Report will be downloaded shortly.');
-  }, [reportData]);
+    alert('Excel export initiated. Report will be downloaded shortly.')}, [reportData]);
 
   const exportToCSV = useCallback(() => {
     if (!reportData) return;
@@ -243,73 +225,67 @@ export const CustomReports: React.FC = () => {
     // Convert metrics to CSV
     let csv = 'Metric,Value\n';
     Object.entries(reportData.metrics).forEach(([key, value]) => {
-      const metric = AVAILABLE_METRICS.find(m => m.id === key);
-      csv += `"${metric?.name || key}",${value}\n`;
-    });
+      const metric = AVAILABLE_METRICS.find(m => m.id === key);`
+      csv += `"${metric?.name || key}",${value}\n`});
     
     // Add table data
     if (reportData.tables.length > 0) {
       csv += '\n\nDetailed Data\n';
       csv += reportData.tables[0].headers.join(',') + '\n';
       reportData.tables[0].rows.forEach(row => {
-        csv += row.join(',') + '\n';
-      });
-    }
+        csv += row.join(',') + '\n'})}
     
     // Download CSV
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
+    a.href = url;`
     a.download = `report_${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    a.click();
-  }, [reportData]);
+    a.click()}, [reportData]);
 
   // Save report
   const saveReport = useCallback(() => {
-    const newReport: SavedReport = {
-      id: Date.now().toString(),
+const newReport: SavedReport = {,
+  id: Date.now().toString(),
       name: reportName,
       description: reportDescription,
       metrics: selectedMetrics.map(m => m.id),
       filters,
       dateRange,
       createdAt: new Date(),
-      lastRun: new Date()
+      lastRun: new Date(),
+
     };
     
     setSavedReports([...savedReports, newReport]);
     setSaveDialog(false);
     setReportName('');
-    setReportDescription('');
-  }, [reportName, reportDescription, selectedMetrics, filters, dateRange, savedReports]);
+    setReportDescription('')}, [reportName, reportDescription, selectedMetrics, filters, dateRange, savedReports]);
 
   // Load saved report
-  const loadSavedReport = useCallback((report: SavedReport) => {
+  const loadSavedReport = useCallback(_(report: SavedReport) => {
     const metrics = AVAILABLE_METRICS.map(m => ({
       ...m,
-      selected: report.metrics.includes(m.id)
+      selected: report.metrics.includes(m.id),
+
     }));
     setSelectedMetrics(metrics.filter(m => m.selected));
     setFilters(report.filters);
     setDateRange(report.dateRange);
-    generateReportData();
-  }, [generateReportData]);
+    generateReportData()}, [generateReportData]);
 
   // Metric selection
-  const toggleMetric = useCallback((metricId: string) => {
+  const toggleMetric = useCallback(_(metricId: string) => {
     setSelectedMetrics(prev => {
       const metric = AVAILABLE_METRICS.find(m => m.id === metricId);
       if (!metric) return prev;
       
       const exists = prev.find(m => m.id === metricId);
       if (exists) {
-        return prev.filter(m => m.id !== metricId);
-      } else {
+        return prev.filter(m => m.id !== metricId)} else {
         return [...prev, metric];
       }
-    });
-  }, []);
+    })}, []);
 
   // Render metric categories
   const renderMetricCategories = () => {
@@ -329,7 +305,7 @@ export const CustomReports: React.FC = () => {
                 control={
                   <Checkbox
                     checked={selectedMetrics.some(m => m.id === metric.id)}
-                    onChange={() => toggleMetric(metric.id)}
+                    onChange={() => toggleMetric(metric.id}
                     size="small"
                   />
                 }
@@ -341,14 +317,14 @@ export const CustomReports: React.FC = () => {
             ))}
         </FormGroup>
       </Box>
-    ));
-  };
+    ))};
 
   // Render charts
   const renderCharts = () => {
     if (!reportData) return null;
     
     return (
+    <>
       <Grid container spacing={3}>
         {/* Line Chart */}
         <Grid item xs={12} lg={8}>
@@ -356,15 +332,15 @@ export const CustomReports: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               Trend Analysis
             </Typography>
-            <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={300}>
               <LineChart data={reportData.charts[0].data}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <ChartTooltip />
                 <Legend />
-                <Line type="monotone" dataKey="views" stroke="#8884d8" />
-                <Line type="monotone" dataKey="revenue" stroke="#82ca9d" />
+                <Line type="monotone" dataKey="views" stroke="#8884 d8" />
+                <Line type="monotone" dataKey="revenue" stroke="#82 ca9 d" />
                 <Line type="monotone" dataKey="videos" stroke="#ffc658" />
               </LineChart>
             </ResponsiveContainer>
@@ -389,7 +365,7 @@ export const CustomReports: React.FC = () => {
                   label
                 >
                   {reportData.charts[1].data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042'][index % 4]} />
+                    <Cell key={`cell-${index}`} fill={['#0088 FE', '#00 C49 F', '#FFBB28', '#FF8042'][index % 4]} />
                   ))}
                 </Pie>
                 <ChartTooltip />
@@ -398,16 +374,16 @@ export const CustomReports: React.FC = () => {
           </Paper>
         </Grid>
       </Grid>
-    );
-  };
+    </>
+  )};
 
   return (
-    <Box sx={{ p: 3 }}>
+    <>
+      <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>
         Custom Reports
       </Typography>
-      
-      <Tabs value={currentTab} onChange={(e, v) => setCurrentTab(v)} sx={{ mb: 3 }}>
+      <Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v} sx={{ mb: 3 }>
         <Tab label="Create Report" icon={<AddIcon />} />
         <Tab label="Saved Reports" icon={<SaveIcon />} />
         <Tab label="Scheduled Reports" icon={<ScheduleIcon />} />
@@ -429,14 +405,14 @@ export const CustomReports: React.FC = () => {
                       key={preset.label}
                       variant="outlined"
                       size="small"
-                      onClick={() => setDateRange(preset.getValue() as [Date, Date])}
+                      onClick={() => setDateRange(preset.getValue() as [ Date, Date ]
                     >
                       {preset.label}
                     </Button>
                   ))}
                   <DateRangePicker
                     value={dateRange}
-                    onChange={(newValue) => setDateRange(newValue as [Date, Date])}
+                    onChange={(newValue) => setDateRange(newValue as [ Date, Date ]
                     renderInput={(startProps, endProps) => (
                       <React.Fragment>
                         <TextField {...startProps} size="small" />
@@ -481,7 +457,7 @@ export const CustomReports: React.FC = () => {
                 <Button
                   variant="outlined"
                   startIcon={<SaveIcon />}
-                  onClick={() => setSaveDialog(true)}
+                  onClick={() => setSaveDialog(true}
                   disabled={!reportData}
                 >
                   Save Report
@@ -489,7 +465,7 @@ export const CustomReports: React.FC = () => {
                 <Button
                   variant="outlined"
                   startIcon={<ScheduleIcon />}
-                  onClick={() => setScheduleDialog(true)}
+                  onClick={() => setScheduleDialog(true}
                   disabled={!reportData}
                 >
                   Schedule Report
@@ -507,7 +483,6 @@ export const CustomReports: React.FC = () => {
               </Typography>
             </Box>
           )}
-          
           {/* Report Results */}
           {reportData && !isGenerating && (
             <Box sx={{ mt: 3 }}>
@@ -552,16 +527,18 @@ export const CustomReports: React.FC = () => {
               
               {/* Metrics Summary */}
               <Grid container spacing={2} sx={{ mb: 3 }}>
-                {Object.entries(reportData.metrics).map(([key, value]) => {
-                  const metric = AVAILABLE_METRICS.find(m => m.id === key);
+                {Object.entries(reportData.metrics).map((_([key, _value]) => {
+                  const metric = AVAILABLE_METRICS.find(m => m.id === key</>
+  );
                   return (
-                    <Grid item xs={12} sm={6} md={3} key={key}>
+    <>
+      <Grid item xs={12} sm={6} md={3} key={key}>
                       <Card>
                         <CardContent>
                           <Typography color="textSecondary" gutterBottom variant="body2">
                             {metric?.name || key}
                           </Typography>
-                          <Typography variant="h5">
+      <Typography variant="h5">
                             {typeof value === 'number' && value > 1000 
                               ? value.toLocaleString()
                               : value}
@@ -569,13 +546,11 @@ export const CustomReports: React.FC = () => {
                         </CardContent>
                       </Card>
                     </Grid>
-                  );
-                })}
+                  )})}
               </Grid>
               
               {/* Charts */}
               {renderCharts()}
-              
               {/* Data Table */}
               {reportData.tables.length > 0 && (
                 <Paper sx={{ mt: 3, p: 2 }}>
@@ -590,7 +565,8 @@ export const CustomReports: React.FC = () => {
                             <th key={i} style={{ 
                               padding: '8px', 
                               borderBottom: '2px solid #ddd',
-                              textAlign: 'left'
+                              textAlign: 'left',
+
                             }}>
                               {header}
                             </th>
@@ -603,7 +579,8 @@ export const CustomReports: React.FC = () => {
                             {row.map((cell, j) => (
                               <td key={j} style={{ 
                                 padding: '8px', 
-                                borderBottom: '1px solid #eee' 
+                                borderBottom: '1px solid #eee',
+
                               }}>
                                 {cell}
                               </td>
@@ -619,7 +596,6 @@ export const CustomReports: React.FC = () => {
           )}
         </>
       )}
-      
       {currentTab === 1 && (
         <Grid container spacing={2}>
           {savedReports.map(report => (
@@ -631,16 +607,16 @@ export const CustomReports: React.FC = () => {
                     {report.description}
                   </Typography>
                   <Typography variant="caption" display="block">
-                    Created: {format(report.createdAt, 'MMM dd, yyyy')}
+                    Created: {format(report.createdAt, 'MMM, dd, yyyy')}
                   </Typography>
                   <Typography variant="caption" display="block">
-                    Last Run: {format(report.lastRun, 'MMM dd, yyyy HH:mm')}
+                    Last Run: {format(report.lastRun, 'MMM, dd, yyyy, HH:mm')}
                   </Typography>
                   <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
                     <Button 
                       size="small" 
                       variant="contained"
-                      onClick={() => loadSavedReport(report)}
+                      onClick={() => loadSavedReport(report}
                     >
                       Load
                     </Button>
@@ -657,9 +633,8 @@ export const CustomReports: React.FC = () => {
           ))}
         </Grid>
       )}
-      
       {/* Save Report Dialog */}
-      <Dialog open={saveDialog} onClose={() => setSaveDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog open={saveDialog} onClose={() => setSaveDialog(false} maxWidth="sm" fullWidth>
         <DialogTitle>Save Report Configuration</DialogTitle>
         <DialogContent>
           <TextField
@@ -680,13 +655,13 @@ export const CustomReports: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSaveDialog(false)}>Cancel</Button>
+          <Button onClick={() => setSaveDialog(false}>Cancel</Button>
           <Button onClick={saveReport} variant="contained">Save</Button>
         </DialogActions>
       </Dialog>
       
       {/* Schedule Report Dialog */}
-      <Dialog open={scheduleDialog} onClose={() => setScheduleDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog open={scheduleDialog} onClose={() => setScheduleDialog(false} maxWidth="sm" fullWidth>
         <DialogTitle>Schedule Report</DialogTitle>
         <DialogContent>
           <FormControl fullWidth margin="normal">
@@ -705,7 +680,7 @@ export const CustomReports: React.FC = () => {
             type="time"
             label="Time"
             value={schedule.time}
-            onChange={(e) => setSchedule({ ...schedule, time: e.target.value })}
+            onChange={(e) => setSchedule({ ...schedule, time: e.target.value)})}
             margin="normal"
             InputLabelProps={{ shrink: true }}
           />
@@ -722,10 +697,10 @@ export const CustomReports: React.FC = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setScheduleDialog(false)}>Cancel</Button>
+          <Button onClick={() => setScheduleDialog(false}>Cancel</Button>
           <Button variant="contained">Schedule</Button>
         </DialogActions>
       </Dialog>
     </Box>
-  );
-};
+  </>
+  )};`

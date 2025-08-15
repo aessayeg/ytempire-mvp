@@ -3,7 +3,7 @@
  * Comprehensive cost monitoring and budget management for YouTube operations
  */
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Grid,
   Paper,
@@ -21,37 +21,29 @@ import {
   TableHead,
   TableRow,
   Chip,
-  Avatar,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Switch,
   FormControlLabel,
   ToggleButton,
   ToggleButtonGroup,
   useTheme,
-  Tooltip,
-} from '@mui/material';
-import {
+  Tooltip
+ } from '@mui/material';
+import { 
   AttachMoney,
   TrendingUp,
   TrendingDown,
   Warning,
   Add,
   Edit,
-  Delete,
   Refresh,
   Download,
-  Upload,
   Notifications,
   AccountBalance,
-  CreditCard,
   Receipt,
   Analytics,
   SmartToy,
@@ -59,15 +51,11 @@ import {
   VideoLibrary,
   Mic,
   Image as ImageIcon,
-  Storage,
-} from '@mui/icons-material';
-import {
-  LineChart,
+  Storage
+ } from '@mui/icons-material';
+import { 
   Line,
-  AreaChart,
   Area,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -77,23 +65,20 @@ import {
   Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
-  ComposedChart,
-} from 'recharts';
-import { format, subDays, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+  ComposedChart
+ } from 'recharts';
+import {  format  } from 'date-fns';
 
 // Mock data for cost tracking
-const mockCostData = [
-  { date: '2024-01-01', aiCosts: 120, infrastructure: 45, storage: 15, voiceover: 85, total: 265 },
+const mockCostData = [ { date: '2024-01-01', aiCosts: 120, infrastructure: 45, storage: 15, voiceover: 85, total: 265 },
   { date: '2024-01-02', aiCosts: 135, infrastructure: 48, storage: 16, voiceover: 92, total: 291 },
   { date: '2024-01-03', aiCosts: 145, infrastructure: 50, storage: 18, voiceover: 88, total: 301 },
   { date: '2024-01-04', aiCosts: 158, infrastructure: 52, storage: 17, voiceover: 95, total: 322 },
   { date: '2024-01-05', aiCosts: 167, infrastructure: 55, storage: 19, voiceover: 110, total: 351 },
   { date: '2024-01-06', aiCosts: 142, infrastructure: 47, storage: 16, voiceover: 78, total: 283 },
-  { date: '2024-01-07', aiCosts: 189, infrastructure: 58, storage: 22, voiceover: 125, total: 394 },
-];
+  { date: '2024-01-07', aiCosts: 189, infrastructure: 58, storage: 22, voiceover: 125, total: 394 } ];
 
-const mockCostCategories = [
-  {
+const mockCostCategories = [ {
     id: 1,
     name: 'AI Content Generation',
     icon: <SmartToy color="primary" />,
@@ -102,10 +87,9 @@ const mockCostCategories = [
     usage: 81.25,
     change: +12.5,
     subcategories: [
-      { name: 'GPT-4 API', cost: 1850, usage: '2.5M tokens' },
-      { name: 'Claude API', cost: 980, usage: '1.8M tokens' },
-      { name: 'DALL-E Image Gen', cost: 420, usage: '1.2K images' },
-    ],
+      { name: 'GPT-4 API', cost: 1850, usage: '2.5 M tokens' },
+      { name: 'Claude API', cost: 980, usage: '1.8 M tokens' },
+      { name: 'DALL-E Image Gen', cost: 420, usage: '1.2 K images' } ]
   },
   {
     id: 2,
@@ -115,11 +99,9 @@ const mockCostCategories = [
     budgetLimit: 2000,
     usage: 72.5,
     change: +8.7,
-    subcategories: [
-      { name: 'ElevenLabs API', cost: 890, usage: '45 hours' },
+    subcategories: [ { name: 'ElevenLabs API', cost: 890, usage: '45 hours' },
       { name: 'Azure Speech', cost: 380, usage: '32 hours' },
-      { name: 'Google TTS', cost: 180, usage: '18 hours' },
-    ],
+      { name: 'Google TTS', cost: 180, usage: '18 hours' } ]
   },
   {
     id: 3,
@@ -129,11 +111,9 @@ const mockCostCategories = [
     budgetLimit: 1200,
     usage: 74.17,
     change: +5.2,
-    subcategories: [
-      { name: 'GCP Compute', cost: 450, usage: '850 hours' },
+    subcategories: [ { name: 'GCP Compute', cost: 450, usage: '850 hours' },
       { name: 'AWS Storage', cost: 280, usage: '2.5 TB' },
-      { name: 'Cloudflare CDN', cost: 160, usage: '8.2 TB transfer' },
-    ],
+      { name: 'Cloudflare CDN', cost: 160, usage: '8.2 TB transfer' } ]
   },
   {
     id: 4,
@@ -143,11 +123,9 @@ const mockCostCategories = [
     budgetLimit: 1000,
     usage: 68,
     change: -2.1,
-    subcategories: [
-      { name: 'FFmpeg Cloud', cost: 420, usage: '156 videos' },
+    subcategories: [ { name: 'FFmpeg Cloud', cost: 420, usage: '156 videos' },
       { name: 'Thumbnail Gen', cost: 160, usage: '312 thumbnails' },
-      { name: 'Video Compression', cost: 100, usage: '89 GB processed' },
-    ],
+      { name: 'Video Compression', cost: 100, usage: '89 GB processed' } ]
   },
   {
     id: 5,
@@ -157,97 +135,74 @@ const mockCostCategories = [
     budgetLimit: 500,
     usage: 64,
     change: +3.8,
-    subcategories: [
-      { name: 'AWS S3', cost: 180, usage: '1.8 TB' },
+    subcategories: [ { name: 'AWS S3', cost: 180, usage: '1.8 TB' },
       { name: 'Google Drive', cost: 90, usage: '2 TB backup' },
-      { name: 'Dropbox Business', cost: 50, usage: '5 TB sync' },
-    ],
-  },
-];
+      { name: 'Dropbox Business', cost: 50, usage: '5 TB sync' } ]
+  }];
 
-const mockTransactions = [
-  {
-    id: 1,
+const mockTransactions = [ { id: 1,
     date: '2024-01-14',
     description: 'OpenAI API Usage - GPT-4',
     category: 'AI Content Generation',
     amount: 245.67,
     type: 'expense',
     status: 'completed',
-    usage: '850K tokens',
-  },
-  {
-    id: 2,
+    usage: '850 K tokens' },
+  { id: 2,
     date: '2024-01-14',
     description: 'ElevenLabs Voice Synthesis',
     category: 'Voice Synthesis',
     amount: 89.32,
     type: 'expense',
     status: 'completed',
-    usage: '12 hours',
-  },
-  {
-    id: 3,
+    usage: '12 hours' },
+  { id: 3,
     date: '2024-01-13',
     description: 'GCP Compute Engine',
     category: 'Infrastructure',
     amount: 156.78,
     type: 'expense',
     status: 'completed',
-    usage: '120 hours',
-  },
-  {
-    id: 4,
+    usage: '120 hours' },
+  { id: 4,
     date: '2024-01-13',
     description: 'YouTube Ad Revenue',
     category: 'Revenue',
     amount: 1250.00,
     type: 'income',
     status: 'completed',
-    usage: 'Tech Reviews channel',
-  },
-  {
-    id: 5,
+    usage: 'Tech Reviews channel' },
+  { id: 5,
     date: '2024-01-12',
     description: 'AWS S3 Storage',
     category: 'Storage & Backup',
     amount: 45.21,
     type: 'expense',
     status: 'completed',
-    usage: '890 GB',
-  },
-];
+    usage: '890 GB' } ];
 
-const mockBudgetAlerts = [
-  {
-    id: 1,
+const mockBudgetAlerts = [ { id: 1,
     category: 'AI Content Generation',
     message: 'Approaching 80% of monthly budget',
-    severity: 'warning' as const,
-    threshold: 80,
-    current: 81.25,
-  },
-  {
-    id: 2,
+    severity: 'warning' as const threshold: 80,
+    current: 81.25 },
+  { id: 2,
     category: 'Infrastructure',
     message: 'Cost spike detected - 25% above average',
-    severity: 'info' as const,
-    threshold: 100,
-    current: 125,
-  },
-];
+    severity: 'info' as const threshold: 100,
+    current: 125 } ];
 
 interface CostMetrics {
-  totalSpent: number;
-  monthlyBudget: number;
-  projectedSpend: number;
-  costPerVideo: number;
-  efficiency: number;
-  savings: number;
-}
+  totalSpent: number,
+  monthlyBudget: number,
 
-export const CostTracking: React.FC = () => {
-  const theme = useTheme();
+  projectedSpend: number,
+  costPerVideo: number,
+
+  efficiency: number,
+  savings: number}
+
+export const CostTracking: React.FC = () => { const theme = useTheme();
   const [selectedPeriod, setSelectedPeriod] = useState<string>('current');
   const [viewMode, setViewMode] = useState<string>('categories');
   const [loading, setLoading] = useState(false);
@@ -260,24 +215,18 @@ export const CostTracking: React.FC = () => {
     projectedSpend: 7850,
     costPerVideo: 42.25,
     efficiency: 87.3,
-    savings: 1250,
-  });
+    savings: 1250 });
 
   const handleRefresh = async () => {
     setLoading(true);
     setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-  };
+      setLoading(false)}, 2000)};
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+  const formatCurrency = (_value: number) => { return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  };
+      maximumFractionDigits: 2 }).format(value)};
 
   const getBudgetColor = (usage: number) => {
     if (usage >= 90) return 'error';
@@ -294,20 +243,20 @@ export const CostTracking: React.FC = () => {
     return change > 0 ? <TrendingUp /> : change < 0 ? <TrendingDown /> : null;
   };
 
-  const handleEditBudget = (category: unknown) => {
+  const handleEditBudget = (category: React.ChangeEvent<HTMLInputElement>) => {
     setEditingCategory(category);
-    setBudgetDialogOpen(true);
-  };
+    setBudgetDialogOpen(true)};
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
+    <>
+      <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Cost Tracking
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="text.secondary">
             Monitor and optimize your YouTube automation costs
           </Typography>
         </Box>
@@ -351,30 +300,30 @@ export const CostTracking: React.FC = () => {
               Adjust Budget
             </Button>
           }
-          icon={alert.severity === 'warning' ? <Warning /> : <Notifications />}
+          icon={alert.severity === 'warning' ? <Warning /> </>: <Notifications />}
         >
           <strong>{alert.category}:</strong> {alert.message}
         </Alert>
       ))}
-
       {/* Key Metrics Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        {[
-          { 
+        {[ { 
             title: 'Total Spent', 
             value: formatCurrency(metrics.totalSpent), 
             subtitle: `of ${formatCurrency(metrics.monthlyBudget)} budget`,
             progress: (metrics.totalSpent / metrics.monthlyBudget) * 100,
             icon: <AttachMoney />,
-            color: 'primary'
+            color: 'primary',
+
           },
           { 
             title: 'Projected Spend', 
-            value: formatCurrency(metrics.projectedSpend), 
+            value: formatCurrency(metrics.projectedSpend), `
             subtitle: `${metrics.projectedSpend > metrics.monthlyBudget ? 'Over' : 'Under'} budget`,
             progress: (metrics.projectedSpend / metrics.monthlyBudget) * 100,
             icon: <Analytics />,
-            color: metrics.projectedSpend > metrics.monthlyBudget ? 'error' : 'success'
+            color: metrics.projectedSpend > metrics.monthlyBudget ? 'error' : 'success',
+
           },
           { 
             title: 'Cost per Video', 
@@ -382,7 +331,8 @@ export const CostTracking: React.FC = () => {
             subtitle: '15% improvement',
             progress: metrics.efficiency,
             icon: <VideoLibrary />,
-            color: 'info'
+            color: 'info',
+
           },
           { 
             title: 'Monthly Savings', 
@@ -390,16 +340,16 @@ export const CostTracking: React.FC = () => {
             subtitle: 'vs manual creation',
             progress: 85,
             icon: <AccountBalance />,
-            color: 'success'
-          },
-        ].map((item, index) => (
+            color: 'success',
+
+          } ].map((item, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                   <Typography variant="body2" color="text.secondary">
                     {item.title}
-                  </Typography>
+                  </Typography>`
                   <Box sx={{ color: `${item.color}.main` }}>
                     {item.icon}
                   </Box>
@@ -446,15 +396,15 @@ export const CostTracking: React.FC = () => {
                 <YAxis />
                 <RechartsTooltip 
                   labelFormatter={(value) => format(new Date(value), 'PPP')}
-                  formatter={(value: unknown, name: string) => [formatCurrency(value), name]}
+                  formatter={(value: React.ChangeEvent<HTMLInputElement>, name: string) => [ formatCurrency(value), name ]
                 />
                 <Legend />
                 {viewMode === 'categories' ? (
                   <>
-                    <Area dataKey="aiCosts" stackId="1" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} name="AI Costs" />
-                    <Area dataKey="infrastructure" stackId="1" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} name="Infrastructure" />
+                    <Area dataKey="aiCosts" stackId="1" stroke="#8884 d8" fill="#8884d8" fillOpacity={0.6} name="AI Costs" />
+                    <Area dataKey="infrastructure" stackId="1" stroke="#82 ca9 d" fill="#82 ca9 d" fillOpacity={0.6} name="Infrastructure" />
                     <Area dataKey="voiceover" stackId="1" stroke="#ffc658" fill="#ffc658" fillOpacity={0.6} name="Voice Synthesis" />
-                    <Area dataKey="storage" stackId="1" stroke="#ff7c7c" fill="#ff7c7c" fillOpacity={0.6} name="Storage" />
+                    <Area dataKey="storage" stackId="1" stroke="#ff7 c7 c" fill="#ff7 c7 c" fillOpacity={0.6} name="Storage" />
                   </>
                 ) : (
                   <Line
@@ -484,24 +434,24 @@ export const CostTracking: React.FC = () => {
                     name: cat.name,
                     value: cat.currentSpend,
                     color: theme.palette.mode === 'dark' ? 
-                      ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'][cat.id - 1] :
-                      ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'][cat.id - 1]
+                      ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8 dd1 e1'][cat.id - 1] :
+                      ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8 dd1 e1'][cat.id - 1]
                   }))}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name}: ${(percent * 100.toFixed(0)}%`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {mockCostCategories.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={
-                      ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'][index]
+                      ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8 dd1 e1'][index]
                     } />
                   ))}
                 </Pie>
-                <RechartsTooltip formatter={(value: unknown) => formatCurrency(value)} />
+                <RechartsTooltip formatter={(value: React.ChangeEvent<HTMLInputElement>) => formatCurrency(value)} />
               </PieChart>
             </ResponsiveContainer>
           </Paper>
@@ -666,9 +616,8 @@ export const CostTracking: React.FC = () => {
                 label="Budget Limit"
                 type="number"
                 defaultValue={editingCategory?.budgetLimit}
-                InputProps={{
-                  startAdornment: '$',
-                }}
+                InputProps={ {
+                  startAdornment: '$' }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -683,9 +632,8 @@ export const CostTracking: React.FC = () => {
                 label="Alert Threshold (%)"
                 type="number"
                 defaultValue={80}
-                InputProps={{
-                  endAdornment: '%',
-                }}
+                InputProps={ {
+                  endAdornment: '%' }}
               />
             </Grid>
           </Grid>
@@ -698,7 +646,7 @@ export const CostTracking: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  );
-};
+  </>
+  )};
 
-export default CostTracking;
+export default CostTracking;`

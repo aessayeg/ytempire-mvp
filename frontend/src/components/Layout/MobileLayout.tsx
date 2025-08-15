@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Drawer,
   AppBar,
@@ -21,23 +21,18 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
-  Badge,
   Avatar,
-  Paper,
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
+  Paper
+ } from '@mui/material';
+import { 
   Dashboard as DashboardIcon,
-  VideoLibrary as VideoLibraryIcon,
   Analytics as AnalyticsIcon,
   Settings as SettingsIcon,
-  Home as HomeIcon,
-  Add as AddIcon,
-  Person as PersonIcon,
-  Notifications as NotificationsIcon,
-  Close as CloseIcon,
-} from '@mui/icons-material';
-import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+  Home as HomeIcon
+,
+  Add as AddIcon
+ } from '@mui/icons-material';
+import {  useNavigate, useLocation, Outlet  } from 'react-router-dom';
 
 interface MobileLayoutProps {
   children?: React.ReactNode;
@@ -48,52 +43,43 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [bottomNavValue, setBottomNavValue] = useState(0);
   const [notificationCount, setNotificationCount] = useState(3);
 
   // Navigation items for drawer
-  const navigationItems = [
-    { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+  const navigationItems = [ { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { label: 'Videos', icon: <VideoLibraryIcon />, path: '/videos' },
     { label: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics' },
-    { label: 'Settings', icon: <SettingsIcon />, path: '/settings' },
-  ];
+    { label: 'Settings', icon: <SettingsIcon />, path: '/settings' } ];
 
   // Bottom navigation items for mobile
-  const bottomNavItems = [
-    { label: 'Home', icon: <HomeIcon />, path: '/dashboard' },
+  const bottomNavItems = [ { label: 'Home', icon: <HomeIcon />, path: '/dashboard' },
     { label: 'Videos', icon: <VideoLibraryIcon />, path: '/videos' },
     { label: 'Create', icon: <AddIcon />, path: '/videos/new' },
     { label: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics' },
-    { label: 'Profile', icon: <PersonIcon />, path: '/profile' },
-  ];
+    { label: 'Profile', icon: <PersonIcon />, path: '/profile' } ];
 
   useEffect(() => {
     // Update bottom navigation based on current path
-    const currentIndex = bottomNavItems.findIndex(item => 
+    const currentIndex = bottomNavItems.findIndex(item => {}
       location.pathname.startsWith(item.path)
     );
     if (currentIndex !== -1) {
-      setBottomNavValue(currentIndex);
-    }
-  }, [location.pathname]);
+      setBottomNavValue(currentIndex)}
+  }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
-  };
+    setDrawerOpen(!drawerOpen)};
 
   const handleNavigation = (path: string) => {
     navigate(path);
-    setDrawerOpen(false);
-  };
+    setDrawerOpen(false)};
 
-  const handleBottomNavChange = (_event: React.SyntheticEvent, newValue: number) => {
+  const handleBottomNavChange = (_: React.SyntheticEvent, newValue: number) => {
     setBottomNavValue(newValue);
-    navigate(bottomNavItems[newValue].path);
-  };
+    navigate(bottomNavItems[newValue].path)};
 
   const drawerContent = (
     <Box sx={{ width: 280, height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -130,17 +116,16 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
           <ListItem
             button
             key={item.label}
-            onClick={() => handleNavigation(item.path)}
+            onClick={() => handleNavigation(item.path}
             selected={location.pathname.startsWith(item.path)}
-            sx={{
+            sx={ {
               mx: 1,
               borderRadius: 1,
               '&.Mui-selected': {
                 backgroundColor: theme.palette.primary.main + '20',
                 '&:hover': {
-                  backgroundColor: theme.palette.primary.main + '30',
-                },
-              },
+                  backgroundColor: theme.palette.primary.main + '30' }
+              }
             }}
           >
             <ListItemIcon sx={{ minWidth: 40 }}>
@@ -174,7 +159,8 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100 vh' }}>
       {/* App Bar for Mobile */}
       {isMobile && (
         <AppBar 
@@ -183,7 +169,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
           sx={{ 
             backgroundColor: theme.palette.background.paper,
             color: theme.palette.text.primary,
-            borderBottom: `1px solid ${theme.palette.divider}`,
+            borderBottom: `1px solid ${theme.palette.divider}`
           }}
         >
           <Toolbar sx={{ px: 2 }}>
@@ -194,8 +180,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
             >
               <MenuIcon />
             </IconButton>
-            
-            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+      <Typography variant="h6" sx={{ flexGrow: 1 }}>
               YTEmpire
             </Typography>
             
@@ -207,18 +192,16 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
           </Toolbar>
         </AppBar>
       )}
-
       {/* Drawer for Mobile/Tablet */}
       <SwipeableDrawer
         anchor="left"
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        onOpen={() => setDrawerOpen(true)}
-        sx={{
+        onClose={() => setDrawerOpen(false}
+        onOpen={() => setDrawerOpen(true}
+        sx={ {
           '& .MuiDrawer-paper': {
             width: 280,
-            boxSizing: 'border-box',
-          },
+            boxSizing: 'border-box' }
         }}
       >
         {drawerContent}
@@ -227,15 +210,14 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
       {/* Main Content Area */}
       <Box
         component="main"
-        sx={{
+        sx={ {
           flexGrow: 1,
           overflow: 'auto',
           pt: isMobile ? 7 : 0,
           pb: isMobile ? 7 : 0,
           px: isMobile ? 2 : 3,
           py: 2,
-          backgroundColor: theme.palette.background.default,
-        }}
+          backgroundColor: theme.palette.background.default }}
       >
         {children || <Outlet />}
       </Box>
@@ -244,31 +226,29 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
       {isMobile && (
         <Paper
           elevation={8}
-          sx={{
+          sx={ {
             position: 'fixed',
             bottom: 0,
             left: 0,
             right: 0,
-            zIndex: theme.zIndex.appBar,
-          }}
+            zIndex: theme.zIndex.appBar }}
         >
           <BottomNavigation
             value={bottomNavValue}
             onChange={handleBottomNavChange}
             showLabels={false}
-            sx={{
+            sx={ {
               height: 56,
               '& .MuiBottomNavigationAction-root': {
                 minWidth: 'auto',
-                padding: '6px 0',
-              },
+                padding: '6px 0' }
             }}
           >
             {bottomNavItems.map((item) => (
               <BottomNavigationAction
                 key={item.label}
                 label={item.label}
-                icon={item.label === 'Create' ? (
+                icon={ item.label === 'Create' ? (
                   <Box
                     sx={{
                       width: 48,
@@ -280,8 +260,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
                       justifyContent: 'center',
                       color: 'white',
                       transform: 'translateY(-8px)',
-                      boxShadow: theme.shadows[4],
-                    }}
+                      boxShadow: theme.shadows[4] }}
                   >
                     {item.icon}
                   </Box>
@@ -294,8 +273,8 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
         </Paper>
       )}
     </Box>
-  );
-};
+  </>
+  )};
 
 export default MobileLayout;
 
@@ -324,10 +303,10 @@ export const MobileCard: React.FC<{ children: React.ReactNode }> = ({ children }
     sx={{
       p: 2,
       mb: 2,
-      borderRadius: 2,
-      border: (theme) => `1px solid ${theme.palette.divider}`,
+      borderRadius: 2,`
+      border: (theme) => `1px solid ${theme.palette.divider}`
     }}
   >
     {children}
   </Paper>
-);
+);`

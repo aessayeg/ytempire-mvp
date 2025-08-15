@@ -4,51 +4,43 @@
  */
 
 import React, { useState } from 'react';
-import {
+import { 
   IconButton,
   Menu,
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Tooltip,
   Switch,
   FormControlLabel,
   Box,
   Typography,
   Divider,
-  alpha
-} from '@mui/material';
-import {
-  Brightness4 as DarkModeIcon,
-  Brightness7 as LightModeIcon,
-  BrightnessAuto as AutoModeIcon,
-  Settings as SettingsIcon
-} from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+  alpha,
+  FormControl
+ } from '@mui/material';
+import {  Settings as SettingsIcon  } from '@mui/icons-material';
+import {  useTheme  } from '../../contexts/ThemeContext';
 
 export const ThemeToggle: React.FC = () => {
   const { isDarkMode, toggleTheme, setTheme, themeMode } = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  const handleClick = (_event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const handleClick = (_: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)};
 
   const handleClose = () => {
-    setAnchorEl(null);
-  };
+    setAnchorEl(null)};
 
   const handleThemeChange = (mode: 'light' | 'dark' | 'system') => {
     setTheme(mode);
-    handleClose();
-  };
+    handleClose()};
 
   const getIcon = () => {
     if (themeMode === 'system') {
       return <AutoModeIcon />;
     }
-    return isDarkMode ? <DarkModeIcon /> : <LightModeIcon />;
+    return isDarkMode ? <DarkModeIcon /> </>: <LightModeIcon />;
   };
 
   return (
@@ -57,14 +49,13 @@ export const ThemeToggle: React.FC = () => {
         <IconButton
           onClick={handleClick}
           size="small"
-          sx={{
+          sx={ {
             ml: 1,
-            backgroundColor: (theme) => 
+            backgroundColor: (theme) => {}
               alpha(theme.palette.primary.main, 0.1),
             '&:hover': {
-              backgroundColor: (theme) => 
-                alpha(theme.palette.primary.main, 0.2),
-            }
+              backgroundColor: (theme) => {}
+                alpha(theme.palette.primary.main, 0.2)}
           }}
         >
           {getIcon()}
@@ -76,14 +67,15 @@ export const ThemeToggle: React.FC = () => {
         onClose={handleClose}
         PaperProps={{
           elevation: 3,
-          sx: {
-            minWidth: 220,
+          sx: {,
+  minWidth: 220,
             mt: 1.5,
             borderRadius: 2,
             '& .MuiMenuItem-root': {
               borderRadius: 1,
               mx: 0.5,
-              my: 0.25
+              my: 0.25,
+
             }
           }
         }}
@@ -96,7 +88,7 @@ export const ThemeToggle: React.FC = () => {
         <Divider />
         <MenuItem 
           selected={themeMode === 'light'}
-          onClick={() => handleThemeChange('light')}
+          onClick={() => handleThemeChange('light'}
         >
           <ListItemIcon>
             <LightModeIcon fontSize="small" />
@@ -105,7 +97,7 @@ export const ThemeToggle: React.FC = () => {
         </MenuItem>
         <MenuItem 
           selected={themeMode === 'dark'}
-          onClick={() => handleThemeChange('dark')}
+          onClick={() => handleThemeChange('dark'}
         >
           <ListItemIcon>
             <DarkModeIcon fontSize="small" />
@@ -114,7 +106,7 @@ export const ThemeToggle: React.FC = () => {
         </MenuItem>
         <MenuItem 
           selected={themeMode === 'system'}
-          onClick={() => handleThemeChange('system')}
+          onClick={() => handleThemeChange('system'}
         >
           <ListItemIcon>
             <AutoModeIcon fontSize="small" />
@@ -140,21 +132,21 @@ export const ThemeToggle: React.FC = () => {
         </Box>
       </Menu>
     </>
-  );
-};
+  )};
 
 // Compact version for mobile
 export const ThemeToggleCompact: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
 
   return (
-    <Tooltip title={isDarkMode ? 'Light mode' : 'Dark mode'}>
+    <>
+      <Tooltip title={isDarkMode ? 'Light mode' : 'Dark mode'}>
       <IconButton onClick={toggleTheme} size="small">
-        {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
+        {isDarkMode ? <LightModeIcon /> </>: <DarkModeIcon />}
       </IconButton>
     </Tooltip>
-  );
-};
+  </>
+  )};
 
 // Floating theme toggle for demo/beta
 export const FloatingThemeToggle: React.FC = () => {
@@ -167,7 +159,8 @@ export const FloatingThemeToggle: React.FC = () => {
         position: 'fixed',
         bottom: 24,
         right: 24,
-        zIndex: 1300
+        zIndex: 1300,
+
       }}
     >
       <Box
@@ -175,7 +168,8 @@ export const FloatingThemeToggle: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 1
+          gap: 1,
+
         }}
       >
         {isExpanded && (
@@ -185,13 +179,14 @@ export const FloatingThemeToggle: React.FC = () => {
               borderRadius: 2,
               p: 1.5,
               boxShadow: 3,
-              mb: 1
+              mb: 1,
+
             }}
           >
             <Typography variant="caption" color="text.secondary" gutterBottom>
               Theme
             </Typography>
-            <FormControlLabel
+      <FormControlLabel
               control={
                 <Switch
                   checked={isDarkMode}
@@ -208,20 +203,21 @@ export const FloatingThemeToggle: React.FC = () => {
           </Box>
         )}
         <IconButton
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={() => setIsExpanded(!isExpanded}
           sx={{
             backgroundColor: 'primary.main',
             color: 'primary.contrastText',
             '&:hover': {
-              backgroundColor: 'primary.dark'
+              backgroundColor: 'primary.dark',
+
             },
             width: 56,
-            height: 56
+            height: 56,
+
           }}
         >
-          {isExpanded ? <SettingsIcon /> : (isDarkMode ? <DarkModeIcon /> : <LightModeIcon />)}
+          {isExpanded ? <SettingsIcon /> : (isDarkMode ? <DarkModeIcon /> </>: <LightModeIcon />)}
         </IconButton>
       </Box>
     </Box>
-  );
-};
+  )};

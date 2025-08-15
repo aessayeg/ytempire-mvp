@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import {
+import { 
   Box,
   Card,
   CardContent,
@@ -23,8 +23,6 @@ import {
   ListItemText,
   ListItemIcon,
   Divider,
-  Tooltip,
-  LinearProgress,
   Alert,
   Dialog,
   DialogTitle,
@@ -35,80 +33,65 @@ import {
   Select,
   MenuItem,
   Switch,
-  FormControlLabel,
-  Stack,
-  Autocomplete,
-  CircularProgress
-} from '@mui/material';
-import {
-  ContentCut as TrimIcon,
-  PlayArrow as PlayIcon,
-  Pause as PauseIcon,
-  SkipNext as SkipNextIcon,
-  SkipPrevious as SkipPreviousIcon,
-  VolumeUp as VolumeIcon,
-  VolumeOff as VolumeMuteIcon,
-  Fullscreen as FullscreenIcon,
+  FormControlLabel
+ } from '@mui/material';
+import { 
   Save as SaveIcon,
   Undo as UndoIcon,
   Redo as RedoIcon,
   Timeline as TimelineIcon,
-  TextFields as TextIcon,
-  Settings as SettingsIcon,
-  Download as DownloadIcon
-} from '@mui/icons-material';
+  Settings as SettingsIcon
+ } from '@mui/icons-material';
 
 interface VideoEditorProps {
   videoUrl?: string;
   videoId?: string;
   onSave?: (editedVideo: EditedVideo) => void;
-  onExport?: (format: string) => void;
-}
+  onExport?: (format: string) => void}
 
 interface EditedVideo {
-  id: string;
-  url: string;
-  metadata: VideoMetadata;
-  edits: VideoEdit[];
-  timeline: TimelineItem[];
-}
+  id: string,
+  url: string,
+
+  metadata: VideoMetadata,
+  edits: VideoEdit[],
+
+  timeline: TimelineItem[]}
 
 interface VideoMetadata {
-  title: string;
-  description: string;
+  title: string,
+  description: string,
+
   tags: string[];
   thumbnail?: string;
-  duration: number;
-  resolution: string;
-  fps: number;
-  bitrate: string;
-}
+  duration: number,
+  resolution: string,
+
+  fps: number,
+  bitrate: string}
 
 interface VideoEdit {
-  type: 'trim' | 'crop' | 'filter' | 'text' | 'audio';
-  timestamp: number;
-  parameters: unknown;
-}
+  type: 'trim' | 'crop' | 'filter' | 'text' | 'audio',
+  timestamp: number,
+
+  parameters: unknown}
 
 interface TimelineItem {
-  id: string;
-  type: 'video' | 'audio' | 'text' | 'image';
-  startTime: number;
-  endTime: number;
-  layer: number;
-  content: unknown;
-}
+  id: string,
+  type: 'video' | 'audio' | 'text' | 'image',
+
+  startTime: number,
+  endTime: number,
+
+  layer: number,
+  content: unknown}
 
 interface TrimMarkers {
-  start: number;
-  end: number;
-}
+  start: number,
+  end: number}
 
 export const VideoEditor: React.FC<VideoEditorProps> = ({
-  videoUrl = '',
-  videoId = '',
-  onSave,
-  onExport
+  videoUrl = '', videoId = '', onSave, onExport
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -128,9 +111,10 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
     tags: [],
     thumbnail: '',
     duration: 0,
-    resolution: '1920x1080',
+    resolution: '1920 x1080',
     fps: 30,
-    bitrate: '5000kbps'
+    bitrate: '5000 kbps',
+
   });
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
   const [selectedTimelineItem, setSelectedTimelineItem] = useState<string | null>(null);
@@ -144,61 +128,51 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
     if (!videoRef.current) return;
     
     if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  }, [isPlaying]);
+      videoRef.current.pause()} else {
+      videoRef.current.play()}
+    setIsPlaying(!isPlaying)}, [isPlaying]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSeek = useCallback((event: Event, value: number | number[]) => {
+  const handleSeek = useCallback(_(event: Event, value: number | number[]) => {
     if (!videoRef.current) return;
     const newTime = value as number;
     videoRef.current.currentTime = newTime;
-    setCurrentTime(newTime);
-  }, []);
+    setCurrentTime(newTime)}, []);
 
-  const handleVolumeChange = useCallback((event: Event, value: number | number[]) => {
+  const handleVolumeChange = useCallback(_(event: Event, value: number | number[]) => {
     if (!videoRef.current) return;
     const newVolume = value as number;
     videoRef.current.volume = newVolume;
     setVolume(newVolume);
-    setIsMuted(newVolume === 0);
-  }, []);
+    setIsMuted(newVolume === 0)}, []);
 
   const handleMuteToggle = useCallback(() => {
     if (!videoRef.current) return;
     const newMuted = !isMuted;
     videoRef.current.muted = newMuted;
-    setIsMuted(newMuted);
-  }, [isMuted]);
+    setIsMuted(newMuted)}, [isMuted]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePlaybackRateChange = useCallback((rate: number) => {
     if (!videoRef.current) return;
     videoRef.current.playbackRate = rate;
-    setPlaybackRate(rate);
-  }, []);
+    setPlaybackRate(rate)}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFullscreen = useCallback(() => {
     if (!videoRef.current) return;
     if (videoRef.current.requestFullscreen) {
-      videoRef.current.requestFullscreen();
-    }
-  }, []);
+      videoRef.current.requestFullscreen()}
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Trim functionality
   const handleTrimStart = useCallback(() => {
     setTrimMarkers(prev => ({ ...prev, start: currentTime }));
-    setIsTrimming(true);
-  }, [currentTime]);
+    setIsTrimming(true)}, [currentTime]);
 
   const handleTrimEnd = useCallback(() => {
-    setTrimMarkers(prev => ({ ...prev, end: currentTime }));
-  }, [currentTime]);
+    setTrimMarkers(prev => ({ ...prev, end: currentTime }))}, [currentTime]);
 
   const handleApplyTrim = useCallback(() => {
-    const edit: VideoEdit = {
-      type: 'trim',
+const edit: VideoEdit = {,
+  type: 'trim',
       timestamp: Date.now(),
       parameters: { ...trimMarkers }
     };
@@ -208,13 +182,11 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
     setIsTrimming(false);
     
     // Here you would apply the actual trim to the video
-    console.log('Applying trim:', trimMarkers);
-  }, [trimMarkers, historyIndex]);
+    console.log('Applying, trim:', trimMarkers)}, [trimMarkers, historyIndex]);
 
   const handleCancelTrim = useCallback(() => {
     setTrimMarkers({ start: 0, end: duration });
-    setIsTrimming(false);
-  }, [duration]);
+    setIsTrimming(false)}, [duration]);
 
   // Undo/Redo functionality
   const handleUndo = useCallback(() => {
@@ -222,19 +194,18 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
       setHistoryIndex(prev => prev - 1);
       // Apply the previous state
     }
-  }, [historyIndex]);
+  }, [historyIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRedo = useCallback(() => {
     if (historyIndex < editHistory.length - 1) {
       setHistoryIndex(prev => prev + 1);
       // Apply the next state
     }
-  }, [historyIndex, editHistory.length]);
+  }, [historyIndex, editHistory.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Export functionality
   const handleExportClick = useCallback(() => {
-    setExportDialogOpen(true);
-  }, []);
+    setExportDialogOpen(true)}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleExportConfirm = useCallback(() => {
     setIsProcessing(true);
@@ -244,15 +215,13 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
     setTimeout(() => {
       setIsProcessing(false);
       if (onExport) {
-        onExport(exportFormat);
-      }
-    }, 3000);
-  }, [exportFormat, onExport]);
+        onExport(exportFormat)}
+    }, 3000)}, [exportFormat, onExport]);
 
   // Save functionality
-  const handleSaveClick = useCallback(() => {
-    const editedVideo: EditedVideo = {
-      id: videoId,
+  const handleSaveClick = useCallback_(() => {
+const editedVideo: EditedVideo = {,
+  id: videoId,
       url: videoUrl,
       metadata,
       edits: editHistory,
@@ -260,8 +229,7 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
     };
     
     if (onSave) {
-      onSave(editedVideo);
-    }
+      onSave(editedVideo)}
   }, [videoId, videoUrl, metadata, editHistory, timeline, onSave]);
 
   // Format time for display
@@ -277,39 +245,35 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
     if (!video) return;
 
     const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime);
-    };
+      setCurrentTime(video.currentTime)};
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
       setTrimMarkers({ start: 0, end: video.duration });
-      setMetadata(prev => ({ ...prev, duration: video.duration }));
-    };
+      setMetadata(prev => ({ ...prev, duration: video.duration }))};
 
     const handleEnded = () => {
-      setIsPlaying(false);
-    };
+      setIsPlaying(false)};
 
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('ended', handleEnded);
 
     return () => {
+    
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      video.removeEventListener('ended', handleEnded);
-    };
-  }, []);
+      video.removeEventListener('ended', handleEnded)}, []);
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <>
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header Toolbar */}
       <Paper sx={{ p: 1, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           Video Editor
         </Typography>
-        
-        <Tooltip title="Undo">
+      <Tooltip title="Undo">
           <span>
             <IconButton 
               onClick={handleUndo} 
@@ -367,7 +331,8 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                   style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'contain'
+                    objectFit: 'contain',
+
                   }}
                 />
                 
@@ -410,33 +375,30 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                 </Box>
 
                 {/* Trim Markers */}
-                {isTrimming && (
-                  <Box sx={{ position: 'relative', height: 20, mb: 1 }}>
+                {isTrimming && (_<Box sx={{ position: 'relative', height: 20, mb: 1 }}>
                     <Slider
-                      value={[trimMarkers.start, trimMarkers.end]}
+                      value={[ trimMarkers.start, trimMarkers.end ]
                       max={duration}
-                      onChange={(e, value) => {
+                      onChange={(_, value) => {
                         const [start, end] = value as number[];
-                        setTrimMarkers({ start, end });
-                      }}
+                        setTrimMarkers({ start, end })}}
                       valueLabelDisplay="auto"
                       valueLabelFormat={formatTime}
                       sx={{
                         '& .MuiSlider-track': {
-                          backgroundColor: 'error.main'
+                          backgroundColor: 'error.main',
+
                         }
                       }}
                     />
                   </Box>
                 )}
-
                 {/* Control Buttons */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <IconButton onClick={() => {
                       if (videoRef.current) {
-                        videoRef.current.currentTime = Math.max(0, currentTime - 10);
-                      }
+                        videoRef.current.currentTime = Math.max(0, currentTime - 10)}
                     }}>
                       <SkipPreviousIcon />
                     </IconButton>
@@ -445,16 +407,16 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                       backgroundColor: 'primary.main',
                       color: 'primary.contrastText',
                       '&:hover': {
-                        backgroundColor: 'primary.dark'
+                        backgroundColor: 'primary.dark',
+
                       }
                     }}>
-                      {isPlaying ? <PauseIcon /> : <PlayIcon />}
+                      {isPlaying ? <PauseIcon /> </>: <PlayIcon />}
                     </IconButton>
                     
                     <IconButton onClick={() => {
                       if (videoRef.current) {
-                        videoRef.current.currentTime = Math.min(duration, currentTime + 10);
-                      }
+                        videoRef.current.currentTime = Math.min(duration, currentTime + 10)}
                     }}>
                       <SkipNextIcon />
                     </IconButton>
@@ -464,7 +426,7 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                     {/* Volume Control */}
                     <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 150 }}>
                       <IconButton onClick={handleMuteToggle} size="small">
-                        {isMuted ? <VolumeMuteIcon /> : <VolumeIcon />}
+                        {isMuted ? <VolumeMuteIcon /> </>: <VolumeIcon />}
                       </IconButton>
                       <Slider
                         value={isMuted ? 0 : volume}
@@ -480,12 +442,12 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                     <FormControl size="small" sx={{ minWidth: 80 }}>
                       <Select
                         value={playbackRate}
-                        onChange={(e) => handlePlaybackRateChange(Number(e.target.value))}
+                        onChange={(e) => handlePlaybackRateChange(Number(e.target.value)}
                       >
-                        <MenuItem value={0.5}>0.5x</MenuItem>
-                        <MenuItem value={1}>1x</MenuItem>
-                        <MenuItem value={1.5}>1.5x</MenuItem>
-                        <MenuItem value={2}>2x</MenuItem>
+                        <MenuItem value={0.5}>0.5 x</MenuItem>
+                        <MenuItem value={1}>1 x</MenuItem>
+                        <MenuItem value={1.5}>1.5 x</MenuItem>
+                        <MenuItem value={2}>2 x</MenuItem>
                       </Select>
                     </FormControl>
 
@@ -503,7 +465,7 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
         <Grid item xs={12} md={4}>
           <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ flexGrow: 1, overflow: 'auto' }}>
-              <Tabs value={selectedTab} onChange={(e, v) => setSelectedTab(v)}>
+              <Tabs value={selectedTab} onChange={(_, v) => setSelectedTab(v}>
                 <Tab icon={<TrimIcon />} label="Trim" />
                 <Tab icon={<TextIcon />} label="Metadata" />
                 <Tab icon={<TimelineIcon />} label="Timeline" />
@@ -577,7 +539,6 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                     </Stack>
                   </Box>
                 )}
-
                 {/* Metadata Tab */}
                 {selectedTab === 1 && (
                   <Box>
@@ -589,7 +550,7 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                       <TextField
                         label="Title"
                         value={metadata.title}
-                        onChange={(e) => setMetadata(prev => ({ ...prev, title: e.target.value }))}
+                        onChange={(e) => setMetadata(prev => ({ ...prev, title: e.target.value)}))}
                         size="small"
                         fullWidth
                       />
@@ -597,7 +558,7 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                       <TextField
                         label="Description"
                         value={metadata.description}
-                        onChange={(e) => setMetadata(prev => ({ ...prev, description: e.target.value }))}
+                        onChange={(e) => setMetadata(prev => ({ ...prev, description: e.target.value)}))}
                         size="small"
                         multiline
                         rows={4}
@@ -609,8 +570,8 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                         options={[]}
                         freeSolo
                         value={metadata.tags}
-                        onChange={(e, value) => setMetadata(prev => ({ ...prev, tags: value }))}
-                        renderTags={(value, getTagProps) =>
+                        onChange={(_, value) => setMetadata(prev => ({ ...prev, tags: value }))}
+                        renderTags={(value, getTagProps) => {}
                           value.map((option, index) => (
                             <Chip
                               variant="outlined"
@@ -618,8 +579,7 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                               size="small"
                               {...getTagProps({ index })}
                             />
-                          ))
-                        }
+                          ))}
                         renderInput={(params) => (
                           <TextField
                             {...params}
@@ -647,7 +607,6 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                     </Stack>
                   </Box>
                 )}
-
                 {/* Timeline Tab */}
                 {selectedTab === 2 && (
                   <Box>
@@ -665,14 +624,13 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                           <TimelineIcon />
                         </ListItemIcon>
                         <ListItemText
-                          primary="Main Video"
+                          primary="Main Video"`
                           secondary={`0:00 - ${formatTime(duration)}`}
                         />
                       </ListItem>
                     </List>
                   </Box>
                 )}
-
                 {/* Settings Tab */}
                 {selectedTab === 3 && (
                   <Box>
@@ -702,10 +660,10 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
                           onChange={(e) => setExportQuality(e.target.value)}
                           label="Quality"
                         >
-                          <MenuItem value="low">Low (480p)</MenuItem>
-                          <MenuItem value="medium">Medium (720p)</MenuItem>
-                          <MenuItem value="high">High (1080p)</MenuItem>
-                          <MenuItem value="ultra">Ultra (4K)</MenuItem>
+                          <MenuItem value="low">Low (480 p)</MenuItem>
+                          <MenuItem value="medium">Medium (720 p)</MenuItem>
+                          <MenuItem value="high">High (1080 p)</MenuItem>
+                          <MenuItem value="ultra">Ultra (4 K)</MenuItem>
                         </Select>
                       </FormControl>
                       
@@ -733,11 +691,11 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
       </Grid>
 
       {/* Export Dialog */}
-      <Dialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)}>
+      <Dialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false}>
         <DialogTitle>Export Video</DialogTitle>
         <DialogContent>
           <Typography variant="body2" gutterBottom>
-            Export settings:
+            Export, settings:
           </Typography>
           <Box sx={{ mt: 2 }}>
             <Typography variant="body2">
@@ -749,7 +707,7 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setExportDialogOpen(false)}>
+          <Button onClick={() => setExportDialogOpen(false}>
             Cancel
           </Button>
           <Button onClick={handleExportConfirm} variant="contained">
@@ -758,5 +716,5 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
         </DialogActions>
       </Dialog>
     </Box>
-  );
-};
+  </>
+  )};`

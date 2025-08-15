@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuthStore } from '../../stores/authStore';
-import {
+import {  useNavigate, Link  } from 'react-router-dom';
+import {  useAuthStore  } from '../../stores/authStore';
+import { 
   Box,
   Button,
   TextField,
@@ -16,15 +16,13 @@ import {
   StepLabel,
   Checkbox,
   FormControlLabel,
-} from '@mui/material';
-import {
-  Visibility,
+  FormControl
+ } from '@mui/material';
+import {  Visibility,
   VisibilityOff,
   Email,
   Lock,
-  Person,
-  Badge,
-} from '@mui/icons-material';
+  Person  } from '@mui/icons-material';
 
 const steps = ['Account Details', 'Personal Information', 'Confirmation'];
 
@@ -33,14 +31,12 @@ export const RegisterForm: React.FC = () => {
   const { register, isLoading, error, clearError } = useAuthStore();
   
   const [activeStep, setActiveStep] = useState(0);
-  const [formData, setFormData] = useState({
-    email: '',
+  const [formData, setFormData] = useState({ email: '',
     username: '',
     password: '',
     confirmPassword: '',
     fullName: '',
-    agreeToTerms: false,
-  });
+    agreeToTerms: false });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -60,7 +56,7 @@ export const RegisterForm: React.FC = () => {
         errors.username = 'Username is required';
       } else if (formData.username.length < 3) {
         errors.username = 'Username must be at least 3 characters';
-      } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      } else if (!/^[a-zA-Z0-9 _]+$/.test(formData.username)) {
         errors.username = 'Username can only contain letters, numbers, and underscores';
       }
     } else if (step === 1) {
@@ -95,13 +91,11 @@ export const RegisterForm: React.FC = () => {
 
   const handleNext = () => {
     if (validateStep(activeStep)) {
-      setActiveStep((prevStep) => prevStep + 1);
-    }
+      setActiveStep((prevStep) => prevStep + 1)}
   };
 
   const handleBack = () => {
-    setActiveStep((prevStep) => prevStep - 1);
-  };
+    setActiveStep((prevStep) => prevStep - 1)};
 
   const handleSubmit = async () => {
     if (!validateStep(2)) return;
@@ -113,14 +107,13 @@ export const RegisterForm: React.FC = () => {
         formData.password,
         formData.fullName || undefined
       );
-      navigate('/dashboard');
-    } catch (_error) {
-      console.error('Registration failed:', error);
+      navigate('/dashboard')} catch (_) {
+      console.error('Registration, failed:', error);
       setActiveStep(0); // Go back to first step on error
     }
   };
 
-  const handleChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -129,13 +122,11 @@ export const RegisterForm: React.FC = () => {
     
     // Clear validation error when user starts typing
     if (validationErrors[name]) {
-      setValidationErrors(prev => ({ ...prev, [name]: '' }));
-    }
+      setValidationErrors(prev => ({ ...prev, [name]: '' }))}
     
     // Clear auth error
     if (error) {
-      clearError();
-    }
+      clearError()}
   };
 
   const renderStepContent = (step: number) => {
@@ -153,13 +144,12 @@ export const RegisterForm: React.FC = () => {
               onChange={handleChange}
               error={!!validationErrors.email}
               helperText={validationErrors.email}
-              InputProps={{
+              InputProps={ {
                 startAdornment: (
                   <InputAdornment position="start">
                     <Email color="action" />
                   </InputAdornment>
-                ),
-              }}
+                ) }}
               autoComplete="email"
               autoFocus
             />
@@ -173,13 +163,12 @@ export const RegisterForm: React.FC = () => {
               onChange={handleChange}
               error={!!validationErrors.username}
               helperText={validationErrors.username}
-              InputProps={{
+              InputProps={ {
                 startAdornment: (
                   <InputAdornment position="start">
                     <Person color="action" />
                   </InputAdornment>
-                ),
-              }}
+                ) }}
               autoComplete="username"
             />
           </>
@@ -197,13 +186,12 @@ export const RegisterForm: React.FC = () => {
               onChange={handleChange}
               error={!!validationErrors.fullName}
               helperText={validationErrors.fullName}
-              InputProps={{
+              InputProps={ {
                 startAdornment: (
                   <InputAdornment position="start">
                     <Badge color="action" />
                   </InputAdornment>
-                ),
-              }}
+                ) }}
               autoComplete="name"
             />
             
@@ -227,13 +215,13 @@ export const RegisterForm: React.FC = () => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowPassword(!showPassword}
                       edge="end"
                     >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                      {showPassword ? <VisibilityOff /> </>: <Visibility />}
                     </IconButton>
                   </InputAdornment>
-                ),
+                )
               }}
               autoComplete="new-password"
             />
@@ -258,13 +246,13 @@ export const RegisterForm: React.FC = () => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle confirm password visibility"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword}
                       edge="end"
                     >
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                      {showConfirmPassword ? <VisibilityOff /> </>: <Visibility />}
                     </IconButton>
                   </InputAdornment>
-                ),
+                )
               }}
               autoComplete="new-password"
             />
@@ -273,12 +261,13 @@ export const RegisterForm: React.FC = () => {
         
       case 2:
         return (
-          <Box sx={{ mt: 2 }}>
+    <>
+      <Box sx={{ mt: 2 }}>
             <Paper sx={{ p: 3, mb: 2, bgcolor: 'grey.50' }}>
               <Typography variant="h6" gutterBottom>
                 Account Summary
               </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+      <Typography variant="body2" color="text.secondary" gutterBottom>
                 <strong>Email:</strong> {formData.email}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -286,7 +275,7 @@ export const RegisterForm: React.FC = () => {
               </Typography>
               {formData.fullName && (
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  <strong>Full Name:</strong> {formData.fullName}
+                  <strong>Full, Name:</strong> {formData.fullName}
                 </Typography>
               )}
             </Paper>
@@ -303,11 +292,11 @@ export const RegisterForm: React.FC = () => {
               label={
                 <Typography variant="body2">
                   I agree to the{' '}
-                  <Link to="/terms" style={{ color: '#667eea' }}>
+                  <Link to="/terms" style={{ color: '#667 eea' }}>
                     Terms and Conditions
                   </Link>
                   {' '}and{' '}
-                  <Link to="/privacy" style={{ color: '#667eea' }}>
+                  <Link to="/privacy" style={{ color: '#667 eea' }}>
                     Privacy Policy
                   </Link>
                 </Typography>
@@ -319,38 +308,37 @@ export const RegisterForm: React.FC = () => {
               </Typography>
             )}
           </Box>
-        );
+        </>
+  );
         
       default:
-        return null;
-    }
+        return null}
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
+    <>
+      <Box
+      sx={ {
+        minHeight: '100 vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: 2,
-      }}
+        background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+        padding: 2 }}
     >
       <Paper
         elevation={10}
-        sx={{
+        sx={ {
           padding: 4,
           maxWidth: 500,
           width: '100%',
-          borderRadius: 2,
-        }}
+          borderRadius: 2 }}
       >
         <Box sx={{ mb: 4, textAlign: 'center' }}>
           <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
             YTEmpire
           </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
+      <Typography variant="subtitle1" color="text.secondary">
             Create your account
           </Typography>
         </Box>
@@ -368,10 +356,8 @@ export const RegisterForm: React.FC = () => {
             {error}
           </Alert>
         )}
-
         <Box>
           {renderStepContent(activeStep)}
-          
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
             <Button
               disabled={activeStep === 0}
@@ -386,11 +372,10 @@ export const RegisterForm: React.FC = () => {
                 variant="contained"
                 onClick={handleSubmit}
                 disabled={isLoading}
-                sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                sx={ {
+                  background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4290 100%)',
-                  },
+                    background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
                 }}
               >
                 {isLoading ? (
@@ -403,11 +388,10 @@ export const RegisterForm: React.FC = () => {
               <Button
                 variant="contained"
                 onClick={handleNext}
-                sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                sx={ {
+                  background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4290 100%)',
-                  },
+                    background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
                 }}
               >
                 Next
@@ -421,11 +405,10 @@ export const RegisterForm: React.FC = () => {
             Already have an account?{' '}
             <Link
               to="/auth/login"
-              style={{
-                color: '#667eea',
+              style={ {
+                color: '#667 eea',
                 textDecoration: 'none',
-                fontWeight: 'bold',
-              }}
+                fontWeight: 'bold' }}
             >
               Sign In
             </Link>
@@ -433,5 +416,5 @@ export const RegisterForm: React.FC = () => {
         </Box>
       </Paper>
     </Box>
-  );
-};
+  </>
+  )};

@@ -3,7 +3,7 @@
  * MVP Screen Design - Video queue management
  */
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Paper,
   Typography,
@@ -27,9 +27,9 @@ import {
   Grid,
   ToggleButton,
   ToggleButtonGroup,
-  Checkbox,
-} from '@mui/material';
-import {
+  Checkbox
+ } from '@mui/material';
+import { 
   Queue,
   PlayArrow,
   Pause,
@@ -37,7 +37,6 @@ import {
   Edit,
   Schedule,
   CheckCircle,
-  Error as ErrorIcon,
   AttachMoney,
   Visibility,
   Refresh,
@@ -46,32 +45,36 @@ import {
   DragIndicator,
   AutorenewOutlined,
   ViewList,
-  ViewModule,
-} from '@mui/icons-material';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+  ViewModule
+ } from '@mui/icons-material';
+import {  DragDropContext, Droppable, Draggable  } from 'react-beautiful-dnd';
 
 interface Video {
-  id: string;
-  title: string;
-  channel: string;
-  channelId: string;
-  status: 'queued' | 'processing' | 'completed' | 'failed' | 'scheduled';
-  progress: number;
-  thumbnail: string;
+  id: string,
+  title: string,
+
+  channel: string,
+  channelId: string,
+
+  status: 'queued' | 'processing' | 'completed' | 'failed' | 'scheduled',
+  progress: number,
+
+  thumbnail: string,
   duration: string;
   scheduledDate?: Date;
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  cost: number;
-  estimatedViews: number;
-  tags: string[];
+  priority: 'low' | 'normal' | 'high' | 'urgent',
+  cost: number,
+
+  estimatedViews: number,
+  tags: string[],
+
   createdAt: Date;
   processingStage?: string;
   error?: string;
 }
 
 const mockVideos: Video[] = [
-  {
-    id: '1',
+  { id: '1',
     title: 'Top 10 JavaScript Frameworks in 2024',
     channel: 'Tech Reviews Pro',
     channelId: '1',
@@ -84,10 +87,8 @@ const mockVideos: Video[] = [
     estimatedViews: 25000,
     tags: ['JavaScript', 'Programming', 'Tutorial'],
     createdAt: new Date(),
-    processingStage: 'Generating voice narration',
-  },
-  {
-    id: '2',
+    processingStage: 'Generating voice narration' },
+  { id: '2',
     title: 'Ultimate Gaming PC Build Guide',
     channel: 'Gaming Highlights',
     channelId: '2',
@@ -99,10 +100,8 @@ const mockVideos: Video[] = [
     cost: 3.20,
     estimatedViews: 18000,
     tags: ['Gaming', 'PC Build', 'Hardware'],
-    createdAt: new Date(),
-  },
-  {
-    id: '3',
+    createdAt: new Date() },
+  { id: '3',
     title: '5 Easy Pasta Recipes for Beginners',
     channel: 'Cooking Adventures',
     channelId: '3',
@@ -115,10 +114,8 @@ const mockVideos: Video[] = [
     cost: 1.95,
     estimatedViews: 12000,
     tags: ['Cooking', 'Recipe', 'Food'],
-    createdAt: new Date(),
-  },
-  {
-    id: '4',
+    createdAt: new Date() },
+  { id: '4',
     title: 'React vs Vue.js - Performance Comparison',
     channel: 'Tech Reviews Pro',
     channelId: '1',
@@ -130,10 +127,8 @@ const mockVideos: Video[] = [
     cost: 2.45,
     estimatedViews: 22000,
     tags: ['React', 'Vue', 'Comparison'],
-    createdAt: new Date(),
-  },
-  {
-    id: '5',
+    createdAt: new Date() },
+  { id: '5',
     title: 'Best RPG Games of 2024',
     channel: 'Gaming Highlights',
     channelId: '2',
@@ -146,9 +141,7 @@ const mockVideos: Video[] = [
     estimatedViews: 30000,
     tags: ['Gaming', 'RPG', 'Review'],
     createdAt: new Date(),
-    _error: 'Voice synthesis failed: API quota exceeded',
-  },
-];
+    _: 'Voice synthesis failed: API quota exceeded' }];
 
 export const VideoQueue: React.FC = () => {
   const [videos, setVideos] = useState<Video[]>(mockVideos);
@@ -159,19 +152,17 @@ export const VideoQueue: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [detailDialog, setDetailDialog] = useState<Video | null>(null);
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue)};
 
-  const handleDragEnd = (result: unknown) => {
+  const handleDragEnd = (result: React.ChangeEvent<HTMLInputElement>) => {
     if (!result.destination) return;
     
     const items = Array.from(videos);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
     
-    setVideos(items);
-  };
+    setVideos(items)};
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -180,8 +171,7 @@ export const VideoQueue: React.FC = () => {
       case 'queued': return 'default';
       case 'scheduled': return 'warning';
       case 'failed': return 'error';
-      default: return 'default';
-    }
+      default: return 'default'}
   };
 
   const getStatusIcon = (status: string) => {
@@ -191,8 +181,7 @@ export const VideoQueue: React.FC = () => {
       case 'queued': return <Queue />;
       case 'scheduled': return <Schedule />;
       case 'failed': return <ErrorIcon />;
-      default: return null;
-    }
+      default: return null}
   };
 
   const getPriorityColor = (priority: string) => {
@@ -201,16 +190,14 @@ export const VideoQueue: React.FC = () => {
       case 'high': return 'warning';
       case 'normal': return 'info';
       case 'low': return 'default';
-      default: return 'default';
-    }
+      default: return 'default'}
   };
 
   const getFilteredVideos = () => {
     let filtered = [...videos];
     
     if (filterStatus !== 'all') {
-      filtered = filtered.filter(v => v.status === filterStatus);
-    }
+      filtered = filtered.filter(v => v.status === filterStatus)}
     
     if (tabValue === 1) filtered = filtered.filter(v => v.status === 'queued');
     if (tabValue === 2) filtered = filtered.filter(v => v.status === 'processing');
@@ -218,19 +205,17 @@ export const VideoQueue: React.FC = () => {
     if (tabValue === 4) filtered = filtered.filter(v => v.status === 'failed');
     
     // Sort
-    filtered.sort((a, b) => {
+    filtered.sort(_(a, _b) => {
       if (sortBy === 'priority') {
         const priorityOrder = { urgent: 0, high: 1, normal: 2, low: 3 };
         return priorityOrder[a.priority] - priorityOrder[b.priority];
       }
       if (sortBy === 'date') {
-        return b.createdAt.getTime() - a.createdAt.getTime();
-      }
+        return b.createdAt.getTime() - a.createdAt.getTime()}
       if (sortBy === 'cost') {
         return b.cost - a.cost;
       }
-      return 0;
-    });
+      return 0});
     
     return filtered;
   };
@@ -263,7 +248,7 @@ export const VideoQueue: React.FC = () => {
             borderRadius: 2,
             border: '1px solid',
             borderColor: 'divider',
-            '&:hover': { bgcolor: 'action.hover' },
+            '&:hover': { bgcolor: 'action.hover' }
           }}
         >
           <IconButton {...provided.dragHandleProps} size="small" sx={{ mr: 1 }}>
@@ -272,12 +257,10 @@ export const VideoQueue: React.FC = () => {
           
           <Checkbox
             checked={selectedVideos.includes(video.id)}
-            onChange={(_e) => {
+            onChange={(_) => {
               if (e.target.checked) {
-                setSelectedVideos([...selectedVideos, video.id]);
-              } else {
-                setSelectedVideos(selectedVideos.filter(id => id !== video.id));
-              }
+                setSelectedVideos([...selectedVideos, video.id])} else {
+                setSelectedVideos(selectedVideos.filter(id => id !== video.id))}
             }}
             sx={{ mr: 1 }}
           />
@@ -291,15 +274,14 @@ export const VideoQueue: React.FC = () => {
               />
               <Typography
                 variant="caption"
-                sx={{
+                sx={ {
                   position: 'absolute',
                   bottom: 4,
                   right: 4,
                   bgcolor: 'rgba(0,0,0,0.7)',
                   color: 'white',
                   px: 0.5,
-                  borderRadius: 0.5,
-                }}
+                  borderRadius: 0.5 }}
               >
                 {video.duration}
               </Typography>
@@ -384,7 +366,7 @@ export const VideoQueue: React.FC = () => {
                   <Refresh />
                 </IconButton>
               )}
-              <IconButton size="small" onClick={() => setDetailDialog(video)}>
+              <IconButton size="small" onClick={() => setDetailDialog(video}>
                 <Edit />
               </IconButton>
               <IconButton size="small" color="error">
@@ -398,14 +380,15 @@ export const VideoQueue: React.FC = () => {
   );
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
+    <>
+      <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Header */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" gutterBottom>
             Video Queue
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="text.secondary">
             Manage and monitor your video generation pipeline
           </Typography>
         </Box>
@@ -503,10 +486,10 @@ export const VideoQueue: React.FC = () => {
           <Stack direction="row" spacing={1}>
             {selectedVideos.length > 0 && (
               <>
-                <Button size="small" onClick={() => handleBulkAction('pause')}>
+                <Button size="small" onClick={() => handleBulkAction('pause'}>
                   Pause Selected
                 </Button>
-                <Button size="small" color="error" onClick={() => handleBulkAction('delete')}>
+                <Button size="small" color="error" onClick={() => handleBulkAction('delete'}>
                   Delete Selected
                 </Button>
                 <Divider orientation="vertical" flexItem />
@@ -515,7 +498,7 @@ export const VideoQueue: React.FC = () => {
             <ToggleButtonGroup
               value={viewMode}
               exclusive
-              onChange={(e, newMode) => newMode && setViewMode(newMode)}
+              onChange={(_, newMode) => newMode && setViewMode(newMode}
               size="small"
             >
               <ToggleButton value="list">
@@ -525,7 +508,7 @@ export const VideoQueue: React.FC = () => {
                 <ViewModule />
               </ToggleButton>
             </ToggleButtonGroup>
-            <IconButton size="small" onClick={(_e) => setFilterMenu(e.currentTarget)}>
+            <IconButton size="small" onClick={(_) => setFilterMenu(_.currentTarget}>
               <FilterList />
             </IconButton>
             <IconButton size="small">
@@ -553,27 +536,30 @@ export const VideoQueue: React.FC = () => {
       <Menu
         anchorEl={filterMenu}
         open={Boolean(filterMenu)}
-        onClose={() => setFilterMenu(null)}
+        onClose={() => setFilterMenu(null}
       >
-        <MenuItem onClick={() => { setFilterStatus('all'); setFilterMenu(null); }}>
+        <MenuItem onClick={(</>
+  ) => { setFilterStatus('all'</>
+  ); setFilterMenu(null</>
+  )}}>
           All Status
         </MenuItem>
-        <MenuItem onClick={() => { setFilterStatus('queued'); setFilterMenu(null); }}>
+        <MenuItem onClick={() => { setFilterStatus('queued'); setFilterMenu(null)}}>
           Queued Only
         </MenuItem>
-        <MenuItem onClick={() => { setFilterStatus('processing'); setFilterMenu(null); }}>
+        <MenuItem onClick={() => { setFilterStatus('processing'); setFilterMenu(null)}}>
           Processing Only
         </MenuItem>
-        <MenuItem onClick={() => { setFilterStatus('completed'); setFilterMenu(null); }}>
+        <MenuItem onClick={() => { setFilterStatus('completed'); setFilterMenu(null)}}>
           Completed Only
         </MenuItem>
-        <MenuItem onClick={() => { setFilterStatus('failed'); setFilterMenu(null); }}>
+        <MenuItem onClick={() => { setFilterStatus('failed'); setFilterMenu(null)}}>
           Failed Only
         </MenuItem>
       </Menu>
 
       {/* Detail Dialog */}
-      <Dialog open={Boolean(detailDialog)} onClose={() => setDetailDialog(null)} maxWidth="md" fullWidth>
+      <Dialog open={Boolean(detailDialog)} onClose={() => setDetailDialog(null} maxWidth="md" fullWidth>
         {detailDialog && (
           <>
             <DialogTitle>{detailDialog.title}</DialogTitle>
@@ -581,12 +567,11 @@ export const VideoQueue: React.FC = () => {
               {/* Video details form */}
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setDetailDialog(null)}>Close</Button>
+              <Button onClick={() => setDetailDialog(null}>Close</Button>
               <Button variant="contained">Save Changes</Button>
             </DialogActions>
           </>
         )}
       </Dialog>
     </Box>
-  );
-};
+  )};

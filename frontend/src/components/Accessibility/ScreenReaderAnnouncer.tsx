@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Box } from '@mui/material';
-import { announcementManager, type Announcement } from './announcementManager';
+import { 
+  Box
+ } from '@mui/material';
+import {  announcementManager, type Announcement  } from './announcementManager';
 
 export const ScreenReaderAnnouncer: React.FC = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -11,9 +13,7 @@ export const ScreenReaderAnnouncer: React.FC = () => {
       
       // Remove announcement after 1 second
       setTimeout(() => {
-        setAnnouncements((prev) => prev.filter((a) => a.id !== announcement.id));
-      }, 1000);
-    });
+        setAnnouncements((prev) => prev.filter((a) => a.id !== announcement.id))}, 1000)});
     
     return unsubscribe;
   }, []);
@@ -31,6 +31,7 @@ export const ScreenReaderAnnouncer: React.FC = () => {
           width: '1px',
           height: '1px',
           overflow: 'hidden',
+
         }}
       >
         {announcements
@@ -50,6 +51,7 @@ export const ScreenReaderAnnouncer: React.FC = () => {
           width: '1px',
           height: '1px',
           overflow: 'hidden',
+
         }}
       >
         {announcements
@@ -58,6 +60,5 @@ export const ScreenReaderAnnouncer: React.FC = () => {
           .join('. ')}
       </Box>
     </>
-  );
-};
+  )};
 

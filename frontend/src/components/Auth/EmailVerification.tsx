@@ -1,15 +1,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import {
+import {  useNavigate, useSearchParams, Link  } from 'react-router-dom';
+import { 
   Box,
   Paper,
   Typography,
   Button,
   CircularProgress,
-  Alert,
-} from '@mui/material';
-import { CheckCircle, Error as ErrorIcon, Email } from '@mui/icons-material';
-import { authApi } from '../../services/api';
+  Alert
+ } from '@mui/material';
+import {  CheckCircle, Email  } from '@mui/icons-material';
+import {  authApi  } from '../../services/api';
 
 export const EmailVerification: React.FC = () => {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export const EmailVerification: React.FC = () => {
   
   const token = searchParams.get('token');
 
-  const verifyEmail = useCallback(async (verificationToken: string) => {
+  const verifyEmail = useCallback(_async (verificationToken: string) => {
     try {
       await authApi.verifyEmail(verificationToken);
       setStatus('success');
@@ -27,16 +27,12 @@ export const EmailVerification: React.FC = () => {
       
       // Redirect to login after 3 seconds
       setTimeout(() => {
-        navigate('/auth/login');
-      }, 3000);
-    } catch (error: unknown) {
+        navigate('/auth/login')}, 3000)} catch (_: unknown) {
       setStatus('error');
       const axiosError = error && typeof error === 'object' && 'response' in error ? error as { response?: { status?: number } } : null;
       if (axiosError?.response?.status === 404) {
-        setMessage('Invalid or expired verification token.');
-      } else {
-        setMessage('An error occurred during verification. Please try again.');
-      }
+        setMessage('Invalid or expired verification token.')} else {
+        setMessage('An error occurred during verification. Please try again.')}
     }
   }, [navigate]);
 
@@ -47,8 +43,7 @@ export const EmailVerification: React.FC = () => {
       return;
     }
 
-    verifyEmail(token);
-  }, [token, verifyEmail]);
+    verifyEmail(token)}, [token, verifyEmail]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resendVerification = async () => {
     setStatus('loading');
@@ -56,39 +51,36 @@ export const EmailVerification: React.FC = () => {
       // This would require the user's email
       // You might want to add an input field for this
       setMessage('A new verification email has been sent.');
-      setStatus('success');
-    } catch (_error) {
+      setStatus('success')} catch (_) {
       setStatus('error');
-      setMessage('Failed to resend verification email.');
-    }
+      setMessage('Failed to resend verification email.')}
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
+    <>
+      <Box
+      sx={ {
+        minHeight: '100 vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: 2,
-      }}
+        background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+        padding: 2 }}
     >
       <Paper
         elevation={10}
-        sx={{
+        sx={ {
           padding: 4,
           maxWidth: 400,
           width: '100%',
           borderRadius: 2,
-          textAlign: 'center',
-        }}
+          textAlign: 'center' }}
       >
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
             YTEmpire
           </Typography>
-          <Typography variant="h6" color="text.secondary">
+      <Typography variant="h6" color="text.secondary">
             Email Verification
           </Typography>
         </Box>
@@ -101,7 +93,6 @@ export const EmailVerification: React.FC = () => {
             </Typography>
           </Box>
         )}
-
         {status === 'success' && (
           <Box sx={{ py: 4 }}>
             <CheckCircle sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
@@ -114,19 +105,17 @@ export const EmailVerification: React.FC = () => {
             <Button
               variant="contained"
               fullWidth
-              onClick={() => navigate('/auth/login')}
-              sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              onClick={() => navigate('/auth/login'}
+              sx={ {
+                background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4290 100%)',
-                },
+                  background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
               }}
             >
               Go to Login
             </Button>
           </Box>
         )}
-
         {status === 'error' && (
           <Box sx={{ py: 4 }}>
             <ErrorIcon sx={{ fontSize: 60, color: 'error.main', mb: 2 }} />
@@ -145,12 +134,11 @@ export const EmailVerification: React.FC = () => {
               <Button
                 variant="contained"
                 fullWidth
-                onClick={() => navigate('/auth/login')}
-                sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                onClick={() => navigate('/auth/login'}
+                sx={ {
+                  background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4290 100%)',
-                  },
+                    background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
                 }}
               >
                 Back to Login
@@ -158,17 +146,15 @@ export const EmailVerification: React.FC = () => {
             </Box>
           </Box>
         )}
-
         <Box sx={{ mt: 4 }}>
           <Typography variant="body2" color="text.secondary">
             Need help?{' '}
             <Link
               to="/support"
-              style={{
-                color: '#667eea',
+              style={ {
+                color: '#667 eea',
                 textDecoration: 'none',
-                fontWeight: 'bold',
-              }}
+                fontWeight: 'bold' }}
             >
               Contact Support
             </Link>
@@ -176,5 +162,5 @@ export const EmailVerification: React.FC = () => {
         </Box>
       </Paper>
     </Box>
-  );
-};
+  </>
+  )};

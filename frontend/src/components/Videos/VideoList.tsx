@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Grid,
   Pagination,
@@ -8,17 +8,15 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  CircularProgress,
   Alert,
   Paper,
   ToggleButton,
   ToggleButtonGroup,
-  Skeleton,
-} from '@mui/material';
-import { ViewModule, ViewList } from '@mui/icons-material';
-import { VideoCard } from './VideoCard';
-import { useVideoStore } from '../../stores/videoStore';
-import { api } from '../../services/api';
+  Skeleton
+ } from '@mui/material';
+import {  ViewModule, ViewList  } from '@mui/icons-material';
+import {  VideoCard  } from './VideoCard';
+import {  api  } from '../../services/api';
 
 interface VideoListProps {
   channelId?: string;
@@ -27,18 +25,9 @@ interface VideoListProps {
   onVideoEdit?: (videoId: string) => void;
   onVideoDelete?: (videoId: string) => void;
   onVideoPublish?: (videoId: string) => void;
-  onVideoPreview?: (videoId: string) => void;
-}
+  onVideoPreview?: (videoId: string) => void}
 
-export const VideoList: React.FC<VideoListProps> = ({
-  channelId,
-  status = 'all',
-  onVideoSelect,
-  onVideoEdit,
-  onVideoDelete,
-  onVideoPublish,
-  onVideoPreview,
-}) => {
+export const VideoList: React.FC<VideoListProps> = ({ channelId, status = 'all', onVideoSelect, onVideoEdit, onVideoDelete, onVideoPublish, onVideoPreview }) => {
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -51,11 +40,9 @@ export const VideoList: React.FC<VideoListProps> = ({
 
   // Fetch videos from API
   useEffect(() => {
-    fetchVideos();
-  }, [channelId, status, page, itemsPerPage, sortBy, sortOrder]);
+    fetchVideos()}, [channelId, status, page, itemsPerPage, sortBy, sortOrder]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchVideos = async () => {
-    setIsLoading(true);
+  const fetchVideos = async () => { setIsLoading(true);
     setError(null);
     try {
       const response = await api.videos.list({
@@ -64,57 +51,43 @@ export const VideoList: React.FC<VideoListProps> = ({
         skip: (page - 1) * itemsPerPage,
         limit: itemsPerPage,
         sort_by: sortBy,
-        sort_order: sortOrder,
-      });
+        sort_order: sortOrder });
       setVideos(response.data);
-      setTotalCount(response.total);
-    } catch (err: unknown) {
-      setError(err.message || 'Failed to load videos');
-    } finally {
-      setIsLoading(false);
-    }
+      setTotalCount(response.total)} catch (_err: unknown) {
+      setError(err.message || 'Failed to load videos')} finally {
+      setIsLoading(false)}
   };
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+    window.scrollTo({ top: 0, behavior: 'smooth' })};
 
-  const handleItemsPerPageChange = (_event: unknown) => {
+  const handleItemsPerPageChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     setItemsPerPage(event.target.value);
-    setPage(1);
-  };
+    setPage(1)};
 
-  const handleSortChange = (_event: unknown) => {
+  const handleSortChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     setSortBy(event.target.value);
-    setPage(1);
-  };
+    setPage(1)};
 
   const handleSortOrderToggle = () => {
     setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-    setPage(1);
-  };
+    setPage(1)};
 
-  const handleViewModeChange = (
-    event: React.MouseEvent<HTMLElement>,
-    newMode: 'grid' | 'list' | null
-  ) => {
+  const handleViewModeChange = (_: React.MouseEvent<HTMLElement>, newMode: 'grid' | 'list' | null) => {
     if (newMode !== null) {
-      setViewMode(newMode);
-    }
+      setViewMode(newMode)}
   };
 
   const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   // Sort options
-  const sortOptions = [
-    { value: 'created', label: 'Date Created' },
+  const sortOptions = [ { value: 'created', label: 'Date Created' },
     { value: 'published', label: 'Date Published' },
     { value: 'views', label: 'View Count' },
     { value: 'cost', label: 'Generation Cost' },
     { value: 'quality', label: 'Quality Score' },
-    { value: 'trend', label: 'Trend Score' },
-  ];
+    { value: 'trend', label: 'Trend Score' } ];
 
   // Loading skeleton
   const renderSkeleton = () => (
@@ -159,16 +132,16 @@ export const VideoList: React.FC<VideoListProps> = ({
   );
 
   // List view component
-  const VideoListItem = ({ video }: { video: unknown }) => (
+  const VideoListItem = ({ video }: { video: React.ChangeEvent<HTMLInputElement> }) => (
     <Paper
       sx={{
         p: 2,
         mb: 2,
         cursor: 'pointer',
         transition: 'box-shadow 0.2s',
-        '&:hover': { boxShadow: 3 },
+        '&:hover': { boxShadow: 3 }
       }}
-      onClick={() => onVideoSelect?.(video.id)}
+      onClick={() => onVideoSelect?.(video.id}
     >
       <Box display="flex" alignItems="center" gap={2}>
         <Box
@@ -203,7 +176,8 @@ export const VideoList: React.FC<VideoListProps> = ({
   );
 
   return (
-    <Box>
+    <>
+      <Box>
       {/* Controls */}
       <Box
         display="flex"
@@ -216,7 +190,7 @@ export const VideoList: React.FC<VideoListProps> = ({
         <Box display="flex" gap={2} alignItems="center">
           <FormControl size="small" sx={{ minWidth: 150 }}>
             <InputLabel>Sort By</InputLabel>
-            <Select value={sortBy} onChange={handleSortChange} label="Sort By">
+      <Select value={sortBy} onChange={handleSortChange} label="Sort By">
               {sortOptions.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
@@ -274,13 +248,10 @@ export const VideoList: React.FC<VideoListProps> = ({
           {error}
         </Alert>
       )}
-
       {/* Loading state */}
       {isLoading && renderSkeleton()}
-
       {/* Empty state */}
       {!isLoading && videos.length === 0 && renderEmptyState()}
-
       {/* Video grid/list */}
       {!isLoading && videos.length > 0 && (
         <>
@@ -305,7 +276,6 @@ export const VideoList: React.FC<VideoListProps> = ({
               ))}
             </Box>
           )}
-
           {/* Pagination */}
           {totalPages > 1 && (
             <Box display="flex" justifyContent="center" mt={4}>
@@ -323,5 +293,5 @@ export const VideoList: React.FC<VideoListProps> = ({
         </>
       )}
     </Box>
-  );
-};
+  </>
+  )};

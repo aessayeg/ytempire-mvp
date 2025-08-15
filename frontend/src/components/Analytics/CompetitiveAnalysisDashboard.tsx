@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import {
+import { 
   Box,
   Paper,
   Checkbox,
@@ -28,20 +28,14 @@ import {
   Tabs,
   Tab,
   MenuItem,
-} from '@mui/material';
-import {
-  TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Refresh as RefreshIcon,
-  Info as InfoIcon,
-  Speed as SpeedIcon,
-  Group as GroupIcon,
-  Analytics as AnalyticsIcon,
-  Download as DownloadIcon
-} from '@mui/icons-material';
-import {
+  FormControl,
+  InputLabel,
+  Select,
+  TextField
+ } from '@mui/material';
+import {  Add as AddIcon, Refresh as RefreshIcon 
+ } from '@mui/icons-material';
+import { 
   BarChart,
   Bar,
   RadarChart,
@@ -52,13 +46,12 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip as ChartTooltip,
   Legend,
   ResponsiveContainer,
   Area,
   AreaChart
-} from 'recharts';
-import { format, subDays } from 'date-fns';
+ } from 'recharts';
+import {  format, subDays  } from 'date-fns';
 
 // Types
 interface Competitor {
@@ -155,14 +148,15 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
   const [competitors, setCompetitors] = useState<Competitor[]>(MOCK_COMPETITORS);
   const [selectedCompetitors, setSelectedCompetitors] = useState<string[]>(['1', '2']);
   const [currentTab, setCurrentTab] = useState(0);
-  const [timeRange, setTimeRange] = useState('30d');
+  const [timeRange, setTimeRange] = useState('30 d');
   const [isLoading, setIsLoading] = useState(false);
   const [newCompetitorUrl, setNewCompetitorUrl] = useState('');
 
   // Mock data generation
   const competitorMetrics = useMemo<Record<string, CompetitorMetrics>>(() => {
-    const metrics: Record<string, CompetitorMetrics> = {};
+const metrics: Record<string, CompetitorMetrics> = {};
     competitors.forEach(comp => {
+    
       metrics[comp.id] = {
         channelId: comp.channelId,
         avgViews: Math.floor(comp.viewCount / comp.videoCount),
@@ -174,7 +168,8 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
         growthRate: 5 + Math.random() * 15,
         contentQualityScore: 70 + Math.random() * 25,
         audienceRetention: 40 + Math.random() * 30,
-        clickThroughRate: 3 + Math.random() * 7
+        clickThroughRate: 3 + Math.random() * 7,
+
       };
     });
     return metrics;
@@ -185,19 +180,22 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
       trend: 'AI-generated content gaining traction',
       impact: 'high',
       description: 'Competitors are increasingly using AI for content creation',
-      recommendedAction: 'Differentiate with unique human insights and storytelling'
+      recommendedAction: 'Differentiate with unique human insights and storytelling',
+
     },
     {
       trend: 'Short-form content outperforming',
       impact: 'high',
-      description: 'Videos under 60 seconds seeing 2x engagement',
-      recommendedAction: 'Create YouTube Shorts versions of main content'
+      description: 'Videos under 60 seconds seeing 2 x engagement',
+      recommendedAction: 'Create YouTube Shorts versions of main content',
+
     },
     {
       trend: 'Tutorial content saturated',
       impact: 'medium',
       description: 'Market oversaturated with basic tutorials',
-      recommendedAction: 'Focus on advanced topics and case studies'
+      recommendedAction: 'Focus on advanced topics and case studies',
+
     }
   ];
 
@@ -207,21 +205,24 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
       competitorsCovering: 1,
       potentialViews: 250000,
       difficulty: 'hard',
-      recommendedApproach: 'Create beginner-friendly series with animations'
+      recommendedApproach: 'Create beginner-friendly series with animations',
+
     },
     {
       topic: 'Web3 Development Tools',
       competitorsCovering: 2,
       potentialViews: 180000,
       difficulty: 'medium',
-      recommendedApproach: 'Hands-on tutorials with real projects'
+      recommendedApproach: 'Hands-on tutorials with real projects',
+
     },
     {
       topic: 'AI Ethics Discussion',
       competitorsCovering: 0,
       potentialViews: 150000,
       difficulty: 'easy',
-      recommendedApproach: 'Interview series with experts'
+      recommendedApproach: 'Interview series with experts',
+
     }
   ];
 
@@ -234,15 +235,15 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
       views: comp.viewCount / 1000000,
       videos: comp.videoCount,
       engagement: competitorMetrics[comp.id]?.engagementRate || 0,
-      revenue: competitorMetrics[comp.id]?.estimatedRevenue / 1000 || 0
-    }));
-  }, [competitors, selectedCompetitors, competitorMetrics]);
+      revenue: competitorMetrics[comp.id]?.estimatedRevenue / 1000 || 0,
+
+    }))}, [competitors, selectedCompetitors, competitorMetrics]);
 
   // Generate radar chart data for competitive positioning
   const radarData = useMemo(() => {
     const metrics = ['Content Quality', 'Upload Frequency', 'Engagement', 'Growth Rate', 'Revenue', 'Retention'];
     return metrics.map(metric => {
-      const dataPoint: Record<string, number | string> = { metric };
+const dataPoint: Record<string, number | string> = { metric };
       selectedCompetitors.forEach(compId => {
         const comp = competitors.find(c => c.id === compId);
         const compMetrics = competitorMetrics[compId];
@@ -269,9 +270,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
           }
         }
       });
-      return dataPoint;
-    });
-  }, [competitors, selectedCompetitors, competitorMetrics]);
+      return dataPoint})}, [competitors, selectedCompetitors, competitorMetrics]);
 
   // Generate trend data
   const trendData = useMemo(() => {
@@ -285,21 +284,18 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
           // Simulate growth trend
           const baseValue = comp.subscriberCount / 1000;
           const growth = (i / 30) * (competitorMetrics[compId]?.growthRate || 5) / 100;
-          dataPoint[comp.channelName] = Math.floor(baseValue * (1 - 0.1 + growth));
-        }
+          dataPoint[comp.channelName] = Math.floor(baseValue * (1 - 0.1 + growth))}
       });
       
-      return dataPoint;
-    });
-  }, [competitors, selectedCompetitors, competitorMetrics]);
+      return dataPoint})}, [competitors, selectedCompetitors, competitorMetrics]);
 
   // Add competitor
   const addCompetitor = () => {
     if (!newCompetitorUrl) return;
     
-    // Extract channel ID from URL (mock implementation)
-    const newCompetitor: Competitor = {
-      id: Date.now().toString(),
+    // Extract channel ID from URL (mock, implementation)
+const newCompetitor: Competitor = {,
+  id: Date.now().toString(),
       channelName: 'New Competitor',
       channelId: 'UC_new',
       thumbnailUrl: 'https://via.placeholder.com/50',
@@ -311,7 +307,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
       joinedDate: new Date(),
       isTracking: false,
       lastUpdated: new Date()
-    };
+  };
     
     setCompetitors([...competitors, newCompetitor]);
     setNewCompetitorUrl('');
@@ -320,16 +316,13 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
   // Remove competitor
   const removeCompetitor = (id: string) => {
     setCompetitors(competitors.filter(c => c.id !== id));
-    setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id));
-  };
+    setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id))};
 
   // Toggle competitor selection
   const toggleCompetitorSelection = (id: string) => {
     if (selectedCompetitors.includes(id)) {
-      setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id));
-    } else {
-      setSelectedCompetitors([...selectedCompetitors, id]);
-    }
+      setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id))} else {
+      setSelectedCompetitors([...selectedCompetitors, id])}
   };
 
   // Refresh data
@@ -337,8 +330,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
     setIsLoading(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false);
-  };
+    setIsLoading(false)};
 
   // Export data
   const exportData = () => {
@@ -347,7 +339,8 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
       metrics: selectedCompetitors.map(id => ({ id, ...competitorMetrics[id] })),
       insights: marketInsights,
       gaps: contentGaps,
-      exportDate: new Date().toISOString()
+      exportDate: new Date().toISOString(),
+
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -359,10 +352,11 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <>
+      <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Competitive Analysis</Typography>
-        <Stack direction="row" spacing={2}>
+      <Stack direction="row" spacing={2}>
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
@@ -453,7 +447,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
       </Grid>
 
       {/* Tabs */}
-      <Tabs value={currentTab} onChange={(e, v) => setCurrentTab(v)} sx={{ mb: 3 }}>
+      <Tabs value={currentTab} onChange={() => toggleCompetitorSelection(competitor.id)} sx={{ mb: 3 }>
         <Tab label="Competitors" />
         <Tab label="Comparison" />
         <Tab label="Market Insights" />
@@ -471,7 +465,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                 fullWidth
                 placeholder="Enter YouTube channel URL or ID"
                 value={newCompetitorUrl}
-                onChange={(_e) => setNewCompetitorUrl(_e.target.value)}
+                onChange={() => toggleCompetitorSelection(competitor.id)}
                 size="small"
               />
               <Button
@@ -497,12 +491,10 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                         selectedCompetitors.length < competitors.length
                       }
                       checked={selectedCompetitors.length === competitors.length}
-                      onChange={(_e) => {
-                        if (_e.target.checked) {
-                          setSelectedCompetitors(competitors.map(c => c.id));
-                        } else {
-                          setSelectedCompetitors([]);
-                        }
+                      onChange={(_) => {
+                        if (_.target.checked) {
+                          setSelectedCompetitors(competitors.map(c => c.id))} else {
+                          setSelectedCompetitors([])}
                       }}
                     />
                   </TableCell>
@@ -520,14 +512,15 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                 {competitors.map((competitor) => {
                   const metrics = competitorMetrics[competitor.id];
                   return (
-                    <TableRow key={competitor.id}>
+    <>
+      <TableRow key={competitor.id}>
                       <TableCell padding="checkbox">
                         <Checkbox
                           checked={selectedCompetitors.includes(competitor.id)}
                           onChange={() => toggleCompetitorSelection(competitor.id)}
                         />
                       </TableCell>
-                      <TableCell>
+      <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Avatar src={competitor.thumbnailUrl} sx={{ mr: 2 }} />
                           <Box>
@@ -541,13 +534,13 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                         </Box>
                       </TableCell>
                       <TableCell align="right">
-                        {(competitor.subscriberCount / 1000000).toFixed(2)}M
+                        {competitor.subscriberCount / 1000000).toFixed(2}M
                       </TableCell>
                       <TableCell align="right">
                         {competitor.videoCount}
                       </TableCell>
                       <TableCell align="right">
-                        {(competitor.viewCount / 1000000).toFixed(1)}M
+                        {competitor.viewCount / 1000000).toFixed(1}M
                       </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
@@ -577,20 +570,17 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                         <IconButton
                           size="small"
                           color="error"
-                          onClick={() => removeCompetitor(competitor.id)}
+                          onClick={() => removeCompetitor(competitor.id}
                         >
                           <DeleteIcon />
                         </IconButton>
                       </TableCell>
                     </TableRow>
-                  );
-                })}
+                  )})}
               </TableBody>
             </Table>
           </TableContainer>
-        </>
       )}
-
       {/* Comparison Tab */}
       {currentTab === 1 && (
         <Grid container spacing={3}>
@@ -608,7 +598,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                   <ChartTooltip />
                   <Legend />
                   <Bar dataKey="subscribers" fill="#8884d8" name="Subscribers (K)" />
-                  <Bar dataKey="views" fill="#82ca9d" name="Views (M)" />
+                  <Bar dataKey="views" fill="#82 ca9 d" name="Views (M)" />
                   <Bar dataKey="engagement" fill="#ffc658" name="Engagement (%)" />
                 </BarChart>
               </ResponsiveContainer>
@@ -634,12 +624,11 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                         key={compId}
                         name={comp.channelName}
                         dataKey={comp.channelName}
-                        stroke={colors[index % colors.length]}
-                        fill={colors[index % colors.length]}
+                        stroke={colors[index % colors.length]
+                        fill={colors[index % colors.length]
                         fillOpacity={0.3}
                       />
-                    ) : null;
-                  })}
+                    ) : null})}
                   <Legend />
                 </RadarChart>
               </ResponsiveContainer>
@@ -660,14 +649,14 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                       {selectedCompetitors.map(compId => {
                         const comp = competitors.find(c => c.id === compId);
                         return (
-                          <TableCell key={compId} align="center">
+    <>
+      <TableCell key={compId} align="center">
                             {comp?.channelName}
                           </TableCell>
-                        );
-                      })}
+                        )})}
                     </TableRow>
                   </TableHead>
-                  <TableBody>
+      <TableBody>
                     <TableRow>
                       <TableCell>Avg Views per Video</TableCell>
                       {selectedCompetitors.map(compId => (
@@ -677,7 +666,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                       ))}
                     </TableRow>
                     <TableRow>
-                      <TableCell>Upload Frequency (per week)</TableCell>
+                      <TableCell>Upload Frequency (per, week)</TableCell>
                       {selectedCompetitors.map(compId => (
                         <TableCell key={compId} align="center">
                           {competitorMetrics[compId]?.uploadFrequency.toFixed(1)}
@@ -712,7 +701,6 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
           </Grid>
         </Grid>
       )}
-
       {/* Market Insights Tab */}
       {currentTab === 2 && (
         <Grid container spacing={3}>
@@ -747,7 +735,6 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
           ))}
         </Grid>
       )}
-
       {/* Content Gaps Tab */}
       {currentTab === 3 && (
         <Grid container spacing={3}>
@@ -783,7 +770,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                   </Box>
                   
                   <Typography variant="body2" color="textSecondary" paragraph>
-                    Potential Views: <strong>{gap.potentialViews.toLocaleString()}</strong>
+                    Potential, Views: <strong>{gap.potentialViews.toLocaleString()}</strong>
                   </Typography>
                   
                   <Typography variant="body2">
@@ -801,7 +788,6 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
           ))}
         </Grid>
       )}
-
       {/* Trends Tab */}
       {currentTab === 4 && (
         <Grid container spacing={3}>
@@ -815,12 +801,12 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                   <InputLabel>Time Range</InputLabel>
                   <Select
                     value={timeRange}
-                    onChange={(_e) => setTimeRange(_e.target.value)}
+                    onChange={() => toggleCompetitorSelection(competitor.id)}
                     label="Time Range"
                   >
-                    <MenuItem value="7d">Last 7 Days</MenuItem>
-                    <MenuItem value="30d">Last 30 Days</MenuItem>
-                    <MenuItem value="90d">Last 90 Days</MenuItem>
+                    <MenuItem value="7 d">Last 7 Days</MenuItem>
+                    <MenuItem value="30 d">Last 30 Days</MenuItem>
+                    <MenuItem value="90 d">Last 90 Days</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
@@ -840,12 +826,11 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
                         key={compId}
                         type="monotone"
                         dataKey={comp.channelName}
-                        stroke={colors[index % colors.length]}
-                        fill={colors[index % colors.length]}
+                        stroke={colors[index % colors.length]
+                        fill={colors[index % colors.length]
                         fillOpacity={0.3}
                       />
-                    ) : null;
-                  })}
+                    ) : null})}
                 </AreaChart>
               </ResponsiveContainer>
             </Paper>
@@ -853,5 +838,4 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
         </Grid>
       )}
     </Box>
-  );
-};
+  )};`

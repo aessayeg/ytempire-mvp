@@ -8,425 +8,18 @@ import {
   Stepper,
   Step,
   StepLabel,
-  StepContent,
   TextField,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
-  Chip,
-  Avatar,
-  IconButton,
-  LinearProgress,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Paper,
-  Grid,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  FormControlLabel,
-  Checkbox,
-  Radio,
-  RadioGroup,
-  Tooltip,
-  Fade,
-  Zoom,
-  Grow,
-  Slide,
-  useTheme,
-  useMediaQuery,
-  Backdrop,
-  CircularProgress,
-} from '@mui/material';
-import {
-  CheckCircle,
-  RadioButtonUnchecked,
-  Person,
-  Business,
-  YouTube,
-  VideoLibrary,
-  Settings,
-  Celebration,
-  ArrowForward,
-  ArrowBack,
-  Skip,
-  Help,
-  PlayCircle,
-  Lightbulb,
-  Star,
-  EmojiEvents,
-  TrendingUp,
-  AttachMoney,
-  Speed,
-  AutoAwesome,
-  Groups,
-  School,
-  Rocket,
-  Check,
-  Close,
-  Info,
-  ContentCopy,
-  Link,
-  Security,
-  CloudUpload,
-  Schedule,
-  Dashboard,
-  NavigateNext,
-  FiberManualRecord,
-} from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
-import Confetti from 'react-confetti';
-
-interface OnboardingStep {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  completed: boolean;
-  skippable: boolean;
-}
-
-interface UserProfile {
-  name: string;
-  email: string;
-  company?: string;
-  role: string;
-  experience: string;
-  goals: string[];
-  contentType: string[];
-  uploadFrequency: string;
-  teamSize: string;
-}
-
-interface ChannelConnection {
-  id: string;
-  name: string;
-  handle: string;
-  subscribers: number;
-  connected: boolean;
-  verified: boolean;
-}
-
-interface TutorialStep {
-  id: string;
-  title: string;
-  description: string;
-  element: string;
-  position: 'top' | 'bottom' | 'left' | 'right';
-  action?: string;
-}
-
-export const OnboardingFlow: React.FC = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
-  const [activeStep, setActiveStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [showWelcome, setShowWelcome] = useState(true);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
-  const [loading, setLoading] = useState(false);
-  
-  // User data
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    name: '',
-    email: '',
-    company: '',
-    role: '',
-    experience: '',
-    goals: [],
-    contentType: [],
-    uploadFrequency: '',
-    teamSize: '',
-  });
-  
-  const [channels, setChannels] = useState<ChannelConnection[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState('');
-  const [preferences, setPreferences] = useState({
-    autoUpload: true,
-    emailNotifications: true,
-    aiOptimization: true,
-    qualityCheck: true,
-  });
-
-  const steps: OnboardingStep[] = [
-    {
-      id: 'welcome',
-      title: 'Welcome to YTEmpire',
-      description: 'Let\'s get you started with automated YouTube success',
-      icon: <Celebration />,
-      completed: false,
-      skippable: false,
-    },
-    {
-      id: 'profile',
-      title: 'Create Your Profile',
-      description: 'Tell us about yourself and your goals',
-      icon: <Person />,
-      completed: false,
-      skippable: false,
-    },
-    {
-      id: 'channels',
-      title: 'Connect YouTube Channels',
-      description: 'Link your YouTube channels for automation',
-      icon: <YouTube />,
-      completed: false,
-      skippable: false,
-    },
-    {
-      id: 'preferences',
-      title: 'Set Your Preferences',
-      description: 'Customize how YTEmpire works for you',
-      icon: <Settings />,
-      completed: false,
-      skippable: true,
-    },
-    {
-      id: 'tutorial',
-      title: 'Quick Tutorial',
-      description: 'Learn the basics in 2 minutes',
-      icon: <School />,
-      completed: false,
-      skippable: true,
-    },
-  ];
-
-  const tutorialSteps: TutorialStep[] = [
-    {
-      id: 't1',
-      title: 'Dashboard Overview',
-      description: 'This is your command center. See all your metrics and activities at a glance.',
-      element: 'dashboard',
-      position: 'bottom',
-    },
-    {
-      id: 't2',
-      title: 'Create Your First Video',
-      description: 'Click here to start creating AI-powered videos automatically.',
-      element: 'create-video',
-      position: 'right',
-      action: 'Click the button',
-    },
-    {
-      id: 't3',
-      title: 'Channel Management',
-      description: 'Manage all your YouTube channels from one place.',
-      element: 'channels',
-      position: 'bottom',
-    },
-    {
-      id: 't4',
-      title: 'Analytics & Insights',
-      description: 'Track performance and optimize your content strategy.',
-      element: 'analytics',
-      position: 'left',
-    },
-    {
-      id: 't5',
-      title: 'Automation Settings',
-      description: 'Configure auto-upload schedules and AI optimization.',
-      element: 'settings',
-      position: 'top',
-    },
-  ];
-
-  const plans = [
-    {
-      id: 'starter',
-      name: 'Starter',
-      price: '$29/mo',
-      features: ['5 videos/day', '1 channel', 'Basic analytics', 'Email support'],
-      recommended: false,
-    },
-    {
-      id: 'pro',
-      name: 'Professional',
-      price: '$99/mo',
-      features: ['25 videos/day', '5 channels', 'Advanced analytics', 'Priority support', 'Custom branding'],
-      recommended: true,
-    },
-    {
-      id: 'enterprise',
-      name: 'Enterprise',
-      price: '$299/mo',
-      features: ['Unlimited videos', 'Unlimited channels', 'Custom AI models', 'Dedicated support', 'API access'],
-      recommended: false,
-    },
-  ];
-
-  const handleNext = () => {
-    if (activeStep === steps.length - 1) {
-      handleComplete();
-    } else {
-      setCompletedSteps([...completedSteps, activeStep]);
-      setActiveStep((prev) => prev + 1);
-    }
-  };
-
-  const handleBack = () => {
-    setActiveStep((prev) => prev - 1);
-  };
-
-  const handleSkip = () => {
-    if (steps[activeStep].skippable) {
-      handleNext();
-    }
-  };
-
-  const handleComplete = () => {
-    setShowCelebration(true);
-    setTimeout(() => {
-      setShowCelebration(false);
-      // Navigate to dashboard
-    }, 5000);
-  };
-
-  const connectChannel = async () => {
-    setLoading(true);
-    // Simulate OAuth flow
-    setTimeout(() => {
-      setChannels([
-        {
-          id: '1',
-          name: 'Tech Insights Daily',
-          handle: '@techinsights',
-          subscribers: 1250,
-          connected: true,
-          verified: true,
-        },
-      ]);
-      setLoading(false);
-    }, 2000);
-  };
-
-  const renderWelcomeScreen = () => (
-    <Fade in={showWelcome} timeout={1000}>
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-        }}
-      >
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card sx={{ maxWidth: 600, p: 4 }}>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              >
-                <Avatar
-                  sx={{
-                    width: 100,
-                    height: 100,
-                    bgcolor: 'primary.main',
-                    mx: 'auto',
-                    mb: 3,
-                  }}
-                >
-                  <Rocket sx={{ fontSize: 50 }} />
-                </Avatar>
-              </motion.div>
-              
-              <Typography variant="h3" fontWeight="bold" gutterBottom>
-                Welcome to YTEmpire!
-              </Typography>
-              
-              <Typography variant="h6" color="text.secondary" paragraph>
-                Your AI-powered YouTube automation platform
-              </Typography>
-              
-              <Box sx={{ my: 4 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={4}>
-                    <Paper sx={{ p: 2, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-                      <AutoAwesome sx={{ fontSize: 40, mb: 1 }} />
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        AI-Powered
-                      </Typography>
-                      <Typography variant="body2">
-                        Generate videos automatically
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Paper sx={{ p: 2, bgcolor: 'secondary.light', color: 'secondary.contrastText' }}>
-                      <TrendingUp sx={{ fontSize: 40, mb: 1 }} />
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        Grow Faster
-                      </Typography>
-                      <Typography variant="body2">
-                        10x your channel growth
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Paper sx={{ p: 2, bgcolor: 'success.light', color: 'success.contrastText' }}>
-                      <AttachMoney sx={{ fontSize: 40, mb: 1 }} />
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        Monetize
-                      </Typography>
-                      <Typography variant="body2">
-                        Maximize revenue potential
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                </Grid>
-              </Box>
-              
-              <Typography variant="body1" paragraph>
-                Let's set up your account in just 5 easy steps
-              </Typography>
-              
-              <Button
-                variant="contained"
-                size="large"
-                endIcon={<ArrowForward />}
-                onClick={() => setShowWelcome(false)}
-                sx={{ mt: 2 }}
-              >
-                Get Started
-              </Button>
-              
-              <Typography variant="caption" display="block" sx={{ mt: 2 }}>
-                Setup takes less than 5 minutes
-              </Typography>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </Box>
-    </Fade>
-  );
-
-  const renderProfileStep = () => (
-    <Box>
-      <Typography variant="h5" fontWeight="bold" gutterBottom>
-        Tell us about yourself
-      </Typography>
-      <Typography variant="body2" color="text.secondary" paragraph>
-        This helps us personalize your experience
-      </Typography>
-      
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
-          <TextField
+  Select,
+  MenuItem,
+  TextField
             fullWidth
             label="Your Name"
             value={userProfile.name}
-            onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
+            onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value)})}
             required
           />
         </Grid>
@@ -436,7 +29,7 @@ export const OnboardingFlow: React.FC = () => {
             label="Email"
             type="email"
             value={userProfile.email}
-            onChange={(e) => setUserProfile({ ...userProfile, email: e.target.value })}
+            onChange={(e) => setUserProfile({ ...userProfile, email: e.target.value)})}
             required
           />
         </Grid>
@@ -445,7 +38,7 @@ export const OnboardingFlow: React.FC = () => {
             fullWidth
             label="Company (Optional)"
             value={userProfile.company}
-            onChange={(e) => setUserProfile({ ...userProfile, company: e.target.value })}
+            onChange={(e) => setUserProfile({ ...userProfile, company: e.target.value)})}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -453,7 +46,7 @@ export const OnboardingFlow: React.FC = () => {
             <InputLabel>Your Role</InputLabel>
             <Select
               value={userProfile.role}
-              onChange={(e) => setUserProfile({ ...userProfile, role: e.target.value })}
+              onChange={(e) => setUserProfile({ ...userProfile, role: e.target.value)})}
               label="Your Role"
             >
               <MenuItem value="content-creator">Content Creator</MenuItem>
@@ -467,19 +60,17 @@ export const OnboardingFlow: React.FC = () => {
         
         <Grid item xs={12}>
           <Typography variant="subtitle1" gutterBottom>
-            What are your main goals? (Select all that apply)
+            What are your main goals? (Select all that, apply)
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {['Grow subscribers', 'Increase revenue', 'Save time', 'Improve quality', 'Scale content'].map((goal) => (
-              <Chip
+            {['Grow subscribers', 'Increase revenue', 'Save time', 'Improve quality', 'Scale content'].map((goal) => (_<Chip
                 key={goal}
                 label={goal}
                 onClick={() => {
                   const goals = userProfile.goals.includes(goal)
                     ? userProfile.goals.filter(g => g !== goal)
                     : [...userProfile.goals, goal];
-                  setUserProfile({ ...userProfile, goals });
-                }}
+                  setUserProfile({ ...userProfile, goals })}}
                 color={userProfile.goals.includes(goal) ? 'primary' : 'default'}
                 icon={userProfile.goals.includes(goal) ? <Check /> : undefined}
               />
@@ -492,7 +83,7 @@ export const OnboardingFlow: React.FC = () => {
             <InputLabel>How often do you plan to upload?</InputLabel>
             <Select
               value={userProfile.uploadFrequency}
-              onChange={(e) => setUserProfile({ ...userProfile, uploadFrequency: e.target.value })}
+              onChange={(e) => setUserProfile({ ...userProfile, uploadFrequency: e.target.value)})}
               label="How often do you plan to upload?"
             >
               <MenuItem value="daily">Daily</MenuItem>
@@ -533,7 +124,7 @@ export const OnboardingFlow: React.FC = () => {
           
           <Box sx={{ mt: 3 }}>
             <Typography variant="subtitle2" gutterBottom>
-              Authorization Steps:
+              Authorization, Steps:
             </Typography>
             <List sx={{ maxWidth: 400, mx: 'auto', textAlign: 'left' }}>
               <ListItem>
@@ -601,7 +192,6 @@ export const OnboardingFlow: React.FC = () => {
               </Box>
             </Paper>
           ))}
-          
           <Button
             variant="outlined"
             startIcon={<Add />}
@@ -632,13 +222,12 @@ export const OnboardingFlow: React.FC = () => {
             {plans.map((plan) => (
               <Grid item xs={12} sm={4} key={plan.id}>
                 <Paper
-                  sx={{
+                  sx={ {
                     p: 2,
                     border: 2,
                     borderColor: selectedPlan === plan.id ? 'primary.main' : 'divider',
                     cursor: 'pointer',
-                    position: 'relative',
-                  }}
+                    position: 'relative' }}
                   onClick={() => setSelectedPlan(plan.id)}
                 >
                   {plan.recommended && (
@@ -799,18 +388,17 @@ export const OnboardingFlow: React.FC = () => {
       case 3:
         return renderPreferencesStep();
       case 4:
-        return renderTutorialStep();
-      default:
-        return null;
-    }
+        return renderTutorialStep(),
+  default:
+        return null}
   };
 
   if (showWelcome) {
-    return renderWelcomeScreen();
-  }
+    return renderWelcomeScreen()}
 
   return (
-    <Box sx={{ maxWidth: 900, mx: 'auto', p: 3 }}>
+    <>
+      <Box sx={{ maxWidth: 900, mx: 'auto', p: 3 }}>
       {showCelebration && (
         <Confetti
           width={window.innerWidth}
@@ -819,7 +407,6 @@ export const OnboardingFlow: React.FC = () => {
           numberOfPieces={200}
         />
       )}
-      
       <Box sx={{ mb: 4 }}>
         <LinearProgress
           variant="determinate"
@@ -830,7 +417,6 @@ export const OnboardingFlow: React.FC = () => {
           Step {activeStep + 1} of {steps.length}
         </Typography>
       </Box>
-      
       <Stepper activeStep={activeStep} orientation={isMobile ? 'vertical' : 'horizontal'}>
         {steps.map((step, index) => (
           <Step key={step.id} completed={completedSteps.includes(index)}>
@@ -839,8 +425,7 @@ export const OnboardingFlow: React.FC = () => {
               optional={
                 step.skippable && (
                   <Typography variant="caption">Optional</Typography>
-                )
-              }
+                )}
             >
               {step.title}
             </StepLabel>
@@ -880,7 +465,7 @@ export const OnboardingFlow: React.FC = () => {
           <Button
             variant="contained"
             onClick={handleNext}
-            endIcon={activeStep === steps.length - 1 ? <Celebration /> : <ArrowForward />}
+            endIcon={activeStep === steps.length - 1 ? <Celebration /> </>: <ArrowForward />}
           >
             {activeStep === steps.length - 1 ? 'Complete Setup' : 'Continue'}
           </Button>
@@ -892,5 +477,5 @@ export const OnboardingFlow: React.FC = () => {
         <CircularProgress color="inherit" />
       </Backdrop>
     </Box>
-  );
-};
+  </>
+  )};

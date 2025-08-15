@@ -1,5 +1,5 @@
 import React from 'react';
-import { clsx } from 'clsx';
+import {  clsx  } from 'clsx';
 
 interface CardProps {
   title?: string;
@@ -10,20 +10,11 @@ interface CardProps {
   footer?: React.ReactNode;
 }
 
-export const Card: React.FC<CardProps> = ({
-  title,
-  subtitle,
-  children,
-  className,
-  padding = 'md',
-  footer,
-}) => {
-  const paddingSizes = {
+export const Card: React.FC<CardProps> = ({ title, subtitle, children, className, padding = 'md', footer }) => { const paddingSizes = {
     none: '',
     sm: 'p-4',
     md: 'p-6',
-    lg: 'p-8',
-  };
+    lg: 'p-8' };
 
   return (
     <div className={clsx('bg-white rounded-lg shadow-sm border border-gray-200', className)}>
@@ -40,5 +31,4 @@ export const Card: React.FC<CardProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )};

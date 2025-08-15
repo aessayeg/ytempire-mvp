@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Dialog,
   DialogTitle,
   DialogContent,
@@ -9,18 +9,17 @@ import {
   Box,
   IconButton,
   Alert,
-  Chip,
-} from '@mui/material';
-import {
+  Chip
+ } from '@mui/material';
+import { 
   GetApp,
   Close,
   PhoneIphone,
-  Computer,
   OfflinePin,
   Speed,
-  Notifications,
-} from '@mui/icons-material';
-import { usePWA } from '../../contexts/PWAContext';
+  Notifications
+ } from '@mui/icons-material';
+import {  usePWA  } from '../../contexts/PWAContext';
 
 export const InstallPrompt: React.FC = () => {
   const { isInstallable, installApp, isInstalled } = usePWA();
@@ -31,29 +30,24 @@ export const InstallPrompt: React.FC = () => {
     // Check if user has previously dismissed the prompt
     const wasDismissed = localStorage.getItem('pwa-prompt-dismissed');
     if (wasDismissed) {
-      setDismissed(true);
-    }
+      setDismissed(true)}
 
     // Show prompt after 30 seconds if installable and not dismissed
     const timer = setTimeout(() => {
       if (isInstallable && !wasDismissed && !isInstalled) {
-        setOpen(true);
-      }
+        setOpen(true)}
     }, 30000);
 
-    return () => clearTimeout(timer);
-  }, [isInstallable, isInstalled]);
+    return () => clearTimeout(timer)}, [isInstallable, isInstalled]);
 
   const handleInstall = async () => {
     await installApp();
-    setOpen(false);
-  };
+    setOpen(false)};
 
   const handleDismiss = () => {
     setOpen(false);
     setDismissed(true);
-    localStorage.setItem('pwa-prompt-dismissed', 'true');
-  };
+    localStorage.setItem('pwa-prompt-dismissed', 'true')};
 
   const handleRemindLater = () => {
     setOpen(false);
@@ -73,18 +67,17 @@ export const InstallPrompt: React.FC = () => {
           bottom: 20,
           right: 20,
           zIndex: 1000,
-          display: { xs: 'block', md: 'none' },
+          display: { xs: 'block', md: 'none' }
         }}
       >
         <Button
           variant="contained"
           color="primary"
           startIcon={<GetApp />}
-          onClick={() => setOpen(true)}
-          sx={{
+          onClick={() => setOpen(true}
+          sx={ {
             borderRadius: 20,
-            boxShadow: 3,
-          }}
+            boxShadow: 3 }}
         >
           Install App
         </Button>
@@ -96,12 +89,11 @@ export const InstallPrompt: React.FC = () => {
         onClose={handleRemindLater}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 2,
-            backgroundImage: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-          },
+        PaperProps={ {
+          sx: {,
+  borderRadius: 2,
+            backgroundImage: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+            color: 'white' }
         }}
       >
         <DialogTitle>
@@ -123,7 +115,7 @@ export const InstallPrompt: React.FC = () => {
         <DialogContent>
           <Box sx={{ textAlign: 'center', py: 2 }}>
             <Box
-              sx={{
+              sx={ {
                 width: 80,
                 height: 80,
                 margin: '0 auto',
@@ -132,10 +124,9 @@ export const InstallPrompt: React.FC = () => {
                 borderRadius: 2,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-              }}
+                justifyContent: 'center' }}
             >
-              <Typography variant="h3" sx={{ color: '#667eea' }}>
+              <Typography variant="h3" sx={{ color: '#667 eea' }}>
                 YT
               </Typography>
             </Box>
@@ -165,12 +156,11 @@ export const InstallPrompt: React.FC = () => {
 
             <Alert
               severity="info"
-              sx={{
+              sx={ {
                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 color: 'white',
                 '& .MuiAlert-icon': {
-                  color: 'white',
-                },
+                  color: 'white' }
               }}
             >
               No app store needed. Installs directly from your browser!
@@ -188,12 +178,11 @@ export const InstallPrompt: React.FC = () => {
           <Button
             onClick={handleInstall}
             variant="contained"
-            sx={{
+            sx={ {
               backgroundColor: 'white',
-              color: '#667eea',
+              color: '#667 eea',
               '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              },
+                backgroundColor: 'rgba(255, 255, 255, 0.9)' }
             }}
             startIcon={<GetApp />}
           >
@@ -202,8 +191,7 @@ export const InstallPrompt: React.FC = () => {
         </DialogActions>
       </Dialog>
     </>
-  );
-};
+  )};
 
 // Offline indicator component
 export const OfflineIndicator: React.FC = () => {
@@ -218,13 +206,11 @@ export const OfflineIndicator: React.FC = () => {
       label={offlineReady ? 'Offline Mode' : 'No Connection'}
       color={offlineReady ? 'warning' : 'error'}
       size="small"
-      sx={{
+      sx={ {
         position: 'fixed',
         top: 70,
         left: '50%',
         transform: 'translateX(-50%)',
-        zIndex: 1300,
-      }}
+        zIndex: 1300 }}
     />
-  );
-};
+  )};

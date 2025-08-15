@@ -1,23 +1,25 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { useRegisterSW } from 'virtual:pwa-register/react';
-import { toast } from 'react-hot-toast';
+import {  useRegisterSW  } from 'virtual:pwa-register/react';
+import {  toast  } from 'react-hot-toast';
 
 interface PWAContextValue {
-  isOnline: boolean;
-  isInstallable: boolean;
-  isInstalled: boolean;
-  updateAvailable: boolean;
-  offlineReady: boolean;
-  needRefresh: boolean;
-  installApp: () => Promise<void>;
-  updateApp: () => Promise<void>;
-  clearOfflineData: () => Promise<void>;
-}
+  isOnline: boolean,
+  isInstallable: boolean,
+
+  isInstalled: boolean,
+  updateAvailable: boolean,
+
+  offlineReady: boolean,
+  needRefresh: boolean,
+
+  installApp: () => Promise<void>,
+  updateApp: () => Promise<void>,
+
+  clearOfflineData: () => Promise<void>}
 
 const PWAContext = createContext<PWAContextValue | undefined>(undefined);
 
-export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => { const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -25,72 +27,61 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
-    updateServiceWorker,
-  } = useRegisterSW({
+    updateServiceWorker } = useRegisterSW({
     onRegistered(r) {
-      console.log('Service Worker registered:', r);
-    },
+      console.log('Service Worker, registered:', r)},
     onRegisterError(error) {
-      console.error('Service Worker registration error:', error);
-    },
+      console.error('Service Worker registration, error:', error)}
   });
 
   // Network status monitoring
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      toast.success('Back online!');
-    };
+      toast.success('Back online!')};
 
     const handleOffline = () => {
       setIsOnline(false);
-      toast.error('You are offline. Some features may be limited.');
-    };
+      toast.error('You are offline. Some features may be limited.')};
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
     return () => {
+    
       window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+      window.removeEventListener('offline', handleOffline)}, []);
 
   // Install prompt handling
   useEffect(() => {
-    const handleBeforeInstallPrompt = (_e: Event) => {
+    const handleBeforeInstallPrompt = (_: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setIsInstallable(true);
-    };
+      setIsInstallable(true)};
 
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setIsInstallable(false);
       setDeferredPrompt(null);
-      toast.success('App installed successfully!');
-    };
+      toast.success('App installed successfully!')};
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true);
-    }
+      setIsInstalled(true)}
 
     return () => {
+    
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
-  }, []);
+      window.removeEventListener('appinstalled', handleAppInstalled)}, []);
 
   // Show notification when offline ready
   useEffect(() => {
     if (offlineReady) {
-      toast.success('App is ready to work offline!');
-    }
-  }, [offlineReady]);
+      toast.success('App is ready to work offline!')}
+  }, [offlineReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Show notification when update available
   useEffect(() => {
@@ -102,28 +93,25 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             <button
               onClick={() => {
                 updateApp();
-                toast.dismiss(t.id);
-              }}
-              style={{
+                toast.dismiss(t.id)}}
+              style={ {
                 marginTop: 8,
                 padding: '4px 8px',
-                background: '#667eea',
+                background: '#667 eea',
                 color: 'white',
                 border: 'none',
                 borderRadius: 4,
-                cursor: 'pointer',
-              }}
+                cursor: 'pointer' }}
             >
               Update now
             </button>
           </div>
         ),
         { duration: Infinity }
-      );
-    }
+      )}
   }, [needRefresh]);
 
-  const installApp = useCallback(async () => {
+  const installApp = useCallback(_async () => {
     if (!deferredPrompt) {
       toast.error('Installation not available');
       return;
@@ -133,29 +121,23 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const { outcome } = await deferredPrompt.userChoice;
     
     if (outcome === 'accepted') {
-      toast.success('Installing app...');
-    } else {
-      toast.info('Installation cancelled');
-    }
+      toast.success('Installing app...')} else {
+      toast.info('Installation cancelled')}
     
     setDeferredPrompt(null);
-    setIsInstallable(false);
-  }, [deferredPrompt]);
+    setIsInstallable(false)}, [deferredPrompt]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const updateApp = useCallback(async () => {
-    await updateServiceWorker(true);
-  }, [updateServiceWorker]);
+  const updateApp = useCallback(_async () => {
+    await updateServiceWorker(true)}, [updateServiceWorker]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const clearOfflineData = useCallback(async () => {
-    if ('caches' in window) {
+  const clearOfflineData = useCallback(_async () => {
+    if ('caches' in, window) {
       const cacheNames = await caches.keys();
       await Promise.all(cacheNames.map((name) => caches.delete(name)));
-      toast.success('Offline data cleared');
-    }
-  }, []);
+      toast.success('Offline data cleared')}
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const value: PWAContextValue = {
-    isOnline,
+  const value: PWAContextValue = { isOnline,
     isInstallable,
     isInstalled,
     updateAvailable: needRefresh,
@@ -163,8 +145,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     needRefresh,
     installApp,
     updateApp,
-    clearOfflineData,
-  };
+    clearOfflineData };
 
   return <PWAContext.Provider value={value}>{children}</PWAContext.Provider>;
 };
@@ -172,7 +153,6 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 export const usePWA = () => {
   const context = useContext(PWAContext);
   if (!context) {
-    throw new Error('usePWA must be used within PWAProvider');
-  }
+    throw new Error('usePWA must be used within PWAProvider')}
   return context;
 };

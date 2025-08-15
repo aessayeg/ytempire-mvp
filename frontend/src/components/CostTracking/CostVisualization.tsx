@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import {
+import { 
   Box,
   Grid,
   Paper,
@@ -16,11 +16,6 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Alert,
   Chip,
@@ -32,38 +27,24 @@ import {
   TableHead,
   TableRow,
   Tooltip,
-  Badge,
   CircularProgress,
   ToggleButton,
   ToggleButtonGroup,
-  Stack,
-  Divider,
-} from '@mui/material';
-import {
+  Stack
+ } from '@mui/material';
+import { 
   AttachMoney,
   TrendingUp,
   TrendingDown,
-  Warning,
-  Info,
   Add,
   Edit,
-  Delete,
   Refresh,
   Download,
-  CalendarMonth,
   ShowChart,
   PieChart as PieChartIcon,
-  BarChart as BarChartIcon,
-  Settings,
-  Notifications,
-  CheckCircle,
-  Error,
-  MoneyOff,
-  CreditCard,
-  Receipt,
-  AccountBalance,
-} from '@mui/icons-material';
-import {
+  BarChart as BarChartIcon
+ } from '@mui/icons-material';
+import { 
   LineChart,
   Line,
   AreaChart,
@@ -79,46 +60,49 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ResponsiveContainer,
-  Treemap,
-  Sankey,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
-  Radar,
-} from 'recharts';
-import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
-import { api } from '../../services/api';
-import { useOptimizedStore } from '../../stores/optimizedStore';
+  Radar
+ } from 'recharts';
+import {  format, startOfMonth, subMonths  } from 'date-fns';
+import {  api  } from '../../services/api';
+import {  useOptimizedStore  } from '../../stores/optimizedStore';
 
 // Types
 interface CostCategory {
-  name: string;
-  amount: number;
-  percentage: number;
-  trend: number;
-  color: string;
-}
+  name: string,
+  amount: number,
+
+  percentage: number,
+  trend: number,
+
+  color: string}
 
 interface Budget {
-  id: string;
-  name: string;
-  amount: number;
-  spent: number;
-  remaining: number;
-  percentage: number;
+  id: string,
+  name: string,
+
+  amount: number,
+  spent: number,
+
+  remaining: number,
+  percentage: number,
+
   period: 'daily' | 'weekly' | 'monthly' | 'quarterly';
   category?: string;
-  alertThresholds: number[];
-  status: 'healthy' | 'warning' | 'critical' | 'exceeded';
-}
+  alertThresholds: number[],
+  status: 'healthy' | 'warning' | 'critical' | 'exceeded'}
 
 interface CostItem {
-  id: string;
-  date: Date;
-  category: string;
-  service: string;
-  amount: number;
+  id: string,
+  date: Date,
+
+  category: string,
+  service: string,
+
+  amount: number,
   description: string;
   userId?: string;
   channelId?: string;
@@ -126,24 +110,21 @@ interface CostItem {
 }
 
 interface CostForecast {
-  date: string;
+  date: string,
   predicted: number;
   actual?: number;
-  confidenceLow: number;
-  confidenceHigh: number;
-}
+  confidenceLow: number,
+  confidenceHigh: number}
 
-const CATEGORY_COLORS = {
-  'openai_api': '#4CAF50',
-  'youtube_api': '#2196F3',
+const CATEGORY_COLORS = { 'openai_api': '#4 CAF50',
+  'youtube_api': '#2196 F3',
   'elevenlabs_tts': '#FF9800',
-  'storage': '#9C27B0',
+  'storage': '#9 C27 B0',
   'compute': '#F44336',
-  'bandwidth': '#00BCD4',
+  'bandwidth': '#00 BCD4',
   'database': '#795548',
-  'third_party': '#607D8B',
-  'other': '#9E9E9E',
-};
+  'third_party': '#607 D8 B',
+  'other': '#9 E9 E9 E' };
 
 export const CostVisualization: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly' | 'quarterly'>('monthly');
@@ -188,11 +169,9 @@ export const CostVisualization: React.FC = () => {
       }
 
       // Fetch cost summary
-      const summaryResponse = await api.get('/costs/summary', {
-        params: {
-          start_date: format(startDate, 'yyyy-MM-dd'),
-          end_date: format(endDate, 'yyyy-MM-dd'),
-        },
+      const summaryResponse = await api.get('/costs/summary', { params: {,
+  start_date: format(startDate, 'yyyy-MM-dd'),
+          end_date: format(endDate, 'yyyy-MM-dd') }
       });
 
       const summary = summaryResponse.data;
@@ -201,30 +180,24 @@ export const CostVisualization: React.FC = () => {
 
       // Process categories
       const categoryData: CostCategory[] = Object.entries(summary.category_breakdown || {}).map(
-        ([name, amount]: [string, any]) => ({
-          name,
+        ([name, amount]: [string, any]) => ({ name,
           amount: Number(amount),
           percentage: (Number(amount) / summary.total_cost) * 100,
-          trend: Math.random() * 20 - 10, // Mock trend
-          color: CATEGORY_COLORS[name] || '#9E9E9E',
-        })
+          trend: Math.random() * 20 - 10, // Mock trend, color: CATEGORY_COLORS[name] || '#9 E9 E9 E' })
       );
       setCategories(categoryData);
 
       // Fetch budgets
       const budgetsResponse = await api.get('/costs/budgets');
-      setBudgets(budgetsResponse.data.map((b: unknown) => ({
-        ...b,
+      setBudgets(budgetsResponse.data.map((b: React.ChangeEvent<HTMLInputElement>) => ({ ...b,
         spent: Math.random() * b.amount, // Mock spent amount
         remaining: b.amount - (Math.random() * b.amount),
         percentage: (Math.random() * b.amount / b.amount) * 100,
-        status: b.percentage > 100 ? 'exceeded' : b.percentage > 90 ? 'critical' : b.percentage > 75 ? 'warning' : 'healthy',
-      })));
+        status: b.percentage > 100 ? 'exceeded' : b.percentage > 90 ? 'critical' : b.percentage > 75 ? 'warning' : 'healthy' })));
 
       // Generate mock cost history
       const history = [];
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date();
+      for (let i = 29; i >= 0; i--) { const date = new Date();
         date.setDate(date.getDate() - i);
         history.push({
           date: format(date, 'MMM dd'),
@@ -232,15 +205,12 @@ export const CostVisualization: React.FC = () => {
           openai: Math.random() * 80 + 20,
           youtube: Math.random() * 30 + 10,
           storage: Math.random() * 20 + 5,
-          compute: Math.random() * 40 + 10,
-        });
-      }
+          compute: Math.random() * 40 + 10 })}
       setCostHistory(history);
 
       // Generate mock forecasts
       const forecastData: CostForecast[] = [];
-      for (let i = 0; i < 7; i++) {
-        const date = new Date();
+      for (let i = 0; i < 7; i++) { const date = new Date();
         date.setDate(date.getDate() + i);
         const predicted = Math.random() * 200 + 100;
         forecastData.push({
@@ -248,33 +218,26 @@ export const CostVisualization: React.FC = () => {
           predicted,
           actual: i === 0 ? predicted * 0.95 : undefined,
           confidenceLow: predicted * 0.8,
-          confidenceHigh: predicted * 1.2,
-        });
-      }
+          confidenceHigh: predicted * 1.2 })}
       setForecasts(forecastData);
 
       // Fetch alerts
       const alertsResponse = await api.get('/costs/alerts');
       setAlerts(alertsResponse.data || []);
 
-      setLoading(false);
-    } catch (_error) {
-      console.error('Failed to fetch cost data:', error);
+      setLoading(false)} catch (_) { console.error('Failed to fetch cost, data:', error);
       addNotification({
         type: 'error',
-        message: 'Failed to load cost data',
-      });
-      setLoading(false);
-    }
+        message: 'Failed to load cost data' });
+      setLoading(false)}
   };
 
   useEffect(() => {
-    fetchCostData();
-  }, [timeRange]);
+    fetchCostData()}, [timeRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Calculate total budget status
   const budgetStatus = useMemo(() => {
-    if (!budgets.length) return null;
+     if (!budgets.length) return null;
 
     const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
     const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
@@ -286,32 +249,24 @@ export const CostVisualization: React.FC = () => {
       totalRemaining: totalBudget - totalSpent,
       percentage,
       status: percentage > 100 ? 'exceeded' : percentage > 90 ? 'critical' : percentage > 75 ? 'warning' : 'healthy',
-    };
+
   }, [budgets]);
 
   // Handle budget creation/edit
   const handleSaveBudget = async (budget: Partial<Budget>) => {
     try {
       if (selectedBudget) {
-        await api.put(`/costs/budgets/${selectedBudget.id}`, budget);
-      } else {
-        await api.post('/costs/budgets', budget);
-      }
+        await api.put(`/costs/budgets/${selectedBudget.id}`, budget)} else {
+        await api.post('/costs/budgets', budget)}
       
       fetchCostData();
       setBudgetDialogOpen(false);
       setSelectedBudget(null);
       
-      addNotification({
-        type: 'success',
-        message: selectedBudget ? 'Budget updated' : 'Budget created',
-      });
-    } catch (_error) {
-      addNotification({
+      addNotification({ type: 'success',
+        message: selectedBudget ? 'Budget updated' : 'Budget created' })} catch (_) { addNotification({
         type: 'error',
-        message: 'Failed to save budget',
-      });
-    }
+        message: 'Failed to save budget' })}
   };
 
   // Render category card
@@ -339,13 +294,12 @@ export const CostVisualization: React.FC = () => {
         <LinearProgress
           variant="determinate"
           value={category.percentage}
-          sx={{
+          sx={ {
             height: 6,
             borderRadius: 3,
-            backgroundColor: '#e0e0e0',
+            backgroundColor: '#e0 e0 e0',
             '& .MuiLinearProgress-bar': {
-              backgroundColor: category.color,
-            },
+              backgroundColor: category.color }
           }}
         />
         <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -363,16 +317,16 @@ export const CostVisualization: React.FC = () => {
         case 'warning': return 'warning';
         case 'critical': return 'error';
         case 'exceeded': return 'error';
-        default: return 'info';
-      }
+        default: return 'info'}
     };
 
     return (
+    <>
       <Card key={budget.id} variant="outlined">
         <CardContent>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
             <Typography variant="h6">{budget.name}</Typography>
-            <Chip
+      <Chip
               label={budget.status}
               color={getStatusColor()}
               size="small"
@@ -404,16 +358,17 @@ export const CostVisualization: React.FC = () => {
           </Box>
         </CardContent>
       </Card>
-    );
-  };
+    </>
+  )};
 
   return (
-    <Box>
+    <>
+      <Box>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Box>
           <Typography variant="h4">Cost Tracking & Budgets</Typography>
-          <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="text.secondary">
             Monitor and manage your platform costs
           </Typography>
         </Box>
@@ -435,9 +390,9 @@ export const CostVisualization: React.FC = () => {
             startIcon={<Add />}
             variant="contained"
             onClick={() => {
-              setSelectedBudget(null);
-              setBudgetDialogOpen(true);
-            }}
+              setSelectedBudget(null</>
+  );
+              setBudgetDialogOpen(true)}}
           >
             Add Budget
           </Button>
@@ -463,7 +418,6 @@ export const CostVisualization: React.FC = () => {
           ))}
         </Alert>
       )}
-
       {/* Summary Cards */}
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} md={3}>
@@ -600,7 +554,7 @@ export const CostVisualization: React.FC = () => {
                         nameKey="name"
                         cx="50%"
                         cy="50%"
-                        outerRadius={100}
+                        outerRadius={100}`
                         label={(entry) => `${entry.name}: $${entry.amount.toFixed(0)}`}
                       >
                         {categories.map((entry, index) => (
@@ -628,7 +582,7 @@ export const CostVisualization: React.FC = () => {
                       <Area
                         type="monotone"
                         dataKey="cost"
-                        stroke="#8884d8"
+                        stroke="#8884 d8"
                         fill="#8884d8"
                         fillOpacity={0.6}
                       />
@@ -666,7 +620,6 @@ export const CostVisualization: React.FC = () => {
               </Grid>
             </Grid>
           )}
-
           {viewMode === 'detailed' && (
             <Grid container spacing={3}>
               {/* Stacked Cost Chart */}
@@ -682,9 +635,9 @@ export const CostVisualization: React.FC = () => {
                       <YAxis />
                       <ChartTooltip />
                       <Legend />
-                      <Bar dataKey="openai" stackId="a" fill="#4CAF50" />
-                      <Bar dataKey="youtube" stackId="a" fill="#2196F3" />
-                      <Bar dataKey="storage" stackId="a" fill="#9C27B0" />
+                      <Bar dataKey="openai" stackId="a" fill="#4 CAF50" />
+                      <Bar dataKey="youtube" stackId="a" fill="#2196 F3" />
+                      <Bar dataKey="storage" stackId="a" fill="#9 C27 B0" />
                       <Bar dataKey="compute" stackId="a" fill="#F44336" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -705,7 +658,7 @@ export const CostVisualization: React.FC = () => {
                       <Radar
                         name="Cost"
                         dataKey="amount"
-                        stroke="#8884d8"
+                        stroke="#8884 d8"
                         fill="#8884d8"
                         fillOpacity={0.6}
                       />
@@ -742,7 +695,7 @@ export const CostVisualization: React.FC = () => {
                               />
                             </TableCell>
                             <TableCell align="right">
-                              ${(Math.random() * 50).toFixed(2)}
+                              ${(Math.random() * 50.toFixed(2)}
                             </TableCell>
                             <TableCell>
                               {format(new Date(), 'MMM dd, HH:mm')}
@@ -756,7 +709,6 @@ export const CostVisualization: React.FC = () => {
               </Grid>
             </Grid>
           )}
-
           {viewMode === 'forecast' && (
             <Grid container spacing={3}>
               {/* Forecast Chart */}
@@ -775,14 +727,14 @@ export const CostVisualization: React.FC = () => {
                       <Line
                         type="monotone"
                         dataKey="predicted"
-                        stroke="#8884d8"
+                        stroke="#8884 d8"
                         strokeWidth={2}
                         name="Predicted"
                       />
                       <Line
                         type="monotone"
                         dataKey="actual"
-                        stroke="#82ca9d"
+                        stroke="#82 ca9 d"
                         strokeWidth={2}
                         strokeDasharray="5 5"
                         name="Actual"
@@ -816,10 +768,10 @@ export const CostVisualization: React.FC = () => {
                           Next 7 Days Forecast
                         </Typography>
                         <Typography variant="h4">
-                          ${forecasts.reduce((sum, f) => sum + f.predicted, 0).toFixed(2)}
+                          ${forecasts.reduce((sum, f) => sum + f.predicted, 0.toFixed(2)}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          ± ${((forecasts[0]?.predicted || 0) * 0.2).toFixed(2)} confidence interval
+                          ± ${((forecasts[0]?.predicted || 0) * 0.2.toFixed(2)} confidence interval
                         </Typography>
                       </CardContent>
                     </Card>
@@ -831,7 +783,7 @@ export const CostVisualization: React.FC = () => {
                           Monthly Projection
                         </Typography>
                         <Typography variant="h4">
-                          ${(totalCost * 30 / 7).toFixed(2)}
+                          ${(totalCost * 30 / 7.toFixed(2)}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           Based on current usage patterns
@@ -846,7 +798,7 @@ export const CostVisualization: React.FC = () => {
                           Cost Optimization Potential
                         </Typography>
                         <Typography variant="h4" color="success.main">
-                          ${(totalCost * 0.15).toFixed(2)}
+                          ${(totalCost * 0.15.toFixed(2)}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           ~15% possible savings identified
@@ -860,7 +812,6 @@ export const CostVisualization: React.FC = () => {
           )}
         </>
       )}
-
       {/* Budget Dialog */}
       <Dialog open={budgetDialogOpen} onClose={() => setBudgetDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
@@ -878,9 +829,8 @@ export const CostVisualization: React.FC = () => {
               type="number"
               fullWidth
               defaultValue={selectedBudget?.amount}
-              InputProps={{
-                startAdornment: '$',
-              }}
+              InputProps={ {
+                startAdornment: '$' }}
             />
             <FormControl fullWidth>
               <InputLabel>Period</InputLabel>
@@ -918,5 +868,4 @@ export const CostVisualization: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  );
-};
+  )};`

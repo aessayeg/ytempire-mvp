@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { BusinessIntelligenceDashboard } from '../../components/Dashboard/BusinessIntelligenceDashboard';
+import {  BusinessIntelligenceDashboard  } from '../../components/Dashboard/BusinessIntelligenceDashboard';
 
 const BusinessIntelligence: React.FC = () => {
   return <BusinessIntelligenceDashboard />;

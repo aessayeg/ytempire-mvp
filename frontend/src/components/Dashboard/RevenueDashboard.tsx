@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Card,
   CardContent,
@@ -9,16 +9,13 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   Button,
-  Tooltip,
-  Chip,
   LinearProgress,
   Alert,
   ToggleButton,
-  ToggleButtonGroup,
-} from '@mui/material';
-import {
+  ToggleButtonGroup
+ } from '@mui/material';
+import { 
   TrendingUp,
   TrendingDown,
   AttachMoney,
@@ -26,12 +23,11 @@ import {
   Download,
   Refresh,
   Info,
-  CalendarToday,
   ShowChart,
   PieChart as PieChartIcon,
-  BarChart as BarChartIcon,
-} from '@mui/icons-material';
-import {
+  BarChart as BarChartIcon
+ } from '@mui/icons-material';
+import { 
   LineChart,
   Line,
   AreaChart,
@@ -46,29 +42,24 @@ import {
   CartesianGrid,
   Tooltip as RechartsTooltip,
   Legend,
-  ResponsiveContainer,
-} from 'recharts';
-import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
-import { useRevenueData } from '../../hooks/useRevenueData';
-import { formatCurrency, formatPercentage } from '../../utils/formatters';
+  ResponsiveContainer
+ } from 'recharts';
+import {  format  } from 'date-fns';
+import {  useRevenueData  } from '../../hooks/useRevenueData';
+import {  formatCurrency, formatPercentage  } from '../../utils/formatters';
 
 interface RevenueDashboardProps {
   userId?: number;
   channelId?: number;
   dateRange?: {
-    start: Date;
-    end: Date;
-  };
+    start: Date,
+  end: Date};
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+const COLORS = ['#0088 FE', '#00 C49 F', '#FFBB28', '#FF8042', '#8884 D8', '#82 CA9 D'];
 
 export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
-  userId,
-  channelId,
-  dateRange,
-}) => {
-  const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  userId, channelId, dateRange }) => { const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [chartType, setChartType] = useState<'line' | 'bar' | 'area'>('line');
   const [breakdownType, setBreakdownType] = useState<string>('source');
   const [isExporting, setIsExporting] = useState(false);
@@ -82,28 +73,22 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
     loading,
     error,
     refetch,
-    exportData,
-  } = useRevenueData({
-    userId,
+    exportData } = useRevenueData({ userId,
     channelId,
     dateRange,
     period: selectedPeriod,
-    breakdownBy: breakdownType,
-  });
+    breakdownBy: breakdownType });
 
   const handleExport = async (format: 'csv' | 'json') => {
     setIsExporting(true);
     try {
-      await exportData(format);
-    } finally {
-      setIsExporting(false);
-    }
+      await exportData(format)} finally {
+      setIsExporting(false)}
   };
 
-  const handlePeriodChange = (event: React.MouseEvent<HTMLElement>, newPeriod: string | null) => {
+  const handlePeriodChange = (_: React.MouseEvent<HTMLElement>, newPeriod: string | null) => {
     if (newPeriod) {
-      setSelectedPeriod(newPeriod as 'daily' | 'weekly' | 'monthly');
-    }
+      setSelectedPeriod(newPeriod as 'daily' | 'weekly' | 'monthly')}
   };
 
   const renderRevenueCard = (title: string, value: number | string, trend?: number, icon?: React.ReactNode) => (
@@ -145,23 +130,24 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
     const DataComponent = chartType === 'bar' ? Bar : chartType === 'area' ? Area : Line;
 
     return (
+    <>
       <ResponsiveContainer width="100%" height={300}>
         <ChartComponent data={trends}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="period"
-            tickFormatter={(value) => format(new Date(value), 'MMM dd')}
+            tickFormatter={value) => format(new Date(value), 'MMM dd'}
           />
           <YAxis tickFormatter={(value) => `$${value}`} />
           <RechartsTooltip
-            formatter={(value: number) => formatCurrency(value)}
-            labelFormatter={(label) => format(new Date(label), 'PPP')}
+            formatter={(value: number) => formatCurrency(value}
+            labelFormatter={label) => format(new Date(label), 'PPP'}
           />
           <Legend />
           <DataComponent
             type="monotone"
             dataKey="revenue"
-            stroke="#8884d8"
+            stroke="#8884 d8"
             fill="#8884d8"
             strokeWidth={2}
             name="Revenue"
@@ -170,28 +156,28 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
             <Area
               type="monotone"
               dataKey="revenue"
-              stroke="#8884d8"
+              stroke="#8884 d8"
               fillOpacity={0.3}
               fill="#8884d8"
             />
           )}
         </ChartComponent>
       </ResponsiveContainer>
-    );
-  };
+    </>
+  )};
 
   const renderBreakdownChart = () => {
     if (!breakdown || breakdown.length === 0) return null;
 
     return (
-      <ResponsiveContainer width="100%" height={300}>
+    <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
             data={breakdown}
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+            label={({ name, percent }) => `${name}: ${percent * 100.toFixed(0}%`}
             outerRadius={80}
             fill="#8884d8"
             dataKey="revenue"
@@ -201,41 +187,41 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+      <RechartsTooltip formatter={(value: number) => formatCurrency(value} />
         </PieChart>
       </ResponsiveContainer>
-    );
-  };
+    )};
 
   const renderForecastChart = () => {
     if (!forecast || forecast.length === 0) return null;
 
     return (
+    <>
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart data={forecast}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
-            tickFormatter={(value) => format(new Date(value), 'MMM dd')}
-          />
+            tickFormatter={value) => format(new Date(value), 'MMM dd'}
+          />`
           <YAxis tickFormatter={(value) => `$${value}`} />
           <RechartsTooltip
-            formatter={(value: number) => formatCurrency(value)}
-            labelFormatter={(label) => format(new Date(label), 'PPP')}
+            formatter={(value: number) => formatCurrency(value}
+            labelFormatter={label) => format(new Date(label), 'PPP'}
           />
           <Area
             type="monotone"
             dataKey="predicted_revenue"
-            stroke="#82ca9d"
-            fill="#82ca9d"
+            stroke="#82 ca9 d"
+            fill="#82 ca9 d"
             fillOpacity={0.6}
             name="Predicted Revenue"
           />
           <Area
             type="monotone"
             dataKey="confidence_upper"
-            stroke="#82ca9d"
-            fill="#82ca9d"
+            stroke="#82 ca9 d"
+            fill="#82 ca9 d"
             fillOpacity={0.2}
             strokeDasharray="3 3"
             name="Upper Bound"
@@ -243,32 +229,30 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
           <Area
             type="monotone"
             dataKey="confidence_lower"
-            stroke="#82ca9d"
-            fill="#82ca9d"
+            stroke="#82 ca9 d"
+            fill="#82 ca9 d"
             fillOpacity={0.2}
             strokeDasharray="3 3"
             name="Lower Bound"
           />
         </AreaChart>
       </ResponsiveContainer>
-    );
-  };
+    </>
+  )};
 
   if (loading) {
     return (
-      <Box sx={{ width: '100%', mt: 2 }}>
+    <Box sx={{ width: '100%', mt: 2 }}>
         <LinearProgress />
       </Box>
-    );
-  }
+    )}
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ mt: 2 }}>
+    <Alert severity="error" sx={{ mt: 2 }}>
         {error}
       </Alert>
-    );
-  }
+    )}
 
   return (
     <Box sx={{ p: 3 }}>
@@ -277,11 +261,11 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
         <Typography variant="h4" fontWeight="bold">
           Revenue Dashboard
         </Typography>
-        <Box display="flex" gap={2}>
+      <Box display="flex" gap={2}>
           <Button
             startIcon={<Download />}
             variant="outlined"
-            onClick={() => handleExport('csv')}
+            onClick={() => handleExport('csv'}
             disabled={isExporting}
           >
             Export CSV
@@ -289,7 +273,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
           <Button
             startIcon={<Download />}
             variant="outlined"
-            onClick={() => handleExport('json')}
+            onClick={() => handleExport('json'}
             disabled={isExporting}
           >
             Export JSON
@@ -320,7 +304,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           {renderRevenueCard(
-            'CPM',
+            'CPM',`
             `$${overview?.cpm?.toFixed(2) || '0.00'}`,
             overview?.cpm_trend,
             <ShowChart color="success" />
@@ -328,7 +312,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           {renderRevenueCard(
-            'RPM',
+            'RPM',`
             `$${overview?.rpm?.toFixed(2) || '0.00'}`,
             overview?.rpm_trend,
             <BarChartIcon color="info" />
@@ -355,7 +339,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
               <ToggleButtonGroup
                 value={chartType}
                 exclusive
-                onChange={(e, val) => val && setChartType(val)}
+                onChange={(_, val) => val && setChartType(val}
                 size="small"
               >
                 <ToggleButton value="line">
@@ -432,7 +416,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
             <Box sx={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
+                  <tr style={{ borderBottom: '2px solid #e0 e0 e0' }}>
                     <th style={{ padding: '12px', textAlign: 'left' }}>Channel</th>
                     <th style={{ padding: '12px', textAlign: 'right' }}>Revenue</th>
                     <th style={{ padding: '12px', textAlign: 'right' }}>Videos</th>
@@ -442,7 +426,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
                 </thead>
                 <tbody>
                   {channelRevenue.map((channel) => (
-                    <tr key={channel.channel_id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                    <tr key={channel.channel_id} style={{ borderBottom: '1px solid #f0 f0 f0' }}>
                       <td style={{ padding: '12px' }}>{channel.channel_name}</td>
                       <td style={{ padding: '12px', textAlign: 'right' }}>
                         {formatCurrency(channel.revenue)}
@@ -463,5 +447,4 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
         </Card>
       )}
     </Box>
-  );
-};
+  )};`

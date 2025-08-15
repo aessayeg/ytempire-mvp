@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import {
+import { 
   Box,
   Grid,
   Card,
   CardContent,
   CardActions,
-  CardMedia,
   Typography,
   Button,
   IconButton,
@@ -20,27 +19,9 @@ import {
   Select,
   MenuItem,
   Switch,
-  FormControlLabel,
-  FormGroup,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Avatar,
-  Paper,
-  Tabs,
-  Tab,
-  Alert,
-  Tooltip,
-  Badge,
-  Divider,
-} from '@mui/material';
-import {
-  ExpandMore,
+  FormControlLabel
+ } from '@mui/material';
+import { 
   Add,
   Edit,
   Delete,
@@ -49,96 +30,98 @@ import {
   Star,
   StarBorder,
   Category,
-  Label,
   Schedule,
   Visibility,
   MonetizationOn,
   Settings,
   VideoLibrary,
   Description,
-  Language,
   Public,
-  Lock,
-  CloudUpload,
   CheckCircle,
-  Warning,
-  Share,
-  GetApp,
-  Upload,
-} from '@mui/icons-material';
+  Upload
+ } from '@mui/icons-material';
 
 interface Template {
-  id: string;
-  name: string;
-  description: string;
-  type: 'channel' | 'video' | 'scheduling' | 'monetization';
+  id: string,
+  name: string,
+
+  description: string,
+  type: 'channel' | 'video' | 'scheduling' | 'monetization',
+
   category: string;
   thumbnail?: string;
-  isFavorite: boolean;
-  isDefault: boolean;
+  isFavorite: boolean,
+  isDefault: boolean,
+
   usage: number;
   lastUsed?: Date;
   config: {
     // Channel Template Config
     channelSettings?: {
-      category: string;
-      tags: string[];
-      description: string;
-      keywords: string[];
-      country: string;
-      language: string;
-    };
+      category: string,
+  tags: string[],
+
+      description: string,
+  keywords: string[],
+
+      country: string,
+  language: string};
     // Video Template Config
     videoSettings?: {
-      title: string;
-      description: string;
-      tags: string[];
-      category: string;
-      visibility: 'public' | 'unlisted' | 'private';
-      thumbnail: string;
-      endScreen: boolean;
-      cards: boolean;
-      comments: boolean;
-      likes: boolean;
-    };
+      title: string,
+  description: string,
+
+      tags: string[],
+  category: string,
+
+      visibility: 'public' | 'unlisted' | 'private',
+  thumbnail: string,
+
+      endScreen: boolean,
+  cards: boolean,
+
+      comments: boolean,
+  likes: boolean};
     // Scheduling Template Config
     schedulingSettings?: {
-      publishTime: string;
-      timezone: string;
-      frequency: 'daily' | 'weekly' | 'custom';
-      daysOfWeek: number[];
-      maxPerDay: number;
-      spreadOverDay: boolean;
-    };
+      publishTime: string,
+  timezone: string,
+
+      frequency: 'daily' | 'weekly' | 'custom',
+  daysOfWeek: number[],
+
+      maxPerDay: number,
+  spreadOverDay: boolean};
     // Monetization Template Config
     monetizationSettings?: {
-      enabled: boolean;
-      midrollAds: boolean;
-      productPlacement: boolean;
-      paidPromotion: boolean;
-      merchShelf: boolean;
-      channelMemberships: boolean;
-      superChat: boolean;
-    };
+      enabled: boolean,
+  midrollAds: boolean,
+
+      productPlacement: boolean,
+  paidPromotion: boolean,
+
+      merchShelf: boolean,
+  channelMemberships: boolean,
+
+      superChat: boolean};
   };
 }
 
 interface TabPanelProps {
   children?: React.ReactNode;
-  index: number;
-  value: number;
-}
+  index: number,
+  value: number}
 
 const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
   return (
-    <div hidden={value !== index}>
+    <>
+      <div hidden={value !== index}>
       {value === index && <Box sx={{ py: 2 }}>{children}</Box>}
     </div>
-  );
-};
+  </>
+  )};
 
-export const ChannelTemplates: React.FC = () => {
-  const [templates, setTemplates] = useState<Template[]>([
+export const ChannelTemplates: React.FC = () => { const [templates, setTemplates] = useState<Template[]>([
     {
       id: '1',
       name: 'Tech Channel Starter',
@@ -149,19 +132,18 @@ export const ChannelTemplates: React.FC = () => {
       isDefault: true,
       usage: 156,
       lastUsed: new Date(),
-      config: {
-        channelSettings: {
+      config: {,
+  channelSettings: {,
+
           category: 'Science & Technology',
           tags: ['tech', 'technology', 'innovation', 'gadgets', 'AI'],
           description: 'Exploring the latest in technology and innovation',
           keywords: ['technology', 'artificial intelligence', 'gadgets'],
           country: 'US',
-          language: 'en',
-        },
-      },
+          language: 'en' }
+      }
     },
-    {
-      id: '2',
+    { id: '2',
       name: 'Daily Upload Schedule',
       description: 'Optimized schedule for daily content creators',
       type: 'scheduling',
@@ -169,16 +151,16 @@ export const ChannelTemplates: React.FC = () => {
       isFavorite: false,
       isDefault: false,
       usage: 89,
-      config: {
-        schedulingSettings: {
+      config: {,
+  schedulingSettings: {,
+
           publishTime: '14:00',
           timezone: 'America/New_York',
           frequency: 'daily',
           daysOfWeek: [1, 2, 3, 4, 5],
           maxPerDay: 2,
-          spreadOverDay: true,
-        },
-      },
+          spreadOverDay: true }
+      }
     },
     {
       id: '3',
@@ -189,8 +171,9 @@ export const ChannelTemplates: React.FC = () => {
       isFavorite: true,
       isDefault: false,
       usage: 234,
-      config: {
-        videoSettings: {
+      config: {,
+  videoSettings: {,
+
           title: '[Tutorial] {topic} - Complete Guide',
           description: 'In this tutorial, you will learn...',
           tags: ['tutorial', 'how to', 'guide', 'education'],
@@ -201,11 +184,11 @@ export const ChannelTemplates: React.FC = () => {
           cards: true,
           comments: true,
           likes: true,
-        },
-      },
+
+        }
+      }
     },
-    {
-      id: '4',
+    { id: '4',
       name: 'Full Monetization',
       description: 'Enable all monetization features',
       type: 'monetization',
@@ -213,19 +196,18 @@ export const ChannelTemplates: React.FC = () => {
       isFavorite: false,
       isDefault: false,
       usage: 67,
-      config: {
-        monetizationSettings: {
+      config: {,
+  monetizationSettings: {,
+
           enabled: true,
           midrollAds: true,
           productPlacement: false,
           paidPromotion: false,
           merchShelf: true,
           channelMemberships: true,
-          superChat: true,
-        },
-      },
-    },
-  ]);
+          superChat: true }
+      }
+    }]);
 
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [editDialog, setEditDialog] = useState(false);
@@ -233,39 +215,34 @@ export const ChannelTemplates: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [filter, setFilter] = useState('all');
 
-  const templateCategories = [
-    { value: 'all', label: 'All Templates' },
+  const templateCategories = [ { value: 'all', label: 'All Templates' },
     { value: 'channel', label: 'Channel Setup' },
     { value: 'video', label: 'Video Creation' },
     { value: 'scheduling', label: 'Scheduling' },
-    { value: 'monetization', label: 'Monetization' },
-  ];
+    { value: 'monetization', label: 'Monetization' } ];
 
   const handleApplyTemplate = (template: Template) => {
     // Apply template logic
-    console.log('Applying template:', template);
-  };
+    console.log('Applying, template:', template)};
 
   const handleToggleFavorite = (templateId: string) => {
-    setTemplates(prev => prev.map(t =>
+    setTemplates(prev => prev.map(t => {}
       t.id === templateId ? { ...t, isFavorite: !t.isFavorite } : t
-    ));
-  };
+    ))};
 
   const handleDuplicateTemplate = (template: Template) => {
-    const newTemplate: Template = {
+const newTemplate: Template = {
       ...template,
       id: `template-${Date.now()}`,
       name: `${template.name} (Copy)`,
       isDefault: false,
       usage: 0,
+
     };
-    setTemplates(prev => [...prev, newTemplate]);
-  };
+    setTemplates(prev => [...prev, newTemplate])};
 
   const handleDeleteTemplate = (templateId: string) => {
-    setTemplates(prev => prev.filter(t => t.id !== templateId));
-  };
+    setTemplates(prev => prev.filter(t => t.id !== templateId))};
 
   const getTemplateIcon = (type: string) => {
     switch (type) {
@@ -273,8 +250,7 @@ export const ChannelTemplates: React.FC = () => {
       case 'video': return <VideoLibrary />;
       case 'scheduling': return <Schedule />;
       case 'monetization': return <MonetizationOn />;
-      default: return <Category />;
-    }
+      default: return <Category />}
   };
 
   const filteredTemplates = filter === 'all'
@@ -289,11 +265,11 @@ export const ChannelTemplates: React.FC = () => {
             <Avatar sx={{ bgcolor: 'primary.main' }}>
               {getTemplateIcon(template.type)}
             </Avatar>
-            <IconButton
-              onClick={() => handleToggleFavorite(template.id)}
+      <IconButton
+              onClick={() => handleToggleFavorite(template.id}
               size="small"
             >
-              {template.isFavorite ? <Star color="warning" /> : <StarBorder />}
+              {template.isFavorite ? <Star color="warning" /> </>: <StarBorder />}
             </IconButton>
           </Box>
 
@@ -327,7 +303,7 @@ export const ChannelTemplates: React.FC = () => {
           <Button
             size="small"
             startIcon={<CheckCircle />}
-            onClick={() => handleApplyTemplate(template)}
+            onClick={() => handleApplyTemplate(template}
           >
             Apply
           </Button>
@@ -336,21 +312,20 @@ export const ChannelTemplates: React.FC = () => {
             startIcon={<Edit />}
             onClick={() => {
               setSelectedTemplate(template);
-              setEditDialog(true);
-            }}
+              setEditDialog(true)}}
           >
             Edit
           </Button>
           <IconButton
             size="small"
-            onClick={() => handleDuplicateTemplate(template)}
+            onClick={() => handleDuplicateTemplate(template}
           >
             <ContentCopy fontSize="small" />
           </IconButton>
           {!template.isDefault && (
             <IconButton
               size="small"
-              onClick={() => handleDeleteTemplate(template.id)}
+              onClick={() => handleDeleteTemplate(template.id}
             >
               <Delete fontSize="small" />
             </IconButton>
@@ -411,7 +386,7 @@ export const ChannelTemplates: React.FC = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Tags (comma separated)"
+                label="Tags (comma, separated)"
                 value={selectedTemplate?.config.channelSettings?.tags.join(', ') || ''}
               />
             </Grid>
@@ -427,7 +402,6 @@ export const ChannelTemplates: React.FC = () => {
           </Grid>
         </Box>
       )}
-
       {selectedTemplate?.type === 'video' && (
         <Box>
           <Typography variant="subtitle1" gutterBottom>
@@ -471,7 +445,6 @@ export const ChannelTemplates: React.FC = () => {
           </Grid>
         </Box>
       )}
-
       {selectedTemplate?.type === 'scheduling' && (
         <Box>
           <Typography variant="subtitle1" gutterBottom>
@@ -514,7 +487,6 @@ export const ChannelTemplates: React.FC = () => {
           </Grid>
         </Box>
       )}
-
       {selectedTemplate?.type === 'monetization' && (
         <Box>
           <Typography variant="subtitle1" gutterBottom>
@@ -548,13 +520,14 @@ export const ChannelTemplates: React.FC = () => {
   );
 
   return (
-    <Box>
+    <>
+      <Box>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5" fontWeight="bold">
           Channel Templates
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
             variant="outlined"
             startIcon={<Upload />}
@@ -564,7 +537,7 @@ export const ChannelTemplates: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<Add />}
-            onClick={() => setCreateDialog(true)}
+            onClick={() => setCreateDialog(true}
           >
             Create Template
           </Button>
@@ -574,10 +547,10 @@ export const ChannelTemplates: React.FC = () => {
       {/* Filters */}
       <Tabs
         value={tabValue}
-        onChange={(e, newValue) => {
-          setTabValue(newValue);
-          setFilter(templateCategories[newValue].value);
-        }}
+        onChange={(_, newValue) => {
+          setTabValue(newValue</>
+  );
+          setFilter(templateCategories[newValue].value)}}
         sx={{ mb: 3 }}
       >
         {templateCategories.map((cat, index) => (
@@ -593,7 +566,7 @@ export const ChannelTemplates: React.FC = () => {
       {/* Edit Template Dialog */}
       <Dialog
         open={editDialog}
-        onClose={() => setEditDialog(false)}
+        onClose={() => setEditDialog(false}
         maxWidth="md"
         fullWidth
       >
@@ -604,7 +577,7 @@ export const ChannelTemplates: React.FC = () => {
           {renderTemplateForm()}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDialog(false)}>
+          <Button onClick={() => setEditDialog(false}>
             Cancel
           </Button>
           <Button variant="contained" startIcon={<Save />}>
@@ -616,7 +589,7 @@ export const ChannelTemplates: React.FC = () => {
       {/* Create Template Dialog */}
       <Dialog
         open={createDialog}
-        onClose={() => setCreateDialog(false)}
+        onClose={() => setCreateDialog(false}
         maxWidth="md"
         fullWidth
       >
@@ -630,7 +603,7 @@ export const ChannelTemplates: React.FC = () => {
           {renderTemplateForm()}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateDialog(false)}>
+          <Button onClick={() => setCreateDialog(false}>
             Cancel
           </Button>
           <Button variant="contained" startIcon={<Add />}>
@@ -639,5 +612,4 @@ export const ChannelTemplates: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  );
-};
+  )};`

@@ -1,14 +1,16 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useAuthStore } from '../stores/authStore';
+import {  useEffect, useState, useCallback, useRef  } from 'react';
+import {  useAuthStore  } from '../stores/authStore';
 
 interface WebSocketMessage {
-  type: string;
-  data: unknown;
-  timestamp: string;
-}
+  type: string,
+  data: unknown,
 
-export const useRealtimeData = (endpoint: string = '/ws') => {
-  const [isConnected, setIsConnected] = useState(false);
+  timestamp: string}
+
+export const createOptimizedRouter = () => {
+  return createBrowserRouter([
+    // Router configuration would go here
+  ])}
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
   const [metrics, setMetrics] = useState<Record<string, unknown>>({});
   const wsRef = useRef<WebSocket | null>(null);
@@ -23,8 +25,7 @@ export const useRealtimeData = (endpoint: string = '/ws') => {
 
     wsRef.current.onopen = () => {
       setIsConnected(true);
-      console.log('WebSocket connected');
-    };
+      console.log('WebSocket connected')};
 
     wsRef.current.onmessage = (event) => {
       const message = JSON.parse(event.data);
@@ -34,8 +35,7 @@ export const useRealtimeData = (endpoint: string = '/ws') => {
         setMetrics(prev => ({
           ...prev,
           [message.data.metric_name]: message.data.value
-        }));
-      }
+        }))}
     };
 
     wsRef.current.onclose = () => {
@@ -44,31 +44,27 @@ export const useRealtimeData = (endpoint: string = '/ws') => {
     };
 
     wsRef.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-  }, [accessToken, user, endpoint]);
+    
+      console.error('WebSocket, error:', error)}, [accessToken, user, endpoint]);
 
   const disconnect = useCallback(() => {
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const sendMessage = useCallback((message: unknown) => {
+  const sendMessage = useCallback((message: React.ChangeEvent<HTMLInputElement>) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(message));
-    }
-  }, []);
+      wsRef.current.send(JSON.stringify(message))}
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const subscribe = useCallback((room: string) => {
-    sendMessage({ type: 'subscribe', room_id: room });
-  }, [sendMessage]);
+  const subscribe = useCallback(_(room: string) => {
+    sendMessage({ type: 'subscribe', room_id: room })}, [sendMessage]);
 
   useEffect(() => {
     connect();
-    return () => disconnect();
-  }, [connect, disconnect]);
+    return () => disconnect()}, [connect, disconnect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     isConnected,
@@ -78,4 +74,4 @@ export const useRealtimeData = (endpoint: string = '/ws') => {
     subscribe,
     disconnect
   };
-};
+};`

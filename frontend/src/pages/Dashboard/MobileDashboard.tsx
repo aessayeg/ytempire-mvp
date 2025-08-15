@@ -1,10 +1,14 @@
 import React from 'react';
-import { Box, useMediaQuery, useTheme } from '@mui/material';
-import { MobileResponsiveSystem } from '../../components/Mobile/MobileResponsiveSystem';
-import { MobileOptimizedDashboard } from '../../components/Mobile/MobileOptimizedDashboard';
-import { MainDashboard } from '../../components/Dashboard/MainDashboard';
-import { CustomizableWidgets } from '../../components/Dashboard/CustomizableWidgets';
-import { RealTimeMetrics } from '../../components/Dashboard/RealTimeMetrics';
+import { 
+  Box,
+  useMediaQuery,
+  useTheme
+ } from '@mui/material';
+import {  MobileResponsiveSystem  } from '../../components/Mobile/MobileResponsiveSystem';
+import {  MobileOptimizedDashboard  } from '../../components/Mobile/MobileOptimizedDashboard';
+import {  MainDashboard  } from '../../components/Dashboard/MainDashboard';
+import {  CustomizableWidgets  } from '../../components/Dashboard/CustomizableWidgets';
+import {  RealTimeMetrics  } from '../../components/Dashboard/RealTimeMetrics';
 
 const MobileDashboardPage: React.FC = () => {
   const theme = useTheme();
@@ -13,19 +17,18 @@ const MobileDashboardPage: React.FC = () => {
 
   if (isMobile) {
     return (
+    <>
       <Box>
         <MobileOptimizedDashboard />
       </Box>
-    );
-  }
+    )}
 
   if (isTablet) {
     return (
-      <Box>
+    <Box>
         <MobileResponsiveSystem />
       </Box>
-    );
-  }
+    )}
 
   // Desktop view with all features
   return (
@@ -38,7 +41,7 @@ const MobileDashboardPage: React.FC = () => {
         <CustomizableWidgets />
       </Box>
     </Box>
-  );
-};
+  </>
+  )};
 
 export default MobileDashboardPage;

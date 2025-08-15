@@ -1,24 +1,22 @@
 import React, { useRef, useState, useEffect } from 'react';
-import {
+import { 
   Box,
   IconButton,
   Slider,
   Typography,
   Paper,
   CircularProgress,
-  Alert,
-} from '@mui/material';
-import {
+  Alert
+ } from '@mui/material';
+import { 
   PlayArrow,
   Pause,
   VolumeUp,
   VolumeOff,
   Fullscreen,
   FullscreenExit,
-  Speed,
-  Settings,
-  PictureInPicture,
-} from '@mui/icons-material';
+  PictureInPicture
+ } from '@mui/icons-material';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -29,20 +27,9 @@ interface VideoPlayerProps {
   onPlay?: () => void;
   onPause?: () => void;
   onEnded?: () => void;
-  onTimeUpdate?: (currentTime: number, duration: number) => void;
-}
+  onTimeUpdate?: (currentTime: number, duration: number) => void}
 
-export const VideoPlayer: React.FC<VideoPlayerProps> = ({
-  videoUrl,
-  thumbnail,
-  autoPlay = false,
-  controls = true,
-  muted = false,
-  onPlay,
-  onPause,
-  onEnded,
-  onTimeUpdate,
-}) => {
+export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, autoPlay = false, controls = true, muted = false, onPlay, onPause, onEnded, onTimeUpdate }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -63,33 +50,27 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
-      setIsLoading(false);
-    };
+      setIsLoading(false)};
 
     const handleTimeUpdate = () => {
       setCurrentTime(video.currentTime);
-      onTimeUpdate?.(video.currentTime, video.duration);
-    };
+      onTimeUpdate?.(video.currentTime, video.duration)};
 
     const handlePlay = () => {
       setIsPlaying(true);
-      onPlay?.();
-    };
+      onPlay?.()};
 
     const handlePause = () => {
       setIsPlaying(false);
-      onPause?.();
-    };
+      onPause?.()};
 
     const handleEnded = () => {
       setIsPlaying(false);
-      onEnded?.();
-    };
+      onEnded?.()};
 
     const handleError = () => {
       setError('Failed to load video');
-      setIsLoading(false);
-    };
+      setIsLoading(false)};
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('timeupdate', handleTimeUpdate);
@@ -99,24 +80,21 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     video.addEventListener('error', handleError);
 
     return () => {
+    
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
       video.removeEventListener('ended', handleEnded);
-      video.removeEventListener('error', handleError);
-    };
-  }, [onPlay, onPause, onEnded, onTimeUpdate]);
+      video.removeEventListener('error', handleError)}, [onPlay, onPause, onEnded, onTimeUpdate]);
 
   const togglePlay = () => {
     const video = videoRef.current;
     if (!video) return;
 
     if (isPlaying) {
-      video.pause();
-    } else {
-      video.play();
-    }
+      video.pause()} else {
+      video.play()}
   };
 
   const toggleMute = () => {
@@ -124,10 +102,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (!video) return;
 
     video.muted = !isMuted;
-    setIsMuted(!isMuted);
-  };
+    setIsMuted(!isMuted)};
 
-  const handleVolumeChange = (event: Event, newValue: number | number[]) => {
+  const handleVolumeChange = (_: Event, newValue: number | number[]) => {
     const video = videoRef.current;
     if (!video) return;
 
@@ -135,20 +112,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     video.volume = volumeValue;
     setVolume(volumeValue);
     if (volumeValue === 0) {
-      setIsMuted(true);
-    } else if (isMuted) {
-      setIsMuted(false);
-    }
+      setIsMuted(true)} else if (isMuted) {
+      setIsMuted(false)}
   };
 
-  const handleSeek = (event: Event, newValue: number | number[]) => {
+  const handleSeek = (_: Event, newValue: number | number[]) => {
     const video = videoRef.current;
     if (!video) return;
 
     const time = newValue as number;
     video.currentTime = time;
-    setCurrentTime(time);
-  };
+    setCurrentTime(time)};
 
   const toggleFullscreen = async () => {
     const container = containerRef.current;
@@ -156,15 +130,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     if (!isFullscreen) {
       if (container.requestFullscreen) {
-        await container.requestFullscreen();
-      }
-      setIsFullscreen(true);
-    } else {
+        await container.requestFullscreen()}
+      setIsFullscreen(true)} else {
       if (document.exitFullscreen) {
-        await document.exitFullscreen();
-      }
-      setIsFullscreen(false);
-    }
+        await document.exitFullscreen()}
+      setIsFullscreen(false)}
   };
 
   const togglePictureInPicture = async () => {
@@ -173,13 +143,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     try {
       if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-      } else {
-        await video.requestPictureInPicture();
-      }
-    } catch (_error) {
-      console.error('PiP not supported');
-    }
+        await document.exitPictureInPicture()} else {
+        await video.requestPictureInPicture()}
+    } catch (_) {
+      console.error('PiP not supported')}
   };
 
   const changePlaybackRate = () => {
@@ -192,8 +159,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const newRate = rates[nextIndex];
     
     video.playbackRate = newRate;
-    setPlaybackRate(newRate);
-  };
+    setPlaybackRate(newRate)};
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -204,34 +170,30 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const handleMouseMove = () => {
     setShowControls(true);
     if (controlsTimeoutRef.current) {
-      clearTimeout(controlsTimeoutRef.current);
-    }
+      clearTimeout(controlsTimeoutRef.current)}
     controlsTimeoutRef.current = setTimeout(() => {
       if (isPlaying) {
-        setShowControls(false);
-      }
-    }, 3000);
-  };
+        setShowControls(false)}
+    }, 3000)};
 
   if (error) {
     return (
+    <>
       <Box p={3}>
         <Alert severity="error">{error}</Alert>
       </Box>
-    );
-  }
+    )}
 
   return (
     <Paper
       ref={containerRef}
-      sx={{
+      sx={ {
         position: 'relative',
         width: '100%',
         backgroundColor: 'black',
-        overflow: 'hidden',
-      }}
+        overflow: 'hidden' }}
       onMouseMove={handleMouseMove}
-      onMouseLeave={() => isPlaying && setShowControls(false)}
+      onMouseLeave={) => isPlaying && setShowControls(false}
     >
       <Box position="relative" paddingTop="56.25%">
         <video
@@ -240,14 +202,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           poster={thumbnail}
           autoPlay={autoPlay}
           muted={isMuted}
-          style={{
+          style={ {
             position: 'absolute',
             top: 0,
             left: 0,
             width: '100%',
             height: '100%',
-            objectFit: 'contain',
-          }}
+            objectFit: 'contain' }}
           onClick={togglePlay}
         />
 
@@ -261,18 +222,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             <CircularProgress size={60} sx={{ color: 'white' }} />
           </Box>
         )}
-
         {controls && showControls && (
           <Box
             position="absolute"
             bottom={0}
             left={0}
             right={0}
-            sx={{
-              background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+            sx={ {
+              background: 'linear-gradient(to, top, rgba(0,0,0,0.8), transparent)',
               transition: 'opacity 0.3s',
-              opacity: showControls ? 1 : 0,
-            }}
+              opacity: showControls ? 1 : 0 }}
           >
             {/* Progress Bar */}
             <Box px={2} py={1}>
@@ -280,12 +239,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 value={currentTime}
                 max={duration}
                 onChange={handleSeek}
-                sx={{
+                sx={ {
                   color: 'primary.main',
                   '& .MuiSlider-thumb': {
                     width: 12,
-                    height: 12,
-                  },
+                    height: 12 }
                 }}
               />
             </Box>
@@ -300,11 +258,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             >
               <Box display="flex" alignItems="center" gap={1}>
                 <IconButton onClick={togglePlay} sx={{ color: 'white' }}>
-                  {isPlaying ? <Pause /> : <PlayArrow />}
+                  {isPlaying ? <Pause /> </>: <PlayArrow />}
                 </IconButton>
-
-                <IconButton onClick={toggleMute} sx={{ color: 'white' }}>
-                  {isMuted ? <VolumeOff /> : <VolumeUp />}
+      <IconButton onClick={toggleMute} sx={{ color: 'white' }}>
+                  {isMuted ? <VolumeOff /> </>: <VolumeUp />}
                 </IconButton>
 
                 <Box width={100}>
@@ -313,12 +270,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     max={1}
                     step={0.1}
                     onChange={handleVolumeChange}
-                    sx={{
+                    sx={ {
                       color: 'white',
                       '& .MuiSlider-thumb': {
                         width: 12,
-                        height: 12,
-                      },
+                        height: 12 }
                     }}
                   />
                 </Box>
@@ -350,7 +306,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   sx={{ color: 'white' }}
                   size="small"
                 >
-                  {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+                  {isFullscreen ? <FullscreenExit /> </>: <Fullscreen />}
                 </IconButton>
               </Box>
             </Box>
@@ -358,5 +314,5 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         )}
       </Box>
     </Paper>
-  );
-};
+  </>
+  )};`

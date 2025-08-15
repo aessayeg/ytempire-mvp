@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {
+import { 
   Container,
   Paper,
   TextField,
@@ -12,18 +12,19 @@ import {
   Chip,
   Stack,
   Divider
-} from '@mui/material';
-import { RocketLaunch, CheckCircle, Star } from '@mui/icons-material';
-import { api } from '../services/api';
+ } from '@mui/material';
+import {  RocketLaunch, CheckCircle, Star  } from '@mui/icons-material';
+import {  api  } from '../services/api';
 
 interface BetaFormData {
-  full_name: string;
-  email: string;
-  company: string;
-  use_case: string;
-  expected_volume: string;
-  referral_source: string;
-}
+  full_name: string,
+  email: string,
+
+  company: string,
+  use_case: string,
+
+  expected_volume: string,
+  referral_source: string}
 
 const BetaSignup: React.FC = () => {
   const [formData, setFormData] = useState<BetaFormData>({
@@ -32,7 +33,8 @@ const BetaSignup: React.FC = () => {
     company: '',
     use_case: '',
     expected_volume: '10-50',
-    referral_source: ''
+    referral_source: '',
+
   });
   
   const [loading, setLoading] = useState(false);
@@ -57,7 +59,7 @@ const BetaSignup: React.FC = () => {
     'Other'
   ];
 
-  const handleSubmit = async (_e: React.FormEvent) => {
+  const handleSubmit = async (_: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -65,44 +67,39 @@ const BetaSignup: React.FC = () => {
     try {
       const response = await api.post('/beta/signup', formData);
       setSuccess(true);
-      setApiKey(response.data.api_key);
-    } catch (err: unknown) {
-      setError(err.response?.data?.detail || 'Failed to submit application');
-    } finally {
-      setLoading(false);
-    }
+      setApiKey(response.data.api_key)} catch (_err: unknown) {
+      setError(err.response?.data?.detail || 'Failed to submit application')} finally {
+      setLoading(false)}
   };
 
-  const handleChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+      [e.target.name]: e.target.value)})};
 
   if (success) {
     return (
+    <>
       <Container maxWidth="md" sx={{ mt: 8 }}>
         <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
           <CheckCircle color="success" sx={{ fontSize: 64, mb: 2 }} />
           <Typography variant="h4" gutterBottom>
             Welcome to YTEmpire Beta! 🎉
           </Typography>
-          <Typography variant="body1" paragraph>
+      <Typography variant="body1" paragraph>
             Your application has been approved! Check your email for login credentials.
           </Typography>
           
           {apiKey && (
             <Paper sx={{ p: 2, bgcolor: 'grey.100', mt: 3 }}>
               <Typography variant="subtitle2" gutterBottom>
-                Your API Key (save this):
+                Your API Key (save, this):
               </Typography>
               <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
                 {apiKey}
               </Typography>
             </Paper>
           )}
-          
           <Box sx={{ mt: 4 }}>
             <Button
               variant="contained"
@@ -122,25 +119,25 @@ const BetaSignup: React.FC = () => {
           </Box>
         </Paper>
       </Container>
-    );
-  }
+    )}
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
+    <>
+      <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <RocketLaunch sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
           <Typography variant="h3" gutterBottom>
             Join YTEmpire Beta
           </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
+      <Typography variant="subtitle1" color="text.secondary">
             Get early access to AI-powered YouTube automation
           </Typography>
         </Box>
 
         <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 4 }}>
           <Chip icon={<Star />} label="$50 Free Credits" color="primary" />
-          <Chip icon={<Star />} label="5x API Rate Limit" color="primary" />
+          <Chip icon={<Star />} label="5 x API Rate Limit" color="primary" />
           <Chip icon={<Star />} label="Priority Support" color="primary" />
         </Stack>
 
@@ -151,7 +148,6 @@ const BetaSignup: React.FC = () => {
             {error}
           </Alert>
         )}
-
         <form onSubmit={handleSubmit}>
           <Box sx={{ display: 'grid', gap: 3 }}>
             <TextField
@@ -194,7 +190,7 @@ const BetaSignup: React.FC = () => {
               rows={3}
               required
               disabled={loading}
-              helperText="Describe how you plan to use YTEmpire (min 10 characters)"
+              helperText="Describe how you plan to use YTEmpire (min 10, characters)"
             />
 
             <TextField
@@ -255,7 +251,7 @@ const BetaSignup: React.FC = () => {
         </Typography>
       </Paper>
     </Container>
-  );
-};
+  </>
+  )};
 
 export default BetaSignup;

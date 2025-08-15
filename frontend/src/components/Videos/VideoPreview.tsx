@@ -1,7 +1,12 @@
 import React from 'react';
-import { Box, Paper, Typography, Button, Grid, Chip, Alert } from '@mui/material';
-import { PlayArrow, Edit, Publish } from '@mui/icons-material';
-import { VideoPlayer } from './VideoPlayer';
+import { 
+  Box,
+  Paper,
+  Typography,
+  Button
+ } from '@mui/material';
+import {  PlayArrow, Edit, Publish  } from '@mui/icons-material';
+import {  VideoPlayer  } from './VideoPlayer';
 
 interface VideoPreviewProps {
   video: unknown;
@@ -12,7 +17,8 @@ interface VideoPreviewProps {
 
 export const VideoPreview: React.FC<VideoPreviewProps> = ({ video, onEdit, onPublish, onApprove }) => {
   return (
-    <Paper sx={{ p: 3 }}>
+    <>
+      <Paper sx={{ p: 3 }}>
       <Typography variant="h6" gutterBottom>Video Preview</Typography>
       <VideoPlayer videoUrl={video.video_url} thumbnail={video.thumbnail_url} />
       <Box mt={2}>
@@ -25,5 +31,5 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({ video, onEdit, onPub
         </Box>
       </Box>
     </Paper>
-  );
-};
+  </>
+  )};

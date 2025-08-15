@@ -1,38 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Stepper,
   Step,
   StepLabel,
   Button,
   Typography,
-  Paper,
   TextField,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
-  Chip,
-  Alert,
-  Card,
-  CardContent,
-  Grid,
-  Slider,
   Switch,
-  FormControlLabel,
-  RadioGroup,
-  Radio,
-  Autocomplete,
-  CircularProgress,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Collapse,
-  IconButton,
-} from '@mui/material';
-import {
+  FormControlLabel
+ } from '@mui/material';
+import { 
   VideoLibrary,
   Settings,
   Preview,
@@ -46,32 +28,38 @@ import {
   AutoAwesome,
   Psychology,
   RecordVoiceOver,
-  Image,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useChannelStore } from '../../stores/channelStore';
-import { api } from '../../services/api';
-import { GenerationProgress } from '../../components/Videos/GenerationProgress';
+  Image
+ } from '@mui/icons-material';
+import {  useNavigate  } from 'react-router-dom';
+import {  useChannelStore  } from '../../stores/channelStore';
+import {  api  } from '../../services/api';
+import {  GenerationProgress  } from '../../components/Videos/GenerationProgress';
 
 const steps = ['Select Channel & Topic', 'Configure Settings', 'Review & Generate'];
 
 interface GenerationConfig {
-  channel_id: string;
-  title: string;
-  topic: string;
-  style: string;
-  duration: string;
-  voice_style: string;
-  language: string;
-  use_trending: boolean;
-  quality_preset: string;
-  thumbnail_style: string;
-  music_style: string;
-  target_audience: string;
-  keywords: string[];
-  tone: string;
-  pacing: string;
-}
+  channel_id: string,
+  title: string,
+
+  topic: string,
+  style: string,
+
+  duration: string,
+  voice_style: string,
+
+  language: string,
+  use_trending: boolean,
+
+  quality_preset: string,
+  thumbnail_style: string,
+
+  music_style: string,
+  target_audience: string,
+
+  keywords: string[],
+  tone: string,
+
+  pacing: string}
 
 export const VideoGenerator: React.FC = () => {
   const navigate = useNavigate();
@@ -84,8 +72,7 @@ export const VideoGenerator: React.FC = () => {
   const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
   
-  const [config, setConfig] = useState<GenerationConfig>({
-    channel_id: '',
+  const [config, setConfig] = useState<GenerationConfig>({ channel_id: '',
     title: '',
     topic: '',
     style: 'informative',
@@ -99,25 +86,20 @@ export const VideoGenerator: React.FC = () => {
     target_audience: 'general',
     keywords: [],
     tone: 'professional',
-    pacing: 'medium',
-  });
+    pacing: 'medium' });
 
   useEffect(() => {
     fetchChannels();
-    fetchTrendingTopics();
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
+    fetchTrendingTopics()}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    calculateEstimatedCost();
-  }, [config]);
+    calculateEstimatedCost()}, [config]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchTrendingTopics = async () => {
     try {
       const response = await api.ai.getTrendingTopics();
-      setTrendingTopics(response.topics);
-    } catch (_error) {
-      console.error('Failed to fetch trending topics:', error);
-    }
+      setTrendingTopics(response.topics)} catch (_) {
+      console.error('Failed to fetch trending, topics:', error)}
   };
 
   const calculateEstimatedCost = () => {
@@ -139,20 +121,16 @@ export const VideoGenerator: React.FC = () => {
     // Thumbnail cost
     if (config.thumbnail_style !== 'none') cost += 0.1;
     
-    setEstimatedCost(cost);
-  };
+    setEstimatedCost(cost)};
 
   const handleNext = () => {
     if (activeStep === steps.length - 1) {
-      handleGenerate();
-    } else {
-      setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    }
+      handleGenerate()} else {
+      setActiveStep((prevActiveStep) => prevActiveStep + 1)}
   };
 
   const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
+    setActiveStep((prevActiveStep) => prevActiveStep - 1)};
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -162,38 +140,34 @@ export const VideoGenerator: React.FC = () => {
       const response = await api.videos.generate(config);
       setGenerationId(response.id);
       // Navigate to generation progress
-      navigate(`/videos/generation/${response.id}`);
-    } catch (err: unknown) {
+      navigate(`/videos/generation/${response.id}`)} catch (_err: unknown) {
       setError(err.message || 'Failed to start video generation');
-      setIsGenerating(false);
-    }
+      setIsGenerating(false)}
   };
 
-  const handleUseTrendingTopic = (topic: unknown) => {
-    setConfig({
+  const handleUseTrendingTopic = (topic: unknown) => { setConfig({
       ...config,
       topic: topic.title,
       keywords: topic.keywords || [],
-      use_trending: true,
-    });
-  };
+      use_trending: true })};
 
   const renderStepContent = (step: number) => {
     switch (step) {
       case 0:
         return (
-          <Grid container spacing={3}>
+    <>
+      <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
                     <VideoLibrary /> Select Channel
                   </Typography>
-                  <FormControl fullWidth margin="normal">
+      <FormControl fullWidth margin="normal">
                     <InputLabel>Channel</InputLabel>
                     <Select
                       value={config.channel_id}
-                      onChange={(e) => setConfig({ ...config, channel_id: e.target.value })}
+                      onChange={(e) => setConfig({ ...config, channel_id: e.target.value)})}
                       label="Channel"
                     >
                       {channels.map((channel) => (
@@ -216,7 +190,7 @@ export const VideoGenerator: React.FC = () => {
                     fullWidth
                     label="Video Title (Optional)"
                     value={config.title}
-                    onChange={(e) => setConfig({ ...config, title: e.target.value })}
+                    onChange={(e) => setConfig({ ...config, title: e.target.value)})}
                     margin="normal"
                     helperText="Leave empty to auto-generate based on topic"
                   />
@@ -225,7 +199,7 @@ export const VideoGenerator: React.FC = () => {
                     fullWidth
                     label="Topic"
                     value={config.topic}
-                    onChange={(e) => setConfig({ ...config, topic: e.target.value })}
+                    onChange={(e) => setConfig({ ...config, topic: e.target.value)})}
                     margin="normal"
                     required
                     multiline
@@ -247,7 +221,7 @@ export const VideoGenerator: React.FC = () => {
                         helperText="Press Enter to add keywords"
                       />
                     )}
-                    renderTags={(value, getTagProps) =>
+                    renderTags={(value, getTagProps) => {}
                       value.map((option, index) => (
                         <Chip
                           variant="outlined"
@@ -255,8 +229,7 @@ export const VideoGenerator: React.FC = () => {
                           size="small"
                           {...getTagProps({ index })}
                         />
-                      ))
-                    }
+                      ))}
                   />
                 </CardContent>
               </Card>
@@ -289,13 +262,13 @@ export const VideoGenerator: React.FC = () => {
                       <ListItem
                         key={index}
                         button
-                        onClick={() => handleUseTrendingTopic(topic)}
+                        onClick={() => handleUseTrendingTopic(topic}
                         sx={{
                           border: 1,
                           borderColor: 'divider',
                           borderRadius: 1,
                           mb: 1,
-                          '&:hover': { bgcolor: 'action.hover' },
+                          '&:hover': { bgcolor: 'action.hover' }
                         }}
                       >
                         <ListItemIcon>
@@ -323,25 +296,26 @@ export const VideoGenerator: React.FC = () => {
               </Card>
             </Grid>
           </Grid>
-        );
+        </>
+  );
 
       case 1:
         return (
-          <Grid container spacing={3}>
+    <>
+      <Grid container spacing={3}>
             <Grid item xs={12} md={8}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
                     <Settings /> Video Settings
                   </Typography>
-
-                  <Grid container spacing={2}>
+      <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                       <FormControl fullWidth margin="normal">
                         <InputLabel>Style</InputLabel>
                         <Select
                           value={config.style}
-                          onChange={(e) => setConfig({ ...config, style: e.target.value })}
+                          onChange={(e) => setConfig({ ...config, style: e.target.value)})}
                           label="Style"
                         >
                           <MenuItem value="informative">Informative</MenuItem>
@@ -359,11 +333,11 @@ export const VideoGenerator: React.FC = () => {
                         <InputLabel>Duration</InputLabel>
                         <Select
                           value={config.duration}
-                          onChange={(e) => setConfig({ ...config, duration: e.target.value })}
+                          onChange={(e) => setConfig({ ...config, duration: e.target.value)})}
                           label="Duration"
                         >
-                          <MenuItem value="short">Short (1-3 min)</MenuItem>
-                          <MenuItem value="medium">Medium (5-10 min)</MenuItem>
+                          <MenuItem value="short">Short (1-3, min)</MenuItem>
+                          <MenuItem value="medium">Medium (5-10, min)</MenuItem>
                           <MenuItem value="long">Long (10+ min)</MenuItem>
                         </Select>
                       </FormControl>
@@ -374,7 +348,7 @@ export const VideoGenerator: React.FC = () => {
                         <InputLabel>Voice Style</InputLabel>
                         <Select
                           value={config.voice_style}
-                          onChange={(e) => setConfig({ ...config, voice_style: e.target.value })}
+                          onChange={(e) => setConfig({ ...config, voice_style: e.target.value)})}
                           label="Voice Style"
                         >
                           <MenuItem value="natural">Natural</MenuItem>
@@ -392,10 +366,10 @@ export const VideoGenerator: React.FC = () => {
                         <InputLabel>Quality Preset</InputLabel>
                         <Select
                           value={config.quality_preset}
-                          onChange={(e) => setConfig({ ...config, quality_preset: e.target.value })}
+                          onChange={(e) => setConfig({ ...config, quality_preset: e.target.value)})}
                           label="Quality Preset"
                         >
-                          <MenuItem value="fast">Fast (Lower Quality)</MenuItem>
+                          <MenuItem value="fast">Fast (Lower, Quality)</MenuItem>
                           <MenuItem value="balanced">Balanced</MenuItem>
                           <MenuItem value="quality">High Quality</MenuItem>
                         </Select>
@@ -407,7 +381,7 @@ export const VideoGenerator: React.FC = () => {
                         <InputLabel>Thumbnail Style</InputLabel>
                         <Select
                           value={config.thumbnail_style}
-                          onChange={(e) => setConfig({ ...config, thumbnail_style: e.target.value })}
+                          onChange={(e) => setConfig({ ...config, thumbnail_style: e.target.value)})}
                           label="Thumbnail Style"
                         >
                           <MenuItem value="modern">Modern</MenuItem>
@@ -425,7 +399,7 @@ export const VideoGenerator: React.FC = () => {
                         <InputLabel>Target Audience</InputLabel>
                         <Select
                           value={config.target_audience}
-                          onChange={(e) => setConfig({ ...config, target_audience: e.target.value })}
+                          onChange={(e) => setConfig({ ...config, target_audience: e.target.value)})}
                           label="Target Audience"
                         >
                           <MenuItem value="general">General</MenuItem>
@@ -441,8 +415,8 @@ export const VideoGenerator: React.FC = () => {
 
                   <Box mt={2}>
                     <Button
-                      onClick={() => setShowAdvanced(!showAdvanced)}
-                      endIcon={showAdvanced ? <ExpandLess /> : <ExpandMore />}
+                      onClick={() => setShowAdvanced(!showAdvanced}
+                      endIcon={showAdvanced ? <ExpandLess /> </>: <ExpandMore />}
                     >
                       Advanced Settings
                     </Button>
@@ -453,7 +427,7 @@ export const VideoGenerator: React.FC = () => {
                             <InputLabel>Tone</InputLabel>
                             <Select
                               value={config.tone}
-                              onChange={(e) => setConfig({ ...config, tone: e.target.value })}
+                              onChange={(e) => setConfig({ ...config, tone: e.target.value)})}
                               label="Tone"
                             >
                               <MenuItem value="professional">Professional</MenuItem>
@@ -470,7 +444,7 @@ export const VideoGenerator: React.FC = () => {
                             <InputLabel>Pacing</InputLabel>
                             <Select
                               value={config.pacing}
-                              onChange={(e) => setConfig({ ...config, pacing: e.target.value })}
+                              onChange={(e) => setConfig({ ...config, pacing: e.target.value)})}
                               label="Pacing"
                             >
                               <MenuItem value="slow">Slow</MenuItem>
@@ -486,7 +460,7 @@ export const VideoGenerator: React.FC = () => {
                             <InputLabel>Music Style</InputLabel>
                             <Select
                               value={config.music_style}
-                              onChange={(e) => setConfig({ ...config, music_style: e.target.value })}
+                              onChange={(e) => setConfig({ ...config, music_style: e.target.value)})}
                               label="Music Style"
                             >
                               <MenuItem value="none">No Music</MenuItem>
@@ -504,7 +478,7 @@ export const VideoGenerator: React.FC = () => {
                             <InputLabel>Language</InputLabel>
                             <Select
                               value={config.language}
-                              onChange={(e) => setConfig({ ...config, language: e.target.value })}
+                              onChange={(e) => setConfig({ ...config, language: e.target.value)})}
                               label="Language"
                             >
                               <MenuItem value="en">English</MenuItem>
@@ -536,7 +510,7 @@ export const VideoGenerator: React.FC = () => {
                         <AttachMoney />
                       </ListItemIcon>
                       <ListItemText
-                        primary="Estimated Cost"
+                        primary="Estimated Cost"`
                         secondary={`$${estimatedCost.toFixed(2)}`}
                       />
                     </ListItem>
@@ -593,19 +567,20 @@ export const VideoGenerator: React.FC = () => {
               </Card>
             </Grid>
           </Grid>
-        );
+        </>
+  );
 
       case 2:
         return (
-          <Grid container spacing={3}>
+    <>
+      <Grid container spacing={3}>
             <Grid item xs={12} md={8}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
                     <Preview /> Review Configuration
                   </Typography>
-
-                  <Grid container spacing={2}>
+      <Grid container spacing={2}>
                     <Grid item xs={12}>
                       <Typography variant="subtitle2" color="text.secondary">
                         Channel
@@ -634,7 +609,6 @@ export const VideoGenerator: React.FC = () => {
                         </Typography>
                       </Grid>
                     )}
-
                     <Grid item xs={12}>
                       <Typography variant="subtitle2" color="text.secondary">
                         Keywords
@@ -779,11 +753,11 @@ export const VideoGenerator: React.FC = () => {
               </Card>
             </Grid>
           </Grid>
-        );
+        </>
+  );
 
       default:
-        return 'Unknown step';
-    }
+        return 'Unknown step'}
   };
 
   if (generationId) {
@@ -791,11 +765,11 @@ export const VideoGenerator: React.FC = () => {
   }
 
   return (
-    <Box p={3}>
+    <>
+      <Box p={3}>
       <Typography variant="h4" gutterBottom>
         Generate New Video
       </Typography>
-
       <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
         {steps.map((label) => (
           <Step key={label}>
@@ -805,7 +779,6 @@ export const VideoGenerator: React.FC = () => {
       </Stepper>
 
       {renderStepContent(activeStep)}
-
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
         <Button
           disabled={activeStep === 0}
@@ -819,7 +792,7 @@ export const VideoGenerator: React.FC = () => {
               variant="contained"
               onClick={handleGenerate}
               disabled={isGenerating || !config.channel_id || !config.topic}
-              startIcon={isGenerating ? <CircularProgress size={20} /> : <Publish />}
+              startIcon={isGenerating ? <CircularProgress size={20} /> </>: <Publish />}
             >
               {isGenerating ? 'Generating...' : 'Generate Video'}
             </Button>
@@ -827,9 +800,7 @@ export const VideoGenerator: React.FC = () => {
             <Button
               variant="contained"
               onClick={handleNext}
-              disabled={
-                (activeStep === 0 && (!config.channel_id || !config.topic))
-              }
+              disabled={activeStep === 0 && (!config.channel_id || !config.topic)}
             >
               Next
             </Button>
@@ -837,5 +808,5 @@ export const VideoGenerator: React.FC = () => {
         </Box>
       </Box>
     </Box>
-  );
-};
+  </>
+  )};`

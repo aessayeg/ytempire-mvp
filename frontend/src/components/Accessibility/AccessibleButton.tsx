@@ -1,7 +1,10 @@
 import React, { forwardRef } from 'react';
-import { Button, Tooltip } from '@mui/material';
+import { 
+  Button,
+  Tooltip
+ } from '@mui/material';
 import type { ButtonProps } from '@mui/material';
-import { getAriaProps } from '../../utils/accessibility';
+import {  getAriaProps  } from '../../utils/accessibility';
 
 interface AccessibleButtonProps extends ButtonProps {
   ariaLabel?: string;
@@ -13,36 +16,22 @@ interface AccessibleButtonProps extends ButtonProps {
   role?: string;
 }
 
-export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonProps>(
-  (
+export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonProps>((
     {
-      ariaLabel,
-      ariaDescribedBy,
-      ariaExpanded,
-      ariaPressed,
-      tooltip,
-      keyboardShortcut,
-      role,
-      disabled,
-      children,
-      onClick,
-      ...props
-    },
-    ref
-  ) => {
+      ariaLabel, ariaDescribedBy, ariaExpanded, ariaPressed, tooltip, keyboardShortcut, role, disabled, children, onClick, ...props
+    }, ref) => {
     const ariaProps = getAriaProps({
       label: ariaLabel || (typeof children === 'string' ? children : undefined),
       describedBy: ariaDescribedBy,
       expanded: ariaExpanded,
       disabled,
-      role,
-    });
+      role });
 
     // Handle keyboard shortcuts
     React.useEffect(() => {
       if (!keyboardShortcut || disabled) return;
 
-      const handleKeyDown = (_e: KeyboardEvent) => {
+      const handleKeyDown = (_: KeyboardEvent) => {
         const keys = keyboardShortcut.toLowerCase().split('+');
         const isMatch = keys.every((key) => {
           switch (key) {
@@ -55,19 +44,16 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
             case 'meta':
               return e.metaKey;
             default:
-              return e.key.toLowerCase() === key;
-          }
+              return e.key.toLowerCase() === key}
         });
 
         if (isMatch) {
           e.preventDefault();
-          onClick?.(e as React.MouseEvent<HTMLButtonElement>);
-        }
+          onClick?.(e as React.MouseEvent<HTMLButtonElement>)}
       };
 
       document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [keyboardShortcut, disabled, onClick]);
+      return () => document.removeEventListener('keydown', handleKeyDown)}, [keyboardShortcut, disabled, onClick]);
 
     const button = (
       <Button
@@ -88,11 +74,10 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
         : tooltip;
 
       return (
-        <Tooltip title={tooltipTitle} arrow>
+    <Tooltip title={tooltipTitle} arrow>
           <span>{button}</span>
         </Tooltip>
-      );
-    }
+      )}
 
     return button;
   }

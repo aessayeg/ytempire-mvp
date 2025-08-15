@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
+import { 
   Box,
   Grid,
   Paper,
@@ -15,15 +15,14 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Skeleton,
   Alert,
   useTheme,
-  useMediaQuery,
-} from '@mui/material';
-import { DashboardSkeleton } from '../Loading/LoadingSkeleton';
-import { ErrorBoundary } from '../ErrorBoundary';
-import { useAnnounce } from '../Accessibility/ScreenReaderAnnouncer';
-import {
+  useMediaQuery
+ } from '@mui/material';
+import {  DashboardSkeleton  } from '../Loading/LoadingSkeleton';
+import {  ErrorBoundary  } from '../ErrorBoundary';
+import {  useAnnounce  } from '../Accessibility/ScreenReaderAnnouncer';
+import { 
   TrendingUp,
   VideoLibrary,
   MonetizationOn,
@@ -33,15 +32,12 @@ import {
   Add,
   Refresh,
   ArrowUpward,
-  ArrowDownward,
   YouTube,
-  Analytics as AnalyticsIcon,
   AutoAwesome,
-  Warning,
-  CheckCircle,
-} from '@mui/icons-material';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import {
+  CheckCircle
+ } from '@mui/icons-material';
+import {  Line, Doughnut  } from 'react-chartjs-2';
+import { 
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
@@ -52,12 +48,12 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler,
-} from 'chart.js';
-import { useNavigate } from 'react-router-dom';
-import { formatNumber, formatCurrency, formatDuration } from '../../utils/formatters';
-import { dashboardApi } from '../../services/api';
-import { useWebSocket } from '../../hooks/useWebSocket';
+  Filler
+ } from 'chart.js';
+import {  useNavigate  } from 'react-router-dom';
+import {  formatNumber, formatCurrency  } from '../../utils/formatters';
+import {  dashboardApi  } from '../../services/api';
+import {  useWebSocket  } from '../../hooks/useWebSocket';
 
 // Register ChartJS components
 ChartJS.register(
@@ -74,38 +70,47 @@ ChartJS.register(
 );
 
 interface DashboardStats {
-  totalChannels: number;
-  totalVideos: number;
-  totalViews: number;
-  totalRevenue: number;
-  totalCost: number;
-  profit: number;
-  avgEngagementRate: number;
-  videosInQueue: number;
-  videosPublishedToday: number;
-  monthlyGrowthRate: number;
-  bestPerformingVideo: {
-    id: string;
-    title: string;
-    views: number;
-    revenue: number;
-  } | null;
+  totalChannels: number,
+  totalVideos: number,
+
+  totalViews: number,
+  totalRevenue: number,
+
+  totalCost: number,
+  profit: number,
+
+  avgEngagementRate: number,
+  videosInQueue: number,
+
+  videosPublishedToday: number,
+  monthlyGrowthRate: number,
+
+  bestPerformingVideo: {,
+  id: string,
+
+    title: string,
+  views: number,
+
+    revenue: number} | null;
 }
 
 interface RecentActivity {
-  id: string;
-  type: 'video_generated' | 'video_published' | 'channel_connected' | 'milestone_reached';
-  title: string;
-  description: string;
-  timestamp: string;
-  icon: React.ReactNode;
-  color: string;
-}
+  id: string,
+  type: 'video_generated' | 'video_published' | 'channel_connected' | 'milestone_reached',
+
+  title: string,
+  description: string,
+
+  timestamp: string,
+  icon: React.ReactNode,
+
+  color: string}
 
 interface VideoInQueue {
-  id: string;
-  title: string;
-  channel: string;
+  id: string,
+  title: string,
+
+  channel: string,
   status: 'generating' | 'scheduled' | 'ready';
   progress?: number;
   scheduledTime?: string;
@@ -130,158 +135,117 @@ export const MainDashboard: React.FC = () => {
   const { data: wsData, isConnected } = useWebSocket('/dashboard');
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps;
+    fetchDashboardData()}, []); // eslint-disable-line react-hooks/exhaustive-deps // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (wsData) {
       // Handle real-time updates
-      handleRealtimeUpdate(wsData);
-    }
-  }, [wsData]);
+      handleRealtimeUpdate(wsData)}
+  }, [wsData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [statsRes, activityRes, queueRes] = await Promise.all([
-        dashboardApi.getStats(),
+      const [statsRes, activityRes, queueRes] = await Promise.all([ dashboardApi.getStats(),
         dashboardApi.getRecentActivity(),
-        dashboardApi.getVideoQueue(),
-      ]);
+        dashboardApi.getVideoQueue() ]);
       
       setStats(statsRes.data);
       setRecentActivity(formatActivity(activityRes.data));
       setVideosInQueue(queueRes.data);
       setError(null);
-      announce('Dashboard data loaded successfully', 'polite');
-    } catch (error: unknown) {
+      announce('Dashboard data loaded successfully', 'polite')} catch (_: unknown) {
       setError('Failed to load dashboard data. Please refresh to try again.');
-      console.error('Dashboard error:', error);
-    } finally {
-      setLoading(false);
-    }
+      console.error('Dashboard, error:', error)} finally {
+      setLoading(false)}
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchDashboardData();
-    setRefreshing(false);
-  };
+    setRefreshing(false)};
 
   const handleRealtimeUpdate = (data: unknown) => {
     if (data.type === 'stats_update') {
-      setStats(data.stats);
-    } else if (data.type === 'new_activity') {
-      setRecentActivity(prev => [formatActivityItem(data.activity), ...prev].slice(0, 10));
-    } else if (data.type === 'queue_update') {
-      setVideosInQueue(data.queue);
-    }
+      setStats(data.stats)} else if (data.type === 'new_activity') {
+      setRecentActivity(prev => [formatActivityItem(data.activity), ...prev].slice(0, 10))} else if (data.type === 'queue_update') {
+      setVideosInQueue(data.queue)}
   };
 
   const formatActivity = (activities: unknown[]): RecentActivity[] => {
-    return activities.map(formatActivityItem);
-  };
+    return activities.map(formatActivityItem)};
 
-  const formatActivityItem = (activity: unknown): RecentActivity => {
-    const typeConfig = {
-      video_generated: {
+  const formatActivityItem = (activity: unknown): RecentActivity => { const typeConfig = {,
+  video_generated: {,
+
         icon: <AutoAwesome />,
-        color: '#4caf50',
-      },
-      video_published: {
-        icon: <PlayCircleOutline />,
-        color: '#2196f3',
-      },
-      channel_connected: {
-        icon: <YouTube />,
-        color: '#f44336',
-      },
-      milestone_reached: {
-        icon: <TrendingUp />,
-        color: '#ff9800',
-      },
+        color: '#4 caf50' },
+      video_published: { icon: <PlayCircleOutline />,
+        color: '#2196 f3' },
+      channel_connected: { icon: <YouTube />,
+        color: '#f44336' },
+      milestone_reached: { icon: <TrendingUp />,
+        color: '#ff9800' }
     };
 
     const config = typeConfig[activity.type as keyof typeof typeConfig];
     
-    return {
-      ...activity,
+    return { ...activity,
       icon: config.icon,
-      color: config.color,
-    };
+      color: config.color };
   };
 
   // Chart data
-  const revenueChartData = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  const revenueChartData = { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
       {
         label: 'Revenue',
         data: [120, 150, 180, 200, 170, 220, 250],
-        borderColor: '#4caf50',
+        borderColor: '#4 caf50',
         backgroundColor: 'rgba(76, 175, 80, 0.1)',
         fill: true,
-        tension: 0.4,
-      },
-      {
-        label: 'Cost',
+        tension: 0.4 },
+      { label: 'Cost',
         data: [30, 35, 40, 38, 42, 45, 48],
         borderColor: '#f44336',
         backgroundColor: 'rgba(244, 67, 54, 0.1)',
         fill: true,
-        tension: 0.4,
-      },
-    ],
+        tension: 0.4 }]
   };
 
-  const viewsChartData = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    datasets: [
-      {
-        label: 'Views',
+  const viewsChartData = { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{,
+  label: 'Views',
         data: [1200, 1900, 3000, 5000, 4000, 3000, 4500],
-        backgroundColor: 'rgba(103, 126, 234, 0.8)',
-      },
-    ],
+        backgroundColor: 'rgba(103, 126, 234, 0.8)' }]
   };
 
-  const categoryChartData = {
-    labels: ['Gaming', 'Education', 'Tech', 'Entertainment', 'Music'],
-    datasets: [
-      {
-        data: [30, 25, 20, 15, 10],
-        backgroundColor: [
-          '#e91e63',
-          '#2196f3',
-          '#9c27b0',
+  const categoryChartData = { labels: ['Gaming', 'Education', 'Tech', 'Entertainment', 'Music'],
+    datasets: [{,
+  data: [30, 25, 20, 15, 10],
+        backgroundColor: [ '#e91 e63',
+          '#2196 f3',
+          '#9 c27 b0',
           '#ff9800',
-          '#4caf50',
-        ],
-      },
-    ],
+          '#4 caf50' ] }]
   };
 
-  const chartOptions = {
-    responsive: true,
+  const chartOptions = { responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
+    plugins: {,
+  legend: {,
+
+        display: false }
     },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          display: false,
-        },
+    scales: { y: {,
+  beginAtZero: true,
+        grid: {,
+  display: false }
       },
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-    },
+      x: { grid: {,
+  display: false }
+      }
+    }
   };
 
   if (loading) {
@@ -290,6 +254,7 @@ export const MainDashboard: React.FC = () => {
 
   if (error) {
     return (
+    <>
       <Alert severity="error" action={
         <Button color="inherit" size="small" onClick={handleRefresh}>
           Retry
@@ -297,8 +262,7 @@ export const MainDashboard: React.FC = () => {
       }>
         {error}
       </Alert>
-    );
-  }
+    )}
 
   return (
     <Box>
@@ -308,7 +272,7 @@ export const MainDashboard: React.FC = () => {
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Dashboard
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="text.secondary">
             Welcome back! Here's what's happening with your channels.
           </Typography>
         </Box>
@@ -328,11 +292,10 @@ export const MainDashboard: React.FC = () => {
             variant="contained"
             startIcon={<Add />}
             onClick={() => navigate('/videos/generate')}
-            sx={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            sx={ {
+              background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4290 100%)',
-              },
+                background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
             }}
           >
             Generate Video
@@ -514,12 +477,11 @@ export const MainDashboard: React.FC = () => {
                 videosInQueue.map((video) => (
                   <ListItem
                     key={video.id}
-                    sx={{
+                    sx={ {
                       border: '1px solid',
                       borderColor: 'divider',
                       borderRadius: 1,
-                      mb: 1,
-                    }}
+                      mb: 1 }}
                   >
                     <ListItemAvatar>
                       <Avatar src={video.thumbnail} variant="rounded">
@@ -643,5 +605,5 @@ export const MainDashboard: React.FC = () => {
         )}
       </Grid>
     </Box>
-  );
-};
+  </>
+  )};`

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { 
   Box,
   Card,
   CardContent,
@@ -23,46 +23,36 @@ import {
   MenuItem,
   Alert,
   Checkbox,
-} from '@mui/material';
-import {
-  PlayArrow as PlayIcon,
-  Pause as PauseIcon,
-  Stop as StopIcon,
-  Delete as DeleteIcon,
-  Refresh as RefreshIcon,
+  FormControl,
+  InputLabel,
+  Select,
+  TextField,
+  FormControlLabel
+ } from '@mui/material';
+import {  Refresh as RefreshIcon ,
   Add as AddIcon,
-  CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
-  Warning as WarningIcon,
-  Schedule as ScheduleIcon,
-  VideoLibrary as VideoIcon,
-  Settings as SettingsIcon,
-  Queue as QueueIcon,
-  Speed as SpeedIcon
-} from '@mui/icons-material';
+  Delete as DeleteIcon
+ } from '@mui/icons-material';
 
 interface BatchJob {
-  id: string;
-  name: string;
-  type: 'video_generation' | 'thumbnail_update' | 'metadata_update' | 'analytics_sync';
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'paused';
-  totalItems: number;
-  processedItems: number;
+  id: string,
+  name: string,
+  type: 'video_generation' | 'thumbnail_update' | 'metadata_update' | 'analytics_sync',
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'paused',
+  totalItems: number,
+  processedItems: number,
   failedItems: number;
   startTime?: string;
   endTime?: string;
   estimatedCompletion?: string;
-  channels: string[];
-  priority: 'low' | 'medium' | 'high';
-}
+  channels: string[],
+  priority: 'low' | 'medium' | 'high'}
 
 interface BatchOperationsProps {
   maxConcurrent?: number;
 }
 
-const BatchOperations: React.FC<BatchOperationsProps> = ({ 
-  maxConcurrent = 10,
-}) => {
+const BatchOperations: React.FC<BatchOperationsProps> = ({ maxConcurrent = 10 }) => {
   const [jobs, setJobs] = useState<BatchJob[]>([]);
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -74,11 +64,12 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
     channels: [] as string[],
     priority: 'medium',
     schedule: 'immediate',
-    options: {
-      generateThumbnails: true,
+    options: {,
+  generateThumbnails: true,
       autoUpload: true,
       qualityCheck: true,
-      costOptimization: true
+      costOptimization: true,
+
     }
   });
 
@@ -87,12 +78,11 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
   useEffect(() => {
     loadJobs();
     const interval = setInterval(updateJobProgress, 2000);
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(interval)}, []);
 
   const loadJobs = () => {
     // Mock data - replace with API call
-    const mockJobs: BatchJob[] = [
+const mockJobs: BatchJob[] = [
       {
         id: '1',
         name: 'Daily Tech Videos',
@@ -104,7 +94,8 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
         startTime: new Date(Date.now() - 3600000).toISOString(),
         estimatedCompletion: new Date(Date.now() + 7200000).toISOString(),
         channels: ['Tech Reviews Pro', 'Gaming Central'],
-        priority: 'high'
+        priority: 'high',
+
       },
       {
         id: '2',
@@ -115,7 +106,8 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
         processedItems: 0,
         failedItems: 0,
         channels: ['DIY Crafts Hub'],
-        priority: 'low'
+        priority: 'low',
+
       },
       {
         id: '3',
@@ -128,26 +120,25 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
         startTime: new Date(Date.now() - 86400000).toISOString(),
         endTime: new Date(Date.now() - 3600000).toISOString(),
         channels: ['Gaming Central'],
-        priority: 'medium'
+        priority: 'medium',
+
       }
     ];
-    setJobs(mockJobs);
-  };
+    setJobs(mockJobs)};
 
   const updateJobProgress = () => {
-    setJobs(prevJobs => 
+    setJobs(prevJobs =>
       prevJobs.map(job => {
+    
         if (job.status === 'running' && job.processedItems < job.totalItems) {
           return {
             ...job,
             processedItems: Math.min(job.processedItems + Math.floor(Math.random() * 3), job.totalItems),
             status: job.processedItems + 1 >= job.totalItems ? 'completed' : 'running'
-          };
-        }
-        return job;
-      })
-    );
-  };
+          
+  }
+        return job})
+    )};
 
   const getStatusIcon = (status: BatchJob['status']) => {
     switch (status) {
@@ -160,8 +151,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
       case 'paused':
         return <PauseIcon color="warning" />;
       default:
-        return <ScheduleIcon color="action" />;
-    }
+        return <ScheduleIcon color="action" />}
   };
 
   const getStatusColor = (status: BatchJob['status']) => {
@@ -175,37 +165,32 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
       case 'paused':
         return 'warning';
       default:
-        return 'default';
-    }
+        return 'default'}
   };
 
   const handleStartJob = (jobId: string) => {
-    setJobs(jobs.map(job => 
-      job.id === jobId ? { ...job, status: 'running', startTime: new Date().toISOString() } : job
-    ));
-  };
+    setJobs(jobs.map(job =>
+      job.id === jobId ? {  ...job, status:  'running', startTime: new Date().toISOString()  } : job
+    ))};
 
   const handlePauseJob = (jobId: string) => {
-    setJobs(jobs.map(job => 
-      job.id === jobId ? { ...job, status: 'paused' } : job
-    ));
-  };
+    setJobs(jobs.map(job => {}
+      job.id === jobId ? {  ...job, status:  'paused'  } : job
+    ))};
 
   const handleStopJob = (jobId: string) => {
-    setJobs(jobs.map(job => 
-      job.id === jobId ? { ...job, status: 'failed', endTime: new Date().toISOString() } : job
-    ));
-  };
+    setJobs(jobs.map(job => {}
+      job.id === jobId ? {  ...job, status:  'failed', endTime: new Date().toISOString()  } : job
+    ))};
 
   const handleDeleteJob = (jobId: string) => {
     if (confirm('Are you sure you want to delete this batch job?')) {
-      setJobs(jobs.filter(job => job.id !== jobId));
-    }
+      setJobs(jobs.filter(job => job.id !== jobId))}
   };
 
   const handleCreateBatch = () => {
-    const newJob: BatchJob = {
-      id: Date.now().toString(),
+const newJob: BatchJob = {,
+  id: Date.now().toString(),
       name: newBatch.name,
       type: newBatch.type as BatchJob['type'],
       status: 'pending',
@@ -213,7 +198,8 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
       processedItems: 0,
       failedItems: 0,
       channels: newBatch.channels,
-      priority: newBatch.priority as BatchJob['priority']
+      priority: newBatch.priority as BatchJob['priority'],
+
     };
     
     setJobs([newJob, ...jobs]);
@@ -226,31 +212,32 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
       channels: [],
       priority: 'medium',
       schedule: 'immediate',
-      options: {
-        generateThumbnails: true,
+      options: {,
+  generateThumbnails: true,
         autoUpload: true,
         qualityCheck: true,
-        costOptimization: true
+        costOptimization: true,
+
       }
-    });
-  };
+    })};
 
   const runningJobs = jobs.filter(j => j.status === 'running').length;
   const totalProcessed = jobs.reduce((sum, job) => sum + job.processedItems, 0);
   const totalFailed = jobs.reduce((sum, job) => sum + job.failedItems, 0);
 
   return (
-    <Box>
+    <>
+      <Box>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
           Batch Operations
         </Typography>
-        <Box display="flex" gap={2}>
+      <Box display="flex" gap={2}>
           <Chip
             icon={<SpeedIcon />}
             label={`${runningJobs} / ${maxConcurrent} Running`}
-            color={runningJobs >= maxConcurrent ? 'error' : 'primary'}
+            color={ runningJobs >= maxConcurrent ? 'error' :  'primary' }
           />
           <Button
             variant="contained"
@@ -342,12 +329,10 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
               <TableCell padding="checkbox">
                 <Checkbox
                   checked={selectedJobs.length === jobs.length}
-                  onChange={(_e) => {
-                    if (e.target.checked) {
-                      setSelectedJobs(jobs.map(j => j.id));
-                    } else {
-                      setSelectedJobs([]);
-                    }
+                  onChange={(_) => {
+                    if (_.target.checked) {
+                      setSelectedJobs(jobs.map(j => j.id))} else {
+                      setSelectedJobs([])}
                   }}
                 />
               </TableCell>
@@ -366,12 +351,10 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 <TableCell padding="checkbox">
                   <Checkbox
                     checked={selectedJobs.includes(job.id)}
-                    onChange={(_e) => {
-                      if (e.target.checked) {
-                        setSelectedJobs([...selectedJobs, job.id]);
-                      } else {
-                        setSelectedJobs(selectedJobs.filter(id => id !== job.id));
-                      }
+                    onChange={(_) => {
+                      if (_.target.checked) {
+                        setSelectedJobs([...selectedJobs, job.id])} else {
+                        setSelectedJobs(selectedJobs.filter(id => id !== job.id))}
                     }}
                   />
                 </TableCell>
@@ -404,7 +387,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                     <LinearProgress 
                       variant="determinate" 
                       value={(job.processedItems / job.totalItems) * 100}
-                      sx={{ height: 6, borderRadius: 1 }}
+                      sx={ { height:  6, borderRadius: 1  }}
                     />
                     {job.failedItems > 0 && (
                       <Typography variant="caption" color="error">
@@ -429,7 +412,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                   <Chip 
                     label={job.priority} 
                     size="small"
-                    color={job.priority === 'high' ? 'error' : job.priority === 'medium' ? 'warning' : 'default'}
+                    color={ job.priority === 'high' ? 'error' :  job.priority === 'medium' ? 'warning' : 'default' }
                   />
                 </TableCell>
                 <TableCell align="right">
@@ -449,8 +432,8 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                         <PlayIcon />
                       </IconButton>
                     )}
-                    {(job.status === 'running' || job.status === 'paused') && (
-                      <IconButton size="small" onClick={() => handleStopJob(job.id)}>
+                    {job.status === 'running' || job.status === 'paused') && (
+                      <IconButton size="small" onClick={() => handleStopJob(job.id}>
                         <StopIcon />
                       </IconButton>
                     )}
@@ -478,7 +461,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
       >
         <DialogTitle>Create New Batch Job</DialogTitle>
         <DialogContent>
-          <Stepper activeStep={activeStep} sx={{ mb: 3, mt: 2 }}>
+          <Stepper activeStep={activeStep} sx={ { mb:  3, mt: 2  }}>
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -491,7 +474,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
               <TextField
                 label="Batch Name"
                 value={newBatch.name}
-                onChange={(_e) => setNewBatch({ ...newBatch, name: e.target.value })}
+                onChange={ (_) => setNewBatch({ ...newBatch, name:  e.target.value) })}
                 fullWidth
                 margin="normal"
               />
@@ -499,7 +482,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 <InputLabel>Batch Type</InputLabel>
                 <Select
                   value={newBatch.type}
-                  onChange={(_e) => setNewBatch({ ...newBatch, type: e.target.value })}
+                  onChange={ (_) => setNewBatch({ ...newBatch, type:  e.target.value) })}
                   label="Batch Type"
                 >
                   <MenuItem value="video_generation">Video Generation</MenuItem>
@@ -512,15 +495,14 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 label="Number of Items"
                 type="number"
                 value={newBatch.videoCount}
-                onChange={(_e) => setNewBatch({ ...newBatch, videoCount: parseInt(e.target.value) })}
+                onChange={ (_) => setNewBatch({ ...newBatch, videoCount:  parseInt(e.target.value) })}
                 fullWidth
                 margin="normal"
                 helperText="Maximum 100 items per batch"
-                inputProps={{ min: 1, max: 100 }}
+                inputProps={ { min:  1, max: 100  }}
               />
             </Box>
           )}
-
           {activeStep === 1 && (
             <Box>
               <Typography variant="h6" gutterBottom>Processing Options</Typography>
@@ -528,9 +510,9 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 control={
                   <Checkbox
                     checked={newBatch.options.generateThumbnails}
-                    onChange={(_e) => setNewBatch({
+                    onChange={(_) => setNewBatch({
                       ...newBatch,
-                      options: { ...newBatch.options, generateThumbnails: e.target.checked }
+                      options: {  ...newBatch.options, generateThumbnails:  _.target.checked  }
                     })}
                   />
                 }
@@ -540,9 +522,9 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 control={
                   <Checkbox
                     checked={newBatch.options.autoUpload}
-                    onChange={(_e) => setNewBatch({
+                    onChange={(_) => setNewBatch({
                       ...newBatch,
-                      options: { ...newBatch.options, autoUpload: e.target.checked }
+                      options: {  ...newBatch.options, autoUpload:  e.target.checked  }
                     })}
                   />
                 }
@@ -552,9 +534,9 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 control={
                   <Checkbox
                     checked={newBatch.options.qualityCheck}
-                    onChange={(_e) => setNewBatch({
+                    onChange={(_) => setNewBatch({
                       ...newBatch,
-                      options: { ...newBatch.options, qualityCheck: e.target.checked }
+                      options: {  ...newBatch.options, qualityCheck:  e.target.checked  }
                     })}
                   />
                 }
@@ -564,9 +546,9 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 control={
                   <Checkbox
                     checked={newBatch.options.costOptimization}
-                    onChange={(_e) => setNewBatch({
+                    onChange={(_) => setNewBatch({
                       ...newBatch,
-                      options: { ...newBatch.options, costOptimization: e.target.checked }
+                      options: {  ...newBatch.options, costOptimization:  e.target.checked  }
                     })}
                   />
                 }
@@ -576,7 +558,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 <InputLabel>Priority</InputLabel>
                 <Select
                   value={newBatch.priority}
-                  onChange={(_e) => setNewBatch({ ...newBatch, priority: e.target.value })}
+                  onChange={ (_) => setNewBatch({ ...newBatch, priority:  e.target.value) })}
                   label="Priority"
                 >
                   <MenuItem value="low">Low</MenuItem>
@@ -586,11 +568,10 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
               </FormControl>
             </Box>
           )}
-
           {activeStep === 2 && (
             <Box>
               <Typography variant="h6" gutterBottom>Select Channels</Typography>
-              <Alert severity="info" sx={{ mb: 2 }}>
+              <Alert severity="info" sx={ { mb:  2  }}>
                 Select channels to distribute the batch job across multiple YouTube accounts
               </Alert>
               {/* Mock channel selection */}
@@ -600,15 +581,14 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                     <ListItemIcon>
                       <Checkbox
                         checked={newBatch.channels.includes(channel)}
-                        onChange={(_e) => {
-                          if (e.target.checked) {
-                            setNewBatch({ ...newBatch, channels: [...newBatch.channels, channel] });
-                          } else {
+                        onChange={(_) => {
+                          if (_.target.checked) {
+                            setNewBatch({  ...newBatch, channels:  [...newBatch.channels, channel]  })} else {
                             setNewBatch({ 
                               ...newBatch, 
-                              channels: newBatch.channels.filter(c => c !== channel)
-                            });
-                          }
+                              channels: newBatch.channels.filter(c => c !== channel),
+
+                            })}
                         }}
                       />
                     </ListItemIcon>
@@ -618,7 +598,6 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
               </List>
             </Box>
           )}
-
           {activeStep === 3 && (
             <Box>
               <Typography variant="h6" gutterBottom>Review Batch Job</Typography>
@@ -640,8 +619,8 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
                 </ListItem>
                 <ListItem>
                   <ListItemText 
-                    primary="Estimated Cost" 
-                    secondary={`$${(newBatch.videoCount * 2.04).toFixed(2)}`}
+                    primary="Estimated Cost" `
+                    secondary={`$${newBatch.videoCount * 2.04.toFixed(2}`}
                   />
                 </ListItem>
               </List>
@@ -649,13 +628,13 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setIsCreateDialogOpen(false}>Cancel</Button>
           {activeStep > 0 && (
-            <Button onClick={() => setActiveStep(activeStep - 1)}>Back</Button>
+            <Button onClick={() => setActiveStep(activeStep - 1}>Back</Button>
           )}
           {activeStep < steps.length - 1 && (
             <Button 
-              onClick={() => setActiveStep(activeStep + 1)}
+              onClick={() => setActiveStep(activeStep + 1}
               variant="contained"
               disabled={activeStep === 0 && !newBatch.name}
             >
@@ -674,7 +653,7 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({
         </DialogActions>
       </Dialog>
     </Box>
-  );
-};
+  </>
+  )};
 
-export default BatchOperations;
+export default BatchOperations;`

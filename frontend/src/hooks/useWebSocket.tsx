@@ -3,33 +3,32 @@
  * Provides real-time updates with automatic reconnection
  */
 
-import { useEffect, useCallback, useRef, useState } from 'react';
+import {  useEffect, useCallback, useRef, useState  } from 'react';
 import { 
-  getWebSocketService, 
-  initializeWebSocket, 
-  WebSocketService, 
+  initializeWebSocket,
+  WebSocketService,
   WebSocketStatus,
-  WebSocketMessage 
-} from '../services/websocketService';
-import { useOptimizedStore } from '../stores/optimizedStore';
+  WebSocketMessage
+ } from '../services/websocketService';
+import {  useOptimizedStore  } from '../stores/optimizedStore';
 
 interface UseWebSocketOptions {
   autoConnect?: boolean;
   debug?: boolean;
   onConnect?: () => void;
   onDisconnect?: () => void;
-  onError?: (error: unknown) => void;
-  onMessage?: (message: WebSocketMessage) => void;
-}
+  onError?: (error: React.ChangeEvent<HTMLInputElement>) => void;
+  onMessage?: (message: WebSocketMessage) => void}
 
 interface UseWebSocketReturn {
-  status: WebSocketStatus;
-  latency: number;
-  connect: () => void;
-  disconnect: () => void;
-  send: (type: string, data: unknown) => void;
-  subscribe: (type: string, callback: (data: unknown) => void) => () => void;
-}
+  status: WebSocketStatus,
+  latency: number,
+
+  connect: () => void,
+  disconnect: () => void,
+
+  send: (type: string, data: React.ChangeEvent<HTMLInputElement>) => void,
+  subscribe: (type: string, callback: (data: React.ChangeEvent<HTMLInputElement>) => void) => () => void}
 
 export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketReturn {
   const [status, setStatus] = useState<WebSocketStatus>(WebSocketStatus.DISCONNECTED);
@@ -45,8 +44,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
   } = useOptimizedStore();
 
   // Initialize WebSocket service
-  useEffect(() => {
-    const wsUrl = process.env.REACT_APP_WS_URL || 'ws://localhost:8000/ws';
+  useEffect(() => { const wsUrl = process.env.REACT_APP_WS_URL || 'ws://localhost:8000/ws';
     
     wsRef.current = initializeWebSocket({
       url: wsUrl,
@@ -54,8 +52,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
       maxReconnectAttempts: 10,
       heartbeatInterval: 30000,
       enableHeartbeat: true,
-      debug: options.debug || false,
-    });
+      debug: options.debug || false });
 
     // Setup event listeners
     const ws = wsRef.current;
@@ -65,48 +62,35 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
       
       // Update store
       setWsConnected(newStatus === WebSocketStatus.CONNECTED);
-      setWsReconnecting(newStatus === WebSocketStatus.RECONNECTING);
-    };
+      setWsReconnecting(newStatus === WebSocketStatus.RECONNECTING)};
 
-    const handleConnected = () => {
-      addNotification({
+    const handleConnected = () => { addNotification({
         type: 'success',
-        message: 'Real-time updates connected',
-      });
-      options.onConnect?.();
-    };
+        message: 'Real-time updates connected' });
+      options.onConnect?.()};
 
     const handleDisconnected = () => {
-      options.onDisconnect?.();
-    };
+      options.onDisconnect?.()};
 
-    const handleError = (_error: unknown) => {
-      console.error('WebSocket error:', error);
+    const handleError = (_: React.ChangeEvent<HTMLInputElement>) => { console.error('WebSocket, error:', error);
       addNotification({
         type: 'error',
-        message: 'Connection error. Retrying...',
-      });
-      options.onError?.(error);
-    };
+        message: 'Connection error. Retrying...' });
+      options.onError?.(error)};
 
     const handleMessage = (message: WebSocketMessage) => {
       // Handle message in store
       handleWsMessage(message);
       
       // Call custom handler if provided
-      options.onMessage?.(message);
-    };
+      options.onMessage?.(message)};
 
     const handleLatency = (newLatency: number) => {
-      setLatency(newLatency);
-    };
+      setLatency(newLatency)};
 
-    const handleReconnectFailed = () => {
-      addNotification({
+    const handleReconnectFailed = () => { addNotification({
         type: 'error',
-        message: 'Failed to reconnect. Please refresh the page.',
-      });
-    };
+        message: 'Failed to reconnect. Please refresh the page.' })};
 
     // Register event listeners
     ws.on('status', handleStatus);
@@ -119,11 +103,11 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
 
     // Auto-connect if enabled
     if (options.autoConnect !== false) {
-      ws.connect();
-    }
+      ws.connect()}
 
     // Cleanup
     return () => {
+    
       ws.off('status', handleStatus);
       ws.off('connected', handleConnected);
       ws.off('disconnected', handleDisconnected);
@@ -137,31 +121,27 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
       subscriptionsRef.current = [];
       
       // Disconnect
-      ws.disconnect();
-    };
-  }, []); // Run once on mount
+      ws.disconnect()}, []); // Run once on mount
 
   // Connect function
   const connect = useCallback(() => {
-    wsRef.current?.connect();
-  }, []);
+    wsRef.current?.connect()}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Disconnect function
   const disconnect = useCallback(() => {
-    wsRef.current?.disconnect();
-  }, []);
+    wsRef.current?.disconnect()}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Send message function
-  const send = useCallback((type: string, data: unknown) => {
-    wsRef.current?.send(type, data);
-  }, []);
+  const send = useCallback((type: string, data: React.ChangeEvent<HTMLInputElement>) => {
+    wsRef.current?.send(type, data)}, []);
 
   // Subscribe to message type
-  const subscribe = useCallback((type: string, callback: (data: unknown) => void) => {
+  const subscribe = useCallback((type: string, callback: (data: React.ChangeEvent<HTMLInputElement>) => void) => {
+    
     if (!wsRef.current) {
       console.warn('WebSocket not initialized');
-      return () => {};
-    }
+      return () => {
+  }
 
     const unsubscribe = wsRef.current.subscribe(type, callback);
     subscriptionsRef.current.push(unsubscribe);
@@ -169,20 +149,16 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     return () => {
       const index = subscriptionsRef.current.indexOf(unsubscribe);
       if (index > -1) {
-        subscriptionsRef.current.splice(index, 1);
-      }
-      unsubscribe();
-    };
+        subscriptionsRef.current.splice(index, 1)}
+      unsubscribe()};
   }, []);
 
-  return {
-    status,
+  return { status,
     latency,
     connect,
     disconnect,
     send,
-    subscribe,
-  };
+    subscribe };
 }
 
 /**
@@ -198,8 +174,7 @@ export function useWebSocketSubscription<T = any>(
   useEffect(() => {
     const unsubscribe = subscribe(messageType, callback);
     return unsubscribe;
-  }, [messageType, ...deps]);
-}
+  }, [messageType, ...deps])}
 
 /**
  * Hook for real-time video updates
@@ -207,16 +182,12 @@ export function useWebSocketSubscription<T = any>(
 export function useVideoUpdates(videoId: string | null): void {
   const { updateQueueItem } = useOptimizedStore();
 
-  useWebSocketSubscription(
-    'video_update',
-    (data: unknown) => {
+  useWebSocketSubscription(_'video_update', (data: React.ChangeEvent<HTMLInputElement>) => {
       if (data.videoId === videoId) {
-        updateQueueItem(videoId, data.updates);
-      }
+        updateQueueItem(videoId, data.updates)}
     },
     [videoId]
-  );
-}
+  )}
 
 /**
  * Hook for real-time channel updates
@@ -224,16 +195,12 @@ export function useVideoUpdates(videoId: string | null): void {
 export function useChannelUpdates(channelId: string | null): void {
   const { updateChannel } = useOptimizedStore();
 
-  useWebSocketSubscription(
-    'channel_update',
-    (data: unknown) => {
+  useWebSocketSubscription(_'channel_update', (data: React.ChangeEvent<HTMLInputElement>) => {
       if (data.channelId === channelId) {
-        updateChannel(channelId, data.updates);
-      }
+        updateChannel(channelId, data.updates)}
     },
     [channelId]
-  );
-}
+  )}
 
 /**
  * Hook for real-time analytics updates
@@ -241,14 +208,11 @@ export function useChannelUpdates(channelId: string | null): void {
 export function useAnalyticsUpdates(): void {
   const { updateRealtimeMetrics, addDailyMetrics } = useOptimizedStore();
 
-  useWebSocketSubscription('analytics_realtime', (data) => {
-    updateRealtimeMetrics(data);
-  });
+  useWebSocketSubscription(_'analytics_realtime', (data) => {
+    updateRealtimeMetrics(data)});
 
-  useWebSocketSubscription('analytics_daily', (data) => {
-    addDailyMetrics(data);
-  });
-}
+  useWebSocketSubscription(_'analytics_daily', (data) => {
+    addDailyMetrics(data)})}
 
 /**
  * Hook for real-time notifications
@@ -256,13 +220,9 @@ export function useAnalyticsUpdates(): void {
 export function useNotificationUpdates(): void {
   const { addNotification } = useOptimizedStore();
 
-  useWebSocketSubscription('notification', (data: unknown) => {
-    addNotification({
-      type: data.level || 'info',
-      message: data.message,
-    });
-  });
-}
+  useWebSocketSubscription(_'notification', _(data: unknown) => { addNotification({,
+  type: data.level || 'info',
+      message: data.message })})}
 
 /**
  * Hook for real-time cost alerts
@@ -270,10 +230,8 @@ export function useNotificationUpdates(): void {
 export function useCostAlerts(): void {
   const { addNotification } = useOptimizedStore();
 
-  useWebSocketSubscription('cost_alert', (data: unknown) => {
+  useWebSocketSubscription(_'cost_alert', _(data: React.ChangeEvent<HTMLInputElement>) => {
     addNotification({
       type: 'warning',
-      message: `Cost alert: ${data.message}`,
-    });
-  });
-}
+      message: `Cost, alert: ${data.message}`
+    })})}`
