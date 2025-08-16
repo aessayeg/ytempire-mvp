@@ -9,10 +9,13 @@ import {  PlayArrow, Edit, Publish  } from '@mui/icons-material';
 import {  VideoPlayer  } from './VideoPlayer';
 
 interface VideoPreviewProps {
-  video: unknown;
-  onEdit?: () => void;
-  onPublish?: () => void;
-  onApprove?: () => void;
+  
+video: unknown;
+onEdit?: () => void;
+onPublish?: () => void;
+onApprove?: () => void;
+
+
 }
 
 export const VideoPreview: React.FC<VideoPreviewProps> = ({ video, onEdit, onPublish, onApprove }) => {
@@ -32,4 +35,5 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({ video, onEdit, onPub
       </Box>
     </Paper>
   </>
-  )};
+  )
+};

@@ -36,9 +36,12 @@ import {
 import {  useAuthStore  } from '../../stores/authStore';
 
 interface LocationState {
-  from?: {
-    pathname: string};
-  message?: string;
+  
+from?: {;
+pathname: string;
+
+};
+  message?: string
 }
 
 export const Login: React.FC = () => {
@@ -58,8 +61,7 @@ export const Login: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated) {
       const from = state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
-}
+      navigate(from, { replace: true })}
   }, [isAuthenticated, navigate, state]);
 
   // Clear errors when component mounts
@@ -76,31 +78,28 @@ export const Login: React.FC = () => {
         ...prev,
         [name]: '' }))}
   };
-
   const validateForm = () => {
-const errors: {[key: string]: string} = {};
-
+const errors: {[key: string]: string}  = {};
     if (!formData.email) {
-      errors.email = 'Email is required';
+      errors.email = 'Email is required'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = 'Please enter a valid email address'
     }
 
     if (!formData.password) {
-      errors.password = 'Password is required';
+      errors.password = 'Password is required'
     } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
+      errors.password = 'Password must be at least 6 characters'
     }
 
     setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors).length === 0
   };
-
   const handleSubmit = async (_: React.FormEvent) => {
     event.preventDefault();
     
     if (!validateForm()) {
-      return;
+      return
     }
 
     try {
@@ -110,24 +109,23 @@ const errors: {[key: string]: string} = {};
       // Error is handled by the store
     }
   };
-
   const handleTogglePassword = () => {
-    setShowPassword(prev => !prev)};
-
+    setShowPassword(prev => !prev)
+};
   // Mock social login handlers
   const handleGoogleLogin = () => {
     // TODO: Implement Google OAuth
-    console.log('Google login not implemented yet')};
-
+    console.log('Google login not implemented yet')
+};
   const handleGitHubLogin = () => {
     // TODO: Implement GitHub OAuth
-    console.log('GitHub login not implemented yet')};
-
+    console.log('GitHub login not implemented yet')
+};
   const features = [
     {
       icon: <VideoLibrary color="primary" />,
       title: "Automated Video Creation",
-      description: "AI-powered content generation for YouTube channels",
+      description: "AI-powered content generation for YouTube channels"
 
     },
     {
@@ -138,7 +136,7 @@ const errors: {[key: string]: string} = {};
     {
       icon: <AutoAwesome color="warning" />,
       title: "Smart Optimization",
-      description: "AI-driven thumbnail and title optimization",
+      description: "AI-driven thumbnail and title optimization"
 
     }
   ];
@@ -293,7 +291,7 @@ const errors: {[key: string]: string} = {};
                   py: 1.5,
                   borderRadius: 2,
                   textTransform: 'none',
-                  fontSize: '1.1 rem',
+                  fontSize: '1.1rem',
                   fontWeight: 600 }}
                 startIcon={isLoading ? <CircularProgress size={20} /> </>: <LoginIcon />}
               >
@@ -362,6 +360,6 @@ const errors: {[key: string]: string} = {};
       </Grid>
     </Container>
   </>
-  )};
-
+  )
+};
 export default Login;

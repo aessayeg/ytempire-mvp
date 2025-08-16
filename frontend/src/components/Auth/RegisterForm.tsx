@@ -42,61 +42,58 @@ export const RegisterForm: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const validateStep = (step: number): boolean => {
-    const errors: Record<string, string> = {};
-    
+    const errors: Record<string, string>  = {};
     if (step === 0) {
       // Validate email and username
       if (!formData.email) {
-        errors.email = 'Email is required';
+        errors.email = 'Email is required'
       } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-        errors.email = 'Email is invalid';
+        errors.email = 'Email is invalid'
       }
       
       if (!formData.username) {
-        errors.username = 'Username is required';
+        errors.username = 'Username is required'
       } else if (formData.username.length < 3) {
-        errors.username = 'Username must be at least 3 characters';
+        errors.username = 'Username must be at least 3 characters'
       } else if (!/^[a-zA-Z0-9 _]+$/.test(formData.username)) {
-        errors.username = 'Username can only contain letters, numbers, and underscores';
+        errors.username = 'Username can only contain letters, numbers, and underscores'
       }
     } else if (step === 1) {
       // Validate password and full name
       if (!formData.password) {
-        errors.password = 'Password is required';
+        errors.password = 'Password is required'
       } else if (formData.password.length < 8) {
-        errors.password = 'Password must be at least 8 characters';
+        errors.password = 'Password must be at least 8 characters'
       } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-        errors.password = 'Password must contain uppercase, lowercase, and number';
+        errors.password = 'Password must contain uppercase, lowercase, and number'
       }
       
       if (!formData.confirmPassword) {
-        errors.confirmPassword = 'Please confirm your password';
+        errors.confirmPassword = 'Please confirm your password'
       } else if (formData.password !== formData.confirmPassword) {
-        errors.confirmPassword = 'Passwords do not match';
+        errors.confirmPassword = 'Passwords do not match'
       }
       
       if (formData.fullName && formData.fullName.length < 2) {
-        errors.fullName = 'Full name must be at least 2 characters';
+        errors.fullName = 'Full name must be at least 2 characters'
       }
     } else if (step === 2) {
       // Validate terms agreement
       if (!formData.agreeToTerms) {
-        errors.agreeToTerms = 'You must agree to the terms and conditions';
+        errors.agreeToTerms = 'You must agree to the terms and conditions'
       }
     }
     
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors).length === 0
   };
-
   const handleNext = () => {
     if (validateStep(activeStep)) {
       setActiveStep((prevStep) => prevStep + 1)}
   };
-
   const handleBack = () => {
-    setActiveStep((prevStep) => prevStep - 1)};
-
+    setActiveStep((prevStep) => prevStep - 1)
+};
   const handleSubmit = async () => {
     if (!validateStep(2)) return;
     
@@ -112,7 +109,6 @@ export const RegisterForm: React.FC = () => {
       setActiveStep(0); // Go back to first step on error
     }
   };
-
   const handleChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
     setFormData(prev => ({
@@ -128,7 +124,6 @@ export const RegisterForm: React.FC = () => {
     if (error) {
       clearError()}
   };
-
   const renderStepContent = (step: number) => {
     switch (step) {
       case 0:
@@ -292,11 +287,11 @@ export const RegisterForm: React.FC = () => {
               label={
                 <Typography variant="body2">
                   I agree to the{' '}
-                  <Link to="/terms" style={{ color: '#667 eea' }}>
+                  <Link to="/terms" style={{ color: '#667eea' }}>
                     Terms and Conditions
                   </Link>
                   {' '}and{' '}
-                  <Link to="/privacy" style={{ color: '#667 eea' }}>
+                  <Link to="/privacy" style={{ color: '#667eea' }}>
                     Privacy Policy
                   </Link>
                 </Typography>
@@ -313,7 +308,6 @@ export const RegisterForm: React.FC = () => {
         
         return null}
   };
-
   return (
     <>
       <Box
@@ -322,7 +316,7 @@ export const RegisterForm: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+        background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
         padding: 2 }}
     >
       <Paper
@@ -372,9 +366,9 @@ export const RegisterForm: React.FC = () => {
                 onClick={handleSubmit}
                 disabled={isLoading}
                 sx={ {
-                  background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+                  background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
                   '&:hover': {
-                    background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
+                    background: 'linear-gradient(135 deg, #5a6fd80%, #6 a4290 100%)' }
                 }}
               >
                 {isLoading ? (
@@ -388,9 +382,9 @@ export const RegisterForm: React.FC = () => {
                 variant="contained"
                 onClick={handleNext}
                 sx={ {
-                  background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+                  background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
                   '&:hover': {
-                    background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
+                    background: 'linear-gradient(135 deg, #5a6fd80%, #6 a4290 100%)' }
                 }}
               >
                 Next
@@ -405,7 +399,7 @@ export const RegisterForm: React.FC = () => {
             <Link
               to="/auth/login"
               style={ {
-                color: '#667 eea',
+                color: '#667eea',
                 textDecoration: 'none',
                 fontWeight: 'bold' }}
             >
@@ -416,4 +410,5 @@ export const RegisterForm: React.FC = () => {
       </Paper>
     </Box>
   </>
-  )};
+  )
+};

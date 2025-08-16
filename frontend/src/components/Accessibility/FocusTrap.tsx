@@ -2,12 +2,15 @@ import React, { useEffect, useRef } from 'react';
 import {  getFocusableElements  } from '../../utils/accessibility';
 
 interface FocusTrapProps {
-  children: React.ReactNode;
-  active?: boolean;
-  returnFocus?: boolean;
-  initialFocus?: string;
-  finalFocus?: string;
-  allowEscape?: boolean;
+  
+children: React.ReactNode;
+active?: boolean;
+returnFocus?: boolean;
+initialFocus?: string;
+finalFocus?: string;
+allowEscape?: boolean;
+
+
 }
 
 export const FocusTrap: React.FC<FocusTrapProps> = ({ children, active = true, returnFocus = true, initialFocus, finalFocus, allowEscape = false }) => {
@@ -19,7 +22,7 @@ export const FocusTrap: React.FC<FocusTrapProps> = ({ children, active = true, r
 
     // Store previous focus
     if (returnFocus) {
-      previousFocusRef.current = document.activeElement as HTMLElement;
+      previousFocusRef.current = document.activeElement as HTMLElement
     }
 
     const container = containerRef.current;
@@ -38,12 +41,12 @@ export const FocusTrap: React.FC<FocusTrapProps> = ({ children, active = true, r
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && allowEscape) {
         previousFocusRef.current?.focus();
-        return;
+        return
       }
 
       if (e.key !== 'Tab') return;
 
-      // Refresh focusable elements (they might have, changed)
+      // Refresh focusable elements (they might have, changed);
       const currentFocusableElements = getFocusableElements(container);
       const currentFirst = currentFocusableElements[0];
       const currentLast = currentFocusableElements[currentFocusableElements.length - 1];
@@ -58,7 +61,6 @@ export const FocusTrap: React.FC<FocusTrapProps> = ({ children, active = true, r
           currentFirst?.focus()}
       }
     };
-
     // Add event listener
     container.addEventListener('keydown', handleKeyDown);
 
@@ -72,12 +74,12 @@ export const FocusTrap: React.FC<FocusTrapProps> = ({ children, active = true, r
           finalElement?.focus()} else {
           previousFocusRef.current.focus()}
       }
-    };
+    }
   }, [active, returnFocus, initialFocus, finalFocus, allowEscape]);
 
   return (
     <div ref={containerRef} data-focus-trap={active}>
       {children}
     </div>
-  )};
-
+  )
+};

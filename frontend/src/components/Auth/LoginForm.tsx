@@ -29,24 +29,22 @@ export const LoginForm: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const validateForm = (): boolean => {
-    const errors: Record<string, string> = {};
-    
+    const errors: Record<string, string>  = {};
     if (!formData.email) {
-      errors.email = 'Email is required';
+      errors.email = 'Email is required'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Email is invalid';
+      errors.email = 'Email is invalid'
     }
     
     if (!formData.password) {
-      errors.password = 'Password is required';
+      errors.password = 'Password is required'
     } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
+      errors.password = 'Password must be at least 6 characters'
     }
     
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors).length === 0
   };
-
   const handleSubmit = async (_: React.FormEvent) => {
     e.preventDefault();
     
@@ -57,7 +55,6 @@ export const LoginForm: React.FC = () => {
       navigate('/dashboard')} catch (error) {
       console.error('Login, failed:', error)}
   };
-
   const handleChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -70,7 +67,6 @@ export const LoginForm: React.FC = () => {
     if (error) {
       clearError()}
   };
-
   return (
     <>
       <Box
@@ -79,7 +75,7 @@ export const LoginForm: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+        background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
         padding: 2 }}
     >
       <Paper
@@ -160,9 +156,9 @@ export const LoginForm: React.FC = () => {
             <Link
               to="/auth/forgot-password"
               style={ {
-                color: '#667 eea',
+                color: '#667eea',
                 textDecoration: 'none',
-                fontSize: '0.875 rem' }}
+                fontSize: '0.875rem' }}
             >
               Forgot password?
             </Link>
@@ -177,9 +173,9 @@ export const LoginForm: React.FC = () => {
             sx={ {
               mt: 2,
               mb: 2,
-              background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+              background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
               '&:hover': {
-                background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
+                background: 'linear-gradient(135 deg, #5a6fd80%, #6 a4290 100%)' }
             }}
           >
             {isLoading ? (
@@ -195,7 +191,7 @@ export const LoginForm: React.FC = () => {
               <Link
                 to="/auth/register"
                 style={ {
-                  color: '#667 eea',
+                  color: '#667eea',
                   textDecoration: 'none',
                   fontWeight: 'bold' }}
               >
@@ -207,4 +203,5 @@ export const LoginForm: React.FC = () => {
       </Paper>
     </Box>
   </>
-  )};
+  )
+};

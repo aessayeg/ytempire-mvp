@@ -11,16 +11,14 @@ export const formatCurrency = (value: number, currency: string = 'USD'): string 
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  }).format(value);
+  }).format(value)
 };
-
 /**
  * Format a number as a percentage
  */
 export const formatPercentage = (value: number, decimals: number = 1): string => {
   return `${value.toFixed(decimals)}%`;
 };
-
 /**
  * Format a large number with abbreviations (K, M, B)
  */
@@ -34,7 +32,6 @@ export const formatNumber = (value: number): string => {
   }
   return value.toString();
 };
-
 /**
  * Format duration in seconds to human-readable format
  */
@@ -50,7 +47,6 @@ export const formatDuration = (seconds: number): string => {
   }
   return `${secs}s`;
 };
-
 /**
  * Format date to relative time (e.g., "2 hours ago")
  */
@@ -72,7 +68,6 @@ export const formatRelativeTime = (date: Date | string): string => {
   }
   return 'just now';
 };
-
 /**
  * Format bytes to human-readable size
  */
@@ -86,28 +81,24 @@ export const formatBytes = (bytes: number, decimals: number = 2): string => {
   
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 };
-
 /**
  * Format CPM (Cost Per Mille) value
  */
 export const formatCPM = (value: number): string => {
   return `$${value.toFixed(2)} CPM`;
 };
-
 /**
  * Format RPM (Revenue Per Mille) value
  */
 export const formatRPM = (value: number): string => {
   return `$${value.toFixed(2)} RPM`;
 };
-
 /**
  * Format engagement rate as percentage
  */
 export const formatEngagementRate = (value: number): string => {
   return `${(value * 100).toFixed(2)}%`;
 };
-
 /**
  * Truncate text to specified length with ellipsis
  */
@@ -115,7 +106,6 @@ export const truncateText = (text: string, maxLength: number): string => {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength - 3) + '...';
 };
-
 /**
  * Format watch time from minutes to human-readable format
  */
@@ -128,7 +118,6 @@ export const formatWatchTime = (minutes: number): string => {
   }
   return `${mins}m`;
 };
-
 /**
  * Format growth rate with color coding
  */
@@ -137,7 +126,6 @@ export const formatGrowthRate = (rate: number): { text: string; color: string } 
   const color = rate >= 0 ? 'green' : 'red';
   return { text, color };
 };
-
 /**
  * Format date range for display
  */
@@ -146,7 +134,6 @@ export const formatDateRange = (startDate: Date, endDate: Date): string => {
   const end = new Date(endDate).toLocaleDateString();
   return `${start} - ${end}`;
 };
-
 /**
  * Parse and format ISO date string
  */

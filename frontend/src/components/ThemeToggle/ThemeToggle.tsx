@@ -27,22 +27,21 @@ export const ThemeToggle: React.FC = () => {
   const open = Boolean(anchorEl);
 
   const handleClick = (_: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)};
-
+    setAnchorEl(event.currentTarget)
+};
   const handleClose = () => {
-    setAnchorEl(null)};
-
+    setAnchorEl(null)
+};
   const handleThemeChange = (mode: 'light' | 'dark' | 'system') => {
     setTheme(mode);
-    handleClose()};
-
+    handleClose()
+};
   const getIcon = () => {
     if (themeMode === 'system') {
-      return <AutoModeIcon />;
+      return <AutoModeIcon />
     }
-    return isDarkMode ? <DarkModeIcon /> </>: <LightModeIcon />;
+    return isDarkMode ? <DarkModeIcon /> </>: <LightModeIcon />
   };
-
   return (
     <>
       <Tooltip title="Theme settings">
@@ -51,10 +50,10 @@ export const ThemeToggle: React.FC = () => {
           size="small"
           sx={ {
             ml: 1,
-            backgroundColor: (theme) => {}
+            backgroundColor: (theme) =>
               alpha(theme.palette.primary.main, 0.1),
             '&:hover': {
-              backgroundColor: (theme) => {}
+              backgroundColor: (theme) =>
                 alpha(theme.palette.primary.main, 0.2)}
           }}
         >
@@ -67,18 +66,16 @@ export const ThemeToggle: React.FC = () => {
         onClose={handleClose}
         PaperProps={{
           elevation: 3,
-          sx: {,
+          sx: {
   minWidth: 220,
             mt: 1.5,
             borderRadius: 2,
             '& .MuiMenuItem-root': {
               borderRadius: 1,
               mx: 0.5,
-              my: 0.25,
+              my: 0.25
 
             }
-          }
-        }}
       >
         <Box sx={{ px: 2, py: 1 }}>
           <Typography variant="subtitle2" color="text.secondary">
@@ -132,8 +129,8 @@ export const ThemeToggle: React.FC = () => {
         </Box>
       </Menu>
     </>
-  )};
-
+  )
+};
 // Compact version for mobile
 export const ThemeToggleCompact: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -146,8 +143,8 @@ export const ThemeToggleCompact: React.FC = () => {
       </IconButton>
     </Tooltip>
   </>
-  )};
-
+  )
+};
 // Floating theme toggle for demo/beta
 export const FloatingThemeToggle: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -205,10 +202,10 @@ export const FloatingThemeToggle: React.FC = () => {
             backgroundColor: 'primary.main',
             color: 'primary.contrastText',
             '&:hover': {
-              backgroundColor: 'primary.dark',
+              backgroundColor: 'primary.dark'
 
             },
-            width: 56,
+            width: 56;
             height: 56
 }}
         >
@@ -216,4 +213,5 @@ export const FloatingThemeToggle: React.FC = () => {
         </IconButton>
       </Box>
     </Box>
-  )};
+  )
+};

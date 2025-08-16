@@ -45,8 +45,8 @@ const Login: React.FC = () => {
       ...prev,
       [name]: name === 'rememberMe' ? checked : value
     }));
-    setError('')};
-
+    setError('')
+};
   const handleSubmit = async (_: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -59,21 +59,18 @@ const Login: React.FC = () => {
       setError(err.response?.data?.message || 'Invalid email or password')} finally {
       setIsLoading(false)}
   };
-
   const handleGoogleLogin = async () => {
     try {
-      window.location.href = '/api/v1/auth/google';
+      window.location.href = '/api/v1/auth/google'
     } catch (error) {
       setError('Google login failed. Please try again.')}
   };
-
   const handleYouTubeLogin = async () => {
     try {
-      window.location.href = '/api/v1/auth/youtube';
+      window.location.href = '/api/v1/auth/youtube'
     } catch (error) {
       setError('YouTube login failed. Please try again.')}
   };
-
   return (
     <>
       <Container component="main" maxWidth="xs">
@@ -213,7 +210,7 @@ const Login: React.FC = () => {
                     '&:hover': {
                       borderColor: 'error.dark',
                       backgroundColor: 'error.light',
-                      opacity: 0.1,
+                      opacity: 0.1
 
                     }
                   }}
@@ -257,6 +254,6 @@ const Login: React.FC = () => {
       </Box>
     </Container>
   </>
-  )};
-
+  )
+};
 export default Login;

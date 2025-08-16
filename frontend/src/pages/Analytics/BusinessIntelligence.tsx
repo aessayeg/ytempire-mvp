@@ -7,7 +7,6 @@ import React from 'react';
 import {  BusinessIntelligenceDashboard  } from '../../components/Dashboard/BusinessIntelligenceDashboard';
 
 const BusinessIntelligence: React.FC = () => {
-  return <BusinessIntelligenceDashboard />;
+  return <BusinessIntelligenceDashboard />
 };
-
 export default BusinessIntelligence;

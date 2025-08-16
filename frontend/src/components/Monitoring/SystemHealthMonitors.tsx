@@ -49,46 +49,55 @@ import {
 import {  format, subMinutes  } from 'date-fns';
 
 interface Service {
-  id: string,
-  name: string,
+  
+id: string;
+name: string;
 
-  category: string,
-  status: 'operational' | 'degraded' | 'outage' | 'maintenance',
+category: string;
+status: 'operational' | 'degraded' | 'outage' | 'maintenance';
 
-  uptime: number,
-  responseTime: number,
+uptime: number;
+responseTime: number;
 
-  lastChecked: Date,
-  icon: React.ReactNode;
-  endpoint?: string;
-  errorRate?: number;
-  dependencies?: string[];
+lastChecked: Date;
+icon: React.ReactNode;
+endpoint?: string;
+errorRate?: number;
+dependencies?: string[];
+
+
 }
 
 interface SystemMetric {
-  timestamp: Date,
-  cpu: number,
+  
+timestamp: Date;
+cpu: number;
 
-  memory: number,
-  disk: number,
+memory: number;
+disk: number;
 
-  network: number,
-  requests: number,
+network: number;
+requests: number;
 
-  errors: number}
+errors: number;
+
+}
 
 interface Incident {
-  id: string,
-  severity: 'low' | 'medium' | 'high' | 'critical',
+  
+id: string;
+severity: 'low' | 'medium' | 'high' | 'critical';
 
-  service: string,
-  title: string,
+service: string;
+title: string;
 
-  description: string,
-  startTime: Date;
-  endTime?: Date;
-  status: 'investigating' | 'identified' | 'monitoring' | 'resolved',
-  impact: string}
+description: string;
+startTime: Date;
+endTime?: Date;
+status: 'investigating' | 'identified' | 'monitoring' | 'resolved';
+impact: string;
+
+}
 
 export const SystemHealthMonitors: React.FC = () => { const theme = useTheme();
   const [services, setServices] = useState<Service[]>([]);
@@ -238,13 +247,14 @@ export const SystemHealthMonitors: React.FC = () => { const theme = useTheme();
             disk: 60 + Math.random() * 10,
             network: 30 + Math.random() * 40,
             requests: Math.floor(100 + Math.random() * 50),
-            errors: Math.floor(Math.random() * 5) };
+            errors: Math.floor(Math.random() * 5)
+};
           return [...prev.slice(1), newMetric]})}, refreshInterval * 1000)}
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)}
-    };
+    }
   }, [autoRefresh, refreshInterval]);
 
   const getStatusColor = (status: string) => {
@@ -255,7 +265,6 @@ export const SystemHealthMonitors: React.FC = () => { const theme = useTheme();
       case 'maintenance': return 'info';
       default: return 'default'}
   };
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'operational': return <CheckCircle color="success" />;
@@ -264,7 +273,6 @@ export const SystemHealthMonitors: React.FC = () => { const theme = useTheme();
       case 'maintenance': return <Build color="info" />;
       default: return <Info />}
   };
-
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical': return 'error';
@@ -273,13 +281,11 @@ export const SystemHealthMonitors: React.FC = () => { const theme = useTheme();
       case 'low': return 'info';
       default: return 'default'}
   };
-
   const getUptimeColor = (uptime: number) => {
     if (uptime >= 99.9) return theme.palette.success.main;
     if (uptime >= 99) return theme.palette.warning.main;
-    return theme.palette.error.main;
+    return theme.palette.error.main
   };
-
   const operationalCount = services.filter(s => s.status === 'operational').length;
   const overallStatus = services.every(s => s.status === 'operational')
     ? 'operational'
@@ -287,13 +293,12 @@ export const SystemHealthMonitors: React.FC = () => { const theme = useTheme();
     ? 'partial outage'
     : 'degraded';
 
-  const latestMetric = systemMetrics[systemMetrics.length - 1] || { cpu: 0,
-    memory: 0,
-    disk: 0,
-    network: 0,
-    requests: 0,
+  const latestMetric = systemMetrics[systemMetrics.length - 1] || { cpu: 0;
+    memory: 0;
+    disk: 0;
+    network: 0;
+    requests: 0;
     errors: 0 };
-
   return (
     <>
       <Box>
@@ -540,8 +545,7 @@ export const SystemHealthMonitors: React.FC = () => { const theme = useTheme();
                           size="small"
                           color={incident.status === 'resolved' ? 'success' : 'warning'}
                         />
-                      </Box>
-                    }
+                      </Box>}
                     secondary={
                       <Box>
                         <Typography variant="body2" color="text.secondary">
@@ -553,8 +557,7 @@ export const SystemHealthMonitors: React.FC = () => { const theme = useTheme();
                         <Typography variant="caption" display="block" color="text.secondary">
                           Started: {format(incident.startTime, 'PPp')}
                         </Typography>
-                      </Box>
-                    }
+                      </Box>}
                   />
                 </ListItem>
               ))}

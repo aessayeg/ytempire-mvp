@@ -2,7 +2,7 @@
  * Video Queue Interface Component
  * MVP Screen Design - Video queue management
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Box,
   Paper,
@@ -13,7 +13,6 @@ import {
   IconButton,
   Chip,
   Avatar,
-  ListItemAvatar,
   LinearProgress,
   Menu,
   MenuItem,
@@ -27,8 +26,15 @@ import {
   Grid,
   ToggleButton,
   ToggleButtonGroup,
-  Checkbox
- } from '@mui/material';
+  Checkbox,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Stack,
+  Badge,
+  Divider
+} from '@mui/material';
 import { 
   Queue,
   PlayArrow,
@@ -45,36 +51,33 @@ import {
   DragIndicator,
   AutorenewOutlined,
   ViewList,
-  ViewModule
- } from '@mui/icons-material';
-import {  DragDropContext, Droppable, Draggable  } from 'react-beautiful-dnd';
+  ViewModule,
+  Error as ErrorIcon
+} from '@mui/icons-material';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 interface Video {
-  id: string,
-  title: string,
-
-  channel: string,
-  channelId: string,
-
-  status: 'queued' | 'processing' | 'completed' | 'failed' | 'scheduled',
-  progress: number,
-
-  thumbnail: string,
+  id: string;
+  title: string;
+  channel: string;
+  channelId: string;
+  status: 'queued' | 'processing' | 'completed' | 'failed' | 'scheduled';
+  progress: number;
+  thumbnail: string;
   duration: string;
   scheduledDate?: Date;
-  priority: 'low' | 'normal' | 'high' | 'urgent',
-  cost: number,
-
-  estimatedViews: number,
-  tags: string[],
-
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  cost: number;
+  estimatedViews: number;
+  tags: string[];
   createdAt: Date;
   processingStage?: string;
   error?: string;
 }
 
 const mockVideos: Video[] = [
-  { id: '1',
+  { 
+    id: '1',
     title: 'Top 10 JavaScript Frameworks in 2024',
     channel: 'Tech Reviews Pro',
     channelId: '1',
@@ -87,8 +90,10 @@ const mockVideos: Video[] = [
     estimatedViews: 25000,
     tags: ['JavaScript', 'Programming', 'Tutorial'],
     createdAt: new Date(),
-    processingStage: 'Generating voice narration' },
-  { id: '2',
+    processingStage: 'Generating voice narration' 
+  },
+  { 
+    id: '2',
     title: 'Ultimate Gaming PC Build Guide',
     channel: 'Gaming Highlights',
     channelId: '2',
@@ -100,8 +105,10 @@ const mockVideos: Video[] = [
     cost: 3.20,
     estimatedViews: 18000,
     tags: ['Gaming', 'PC Build', 'Hardware'],
-    createdAt: new Date() },
-  { id: '3',
+    createdAt: new Date() 
+  },
+  { 
+    id: '3',
     title: '5 Easy Pasta Recipes for Beginners',
     channel: 'Cooking Adventures',
     channelId: '3',
@@ -114,8 +121,10 @@ const mockVideos: Video[] = [
     cost: 1.95,
     estimatedViews: 12000,
     tags: ['Cooking', 'Recipe', 'Food'],
-    createdAt: new Date() },
-  { id: '4',
+    createdAt: new Date() 
+  },
+  { 
+    id: '4',
     title: 'React vs Vue.js - Performance Comparison',
     channel: 'Tech Reviews Pro',
     channelId: '1',
@@ -127,8 +136,10 @@ const mockVideos: Video[] = [
     cost: 2.45,
     estimatedViews: 22000,
     tags: ['React', 'Vue', 'Comparison'],
-    createdAt: new Date() },
-  { id: '5',
+    createdAt: new Date() 
+  },
+  { 
+    id: '5',
     title: 'Best RPG Games of 2024',
     channel: 'Gaming Highlights',
     channelId: '2',
@@ -141,7 +152,9 @@ const mockVideos: Video[] = [
     estimatedViews: 30000,
     tags: ['Gaming', 'RPG', 'Review'],
     createdAt: new Date(),
-    _: 'Voice synthesis failed: API quota exceeded' }];
+    error: 'Voice synthesis failed: API quota exceeded' 
+  }
+];
 
 export const VideoQueue: React.FC = () => {
   const [videos, setVideos] = useState<Video[]>(mockVideos);
@@ -151,18 +164,21 @@ export const VideoQueue: React.FC = () => {
   const [filterMenu, setFilterMenu] = useState<null | HTMLElement>(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [detailDialog, setDetailDialog] = useState<Video | null>(null);
+  const [sortBy, setSortBy] = useState<'priority' | 'date' | 'cost'>('priority');
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue)};
-
-  const handleDragEnd = (result: React.ChangeEvent<HTMLInputElement>) => {
+    setTabValue(newValue);
+  };
+  
+  const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     
     const items = Array.from(videos);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
     
-    setVideos(items)};
+    setVideos(items);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -171,7 +187,8 @@ export const VideoQueue: React.FC = () => {
       case 'queued': return 'default';
       case 'scheduled': return 'warning';
       case 'failed': return 'error';
-      default: return 'default'}
+      default: return 'default';
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -181,7 +198,8 @@ export const VideoQueue: React.FC = () => {
       case 'queued': return <Queue />;
       case 'scheduled': return <Schedule />;
       case 'failed': return <ErrorIcon />;
-      default: return null}
+      default: return null;
+    }
   };
 
   const getPriorityColor = (priority: string) => {
@@ -190,14 +208,16 @@ export const VideoQueue: React.FC = () => {
       case 'high': return 'warning';
       case 'normal': return 'info';
       case 'low': return 'default';
-      default: return 'default'}
+      default: return 'default';
+    }
   };
 
   const getFilteredVideos = () => {
     let filtered = [...videos];
     
     if (filterStatus !== 'all') {
-      filtered = filtered.filter(v => v.status === filterStatus)}
+      filtered = filtered.filter(v => v.status === filterStatus);
+    }
     
     if (tabValue === 1) filtered = filtered.filter(v => v.status === 'queued');
     if (tabValue === 2) filtered = filtered.filter(v => v.status === 'processing');
@@ -205,17 +225,19 @@ export const VideoQueue: React.FC = () => {
     if (tabValue === 4) filtered = filtered.filter(v => v.status === 'failed');
     
     // Sort
-    filtered.sort(_(a, _b) => {
+    filtered.sort((a, b) => {
       if (sortBy === 'priority') {
         const priorityOrder = { urgent: 0, high: 1, normal: 2, low: 3 };
         return priorityOrder[a.priority] - priorityOrder[b.priority];
       }
       if (sortBy === 'date') {
-        return b.createdAt.getTime() - a.createdAt.getTime()}
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      }
       if (sortBy === 'cost') {
         return b.cost - a.cost;
       }
-      return 0});
+      return 0;
+    });
     
     return filtered;
   };
@@ -257,10 +279,12 @@ export const VideoQueue: React.FC = () => {
           
           <Checkbox
             checked={selectedVideos.includes(video.id)}
-            onChange={(_) => {
+            onChange={(e) => {
               if (e.target.checked) {
-                setSelectedVideos([...selectedVideos, video.id])} else {
-                setSelectedVideos(selectedVideos.filter(id => id !== video.id))}
+                setSelectedVideos([...selectedVideos, video.id]);
+              } else {
+                setSelectedVideos(selectedVideos.filter(id => id !== video.id));
+              }
             }}
             sx={{ mr: 1 }}
           />
@@ -274,14 +298,15 @@ export const VideoQueue: React.FC = () => {
               />
               <Typography
                 variant="caption"
-                sx={ {
+                sx={{
                   position: 'absolute',
                   bottom: 4,
                   right: 4,
                   bgcolor: 'rgba(0,0,0,0.7)',
                   color: 'white',
                   px: 0.5,
-                  borderRadius: 0.5 }}
+                  borderRadius: 0.5
+                }}
               >
                 {video.duration}
               </Typography>
@@ -299,7 +324,7 @@ export const VideoQueue: React.FC = () => {
                 />
                 <Chip
                   size="small"
-                  icon={getStatusIcon(video.status)}
+                  icon={getStatusIcon(video.status) as any}
                   label={video.status}
                   color={getStatusColor(video.status) as any}
                 />
@@ -349,31 +374,29 @@ export const VideoQueue: React.FC = () => {
             }
           />
           
-          <ListItemSecondaryAction>
-            <Stack direction="row" spacing={1}>
-              {video.status === 'queued' && (
-                <IconButton size="small" color="primary">
-                  <PlayArrow />
-                </IconButton>
-              )}
-              {video.status === 'processing' && (
-                <IconButton size="small" color="warning">
-                  <Pause />
-                </IconButton>
-              )}
-              {video.status === 'failed' && (
-                <IconButton size="small" color="info">
-                  <Refresh />
-                </IconButton>
-              )}
-              <IconButton size="small" onClick={() => setDetailDialog(video}>
-                <Edit />
+          <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
+            {video.status === 'queued' && (
+              <IconButton size="small" color="primary">
+                <PlayArrow />
               </IconButton>
-              <IconButton size="small" color="error">
-                <Delete />
+            )}
+            {video.status === 'processing' && (
+              <IconButton size="small" color="warning">
+                <Pause />
               </IconButton>
-            </Stack>
-          </ListItemSecondaryAction>
+            )}
+            {video.status === 'failed' && (
+              <IconButton size="small" color="info">
+                <Refresh />
+              </IconButton>
+            )}
+            <IconButton size="small" onClick={() => setDetailDialog(video)}>
+              <Edit />
+            </IconButton>
+            <IconButton size="small" color="error">
+              <Delete />
+            </IconButton>
+          </Stack>
         </ListItem>
       )}
     </Draggable>
@@ -382,196 +405,199 @@ export const VideoQueue: React.FC = () => {
   return (
     <>
       <Box sx={{ flexGrow: 1, p: 3 }}>
-      {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box>
-          <Typography variant="h4" gutterBottom>
-            Video Queue
-          </Typography>
-      <Typography variant="body2" color="text.secondary">
-            Manage and monitor your video generation pipeline
-          </Typography>
-        </Box>
-        <Stack direction="row" spacing={2}>
-          <Button variant="outlined" startIcon={<Refresh />}>
-            Refresh
-          </Button>
-          <Button variant="contained" startIcon={<PlayArrow />}>
-            Process All
-          </Button>
-        </Stack>
-      </Box>
-
-      {/* Stats Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} sm={3}>
-          <Card>
-            <CardContent>
-              <Typography color="text.secondary" gutterBottom>
-                Queued
-              </Typography>
-              <Typography variant="h5">
-                {videos.filter(v => v.status === 'queued').length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Card>
-            <CardContent>
-              <Typography color="text.secondary" gutterBottom>
-                Processing
-              </Typography>
-              <Typography variant="h5">
-                {videos.filter(v => v.status === 'processing').length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Card>
-            <CardContent>
-              <Typography color="text.secondary" gutterBottom>
-                Completed Today
-              </Typography>
-              <Typography variant="h5">
-                {videos.filter(v => v.status === 'completed').length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Card>
-            <CardContent>
-              <Typography color="text.secondary" gutterBottom>
-                Failed
-              </Typography>
-              <Typography variant="h5" color="error">
-                {videos.filter(v => v.status === 'failed').length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Toolbar */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Tabs value={tabValue} onChange={handleTabChange}>
-            <Tab label="All" />
-            <Tab 
-              label={
-                <Badge badgeContent={videos.filter(v => v.status === 'queued').length} color="default">
-                  Queued
-                </Badge>
-              }
-            />
-            <Tab
-              label={
-                <Badge badgeContent={videos.filter(v => v.status === 'processing').length} color="info">
-                  Processing
-                </Badge>
-              }
-            />
-            <Tab label="Completed" />
-            <Tab
-              label={
-                <Badge badgeContent={videos.filter(v => v.status === 'failed').length} color="error">
-                  Failed
-                </Badge>
-              }
-            />
-          </Tabs>
-          
-          <Stack direction="row" spacing={1}>
-            {selectedVideos.length > 0 && (
-              <>
-                <Button size="small" onClick={() => handleBulkAction('pause'}>
-                  Pause Selected
-                </Button>
-                <Button size="small" color="error" onClick={() => handleBulkAction('delete'}>
-                  Delete Selected
-                </Button>
-                <Divider orientation="vertical" flexItem />
-              </>
-            )}
-            <ToggleButtonGroup
-              value={viewMode}
-              exclusive
-              onChange={(_, newMode) => newMode && setViewMode(newMode}
-              size="small"
-            >
-              <ToggleButton value="list">
-                <ViewList />
-              </ToggleButton>
-              <ToggleButton value="grid">
-                <ViewModule />
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <IconButton size="small" onClick={(_) => setFilterMenu(_.currentTarget}>
-              <FilterList />
-            </IconButton>
-            <IconButton size="small">
-              <Sort />
-            </IconButton>
+        {/* Header */}
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            <Typography variant="h4" gutterBottom>
+              Video Queue
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Manage and monitor your video generation pipeline
+            </Typography>
+          </Box>
+          <Stack direction="row" spacing={2}>
+            <Button variant="outlined" startIcon={<Refresh />}>
+              Refresh
+            </Button>
+            <Button variant="contained" startIcon={<PlayArrow />}>
+              Process All
+            </Button>
           </Stack>
         </Box>
-      </Paper>
 
-      {/* Video List */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="videos">
-          {(provided) => (
-            <List {...provided.droppableProps} ref={provided.innerRef}>
-              {getFilteredVideos().map((video, index) => (
-                <VideoListItem key={video.id} video={video} index={index} />
-              ))}
-              {provided.placeholder}
-            </List>
+        {/* Stats Cards */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={6} sm={3}>
+            <Card>
+              <CardContent>
+                <Typography color="text.secondary" gutterBottom>
+                  Queued
+                </Typography>
+                <Typography variant="h5">
+                  {videos.filter(v => v.status === 'queued').length}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Card>
+              <CardContent>
+                <Typography color="text.secondary" gutterBottom>
+                  Processing
+                </Typography>
+                <Typography variant="h5">
+                  {videos.filter(v => v.status === 'processing').length}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Card>
+              <CardContent>
+                <Typography color="text.secondary" gutterBottom>
+                  Completed Today
+                </Typography>
+                <Typography variant="h5">
+                  {videos.filter(v => v.status === 'completed').length}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Card>
+              <CardContent>
+                <Typography color="text.secondary" gutterBottom>
+                  Failed
+                </Typography>
+                <Typography variant="h5" color="error">
+                  {videos.filter(v => v.status === 'failed').length}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Toolbar */}
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Tabs value={tabValue} onChange={handleTabChange}>
+              <Tab label="All" />
+              <Tab 
+                label={
+                  <Badge badgeContent={videos.filter(v => v.status === 'queued').length} color="default">
+                    Queued
+                  </Badge>
+                }
+              />
+              <Tab
+                label={
+                  <Badge badgeContent={videos.filter(v => v.status === 'processing').length} color="info">
+                    Processing
+                  </Badge>
+                }
+              />
+              <Tab label="Completed" />
+              <Tab
+                label={
+                  <Badge badgeContent={videos.filter(v => v.status === 'failed').length} color="error">
+                    Failed
+                  </Badge>
+                }
+              />
+            </Tabs>
+            
+            <Stack direction="row" spacing={1}>
+              {selectedVideos.length > 0 && (
+                <>
+                  <Button size="small" onClick={() => handleBulkAction('pause')}>
+                    Pause Selected
+                  </Button>
+                  <Button size="small" color="error" onClick={() => handleBulkAction('delete')}>
+                    Delete Selected
+                  </Button>
+                  <Divider orientation="vertical" flexItem />
+                </>
+              )}
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(_, newMode) => newMode && setViewMode(newMode)}
+                size="small"
+              >
+                <ToggleButton value="list">
+                  <ViewList />
+                </ToggleButton>
+                <ToggleButton value="grid">
+                  <ViewModule />
+                </ToggleButton>
+              </ToggleButtonGroup>
+              <IconButton size="small" onClick={(e) => setFilterMenu(e.currentTarget)}>
+                <FilterList />
+              </IconButton>
+              <IconButton size="small" onClick={() => {
+                const sortOptions: Array<'priority' | 'date' | 'cost'> = ['priority', 'date', 'cost'];
+                const currentIndex = sortOptions.indexOf(sortBy);
+                setSortBy(sortOptions[(currentIndex + 1) % sortOptions.length]);
+              }}>
+                <Sort />
+              </IconButton>
+            </Stack>
+          </Box>
+        </Paper>
+
+        {/* Video List */}
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="videos">
+            {(provided) => (
+              <List {...provided.droppableProps} ref={provided.innerRef}>
+                {getFilteredVideos().map((video, index) => (
+                  <VideoListItem key={video.id} video={video} index={index} />
+                ))}
+                {provided.placeholder}
+              </List>
+            )}
+          </Droppable>
+        </DragDropContext>
+
+        {/* Filter Menu */}
+        <Menu
+          anchorEl={filterMenu}
+          open={Boolean(filterMenu)}
+          onClose={() => setFilterMenu(null)}
+        >
+          <MenuItem onClick={() => { setFilterStatus('all'); setFilterMenu(null); }}>
+            All Status
+          </MenuItem>
+          <MenuItem onClick={() => { setFilterStatus('queued'); setFilterMenu(null); }}>
+            Queued Only
+          </MenuItem>
+          <MenuItem onClick={() => { setFilterStatus('processing'); setFilterMenu(null); }}>
+            Processing Only
+          </MenuItem>
+          <MenuItem onClick={() => { setFilterStatus('completed'); setFilterMenu(null); }}>
+            Completed Only
+          </MenuItem>
+          <MenuItem onClick={() => { setFilterStatus('failed'); setFilterMenu(null); }}>
+            Failed Only
+          </MenuItem>
+        </Menu>
+
+        {/* Detail Dialog */}
+        <Dialog open={Boolean(detailDialog)} onClose={() => setDetailDialog(null)} maxWidth="md" fullWidth>
+          {detailDialog && (
+            <>
+              <DialogTitle>{detailDialog.title}</DialogTitle>
+              <DialogContent>
+                {/* Video details form */}
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setDetailDialog(null)}>Close</Button>
+                <Button variant="contained">Save Changes</Button>
+              </DialogActions>
+            </>
           )}
-        </Droppable>
-      </DragDropContext>
-
-      {/* Filter Menu */}
-      <Menu
-        anchorEl={filterMenu}
-        open={Boolean(filterMenu)}
-        onClose={() => setFilterMenu(null}
-      >
-        <MenuItem onClick={(</>
-  ) => { setFilterStatus('all'</>
-  ); setFilterMenu(null</>
-  )}}>
-          All Status
-        </MenuItem>
-        <MenuItem onClick={() => { setFilterStatus('queued'); setFilterMenu(null)}}>
-          Queued Only
-        </MenuItem>
-        <MenuItem onClick={() => { setFilterStatus('processing'); setFilterMenu(null)}}>
-          Processing Only
-        </MenuItem>
-        <MenuItem onClick={() => { setFilterStatus('completed'); setFilterMenu(null)}}>
-          Completed Only
-        </MenuItem>
-        <MenuItem onClick={() => { setFilterStatus('failed'); setFilterMenu(null)}}>
-          Failed Only
-        </MenuItem>
-      </Menu>
-
-      {/* Detail Dialog */}
-      <Dialog open={Boolean(detailDialog)} onClose={() => setDetailDialog(null} maxWidth="md" fullWidth>
-        {detailDialog && (
-          <>
-            <DialogTitle>{detailDialog.title}</DialogTitle>
-            <DialogContent>
-              {/* Video details form */}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setDetailDialog(null}>Close</Button>
-              <Button variant="contained">Save Changes</Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
-    </Box>
-  )};
+        </Dialog>
+      </Box>
+    </>
+  );
+};

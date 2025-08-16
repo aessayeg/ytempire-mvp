@@ -10,9 +10,12 @@ import {
 import {  EnhancedBulkOperations  } from '../../components/BulkOperations/EnhancedBulkOperations';
 
 interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number,
-  value: number}
+  
+children?: React.ReactNode;
+index: number;
+value: number;
+
+}
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -43,14 +46,13 @@ const BulkOperationsPage: React.FC = () => {
       type: 'channel' as const status: ['active', 'paused', 'archived'][Math.floor(Math.random() * 3)] as any,
       thumbnail: `https://via.placeholder.com/150?text=CH${i + 1}`,
       tags: ['YouTube', 'Content', 'Automation'],
-      starred: Math.random() > 0.7,
-      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-      modifiedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-      metadata: {,
-  subscribers: Math.floor(Math.random() * 100000),
-        videos: Math.floor(Math.random() * 500),
-        views: Math.floor(Math.random() * 1000000)}
-    }));
+      starred: Math.random() > 0.7;
+      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+      modifiedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000);
+      metadata: {
+  subscribers: Math.floor(Math.random() * 100000);
+        videos: Math.floor(Math.random() * 500);
+        views: Math.floor(Math.random() * 1000000)}}));
 
     const mockVideos = Array.from({ length: 20 }, (_, i) => ({
       id: `video-${i + 1}`,
@@ -58,28 +60,23 @@ const BulkOperationsPage: React.FC = () => {
       type: 'video' as const status: ['active', 'processing', 'archived'][Math.floor(Math.random() * 3)] as any,
       thumbnail: `https://via.placeholder.com/150?text=VID${i + 1}`,
       tags: ['AI Generated', 'Tutorial', 'Tech'],
-      starred: Math.random() > 0.8,
-      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-      modifiedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-      metadata: {,
-  duration: Math.floor(Math.random() * 600) + 60,
-        views: Math.floor(Math.random() * 50000),
-        likes: Math.floor(Math.random() * 1000)}
-    }));
+      starred: Math.random() > 0.8;
+      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+      modifiedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000);
+      metadata: {
+  duration: Math.floor(Math.random() * 600) + 60;
+        views: Math.floor(Math.random() * 50000);
+        likes: Math.floor(Math.random() * 1000)}}));
 
     setChannelItems(mockChannels);
     setVideoItems(mockVideos)}, []);
 
   const handleChannelOperation = (operation: string, _items: string[]) => {
     console.log(`Channel, operation: ${operation}`, items);
-    // TODO: Implement API calls for channel operations
-  };
-
+    // TODO: Implement API calls for channel operations};
   const handleVideoOperation = (operation: string, _items: string[]) => {
     console.log(`Video, operation: ${operation}`, items);
-    // TODO: Implement API calls for video operations
-  };
-
+    // TODO: Implement API calls for video operations};
   return (
     <Container maxWidth={false}>
       <Box sx={{ py: 3 }}>
@@ -113,7 +110,7 @@ const BulkOperationsPage: React.FC = () => {
                   type: 'edit',
                   name: 'Sync with YouTube',
                   icon: <span>🔄</span>,
-                  color: 'info',
+                  color: 'info'
 
                 },
                 {
@@ -121,7 +118,7 @@ const BulkOperationsPage: React.FC = () => {
                   type: 'edit',
                   name: 'Enable Monetization',
                   icon: <span>💰</span>,
-                  color: 'success',
+                  color: 'success'
 
                 }
                ]
@@ -138,17 +135,15 @@ const BulkOperationsPage: React.FC = () => {
                   type: 'edit',
                   name: 'Publish to YouTube',
                   icon: <span>📤</span>,
-                  color: 'primary',
-
-                },
+                  color: 'primary'
+},
                 {
                   id: 'regenerate',
                   type: 'edit',
                   name: 'Regenerate Content',
                   icon: <span>🔄</span>,
-                  color: 'warning',
-
-                }
+                  color: 'warning'
+}
                ]
             />
           </TabPanel>
@@ -164,6 +159,6 @@ const BulkOperationsPage: React.FC = () => {
         </Paper>
       </Box>
     </Container>
-  )};
-
-export default BulkOperationsPage;
+  )
+};
+export default BulkOperationsPage}}}

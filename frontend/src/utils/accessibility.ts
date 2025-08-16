@@ -8,32 +8,28 @@ export const getContrastRatio = (color1: string, color2: string): number => {
     
     const [r, g, b] = rgb.map((x) => {
       const val = parseInt(x) / 255;
-      return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+      return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4)
     });
     
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
   };
-
   const lum1 = getLuminance(color1);
   const lum2 = getLuminance(color2);
   const brightest = Math.max(lum1, lum2);
   const darkest = Math.min(lum1, lum2);
   
-  return (brightest + 0.05) / (darkest + 0.05);
+  return (brightest + 0.05) / (darkest + 0.05)
 };
-
 // Check if color combination meets WCAG AA standards
 export const meetsWCAGAA = (color1: string, color2: string, largeText: boolean = false): boolean => {
   const ratio = getContrastRatio(color1, color2);
-  return largeText ? ratio >= 3 : ratio >= 4.5;
+  return largeText ? ratio >= 3 : ratio >= 4.5
 };
-
 // Check if color combination meets WCAG AAA standards
 export const meetsWCAGAAA = (color1: string, color2: string, largeText: boolean = false): boolean => {
   const ratio = getContrastRatio(color1, color2);
-  return largeText ? ratio >= 4.5 : ratio >= 7;
+  return largeText ? ratio >= 4.5 : ratio >= 7
 };
-
 // Keyboard navigation utilities
 export const FOCUSABLE_ELEMENTS = [
   'a[href]',
@@ -48,9 +44,8 @@ export const getFocusableElements = (container: HTMLElement): HTMLElement[] => {
   const elements = container.querySelectorAll<HTMLElement>(
     FOCUSABLE_ELEMENTS.join(',')
   );
-  return Array.from(elements);
+  return Array.from(elements)
 };
-
 export const trapFocus = (container: HTMLElement): (() => void) => {
   const focusableElements = getFocusableElements(container);
   const firstElement = focusableElements[0];
@@ -60,14 +55,13 @@ export const trapFocus = (container: HTMLElement): (() => void) => {
     if (e.key === 'Tab') {
       if (e.shiftKey && document.activeElement === firstElement) {
         e.preventDefault();
-        lastElement?.focus();
+        lastElement?.focus()
       } else if (!e.shiftKey && document.activeElement === lastElement) {
         e.preventDefault();
-        firstElement?.focus();
+        firstElement?.focus()
       }
     }
   };
-
   container.addEventListener('keydown', handleKeyDown);
   
   // Focus first element
@@ -75,10 +69,9 @@ export const trapFocus = (container: HTMLElement): (() => void) => {
 
   // Return cleanup function
   return () => {
-    container.removeEventListener('keydown', handleKeyDown);
-  };
+    container.removeEventListener('keydown', handleKeyDown)
+  }
 };
-
 // Screen reader announcements
 export const announce = (message: string, priority: 'polite' | 'assertive' = 'polite'): void => {
   const announcement = document.createElement('div');
@@ -95,10 +88,9 @@ export const announce = (message: string, priority: 'polite' | 'assertive' = 'po
   announcement.textContent = message;
   
   setTimeout(() => {
-    document.body.removeChild(announcement);
-  }, 1000);
+    document.body.removeChild(announcement)
+  }, 1000)
 };
-
 // Skip navigation link management
 export const createSkipLink = (targetId: string, text: string = 'Skip to main content'): HTMLAnchorElement => {
   const link = document.createElement('a');
@@ -111,33 +103,34 @@ export const createSkipLink = (targetId: string, text: string = 'Skip to main co
     const target = document.getElementById(targetId);
     if (target) {
       target.tabIndex = -1;
-      target.focus();
+      target.focus()
     }
   });
   
-  return link;
+  return link
 };
-
 // ARIA attributes helper
 interface AriaProps {
-  label?: string;
-  labelledBy?: string;
-  describedBy?: string;
-  required?: boolean;
-  invalid?: boolean;
-  expanded?: boolean;
-  selected?: boolean;
-  checked?: boolean;
-  disabled?: boolean;
-  hidden?: boolean;
-  busy?: boolean;
-  live?: 'polite' | 'assertive' | 'off';
-  role?: string;
+  
+label?: string;
+labelledBy?: string;
+describedBy?: string;
+required?: boolean;
+invalid?: boolean;
+expanded?: boolean;
+selected?: boolean;
+checked?: boolean;
+disabled?: boolean;
+hidden?: boolean;
+busy?: boolean;
+live?: 'polite' | 'assertive' | 'off';
+role?: string;
+
+
 }
 
 export const getAriaProps = (props: AriaProps): Record<string, any> => {
-  const ariaProps: Record<string, any> = {};
-  
+  const ariaProps: Record<string, any>  = {};
   if (props.label) ariaProps['aria-label'] = props.label;
   if (props.labelledBy) ariaProps['aria-labelledby'] = props.labelledBy;
   if (props.describedBy) ariaProps['aria-describedby'] = props.describedBy;
@@ -152,9 +145,8 @@ export const getAriaProps = (props: AriaProps): Record<string, any> => {
   if (props.live) ariaProps['aria-live'] = props.live;
   if (props.role) ariaProps['role'] = props.role;
   
-  return ariaProps;
+  return ariaProps
 };
-
 // Heading hierarchy validation
 export const validateHeadingHierarchy = (container: HTMLElement): boolean => {
   const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
@@ -163,38 +155,33 @@ export const validateHeadingHierarchy = (container: HTMLElement): boolean => {
   for (const heading of headings) {
     const level = parseInt(heading.tagName[1]);
     if (lastLevel > 0 && level > lastLevel + 1) {
-      return false;
+      return false
     }
-    lastLevel = level;
+    lastLevel = level
   }
   
-  return true;
+  return true
 };
-
 // Focus visible management
 export const manageFocusVisible = (): (() => void) => {
   let hadKeyboardEvent = false;
   
   const onPointerDown = () => {
-    hadKeyboardEvent = false;
+    hadKeyboardEvent = false
   };
-  
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Tab') {
-      hadKeyboardEvent = true;
+      hadKeyboardEvent = true
     }
   };
-  
   const onFocus = (e: FocusEvent) => {
     if (hadKeyboardEvent || (e.target as HTMLElement).matches(':focus-visible')) {
-      document.body.classList.add('keyboard-focused');
+      document.body.classList.add('keyboard-focused')
     }
   };
-  
   const onBlur = () => {
-    document.body.classList.remove('keyboard-focused');
+    document.body.classList.remove('keyboard-focused')
   };
-  
   document.addEventListener('keydown', onKeyDown);
   document.addEventListener('pointerdown', onPointerDown);
   document.addEventListener('focus', onFocus, true);
@@ -204,33 +191,26 @@ export const manageFocusVisible = (): (() => void) => {
     document.removeEventListener('keydown', onKeyDown);
     document.removeEventListener('pointerdown', onPointerDown);
     document.removeEventListener('focus', onFocus, true);
-    document.removeEventListener('blur', onBlur, true);
-  };
+    document.removeEventListener('blur', onBlur, true)
+  }
 };
-
 // Reduced motion preference
 export const prefersReducedMotion = (): boolean => {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 };
-
 // High contrast mode detection
 export const prefersHighContrast = (): boolean => {
-  return window.matchMedia('(prefers-contrast: high)').matches;
+  return window.matchMedia('(prefers-contrast: high)').matches
 };
-
 // Dark mode preference
 export const prefersDarkMode = (): boolean => {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
-};
-
+  return window.matchMedia('(prefers-color-scheme: dark)').matches};
 // Text spacing utilities for readability
 export const applyReadableTextSpacing = (element: HTMLElement): void => {
   element.style.lineHeight = '1.5';
   element.style.letterSpacing = '0.12em';
   element.style.wordSpacing = '0.16em';
-  element.style.paragraphSpacing = '2em';
-};
-
+  element.style.paragraphSpacing = '2em'};
 // Form label association validation
 export const validateFormLabels = (form: HTMLFormElement): boolean => {
   const inputs = form.querySelectorAll('input, select, textarea');
@@ -245,13 +225,12 @@ export const validateFormLabels = (form: HTMLFormElement): boolean => {
                     !!inputElement.getAttribute('aria-labelledby');
     
     if (!hasLabel) {
-      return false;
+      return false
     }
   }
   
-  return true;
+  return true
 };
-
 // Alt text validation for images
 export const validateAltText = (img: HTMLImageElement): boolean => {
   const alt = img.getAttribute('alt');
@@ -259,9 +238,7 @@ export const validateAltText = (img: HTMLImageElement): boolean => {
   
   // Decorative images should have empty alt and role="presentation"
   if (alt === '' && (role === 'presentation' || role === 'none')) {
-    return true;
-  }
+    return true}
   
   // Informative images should have descriptive alt text
-  return alt !== null && alt !== undefined && alt.length > 0;
-};
+  return alt !== null && alt !== undefined && alt.length > 0};

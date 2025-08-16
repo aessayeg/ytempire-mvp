@@ -16,12 +16,9 @@ const VideoEditorPage: React.FC = () => {
     console.log('Saving edited, video:', editedVideo);
     // TODO: Implement API call to save edited video
     navigate(`/videos/${id}`)};
-
   const handleExport = (format: string) => {
     console.log('Exporting video in, format:', format);
-    // TODO: Implement export functionality
-  };
-
+    // TODO: Implement export functionality};
   return (
     <>
       <Container maxWidth={false} sx={{ py: 3 }}>
@@ -43,5 +40,4 @@ const VideoEditorPage: React.FC = () => {
     </Container>
   </>
   )};
-
 export default VideoEditorPage;

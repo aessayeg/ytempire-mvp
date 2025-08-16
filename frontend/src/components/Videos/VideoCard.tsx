@@ -31,32 +31,35 @@ import {  formatDistanceToNow  } from 'date-fns';
 import {  useNavigate  } from 'react-router-dom';
 
 interface VideoCardProps {
-  video: {,
-  id: string,
+  
+video: {;
+id: string;
 
-    title: string;
-    description?: string;
-    thumbnail_url?: string;
-    channel_id: string;
-    channel_name?: string;
-    generation_status: 'pending' | 'processing' | 'completed' | 'failed',
-  publish_status: 'draft' | 'scheduled' | 'published' | 'publishing';
-    quality_score?: number;
-    trend_score?: number;
-    total_cost: number,
-  view_count: number,
+title: string;
+description?: string;
+thumbnail_url?: string;
+channel_id: string;
+channel_name?: string;
+generation_status: 'pending' | 'processing' | 'completed' | 'failed';
+publish_status: 'draft' | 'scheduled' | 'published' | 'publishing';
+quality_score?: number;
+trend_score?: number;
+total_cost: number;
+view_count: number;
 
-    like_count: number,
-  comment_count: number,
+like_count: number;
+comment_count: number;
 
-    created_at: string;
-    published_at?: string;
-    scheduled_publish_time?: string;
-    duration_seconds?: number;
-    youtube_url?: string;
-    progress?: number;
-    error_?: string;
-  };
+created_at: string;
+published_at?: string;
+scheduled_publish_time?: string;
+duration_seconds?: number;
+youtube_url?: string;
+progress?: number;
+error_?: string;
+
+
+};
   onEdit?: (videoId: string) => void;
   onDelete?: (videoId: string) => void;
   onPublish?: (videoId: string) => void;
@@ -67,14 +70,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (_: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)};
-
+    setAnchorEl(event.currentTarget)
+};
   const handleMenuClose = () => {
-    setAnchorEl(null)};
-
+    setAnchorEl(null)
+};
   const handleCardClick = () => {
-    navigate(`/videos/${video.id}`)};
-
+    navigate(`/videos/${video.id}`)
+};
   const getStatusIcon = () => {
     switch (video.generation_status) {
       case 'completed':
@@ -85,7 +88,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
         return <Error color="error" />;
         return <Schedule color="action" />}
   };
-
   const getStatusColor = (): unknown => {
     switch (video.generation_status) {
       case 'completed':
@@ -94,9 +96,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
         return 'warning';
       case 'failed':
         return 'error';
-        return 'default'}
-  };
-
+        return 'default'}};
   const getPublishStatusColor = (): unknown => {
     switch (video.publish_status) {
       case 'published':
@@ -105,21 +105,17 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
         return 'info';
       case 'publishing':
         return 'warning';
-        return 'default'}
-  };
-
+        return 'default'}};
   const formatDuration = (_seconds?: number) => {
     if (!seconds) return 'N/A';
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`};
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${num / 1000000.toFixed(1}M`;
     if (num >= 1000) return `${num / 1000.toFixed(1}K`;
-    return num.toString()};
-
+    return num.toString()
+};
   return (
     <>
       <Card
@@ -131,8 +127,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
         transition: 'transform 0.2s, box-shadow 0.2s',
         '&:hover': {
           transform: 'translateY(-4px)',
-          boxShadow: 4 }
-      }}
+          boxShadow: 4 }}}
     >
       <Box position="relative">
         <CardMedia
@@ -255,8 +250,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
           </Typography>
         )}
         <Typography variant="caption" color="text.secondary">
-          Created {formatDistanceToNow(new Date(video.created_at), { addSuffix: true });
-}
+          Created {formatDistanceToNow(new Date(video.created_at), { addSuffix: true })}
         </Typography>
 
         {video.scheduled_publish_time && video.publish_status === 'scheduled' && (
@@ -274,7 +268,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
                   size="small"
                   onClick={(e) => {
                     e.stopPropagation(</>
-  );
+  ),
                     onPreview?.(video.id)}}
                 >
                   <PlayArrow />
@@ -286,7 +280,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
                     color="primary"
                     onClick={(e) => {
                       e.stopPropagation(</>
-  );
+  ),
                       onPublish?.(video.id)}}
                   >
                     <Schedule />
@@ -299,7 +293,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
               <IconButton
                 size="small"
                 onClick={(e) => {
-                  e.stopPropagation();
+                  e.stopPropagation(),
                   onEdit?.(video.id)}}
               >
                 <Edit />
@@ -311,7 +305,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
         <IconButton
           size="small"
           onClick={(e) => {
-            e.stopPropagation();
+            e.stopPropagation(),
             handleMenuOpen(e)}}
         >
           <MoreVert />
@@ -325,14 +319,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
         >
           <MenuItem
             onClick={() => {
-              handleMenuClose();
+              handleMenuClose(),
               navigate(`/videos/${video.id}`)}}
           >
             View Details
           </MenuItem>
           {video.youtube_url && (_<MenuItem
               onClick={() => {
-                handleMenuClose();
+                handleMenuClose(),
                 window.open(video.youtube_url, '_blank')}}
             >
               View on YouTube
@@ -340,14 +334,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onEdit, onDelete, o
           )}
           <MenuItem
             onClick={() => {
-              handleMenuClose();
+              handleMenuClose(),
               onEdit?.(video.id)}}
           >
             Edit
           </MenuItem>
           <MenuItem
             onClick={() => {
-              handleMenuClose();
+              handleMenuClose(),
               onDelete?.(video.id)}}
             sx={{ color: 'error.main' }}
           >

@@ -34,8 +34,9 @@ import {
   useTheme,
   Collapse,
   Divider,
-  Stack
- } from '@mui/material';
+  Stack,
+  Badge
+} from '@mui/material';
 import { 
   Menu as MenuIcon,
   Notifications as NotificationsIcon,
@@ -45,47 +46,51 @@ import {
   Share as ShareIcon,
   Pause as PauseIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon
-,
-  Add as AddIcon,
   Delete as DeleteIcon,
-  Edit as EditIcon
- } from '@mui/icons-material';
+  Add as AddIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  MoreVert as MoreVertIcon,
+  Upload as UploadIcon,
+  VideoLibrary as VideoLibraryIcon,
+  AccountCircle as AccountIcon,
+  Visibility as ViewsIcon,
+  ThumbUp as LikesIcon,
+  AttachMoney as MoneyIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon
+} from '@mui/icons-material';
 import {  useOptimizedStore  } from '../../stores/optimizedStore';
 
 // Types
 interface MobileMetric {
-  id: string,
-  title: string,
-
-  value: string | number,
-  change: number,
-
-  changeType: 'positive' | 'negative' | 'neutral',
-  icon: React.ReactNode,
-
+  id: string;
+  title: string;
+  value: string | number;
+  change: number;
+  changeType: 'positive' | 'negative' | 'neutral';
+  icon: React.ReactNode;
   color: string;
   subtitle?: string;
 }
 
 interface MobileCard {
-  id: string,
-  title: string,
-
+  id: string;
+  title: string;
   subtitle: string;
   avatar?: string;
   status: 'active' | 'pending' | 'completed' | 'failed';
   progress?: number;
   actions?: Array<{
-    icon: React.ReactNode,
-  label: string,
-
-    action: () => void}>;
+    icon: React.ReactNode;
+    label: string;
+    action: () => void;
+  }>;
   metadata?: Record<string, unknown>;
 }
 
 interface NavigationTab {
-  label: string,
+  label: string;
   icon: React.ReactNode;
   badge?: number;
   disabled?: boolean;
@@ -98,13 +103,13 @@ const useSwipeGestures = (onSwipeLeft?: () => void, onSwipeRight?: () => void) =
 
   const minSwipeDistance = 50;
 
-  const onTouchStart = (_: React.TouchEvent) => {
+  const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX)};
-
-  const onTouchMove = (_: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX)};
-
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
     
@@ -113,46 +118,44 @@ const useSwipeGestures = (onSwipeLeft?: () => void, onSwipeRight?: () => void) =
     const isRightSwipe = distance < -minSwipeDistance;
 
     if (isLeftSwipe && onSwipeLeft) onSwipeLeft();
-    if (isRightSwipe && onSwipeRight) onSwipeRight()};
-
-  return { onTouchStart,
-    onTouchMove,
-    onTouchEnd };
+    if (isRightSwipe && onSwipeRight) onSwipeRight();
+  };
+  return { onTouchStart, onTouchMove, onTouchEnd };
 };
-
 const usePullToRefresh = (onRefresh: () => Promise<void>) => {
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const startY = useRef<number>(0);
   const currentY = useRef<number>(0);
 
-  const handleTouchStart = (_: React.TouchEvent) => {
+  const handleTouchStart = (e: React.TouchEvent) => {
     startY.current = e.touches[0].clientY;
   };
-
-  const handleTouchMove = (_: React.TouchEvent) => {
+  const handleTouchMove = (e: React.TouchEvent) => {
     currentY.current = e.touches[0].clientY;
     const distance = currentY.current - startY.current;
     
     if (distance > 0 && window.scrollY === 0) {
       e.preventDefault();
       setPullDistance(Math.min(distance, 100));
-      setIsPulling(distance > 60)}
+      setIsPulling(distance > 60);
+    }
   };
-
   const handleTouchEnd = async () => {
     if (isPulling && pullDistance > 60) {
-      await onRefresh()}
+      await onRefresh();
+    }
     setIsPulling(false);
-    setPullDistance(0)};
-
-  return { isPulling,
+    setPullDistance(0);
+  };
+  return {
+    isPulling,
     pullDistance,
     handleTouchStart,
     handleTouchMove,
-    handleTouchEnd };
+    handleTouchEnd
+  };
 };
-
 export const MobileResponsiveSystem: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -177,7 +180,7 @@ export const MobileResponsiveSystem: React.FC = () => {
       change: 15.3,
       changeType: 'positive',
       icon: <MoneyIcon />,
-      color: '#4 caf50',
+      color: '#4caf50',
       subtitle: 'vs last month' },
     { id: 'views',
       title: 'Views',
@@ -185,7 +188,7 @@ export const MobileResponsiveSystem: React.FC = () => {
       change: -5.2,
       changeType: 'negative',
       icon: <ViewsIcon />,
-      color: '#2196 f3',
+      color: '#2196f3',
       subtitle: 'total views' },
     { id: 'videos',
       title: 'Videos',
@@ -201,10 +204,10 @@ export const MobileResponsiveSystem: React.FC = () => {
       change: 0.8,
       changeType: 'positive',
       icon: <LikesIcon />,
-      color: '#e91 e63',
+      color: '#e91e63',
       subtitle: 'avg rate' } ];
 
-  const cards: MobileCard[] = [ {,
+  const cards: MobileCard[] = [ {
   id: '1',
       title: 'Tech Review Video',
       subtitle: 'Processing • 78% complete',
@@ -227,7 +230,7 @@ export const MobileResponsiveSystem: React.FC = () => {
     {
       id: '3',
       title: 'Product Review',
-      subtitle: 'Published • 1.2 K views',
+      subtitle: 'Published • 1.2K views',
       status: 'completed',
       avatar: '/product-avatar.jpg',
       actions: [ { icon: <ShareIcon />, label: 'Share', action: () => {} },
@@ -245,13 +248,15 @@ export const MobileResponsiveSystem: React.FC = () => {
     () => setSelectedTab(prev => Math.max(prev - 1, 0))
   );
 
-  const pullToRefresh = usePullToRefresh(_async () => { setRefreshing(true);
+  const pullToRefresh = usePullToRefresh(async () => { setRefreshing(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
     setRefreshing(false);
     addNotification({
       type: 'success',
-      message: 'Dashboard refreshed' })});
+      message: 'Dashboard refreshed'
+    });
+  });
 
   // Mobile-specific components
   const MobileHeader = () => (
@@ -260,7 +265,7 @@ export const MobileResponsiveSystem: React.FC = () => {
         <IconButton
           edge="start"
           color="inherit"
-          onClick={() => setDrawerOpen(true}
+          onClick={() => setDrawerOpen(true)}
           sx={{ mr: 2 }}
         >
           <MenuIcon />
@@ -270,7 +275,7 @@ export const MobileResponsiveSystem: React.FC = () => {
           YTEmpire
         </Typography>
         
-        <IconButton color="inherit" onClick={() => setShowNotifications(true}>
+        <IconButton color="inherit" onClick={() => setShowNotifications(true)}>
           <Badge badgeContent={notifications.length} color="error">
             <NotificationsIcon />
           </Badge>
@@ -300,21 +305,20 @@ export const MobileResponsiveSystem: React.FC = () => {
         case 'negative': return '#f44336';
         default: return '#757575'}
     };
-
     const getTrendIcon = () => {
       switch (metric.changeType) {
         case 'positive': return <TrendingUpIcon fontSize="small" />;
         case 'negative': return <TrendingDownIcon fontSize="small" />;
-        default: return null}
+        default: return null;
+      }
     };
-
     return (
     <>
       <Card 
         sx={{ 
           height: '100%',
-          background: `linear-gradient(135 deg, ${metric.color}10, ${metric.color}05)`,
-          border: `1px solid ${metric.color}20
+          background: `linear-gradient(135deg, ${metric.color}10, ${metric.color}05)`,
+          border: `1px solid ${metric.color}20`
         }}
       >
         <CardContent sx={{ pb: 2, '&:last-child': { pb: 2 } }}>
@@ -353,13 +357,13 @@ export const MobileResponsiveSystem: React.FC = () => {
     
     const getStatusColor = () => {
       switch (card.status) {
-        case 'active': return '#2196 f3';
+        case 'active': return '#2196f3';
         case 'pending': return '#ff9800';
-        case 'completed': return '#4 caf50';
+        case 'completed': return '#4caf50';
         case 'failed': return '#f44336';
-        default: return '#757575'}
+        default: return '#757575';
+      }
     };
-
     return (
     <>
       <Card sx={{ mb: 2 }}>
@@ -373,7 +377,7 @@ export const MobileResponsiveSystem: React.FC = () => {
                 width: 48,
                 height: 48 }}
             >
-              {card.title[ 0 ]
+              {card.title[0]}
             </Avatar>
       <Box flexGrow={1} minWidth={0}>
               <Typography variant="subtitle1" noWrap>
@@ -391,7 +395,7 @@ export const MobileResponsiveSystem: React.FC = () => {
                     sx={{ 
                       height: 4, 
                       borderRadius: 2,
-                      backgroundColor: `${getStatusColor()}20`,
+                      backgroundColor: getStatusColor() + '20',
                       '& .MuiLinearProgress-bar': { backgroundColor: getStatusColor() }
                     }} 
                   />
@@ -404,9 +408,9 @@ export const MobileResponsiveSystem: React.FC = () => {
             
             <IconButton 
               size="small" 
-              onClick={() => setExpandedCard(isExpanded ? null : card.id}
+              onClick={() => setExpandedCard(isExpanded ? null : card.id)}
             >
-              {isExpanded ? <ExpandLessIcon /> </>: <ExpandMoreIcon />}
+              {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
           </Box>
         </CardContent>
@@ -432,12 +436,13 @@ export const MobileResponsiveSystem: React.FC = () => {
         </Collapse>
       </Card>
     </>
-  )};
-
-  const MobileBottomNav = () => (_<BottomNavigation
+  );
+  };
+  const MobileBottomNav = () => (
+    <BottomNavigation
       value={bottomNavValue}
       onChange={(event, newValue) => {
-        setBottomNavValue(newValue);
+        setBottomNavValue(newValue),
         setSelectedTab(newValue)}}
       showLabels
       sx={ {
@@ -456,8 +461,7 @@ export const MobileResponsiveSystem: React.FC = () => {
           icon={
             <Badge badgeContent={tab.badge} color="error">
               {tab.icon}
-            </Badge>
-          }
+            </Badge>}
           disabled={tab.disabled}
         />
       ))}
@@ -480,28 +484,28 @@ export const MobileResponsiveSystem: React.FC = () => {
       <SpeedDialAction
         icon={<AddIcon />}
         tooltipTitle="New Video"
-        onClick={() => setSpeedDialOpen(false}
+        onClick={() => setSpeedDialOpen(false)}
       />
       <SpeedDialAction
         icon={<UploadIcon />}
         tooltipTitle="Upload"
-        onClick={() => setSpeedDialOpen(false}
+        onClick={() => setSpeedDialOpen(false)}
       />
       <SpeedDialAction
         icon={<AnalyticsIcon />}
         tooltipTitle="Analytics"
-        onClick={() => setSpeedDialOpen(false}
+        onClick={() => setSpeedDialOpen(false)}
       />
     </SpeedDial>
   );
 
-  const TabPanel = ({ children, value, index }: React.ChangeEvent<HTMLInputElement>) => (
+  const TabPanel = ({ children, value, index }: { children: React.ReactNode; value: number; index: number }) => (
     <Box
       role="tabpanel"
       hidden={value !== index}
       sx={{ 
-        minHeight: 'calc(100 vh - 128px)', // Account for app bar and bottom nav
-        pb: isMobile ? 10 : 2, // Extra padding for bottom nav
+        minHeight: 'calc(100vh - 128px)', // Account for app bar and bottom nav
+        pb: isMobile ? 10 : 2 // Extra padding for bottom nav
       }}
       {...swipeGestures}
       {...pullToRefresh}
@@ -526,7 +530,9 @@ export const MobileResponsiveSystem: React.FC = () => {
           This is the desktop version. Mobile responsive features are optimized for mobile devices.
         </Typography>
       </Box>
-    )}
+    </>
+  );
+  }
 
   return (
     <>
@@ -629,8 +635,8 @@ export const MobileResponsiveSystem: React.FC = () => {
       <SwipeableDrawer
         anchor="left"
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false}
-        onOpen={() => setDrawerOpen(true}
+        onClose={() => setDrawerOpen(false)}
+        onOpen={() => setDrawerOpen(true)}
         disableSwipeToOpen={false}
       >
         <Box sx={{ width: 250, pt: 2 }}>
@@ -638,14 +644,14 @@ export const MobileResponsiveSystem: React.FC = () => {
             Menu
           </Typography>
           <List>
-            {navigationTabs.map((tab, index) => (_<ListItem 
+            {navigationTabs.map((tab, index) => (
+              <ListItem 
                 key={index}
                 onClick={() => {
-                  setSelectedTab(index</>
-  );
-                  setBottomNavValue(index</>
-  );
-                  setDrawerOpen(false)}}
+                  setSelectedTab(index);
+                  setBottomNavValue(index);
+                  setDrawerOpen(false);
+                }}
               >
                 <ListItemAvatar>
                   <Avatar sx={{ bgcolor: 'primary.main' }}>
@@ -666,7 +672,7 @@ export const MobileResponsiveSystem: React.FC = () => {
       <Drawer
         anchor="right"
         open={showNotifications}
-        onClose={() => setShowNotifications(false}
+        onClose={() => setShowNotifications(false)}
       >
         <Box sx={{ width: 300, p: 2 }}>
           <Typography variant="h6" gutterBottom>
@@ -705,4 +711,6 @@ export const MobileResponsiveSystem: React.FC = () => {
         </Box>
       )}
     </Box>
-  )};
+    </>
+  );
+};

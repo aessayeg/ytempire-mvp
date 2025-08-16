@@ -39,58 +39,64 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import {  authStore  } from '../../stores/authStore';
 
 interface PerformanceMetrics {
-  current: {,
-  request_rate: number,
+  
+current: {;
+request_rate: number;
 
-    average_latency: number,
-  error_rate: number,
+average_latency: number;
+error_rate: number;
 
-    throughput: number};
-  historical: Array<{,
-  timestamp: string,
+throughput: number;
 
-    request_rate: number,
-  average_latency: number,
+};
+  historical: Array<{
+  timestamp: string;
+
+    request_rate: number;
+  average_latency: number;
 
     error_rate: number}>;
-  slow_endpoints: Array<{,
-  endpoint: string,
+  slow_endpoints: Array<{
+  endpoint: string;
 
-    method: string,
-  avg_duration: number,
+    method: string;
+  avg_duration: number;
 
     count: number}>;
   error_rates: {
     '4 xx_errors': number;
     '5 xx_errors': number;
-    timeout_errors: number,
+    timeout_errors: number;
   total_errors: number};
-  database: {,
-  average_query_time: number,
+  database: {
+  average_query_time: number;
 
-    slow_query_count: number,
-  connection_pool_usage: number,
+    slow_query_count: number;
+  connection_pool_usage: number;
 
     deadlock_count: number};
-  system: {,
-  cpu_usage: number,
+  system: {
+  cpu_usage: number;
 
-    memory_usage: number,
-  disk_usage: number,
+    memory_usage: number;
+  disk_usage: number;
 
-    network_io: {,
-  bytes_sent: number,
+    network_io: {
+  bytes_sent: number;
 
-      bytes_recv: number};
-  };
+      bytes_recv: number}
+  }
 }
 
 interface PerformanceAlert {
-  type: string,
-  severity: 'warning' | 'critical' | 'info',
+  
+type: string;
+severity: 'warning' | 'critical' | 'info';
 
-  message: string,
-  timestamp: string}
+message: string;
+timestamp: string;
+
+}
 
 export const PerformanceDashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
@@ -103,9 +109,7 @@ export const PerformanceDashboard: React.FC = () => {
     try {
       const headers = {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
-
+        'Content-Type': 'application/json'};
       // Fetch performance overview
       const overviewResponse = await fetch(
         `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/performance/overview`,
@@ -129,7 +133,6 @@ export const PerformanceDashboard: React.FC = () => {
       console.error('Error fetching performance, data:', error)} finally {
       setLoading(false)}
   };
-
   useEffect(() => {
     
     fetchPerformanceData();
@@ -143,16 +146,14 @@ export const PerformanceDashboard: React.FC = () => {
   const getStatusColor = (value: number, thresholds: { good: number; warning: number }) => {
     if (value < thresholds.good) return '#4 caf50';
     if (value < thresholds.warning) return '#ff9800';
-    return '#f44336';
+    return '#f44336'
   };
-
   const formatBytes = (bytes: number) => {
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     if (bytes === 0) return '0 Bytes';
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
   };
-
   if (loading) {
     return (
     <>
@@ -239,8 +240,7 @@ export const PerformanceDashboard: React.FC = () => {
                   color: getStatusColor(
                     metrics.current.average_latency,
                     { good: 200, warning: 500 }
-                  )
-                }}
+                  )}}
               >
                 {metrics.current.average_latency.toFixed(0)}
                 <Typography variant="body2" component="span" sx={{ ml: 1 }}>
@@ -263,8 +263,7 @@ export const PerformanceDashboard: React.FC = () => {
                   color: getStatusColor(
                     metrics.current.error_rate,
                     { good: 1, warning: 5 }
-                  )
-                }}
+                  )}}
               >
                 {metrics.current.error_rate.toFixed(2)}%
               </Typography>
@@ -309,7 +308,7 @@ export const PerformanceDashboard: React.FC = () => {
                 <Line 
                   type="monotone" 
                   dataKey="average_latency" 
-                  stroke="#8884 d8" 
+                  stroke="#8884d8" 
                   name="Latency (ms)"
                 />
               </LineChart>
@@ -436,8 +435,7 @@ export const PerformanceDashboard: React.FC = () => {
                     <LinearProgress 
                       variant="determinate" 
                       value={metrics.database.connection_pool_usage}
-                    />
-                  }
+                    />}
                 />
               </ListItem>
               <ListItem>
@@ -448,8 +446,7 @@ export const PerformanceDashboard: React.FC = () => {
                       label={metrics.database.deadlock_count}
                       color={metrics.database.deadlock_count > 0 ? 'warning' : 'success'}
                       size="small"
-                    />
-                  }
+                    />}
                 />
               </ListItem>
             </List>
@@ -513,15 +510,13 @@ export const PerformanceDashboard: React.FC = () => {
                       <Typography variant="body2">
                         Count: {endpoint.count}
                       </Typography>
-                    </Box>
-                  }
+                    </Box>}
                 />
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <SpeedIcon 
                     sx={{ 
                       color: endpoint.avg_duration > 2 ? '#f44336' : 
-                             endpoint.avg_duration > 1 ? '#ff9800' : '#4 caf50'
-                    }}
+                             endpoint.avg_duration > 1 ? '#ff9800' : '#4 caf50'}}
                   />
                 </Box>
               </ListItem>
@@ -532,4 +527,5 @@ export const PerformanceDashboard: React.FC = () => {
       </Paper>
     </Box>
   </>
-  )};
+  )
+}}

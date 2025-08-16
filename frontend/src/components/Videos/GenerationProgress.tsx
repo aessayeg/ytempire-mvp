@@ -40,23 +40,29 @@ import {  api  } from '../../services/api';
 import {  useWebSocket  } from '../../hooks/useWebSocket';
 
 interface GenerationProgressProps {
-  generationId: string;
-  onComplete?: (videoId: string) => void;
-  onError?: (error: string) => void}
+  
+generationId: string;
+onComplete?: (videoId: string) => void;
+onError?: (error: string) => void;
+
+}
 
 interface GenerationStep {
-  id: string,
-  label: string,
+  
+id: string;
+label: string;
 
-  description: string,
-  icon: React.ReactNode,
+description: string;
+icon: React.ReactNode;
 
-  status: 'pending' | 'processing' | 'completed' | 'error';
-  progress?: number;
-  startTime?: Date;
-  endTime?: Date;
-  cost?: number;
-  details?: string;
+status: 'pending' | 'processing' | 'completed' | 'error';
+progress?: number;
+startTime?: Date;
+endTime?: Date;
+cost?: number;
+details?: string;
+
+
 }
 
 export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generationId, onComplete, onError }) => {
@@ -134,12 +140,10 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generati
       updateProgress(response)} catch (error) {
       console.error('Failed to fetch generation, status:', error)}
   };
-
   const handleWebSocketUpdate = (data: unknown) => {
     if (data.generationId === generationId) {
       updateProgress(data)}
   };
-
   const updateProgress = (data: unknown) => {
     // Update overall progress
     setOverallProgress(data.progress || 0);
@@ -149,7 +153,7 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generati
       setCurrentStep(data.currentStep)}
     
     // Update steps
-    if (data.steps) { setSteps((prevSteps) => {}
+    if (data.steps) { setSteps((prevSteps) =>
         prevSteps.map((_(step, index) => {
     
           const updatedStep = data.steps[index];
@@ -161,7 +165,7 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generati
               startTime: updatedStep.startTime,
               endTime: updatedStep.endTime,
               cost: updatedStep.cost,
-              details: updatedStep.details,
+              details: updatedStep.details
 
   }
           return step})
@@ -182,43 +186,32 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generati
     if (data.totalCost !== undefined) {
       setTotalCost(data.totalCost)}
     if (data.estimatedTime !== undefined) {
-      setEstimatedTime(data.estimatedTime)}
-  };
-
+      setEstimatedTime(data.estimatedTime)}};
   const handleCancel = async () => {
     try {
       await api.videos.cancelGeneration(generationId);
       setStatus('cancelled');
       navigate('/videos')} catch (error) {
-      console.error('Failed to cancel, generation:', error)}
-  };
-
+      console.error('Failed to cancel, generation:', error)}};
   const handleViewVideo = () => {
     if (videoId) {
-      navigate(`/videos/${videoId}`)}
-  };
-
+      navigate(`/videos/${videoId}`)}};
   const handleRetry = () => {
     // Implement retry logic
     window.location.reload()};
-
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}
   };
-
   const getStepIcon = (step: GenerationStep) => {
     if (step.status === 'completed') {
-      return <CheckCircle color="success" />;
+      return <CheckCircle color="success" />
     } else if (step.status === 'error') {
-      return <ErrorIcon color="error" />;
+      return <ErrorIcon color="error" />
     } else if (step.status === 'processing') {
-      return <CircularProgress size={24} />;
-    }
-    return step.icon;
-  };
-
+      return <CircularProgress size={24} />}
+    return step.icon};
   return (
     <>
       <Box p={3}>
@@ -448,10 +441,8 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generati
                                   ? 'error'
                                   : status === 'cancelled'
                                   ? 'warning'
-                                  : 'primary'
-                              }
-                            />
-                          }
+                                  : 'primary'}
+                            />}
                         />
                       </ListItem>
                       {videoId && (
@@ -472,4 +463,5 @@ export const GenerationProgress: React.FC<GenerationProgressProps> = ({ generati
       </Paper>
     </Box>
   </>
-  )};
+  )
+}}}

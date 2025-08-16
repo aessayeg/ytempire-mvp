@@ -43,9 +43,12 @@ import {  VideoPlayer  } from '../../components/Videos/VideoPlayer';
 import {  VideoMetrics  } from '../../components/Videos/VideoMetrics';
 
 interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number,
-  value: number}
+  
+children?: React.ReactNode;
+index: number;
+value: number;
+
+}
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -92,15 +95,14 @@ export const VideoDetail: React.FC = () => {
       setEditForm({
         title: response.title,
         description: response.description || '',
-        tags: response.tags || [] });
+        tags: response.tags || [] })
 } catch (_err: unknown) {
       setError(err.message || 'Failed to load video details')} finally {
       setLoading(false)}
   };
-
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue)};
-
+    setTabValue(newValue)
+};
   const handleEdit = async () => {
     try {
       await api.videos.update(videoId!, editForm);
@@ -108,7 +110,6 @@ export const VideoDetail: React.FC = () => {
       setEditDialogOpen(false)} catch (_err: unknown) {
       setError(err.message || 'Failed to update video')}
   };
-
   const handlePublish = async () => {
     try {
       const scheduledTime = publishSchedule ? new Date(publishSchedule) : undefined;
@@ -117,22 +118,19 @@ export const VideoDetail: React.FC = () => {
       setPublishDialogOpen(false)} catch (_err: unknown) {
       setError(err.message || 'Failed to publish video')}
   };
-
   const handleDelete = async () => {
     try {
       await api.videos.delete(videoId!);
       navigate('/videos')} catch (_err: unknown) {
       setError(err.message || 'Failed to delete video')}
   };
-
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href)};
-
+    navigator.clipboard.writeText(window.location.href)
+};
   const handleOpenYouTube = () => {
     if (video?.youtube_url) {
       window.open(video.youtube_url, '_blank')}
   };
-
   const getStatusColor = (status: string): unknown => {
     switch (status) {
       case 'completed':
@@ -141,9 +139,7 @@ export const VideoDetail: React.FC = () => {
         return 'warning';
       case 'failed':
         return 'error';
-        return 'default'}
-  };
-
+        return 'default'}};
   const getPublishStatusColor = (status: string): unknown => {
     switch (status) {
       case 'published':
@@ -152,9 +148,7 @@ export const VideoDetail: React.FC = () => {
         return 'info';
       case 'publishing':
         return 'warning';
-        return 'default'}
-  };
-
+        return 'default'}};
   if (loading) {
     return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="60 vh">
@@ -509,16 +503,14 @@ export const VideoDetail: React.FC = () => {
             fullWidth
             label="Title"
             value={editForm.title}
-            onChange={(e) => setEditForm({ ...editForm, title: e.target.value)});
-}
+            onChange={(e) => setEditForm({ ...editForm, title: e.target.value)})}
             margin="normal"
           />
           <TextField
             fullWidth
             label="Description"
             value={editForm.description}
-            onChange={(e) => setEditForm({ ...editForm, description: e.target.value)});
-}
+            onChange={(e) => setEditForm({ ...editForm, description: e.target.value)})}
             multiline
             rows={4}
             margin="normal"
@@ -527,9 +519,8 @@ export const VideoDetail: React.FC = () => {
             fullWidth
             label="Tags (comma, separated)"
             value={editForm.tags.join(', ')}
-            onChange={(e) => {}
-              setEditForm({ ...editForm, tags: e.target.value.split(',').map((t) => t.trim()) });
-}
+            onChange={(e) =>
+              setEditForm({ ...editForm, tags: e.target.value.split(',').map((t) => t.trim()) })}
             margin="normal"
           />
         </DialogContent>
@@ -553,7 +544,7 @@ export const VideoDetail: React.FC = () => {
               fullWidth
               variant="contained"
               onClick={() => {
-                setPublishSchedule('');
+                setPublishSchedule(''),
                 handlePublish()}}
               sx={{ mb: 2 }}
             >

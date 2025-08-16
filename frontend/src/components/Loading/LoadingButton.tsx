@@ -19,9 +19,8 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
 }) => {
   const getLoadingIndicator = () => {
     if (loadingIndicator) return loadingIndicator;
-    return <CircularProgress size={20} color="inherit" />;
+    return <CircularProgress size={20} color="inherit" />
   };
-
   const getContent = () => {
     if (success) {
       return (
@@ -59,9 +58,8 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
           return getLoadingIndicator()}
     }
 
-    return children;
+    return children
   };
-
   return (
     <Button
       disabled={disabled || loading}
@@ -71,13 +69,13 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
     >
       {getContent()}
     </Button>
-  )};
-
+  )
+};
 // Button group with loading states
-export const LoadingButtonGroup: React.FC<{,
-  buttons: Array<{,
+export const LoadingButtonGroup: React.FC<{
+  buttons: Array<{
 
-    key: string,
+    key: string;
   label: string;,
 
     onClick: () => void;
@@ -105,4 +103,5 @@ export const LoadingButtonGroup: React.FC<{,
         </LoadingButton>
       ))}
     </div>
-  )};
+  )
+};

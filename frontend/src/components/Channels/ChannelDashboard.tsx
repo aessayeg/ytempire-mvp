@@ -104,8 +104,7 @@ import {
                   <Box>
                     <Typography variant="body2" color="text.secondary">
                       {video.status === 'published' && video.publishedAt
-                        ? `Published ${formatDistanceToNow(video.publishedAt, { addSuffix: true });
-}
+                        ? `Published ${formatDistanceToNow(video.publishedAt, { addSuffix: true })}
                         : video.status === 'scheduled' && video.scheduledAt
                         ? `Scheduled for ${format(video.scheduledAt, 'PPp')}
                         : `Status: ${video.status}`}
@@ -153,8 +152,7 @@ import {
                         </Typography>
                       </Box>
                     )}
-                  </Box>
-                }
+                  </Box>}
               />
               
               <ListItemSecondaryAction>

@@ -22,9 +22,208 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Select,
-  MenuItem,
-  TextField
+  Card,
+  CardContent,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  Chip,
+  InputAdornment
+} from '@mui/material';
+import {
+  Save,
+  Cancel,
+  Delete,
+  Add,
+  Visibility,
+  VisibilityOff,
+  Phone
+} from '@mui/icons-material';
+import { useForm, Controller } from 'react-hook-form';
+import { useAuthStore } from '../../stores/authStore';
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      {...other}
+    >
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+interface ApiKey {
+  id: string;
+  name: string;
+  key_preview: string;
+  created_at: string;
+  last_used?: string;
+}
+
+export const UserSettings: React.FC = () => {
+  const { user } = useAuthStore();
+  const [activeTab, setActiveTab] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [deleteAccountDialog, setDeleteAccountDialog] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  
+  const { control, handleSubmit, reset } = useForm({
+    defaultValues: {
+      fullName: user?.full_name || '',
+      email: user?.email || '',
+      phone: '',
+      company: '',
+      bio: '',
+      timezone: 'UTC',
+      language: 'en',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+      notifications: {
+        email_enabled: true,
+        sms_enabled: false,
+        push_enabled: true,
+        video_complete: true,
+        quota_warning: true,
+        cost_alert: true,
+        system_updates: true,
+        marketing: false,
+        email_frequency: 'instant'
+      }
+    }
+  });
+
+  useEffect(() => {
+    // Load user settings
+    loadSettings();
+    loadApiKeys();
+  }, []);
+
+  const loadSettings = async () => {
+    // Load user settings from API
+    console.log('Loading settings...');
+  };
+
+  const loadApiKeys = async () => {
+    // Mock API keys
+    setApiKeys([
+      {
+        id: '1',
+        name: 'Production API Key',
+        key_preview: 'sk_live_abc123',
+        created_at: '2024-01-01',
+        last_used: '2024-01-14'
+      }
+    ]);
+  };
+
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
+
+  const onSubmitProfile = async (data: any) => {
+    setLoading(true);
+    try {
+      // Save profile settings
+      console.log('Saving profile:', data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onSubmitPassword = async (data: any) => {
+    setLoading(true);
+    try {
+      // Change password
+      console.log('Changing password:', data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onSubmitNotifications = async (data: any) => {
+    setLoading(true);
+    try {
+      // Save notification preferences
+      console.log('Saving notifications:', data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEnable2FA = () => {
+    setTwoFactorEnabled(true);
+  };
+
+  const handleDisable2FA = () => {
+    setTwoFactorEnabled(false);
+  };
+
+  const handleDeleteAccount = () => {
+    console.log('Deleting account...');
+    setDeleteAccountDialog(false);
+  };
+
+  const handleDeleteApiKey = (id: string) => {
+    setApiKeys(apiKeys.filter(key => key.id !== id));
+  };
+
+  return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" fontWeight="bold" gutterBottom>
+          Settings
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Manage your account settings and preferences
+        </Typography>
+      </Box>
+
+      <Box sx={{ width: '100%' }}>
+        <Paper>
+          <Tabs value={activeTab} onChange={handleTabChange}>
+            <Tab label="Profile" />
+            <Tab label="Security" />
+            <Tab label="Notifications" />
+            <Tab label="Billing" />
+            <Tab label="API Keys" />
+          </Tabs>
+
+          <TabPanel value={activeTab} index={0}>
+            {/* Profile Settings */}
+            <form onSubmit={handleSubmit(onSubmitProfile)}>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>
+                    Personal Information
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <Controller
+                        name="fullName"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
                             {...field}
                             fullWidth
                             label="Full Name"
@@ -184,7 +383,7 @@ import {
                                     onClick={() => setShowPassword(!showPassword)}
                                     edge="end"
                                   >
-                                    {showPassword ? <VisibilityOff /> </>: <Visibility />}
+                                    {showPassword ? <VisibilityOff /> : <Visibility />}
                                   </IconButton>
                                 </InputAdornment>
                               )
@@ -254,7 +453,7 @@ import {
                       </Box>
                       <Button
                         variant={twoFactorEnabled ? 'outlined' : 'contained'}
-                        onClick={twoFactorEnabled ? handleDisable2 FA : handleEnable2 FA}
+                        onClick={twoFactorEnabled ? handleDisable2FA : handleEnable2FA}
                       >
                         {twoFactorEnabled ? 'Disable' : 'Enable'}
                       </Button>
@@ -420,6 +619,16 @@ import {
             </form>
           </TabPanel>
 
+          <TabPanel value={activeTab} index={3}>
+            {/* Billing Settings */}
+            <Typography variant="h6" gutterBottom>
+              Billing & Subscription
+            </Typography>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Billing features will be available in the next release.
+            </Alert>
+          </TabPanel>
+
           <TabPanel value={activeTab} index={4}>
             {/* API Keys */}
             <Box>
@@ -453,7 +662,7 @@ import {
                             {key.last_used && (
                               <Chip
                                 size="small"
-                                label={`Last, used: ${new Date(key.last_used).toLocaleDateString()}`}
+                                label={`Last used: ${new Date(key.last_used).toLocaleDateString()}`}
                               />
                             )}
                           </Box>
@@ -510,6 +719,7 @@ import {
         </DialogActions>
       </Dialog>
     </Container>
-  )};
+  );
+};
 
 export default UserSettings;

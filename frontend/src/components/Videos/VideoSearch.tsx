@@ -12,8 +12,11 @@ import {
 import {  Search, FilterList, Clear, Sort  } from '@mui/icons-material';
 
 interface VideoSearchProps {
-  onSearch: (query: string, filters: React.ChangeEvent<HTMLInputElement>) => void,
-  onClear: () => void}
+  
+onSearch: (query: string, filters: React.ChangeEvent<HTMLInputElement>) => void;
+onClear: () => void;
+
+}
 
 export const VideoSearch: React.FC<VideoSearchProps> = ({ onSearch, onClear }) => {
   const [query, setQuery] = useState('');
@@ -21,13 +24,13 @@ export const VideoSearch: React.FC<VideoSearchProps> = ({ onSearch, onClear }) =
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleSearch = () => {
-    onSearch(query, filters)};
-
+    onSearch(query, filters)
+};
   const handleClear = () => {
     setQuery('');
     setFilters({ dateRange: 'all', sortBy: 'relevance', status: 'all' });
-    onClear()};
-
+    onClear()
+};
   return (
     <>
       <Box display="flex" gap={2} alignItems="center">
@@ -66,14 +69,15 @@ export const VideoSearch: React.FC<VideoSearchProps> = ({ onSearch, onClear }) =
       
       {Object.values(filters).some(v => v !== 'all') && (
         <Box display="flex" gap={1}>
-          {filters.dateRange !== 'all' && <Chip label={filters.dateRange} size="small" onDelete={() => setFilters({...filters, dateRange: 'all'});
+          {filters.dateRange !== 'all' && <Chip label={filters.dateRange} size="small" onDelete={() => setFilters({...filters, dateRange: 'all'})
 } />}
-          {filters.sortBy !== 'relevance' && <Chip label={filters.sortBy} size="small" onDelete={() => setFilters({...filters, sortBy: 'relevance'});
+          {filters.sortBy !== 'relevance' && <Chip label={filters.sortBy} size="small" onDelete={() => setFilters({...filters, sortBy: 'relevance'})
 } />}
-          {filters.status !== 'all' && <Chip label={filters.status} size="small" onDelete={() => setFilters({...filters, status: 'all'});
+          {filters.status !== 'all' && <Chip label={filters.status} size="small" onDelete={() => setFilters({...filters, status: 'all'})
 } />}
         </Box>
       )}
     </Box>
   </>
-  )};
+  )
+};

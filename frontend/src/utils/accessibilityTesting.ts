@@ -7,11 +7,14 @@ import {
  } from './accessibility';
 
 interface AccessibilityIssue {
-  type: string;
-  severity: 'error' | 'warning' | 'info';
-  element?: HTMLElement;
-  message: string;
-  wcagCriteria?: string;
+  
+type: string;
+severity: 'error' | 'warning' | 'info';
+element?: HTMLElement;
+message: string;
+wcagCriteria?: string;
+
+
 }
 
 export class AccessibilityAuditor {
@@ -45,7 +48,7 @@ export class AccessibilityAuditor {
     // Check touch targets
     this.auditTouchTargets();
 
-    return this.issues;
+    return this.issues
   }
 
   private auditHeadings() {
@@ -56,9 +59,7 @@ export class AccessibilityAuditor {
         severity: 'error',
         message: 'Heading hierarchy is incorrect. Headings should not skip levels.',
         wcagCriteria: '1.3.1 Info and Relationships'
-      });
-    }
-
+      })}
     // Check for missing h1
     const h1Elements = document.querySelectorAll('h1');
     if (h1Elements.length === 0) {
@@ -67,16 +68,14 @@ export class AccessibilityAuditor {
         severity: 'error',
         message: 'Page is missing an h1 heading',
         wcagCriteria: '2.4.6 Headings and Labels'
-      });
+      })
     } else if (h1Elements.length > 1) {
       this.issues.push({
         type: 'multiple-h1',
         severity: 'warning',
         message: `Page has ${h1Elements.length} h1 headings, should have only one`,
         wcagCriteria: '2.4.6 Headings and Labels'
-      });
-    }
-  }
+      })}}
 
   private auditColorContrast() {
     // Check text elements
@@ -101,21 +100,15 @@ export class AccessibilityAuditor {
             severity: 'error',
             element: element as HTMLElement,
             message: `Text color contrast does not meet WCAG AA standards (${isLargeText ? '3:1' : '4.5:1'} required)`,
-            wcagCriteria: '1.4.3 Contrast (Minimum)'
-          });
-        } else if (!meetsAAA) {
+            wcagCriteria: '1.4.3 Contrast (Minimum)'})} else if (!meetsAAA) {
           this.issues.push({
             type: 'color-contrast',
             severity: 'info',
             element: element as HTMLElement,
             message: `Text color contrast meets AA but not AAA standards`,
             wcagCriteria: '1.4.6 Contrast (Enhanced)'
-          });
-        }
-      }
-    });
-  }
-
+          })}
+      })}
   private auditForms() {
     const forms = document.querySelectorAll('form');
     forms.forEach((form) => {
@@ -127,9 +120,7 @@ export class AccessibilityAuditor {
           element: form as HTMLElement,
           message: 'Form has inputs without associated labels',
           wcagCriteria: '3.3.2 Labels or Instructions'
-        });
-      }
-    });
+        })}});
 
     // Check for required field indicators
     const requiredInputs = document.querySelectorAll('[required], [aria-required="true"]');
@@ -142,11 +133,7 @@ export class AccessibilityAuditor {
           element: input as HTMLElement,
           message: 'Required field is not clearly indicated',
           wcagCriteria: '3.3.2 Labels or Instructions'
-        });
-      }
-    });
-  }
-
+        })})}
   private auditImages() {
     const images = document.querySelectorAll('img');
     images.forEach((img) => {
@@ -158,8 +145,7 @@ export class AccessibilityAuditor {
           element: img as HTMLElement,
           message: 'Image is missing alt text or proper role attribute',
           wcagCriteria: '1.1.1 Non-text Content'
-        });
-      }
+        })}
     });
 
     // Check for decorative images
@@ -172,11 +158,7 @@ export class AccessibilityAuditor {
           element: img as HTMLElement,
           message: 'Decorative image should have role="presentation" or role="none"',
           wcagCriteria: '1.1.1 Non-text Content'
-        });
-      }
-    });
-  }
-
+        })})}
   private auditKeyboardAccess() {
     // Check for elements with click handlers but no keyboard support
     const clickableElements = document.querySelectorAll('[onclick], [data-clickable]');
@@ -194,11 +176,9 @@ export class AccessibilityAuditor {
           element: element as HTMLElement,
           message: 'Interactive element is not keyboard accessible',
           wcagCriteria: '2.1.1 Keyboard'
-        });
-      }
-    });
+        })}});
 
-    // Check for positive tabindex values (bad practice)
+    // Check for positive tabindex values (bad practice);
     const positiveTabIndex = document.querySelectorAll('[tabindex]:not([tabindex="0"]):not([tabindex="-1"])');
     positiveTabIndex.forEach((element) => {
       const tabIndexValue = parseInt(element.getAttribute('tabindex') || '0');
@@ -209,11 +189,8 @@ export class AccessibilityAuditor {
           element: element as HTMLElement,
           message: `Avoid using positive tabindex values (found: ${tabIndexValue})`,
           wcagCriteria: '2.4.3 Focus Order'
-        });
-      }
-    });
-  }
-
+        })
+      }})}
   private auditARIA() {
     // Check for invalid ARIA attributes
     const ariaElements = document.querySelectorAll('[aria-label], [aria-labelledby], [aria-describedby]');
@@ -230,11 +207,8 @@ export class AccessibilityAuditor {
               element: element as HTMLElement,
               message: `aria-labelledby references non-existent element: ${id}`,
               wcagCriteria: '4.1.2 Name, Role, Value'
-            });
-          }
-        });
-      }
-
+            })
+          }})}
       // Check aria-describedby references
       const describedBy = element.getAttribute('aria-describedby');
       if (describedBy) {
@@ -247,11 +221,7 @@ export class AccessibilityAuditor {
               element: element as HTMLElement,
               message: `aria-describedby references non-existent element: ${id}`,
               wcagCriteria: '4.1.2 Name, Role, Value'
-            });
-          }
-        });
-      }
-    });
+            })})}});
 
     // Check for missing ARIA labels on landmark regions
     const landmarks = document.querySelectorAll('nav, main, aside, section, article');
@@ -263,11 +233,7 @@ export class AccessibilityAuditor {
           element: landmark as HTMLElement,
           message: `Landmark region <${landmark.tagName.toLowerCase()}> should have an accessible name`,
           wcagCriteria: '2.4.1 Bypass Blocks'
-        });
-      }
-    });
-  }
-
+        })})}
   private auditFocusIndicators() {
     // Check if focus indicators are visible
     const focusableElements = document.querySelectorAll(
@@ -286,13 +252,10 @@ export class AccessibilityAuditor {
           element: element as HTMLElement,
           message: 'Element may not have a visible focus indicator',
           wcagCriteria: '2.4.7 Focus Visible'
-        });
-      }
-    });
-  }
-
+        })
+      }})}
   private auditTouchTargets() {
-    // Check minimum touch target size (44x44 pixels)
+    // Check minimum touch target size (44x44 pixels);
     const interactiveElements = document.querySelectorAll(
       'a, button, input, select, textarea, [role="button"], [onclick]'
     );
@@ -306,18 +269,14 @@ export class AccessibilityAuditor {
           element: element as HTMLElement,
           message: `Touch target is too small (${Math.round(rect.width)}x${Math.round(rect.height)}px, minimum 44x44px)`,
           wcagCriteria: '2.5.5 Target Size'
-        });
-      }
-    });
-  }
-
+        })})}
   private getEffectiveBackgroundColor(element: HTMLElement): string {
     let bgColor = window.getComputedStyle(element).backgroundColor;
     let currentElement = element.parentElement;
 
     while (currentElement && (bgColor === 'transparent' || bgColor === 'rgba(0, 0, 0, 0)')) {
       bgColor = window.getComputedStyle(currentElement).backgroundColor;
-      currentElement = currentElement.parentElement;
+      currentElement = currentElement.parentElement
     }
 
     return bgColor || 'rgb(255, 255, 255)'; // Default to white
@@ -332,11 +291,8 @@ export class AccessibilityAuditor {
       errors: this.issues.filter(i => i.severity === 'error').length,
       warnings: this.issues.filter(i => i.severity === 'warning').length,
       info: this.issues.filter(i => i.severity === 'info').length,
-      issues: this.issues
-    };
-
-    return JSON.stringify(report, null, 2);
-  }
+      issues: this.issues};
+    return JSON.stringify(report, null, 2)}
 
   // Log issues to console
   logIssues() {
@@ -350,28 +306,24 @@ export class AccessibilityAuditor {
     if (errors.length > 0) {
       console.group(`❌ Errors (${errors.length})`);
       errors.forEach(issue => {
-        console.error(issue.message, issue.element);
-      });
-      console.groupEnd();
-    }
+        console.error(issue.message, issue.element)});
+      console.groupEnd()}
 
     if (warnings.length > 0) {
       console.group(`⚠️ Warnings (${warnings.length})`);
       warnings.forEach(issue => {
-        console.warn(issue.message, issue.element);
-      });
-      console.groupEnd();
-    }
+        console.warn(issue.message, issue.element)});
+      console.groupEnd()}
 
     if (info.length > 0) {
       console.group(`ℹ️ Info (${info.length})`);
       info.forEach(issue => {
-        console.info(issue.message, issue.element);
+        console.info(issue.message, issue.element)
       });
-      console.groupEnd();
+      console.groupEnd()
     }
 
-    console.groupEnd();
+    console.groupEnd()
   }
 }
 
@@ -385,10 +337,8 @@ if (import.meta.env.DEV) {
     setTimeout(async () => {
       const issues = await accessibilityAuditor.runAudit();
       if (issues.length > 0) {
-        accessibilityAuditor.logIssues();
+        accessibilityAuditor.logIssues()
       } else {
-        console.log('✅ No accessibility issues found!');
+        console.log('✅ No accessibility issues found!')
       }
-    }, 2000);
-  });
-}
+    }, 2000)})}

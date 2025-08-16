@@ -15,8 +15,11 @@ import {
 import {  Publish, Schedule, Visibility  } from '@mui/icons-material';
 
 interface PublishingControlsProps {
-  onPublish: (settings: React.ChangeEvent<HTMLInputElement>) => void,
-  channels: unknown[]}
+  
+onPublish: (settings: React.ChangeEvent<HTMLInputElement>) => void;
+channels: unknown[];
+
+}
 
 export const PublishingControls: React.FC<PublishingControlsProps> = ({ onPublish, channels }) => {
   const [settings, setSettings] = useState({
@@ -31,7 +34,7 @@ export const PublishingControls: React.FC<PublishingControlsProps> = ({ onPublis
     channelId: '',
     playlist: '',
     tags: [],
-    category: '',
+    category: ''
 
   });
 
@@ -39,7 +42,7 @@ export const PublishingControls: React.FC<PublishingControlsProps> = ({ onPublis
     <>
       <Paper sx={{ p: 3 }}>
       <Typography variant="h6" gutterBottom>Publishing Settings</Typography>
-      <FormControlLabel control={<Switch checked={settings.publishNow} onChange={(e) => setSettings({...settings, publishNow: e.target.checked});
+      <FormControlLabel control={<Switch checked={settings.publishNow} onChange={(e) => setSettings({...settings, publishNow: e.target.checked})
 } />} label="Publish Immediately" />
       
       {!settings.publishNow && (
@@ -47,7 +50,7 @@ export const PublishingControls: React.FC<PublishingControlsProps> = ({ onPublis
       )}
       <FormControl fullWidth margin="normal">
         <InputLabel>Visibility</InputLabel>
-        <Select value={settings.visibility} onChange={(e) => setSettings({...settings, visibility: e.target.value)});
+        <Select value={settings.visibility} onChange={(e) => setSettings({...settings, visibility: e.target.value)})
 }>
           <MenuItem value="public">Public</MenuItem>
           <MenuItem value="unlisted">Unlisted</MenuItem>
@@ -66,4 +69,5 @@ export const PublishingControls: React.FC<PublishingControlsProps> = ({ onPublis
       </Box>
     </Paper>
   </>
-  )};
+  )
+};

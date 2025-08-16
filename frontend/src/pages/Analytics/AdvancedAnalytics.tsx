@@ -12,9 +12,12 @@ import {  ChartComponents  } from '../../components/Charts/ChartComponents';
 import {  ChannelPerformanceCharts  } from '../../components/Charts/ChannelPerformanceCharts';
 
 interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number,
-  value: number}
+  
+children?: React.ReactNode;
+index: number;
+value: number;
+
+}
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -65,6 +68,6 @@ const AdvancedAnalyticsPage: React.FC = () => {
         </Paper>
       </Box>
     </Container>
-  )};
-
+  )
+};
 export default AdvancedAnalyticsPage;

@@ -5,18 +5,24 @@ import {  useEffect, useRef, useState, useCallback  } from 'react';
 import {  io, Socket  } from 'socket.io-client';
 
 interface WebSocketOptions {
-  url?: string;
-  autoConnect?: boolean;
-  reconnectAttempts?: number;
-  reconnectDelay?: number;
+  
+url?: string;
+autoConnect?: boolean;
+reconnectAttempts?: number;
+reconnectDelay?: number;
+
+
 }
 
 interface WebSocketState {
-  connected: boolean,
-  error: Error | null,
+  
+connected: boolean;
+error: Error | null;
 
-  lastMessage: unknown,
-  messageHistory: unknown[]}
+lastMessage: unknown;
+messageHistory: unknown[];
+
+}
 
 export const useWebSocket = (_channel: string, _options: WebSocketOptions = {}) => { const {
     url = import.meta.env.VITE_WS_URL || 'ws://localhost:8000',
@@ -33,8 +39,8 @@ export const useWebSocket = (_channel: string, _options: WebSocketOptions = {}) 
   const connect = useCallback(() => { if (socketRef.current?.connected) return;
 
     const socket = io(url, {
-      transports: ['websocket'],
-      reconnectionAttempts: reconnectAttempts,
+      transports: ['websocket'];
+      reconnectionAttempts: reconnectAttempts;
       reconnectionDelay: reconnectDelay });
 
     socket.on(_'connect', () => {
@@ -68,7 +74,7 @@ export const useWebSocket = (_channel: string, _options: WebSocketOptions = {}) 
           messageHistory: [...prev.messageHistory, message].slice(-100) }))}
     });
 
-    socketRef.current = socket;
+    socketRef.current = socket
   }, [url, channel, reconnectAttempts, reconnectDelay]);
 
   const disconnect = useCallback(() => {
@@ -80,7 +86,7 @@ export const useWebSocket = (_channel: string, _options: WebSocketOptions = {}) 
 
   const sendMessage = useCallback((event: string, data: React.ChangeEvent<HTMLInputElement>) => {
     if (socketRef.current?.connected) {
-      socketRef.current.emit(event, { channel, ...data });
+      socketRef.current.emit(event, { channel, ...data })
 } else {
       console.error('WebSocket not connected')}
   }, [channel]);
@@ -108,30 +114,21 @@ export const useWebSocket = (_channel: string, _options: WebSocketOptions = {}) 
     connect,
     disconnect,
     sendMessage,
-    subscribe };
+    subscribe }
 };
-
 // Specific hooks for different channels
-export const createOptimizedRouter = () => {
-  return createBrowserRouter([
-    // Router configuration would go here
-  ])}
+export const useDashboardWebSocket = () => {
+  return useWebSocket('dashboard', { autoConnect: true });
 };
 
-export const createOptimizedRouter = () => {
-  return createBrowserRouter([
-    // Router configuration would go here
-  ])}
+export const useMetricsWebSocket = () => {
+  return useWebSocket('metrics', { autoConnect: true });
 };
 
-export const createOptimizedRouter = () => {
-  return createBrowserRouter([
-    // Router configuration would go here
-  ])}
+export const useVideoWebSocket = () => {
+  return useWebSocket('video-updates', { autoConnect: true });
 };
 
-export const createOptimizedRouter = () => {
-  return createBrowserRouter([
-    // Router configuration would go here
-  ])}
+export const useAnalyticsWebSocket = () => {
+  return useWebSocket('analytics', { autoConnect: true });
 };

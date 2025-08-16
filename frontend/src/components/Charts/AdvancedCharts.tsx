@@ -35,17 +35,20 @@ import {  HeatMapGrid  } from 'react-grid-heatmap';
 import {  MoreVert, Download, Refresh  } from '@mui/icons-material';
 
 interface ChartProps {
-  title: string;
-  subtitle?: string;
-  data: Record<string, unknown>[][];
-  height?: number;
-  onRefresh?: () => void;
-  onExport?: () => void;
-  onFullscreen?: () => void;
+  
+title: string;
+subtitle?: string;
+data: Record<string, unknown>[][];
+height?: number;
+onRefresh?: () => void;
+onExport?: () => void;
+onFullscreen?: () => void;
+
+
 }
 
 // Heatmap Chart Component
-export const HeatmapChart: React.FC<ChartProps & {,
+export const HeatmapChart: React.FC<ChartProps & {
   xLabels: string[];,
 
   yLabels: string[];
@@ -83,21 +86,19 @@ export const HeatmapChart: React.FC<ChartProps & {,
                 {value}
               </div>
             )}
-            xLabelsStyle={ () => ({
-              fontSize: '0.75 rem',
-              color: theme.palette.text.secondary });
-}
-            yLabelsStyle={ () => ({
-              fontSize: '0.75 rem',
-              color: theme.palette.text.secondary });
-}
+            xLabelsStyle={() => ({
+              fontSize: '0.75rem',
+              color: theme.palette.text.secondary
+            })}
+            yLabelsStyle={() => ({
+              fontSize: '0.75rem',
+              color: theme.palette.text.secondary
+            })}
             cellStyle={(x, y, ratio) => ({
               background: `rgba(33, 150, 243, ${ratio})`,
-              color: ratio > 0.5 ? '#fff' : theme.palette.text.primary,
-              fontSize: '0.7 rem',
-              border: '1px solid rgba(0,0,0,0.1)'
-            });
-}
+              color: ratio > 0.5 ? '#fff' : theme.palette.text.primary;
+              fontSize: '0.7rem';
+              border: '1px solid rgba(0,0,0,0.1)'})}
             cellHeight="30px"
             square
           />
@@ -119,7 +120,6 @@ export const HeatmapChart: React.FC<ChartProps & {,
     </Card>
   </>
   )};
-
 // Funnel Chart Component
 export const FunnelVisualization: React.FC<ChartProps> = ({ title, subtitle, data, height = 400, onRefresh }) => {
   const theme = useTheme();
@@ -157,8 +157,7 @@ export const FunnelVisualization: React.FC<ChartProps> = ({ title, subtitle, dat
               contentStyle={{
                 backgroundColor: theme.palette.background.paper,
                 border: `1px solid ${theme.palette.divider}`,
-                borderRadius: 4
-}}
+                borderRadius: 4}}
             />
             <Funnel
               dataKey="value"
@@ -190,19 +189,19 @@ export const FunnelVisualization: React.FC<ChartProps> = ({ title, subtitle, dat
       </CardContent>
     </Card>
   </>
-  )};
-
+  )
+};
 // Treemap Chart Component
 export const TreemapVisualization: React.FC<ChartProps> = ({ title, subtitle, data, height = 400 }) => {
   const theme = useTheme();
-  const COLORS = [ '#8889 DD',
-    '#9597 E4',
+  const COLORS = [ '#8889DD',
+    '#9597E4',
     '#8 DC77 B',
     '#A5 D297',
     '#E2 CF45',
     '#F8 C12 D',
     '#F2 A93 B',
-    '#E68 B3 C' ];
+    '#E68B3 C' ];
 
   const CustomizedContent = (props: unknown) => {
     const { root, depth, x, y, width, height, index, colors, name, value } = props;
@@ -245,8 +244,8 @@ export const TreemapVisualization: React.FC<ChartProps> = ({ title, subtitle, da
         )}
       </g>
     </>
-  )};
-
+  )
+};
   return (
     <Card>
       <CardContent>
@@ -270,10 +269,10 @@ export const TreemapVisualization: React.FC<ChartProps> = ({ title, subtitle, da
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  )};
-
+  )
+};
 // Radar Chart Component
-export const RadarVisualization: React.FC<ChartProps & {,
+export const RadarVisualization: React.FC<ChartProps & {
   metrics: string[]}> = ({ title, subtitle, data, metrics, height = 400 }) => {
   const theme = useTheme();
 
@@ -321,12 +320,11 @@ export const RadarVisualization: React.FC<ChartProps & {,
       </CardContent>
     </Card>
   )};
-
 // Scatter Plot with Bubble sizes
-export const BubbleChart: React.FC<ChartProps & {,
+export const BubbleChart: React.FC<ChartProps & {
   xKey: string;,
 
-  yKey: string,
+  yKey: string;
   zKey: string}> = ({ title, subtitle, data, xKey, yKey, zKey, height = 400 }) => {
   const theme = useTheme();
 
@@ -347,9 +345,7 @@ export const BubbleChart: React.FC<ChartProps & {,
           </Typography>
         </Paper>
       )}
-    return null;
-  };
-
+    return null};
   return (
     <>
       <Card>
@@ -403,9 +399,8 @@ export const BubbleChart: React.FC<ChartProps & {,
     </Card>
   </>
   )};
-
 // Cohort Retention Chart
-export const CohortChart: React.FC<{,
+export const CohortChart: React.FC<{
   title: string;,
 
   data: { cohort: string; week: number; retention: number }[];
@@ -416,7 +411,7 @@ export const CohortChart: React.FC<{,
   const cohorts = [...new Set(data.map(d => d.cohort))];
   const weeks = [...new Set(data.map(d => d.week))].sort((a, b) => a - b);
   
-  const heatmapData = weeks.map(week => {}
+  const heatmapData = weeks.map(week =>
     cohorts.map(cohort => {
       const item = data.find(d => d.cohort === cohort && d.week === week);
       return item ? item.retention : 0})
@@ -438,14 +433,14 @@ export const CohortChart: React.FC<{,
             xLabels={cohorts}
             yLabels={weeks.map(w => `Week ${w}`)
             cellRender={(x, y, value) => `${value}%`}
-            xLabelsStyle={ () => ({
-              fontSize: '0.75 rem',
-              color: theme.palette.text.secondary });
-}
-            yLabelsStyle={ () => ({
-              fontSize: '0.75 rem',
-              color: theme.palette.text.secondary });
-}
+            xLabelsStyle={() => ({
+              fontSize: '0.75rem',
+              color: theme.palette.text.secondary
+            })}
+            yLabelsStyle={() => ({
+              fontSize: '0.75rem',
+              color: theme.palette.text.secondary
+            })}
             cellStyle={ (x, y, ratio) => ({
               background: ratio > 0.7 
                 ? theme.palette.success.main
@@ -453,9 +448,8 @@ export const CohortChart: React.FC<{,
                 ? theme.palette.warning.main
                 : theme.palette.error.main,
               color: '#fff',
-              fontSize: '0.7 rem',
-              border: '1px solid rgba(255,255,255,0.2)' });
-}
+              fontSize: '0.7rem',
+              border: '1px solid rgba(255,255,255,0.2)' })}
             cellHeight="35px"
             square
           />
@@ -481,4 +475,5 @@ export const CohortChart: React.FC<{,
         </Box>
       </CardContent>
     </Card>
-  )};
+  )
+}

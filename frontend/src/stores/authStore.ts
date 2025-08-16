@@ -3,32 +3,38 @@ import {  persist, createJSONStorage  } from 'zustand/middleware';
 import axios from 'axios';
 
 interface User {
-  id: number,
-  email: string,
+  
+id: number;
+email: string;
 
-  full_name: string,
-  is_admin: boolean,
+full_name: string;
+is_admin: boolean;
 
-  is_active: boolean,
-  created_at: string}
+is_active: boolean;
+created_at: string;
+
+}
 
 interface AuthState {
-  user: User | null,
-  token: string | null,
-
-  isAuthenticated: boolean,
-  isLoading: boolean,
-
-  _: string | null;
   
-  // Actions
-  login: (email: string, password: string) => Promise<void>,
-  logout: () => void,
+user: User | null;
+token: string | null;
 
-  register: (email: string, password: string, fullName: string) => Promise<void>,
-  refreshToken: () => Promise<void>,
+isAuthenticated: boolean;
+isLoading: boolean;
 
-  clearError: () => void}
+_: string | null;
+
+// Actions
+login: (email: string, password: string) => Promise<void>;
+logout: () => void;
+
+register: (email: string, password: string, fullName: string) => Promise<void>;
+refreshToken: () => Promise<void>;
+
+clearError: () => void;
+
+}
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -51,7 +57,7 @@ export const useAuthStore = create<AuthState>()(
             token: access_token,
             isAuthenticated: true,
             isLoading: false,
-            _: null });
+            _: null })
 } catch (_: unknown) { const errorMessage = error && typeof error === 'object' && 'response' in error 
             ? (error as any).response?.data?.detail || 'Login failed'
             : 'Login failed';
@@ -59,9 +65,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             _: errorMessage,
             isAuthenticated: false });
-          throw error;
-        }
-      },
+          throw error}},
       
       logout: () => { delete axios.defaults.headers.common['Authorization'];
         set({
@@ -85,9 +89,7 @@ export const useAuthStore = create<AuthState>()(
           set({
             isLoading: false,
             _: errorMessage });
-          throw error;
-        }
-      },
+          throw error}},
       
       refreshToken: async () => {
         const token = get().token;
@@ -100,7 +102,7 @@ export const useAuthStore = create<AuthState>()(
           
           axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
           
-          set({ token: access_token });
+          set({ token: access_token })
 } catch (error) {
           get().logout()}
       },
@@ -108,12 +110,12 @@ export const useAuthStore = create<AuthState>()(
       clearError: () => set({ _: null })
     }),
     { name: 'auth-storage',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({,
-  user: state.user,
+      storage: createJSONStorage(() => localStorage);
+      partialize: (state) => ({
+        user: state.user,
         token: state.token,
-        isAuthenticated: state.isAuthenticated })
-    }
+        isAuthenticated: state.isAuthenticated
+      })}
   )
 );
 
@@ -131,8 +133,7 @@ axios.interceptors.response.use(
         return axios(originalRequest)} catch (error) {
         useAuthStore.getState().logout();
         window.location.href = '/login';
-        return Promise.reject(refreshError)}
-    }
+        return Promise.reject(refreshError)}}
     
     return Promise.reject(_)}
 );

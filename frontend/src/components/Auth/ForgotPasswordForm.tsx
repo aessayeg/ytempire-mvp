@@ -42,43 +42,41 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const validateStep = (step: number): boolean => {
-    const errors: Record<string, string> = {};
-    
+    const errors: Record<string, string>  = {};
     if (step === 0) {
       // Validate email
       if (!formData.email) {
-        errors.email = 'Email is required';
+        errors.email = 'Email is required'
       } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-        errors.email = 'Email is invalid';
+        errors.email = 'Email is invalid'
       }
     } else if (step === 1) {
       // Validate reset code
       if (!formData.resetCode) {
-        errors.resetCode = 'Reset code is required';
+        errors.resetCode = 'Reset code is required'
       } else if (formData.resetCode.length !== 6) {
-        errors.resetCode = 'Reset code must be 6 digits';
+        errors.resetCode = 'Reset code must be 6 digits'
       }
     } else if (step === 2) {
       // Validate new password
       if (!formData.newPassword) {
-        errors.newPassword = 'Password is required';
+        errors.newPassword = 'Password is required'
       } else if (formData.newPassword.length < 8) {
-        errors.newPassword = 'Password must be at least 8 characters';
+        errors.newPassword = 'Password must be at least 8 characters'
       } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.newPassword)) {
-        errors.newPassword = 'Password must contain uppercase, lowercase, and number';
+        errors.newPassword = 'Password must contain uppercase, lowercase, and number'
       }
       
       if (!formData.confirmPassword) {
-        errors.confirmPassword = 'Please confirm your password';
+        errors.confirmPassword = 'Please confirm your password'
       } else if (formData.newPassword !== formData.confirmPassword) {
-        errors.confirmPassword = 'Passwords do not match';
+        errors.confirmPassword = 'Passwords do not match'
       }
     }
     
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors).length === 0
   };
-
   const handleSendResetCode = async () => {
     if (!validateStep(0)) return;
     
@@ -92,9 +90,7 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
       setActiveStep(1)} catch (_: unknown) {
       const axiosError = error && typeof error === 'object' && 'response' in error ? error as { response?: { data?: { detail?: string } } } : null;
       setError(axiosError?.response?.data?.detail || 'Failed to send reset code')} finally {
-      setIsLoading(false)}
-  };
-
+      setIsLoading(false)}};
   const handleVerifyCode = async () => {
     if (!validateStep(1)) return;
     
@@ -102,16 +98,14 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
     setError(null);
     
     try {
-      await axios.post(`${API_URL}/api/v1/auth/verify-reset-code`, { email: formData.email,
+      await axios.post(`${API_URL}/api/v1/auth/verify-reset-code`, { email: formData.email;
         code: formData.resetCode });
       
       setSuccess('Code verified successfully!');
       setActiveStep(2)} catch (_: unknown) {
       const axiosError = error && typeof error === 'object' && 'response' in error ? error as { response?: { data?: { detail?: string } } } : null;
       setError(axiosError?.response?.data?.detail || 'Invalid or expired reset code')} finally {
-      setIsLoading(false)}
-  };
-
+      setIsLoading(false)}};
   const handleResetPassword = async () => {
     if (!validateStep(2)) return;
     
@@ -119,8 +113,8 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
     setError(null);
     
     try {
-      await axios.post(`${API_URL}/api/v1/auth/reset-password`, { email: formData.email,
-        code: formData.resetCode,
+      await axios.post(`${API_URL}/api/v1/auth/reset-password`, { email: formData.email;
+        code: formData.resetCode;
         new_password: formData.newPassword });
       
       setSuccess('Password reset successfully! Redirecting to login...');
@@ -130,7 +124,6 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
       setError(axiosError?.response?.data?.detail || 'Failed to reset password')} finally {
       setIsLoading(false)}
   };
-
   const handleChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -141,8 +134,8 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
     
     // Clear error/success messages
     if (error) setError(null);
-    if (success) setSuccess(null)};
-
+    if (success) setSuccess(null)
+};
   const renderStepContent = (step: number) => {
     switch (step) {
       case 0:
@@ -179,9 +172,9 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
               disabled={isLoading}
               sx={ {
                 mt: 3,
-                background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+                background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
                 '&:hover': {
-                  background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
+                  background: 'linear-gradient(135 deg, #5a6fd80%, #6 a4290 100%)' }
               }}
             >
               {isLoading ? (
@@ -237,9 +230,9 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
                 onClick={handleVerifyCode}
                 disabled={isLoading}
                 sx={ {
-                  background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+                  background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
                   '&:hover': {
-                    background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
+                    background: 'linear-gradient(135 deg, #5a6fd80%, #6 a4290 100%)' }
                 }}
               >
                 {isLoading ? (
@@ -316,10 +309,9 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
               disabled={isLoading}
               sx={ {
                 mt: 3,
-                background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+                background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
                 '&:hover': {
-                  background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
-              }}
+                  background: 'linear-gradient(135 deg, #5a6fd80%, #6 a4290 100%)' }}}
             >
               {isLoading ? (
                 <CircularProgress size={24} color="inherit" />
@@ -331,9 +323,7 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
         </>
   );
         
-        return null}
-  };
-
+        return null}};
   return (
     <>
       <Box
@@ -342,7 +332,7 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+        background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
         padding: 2 }}
     >
       <Paper
@@ -392,7 +382,7 @@ export const ForgotPasswordForm: React.FC = () => { const navigate = useNavigate
             <Link
               to="/auth/login"
               style={ {
-                color: '#667 eea',
+                color: '#667eea',
                 textDecoration: 'none',
                 fontWeight: 'bold' }}
             >

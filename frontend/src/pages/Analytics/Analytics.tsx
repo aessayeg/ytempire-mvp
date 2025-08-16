@@ -152,17 +152,20 @@ const mockAudienceData = [ { ageGroup: '13-17', percentage: 15, male: 8, female:
   { ageGroup: '55+', percentage: 2, male: 1, female: 1 } ];
 
 interface AnalyticsMetrics {
-  totalViews: number,
-  totalSubscribers: number,
+  
+totalViews: number;
+totalSubscribers: number;
 
-  totalRevenue: number,
-  avgEngagement: number,
+totalRevenue: number;
+avgEngagement: number;
 
-  totalVideos: number,
-  avgCTR: number,
+totalVideos: number;
+avgCTR: number;
 
-  avgViewDuration: number,
-  totalWatchTime: number}
+avgViewDuration: number;
+totalWatchTime: number;
+
+}
 
 export const Analytics: React.FC = () => { const theme = useTheme();
   const [selectedChannel, setSelectedChannel] = useState<string>('all');
@@ -183,28 +186,24 @@ export const Analytics: React.FC = () => { const theme = useTheme();
     setLoading(true);
     // Simulate API call
     setTimeout(() => {
-      setLoading(false)}, 2000)};
-
+      setLoading(false)}, 2000)
+};
   const formatCurrency = (_value: number) => { return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0 }).format(value)};
-
+      style: 'currency';
+      currency: 'USD';
+      minimumFractionDigits: 0;
+      maximumFractionDigits: 0 }).format(value)
+};
   const formatNumber = (value: number) => {
     if (value >= 1000000) {
-      return `${(value / 1000000.toFixed(1)}M`;
-    } else if (value >= 1000) {
-      return `${(value / 1000.toFixed(1)}K`;
-    }
+      return `${(value / 1000000.toFixed(1)}M`} else if (value >= 1000) {
+      return `${(value / 1000.toFixed(1)}K`}
     return value.toString()};
-
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    return `${minutes}:${secs.toString().padStart(2, '0')}
   };
-
   const getMetricIcon = (metric: string) => {
     switch (metric) {
       case 'views': return <Visibility />;
@@ -213,15 +212,12 @@ export const Analytics: React.FC = () => { const theme = useTheme();
       case 'engagement': return <ThumbUp />;
       default: return <AnalyticsIcon />}
   };
-
   const getChangeColor = (change: number) => {
-    return change > 0 ? 'success.main' : change < 0 ? 'error.main' : 'text.secondary';
+    return change > 0 ? 'success.main' : change < 0 ? 'error.main' : 'text.secondary'
   };
-
   const getChangeIcon = (change: number) => {
-    return change > 0 ? <TrendingUp /> : change < 0 ? <TrendingDown /> : null;
+    return change > 0 ? <TrendingUp /> : change < 0 ? <TrendingDown /> : null
   };
-
   return (
     <>
       <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -259,10 +255,10 @@ export const Analytics: React.FC = () => { const theme = useTheme();
             onChange={(e, value) => value && setDateRange(value)}
             size="small"
           >
-            <ToggleButton value="7 d">7 D</ToggleButton>
-            <ToggleButton value="30 d">30 D</ToggleButton>
-            <ToggleButton value="90 d">90 D</ToggleButton>
-            <ToggleButton value="1 y">1 Y</ToggleButton>
+            <ToggleButton value="7d">7 D</ToggleButton>
+            <ToggleButton value="30d">30 D</ToggleButton>
+            <ToggleButton value="90d">90 D</ToggleButton>
+            <ToggleButton value="1y">1 Y</ToggleButton>
           </ToggleButtonGroup>
 
           <IconButton onClick={handleRefresh} disabled={loading}>
@@ -283,30 +279,27 @@ export const Analytics: React.FC = () => { const theme = useTheme();
             title: 'Total Views', 
             value: formatNumber(metrics.totalViews), 
             change: +15.2, 
-            metric: 'views',
+            metric: 'views'
 
           },
           { 
             title: 'Subscribers', 
             value: formatNumber(metrics.totalSubscribers), 
             change: +8.7, 
-            metric: 'subscribers',
-
-          },
+            metric: 'subscribers'
+},
           { 
             title: 'Revenue', 
             value: formatCurrency(metrics.totalRevenue), 
             change: +12.3, 
-            metric: 'revenue',
-
-          },
+            metric: 'revenue'
+},
           { 
             title: 'Avg Engagement', 
             value: `${metrics.avgEngagement}%`, 
             change: +2.1, 
-            metric: 'engagement',
-
-          } ].map((item, index) => (
+            metric: 'engagement'
+} ].map((item, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
@@ -481,7 +474,7 @@ export const Analytics: React.FC = () => { const theme = useTheme();
                                 color: 'white',
                                 px: 0.5,
                                 borderRadius: 0.5,
-                                fontSize: '0.7 rem' }}
+                                fontSize: '0.7rem' }}
                             >
                               {video.duration}
                             </Typography>
@@ -599,6 +592,6 @@ export const Analytics: React.FC = () => { const theme = useTheme();
       </Grid>
     </Box>
   </>
-  )};
-
-export default Analytics;
+  )
+};
+export default Analytics}}

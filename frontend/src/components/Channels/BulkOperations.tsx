@@ -43,25 +43,31 @@ import {
  } from '@mui/icons-material';
 
 interface Channel {
-  id: string,
-  name: string,
+  
+id: string;
+name: string;
 
-  status: 'active' | 'paused' | 'error',
-  videos: number,
+status: 'active' | 'paused' | 'error';
+videos: number;
 
-  subscribers: number,
-  health: number;
-  selected?: boolean;
+subscribers: number;
+health: number;
+selected?: boolean;
+
+
 }
 
 interface BulkAction {
-  id: string,
-  label: string,
+  
+id: string;
+label: string;
 
-  icon: React.ReactNode,
-  action: (channels: string[]) => void;
-  requiresConfirmation?: boolean;
-  dangerous?: boolean;
+icon: React.ReactNode;
+action: (channels: string[]) => void;
+requiresConfirmation?: boolean;
+dangerous?: boolean;
+
+
 }
 
 export const BulkOperations: React.FC = () => {
@@ -118,68 +124,67 @@ export const BulkOperations: React.FC = () => {
       setSelectedChannels(channels.map(c => c.id))} else {
       setSelectedChannels([])}
   };
-
   const handleSelectChannel = (channelId: string) => {
-    setSelectedChannels(prev => {}
+    setSelectedChannels(prev =>
       prev.includes(channelId)
         ? prev.filter(id => id !== channelId)
         : [...prev, channelId]
-    )};
-
+    )
+};
   const handleBulkAction = (_action: BulkAction) => {
     if (selectedChannels.length === 0) {
       alert('Please select at least one channel');
-      return;
+      return
     }
     setCurrentAction(action);
-    setActionDialog(true)};
-
+    setActionDialog(true)
+};
   const handleBulkStatusChange = async (channelIds: string[], status: string) => {
     setProcessing(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
-    setChannels(prev => prev.map(c => {}
+    setChannels(prev => prev.map(c =>
       channelIds.includes(c.id) ? { ...c, status: status as any } : c
     ));
     setProcessing(false);
     setActionDialog(false);
-    setSelectedChannels([])};
-
+    setSelectedChannels([])
+};
   const handleBulkSchedule = async (_channelIds: string[]) => {
     setProcessing(true);
     // Implementation for bulk scheduling
     await new Promise(resolve => setTimeout(resolve, 2000));
     setProcessing(false);
-    setActionDialog(false)};
-
+    setActionDialog(false)
+};
   const handleBulkUploadSettings = async (_channelIds: string[]) => {
     setProcessing(true);
     // Implementation for bulk upload settings
     await new Promise(resolve => setTimeout(resolve, 2000));
     setProcessing(false);
-    setActionDialog(false)};
-
+    setActionDialog(false)
+};
   const handleBulkMonetization = async (_channelIds: string[]) => {
     setProcessing(true);
     // Implementation for bulk monetization
     await new Promise(resolve => setTimeout(resolve, 2000));
     setProcessing(false);
-    setActionDialog(false)};
-
+    setActionDialog(false)
+};
   const handleBulkTags = async (_channelIds: string[]) => {
     setProcessing(true);
     // Implementation for bulk tags
     await new Promise(resolve => setTimeout(resolve, 2000));
     setProcessing(false);
-    setActionDialog(false)};
-
+    setActionDialog(false)
+};
   const handleDuplicateSettings = async (_channelIds: string[]) => {
     setProcessing(true);
     // Implementation for duplicate settings
     await new Promise(resolve => setTimeout(resolve, 2000));
     setProcessing(false);
-    setActionDialog(false)};
-
+    setActionDialog(false)
+};
   const handleBulkDelete = async (channelIds: string[]) => {
     setProcessing(true);
     // Implementation for bulk delete
@@ -187,8 +192,8 @@ export const BulkOperations: React.FC = () => {
     setChannels(prev => prev.filter(c => !channelIds.includes(c.id)));
     setProcessing(false);
     setActionDialog(false);
-    setSelectedChannels([])};
-
+    setSelectedChannels([])
+};
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'success';
@@ -196,7 +201,6 @@ export const BulkOperations: React.FC = () => {
       case 'error': return 'error';
       default: return 'default'}
   };
-
   return (
     <>
       <Box>
@@ -342,8 +346,7 @@ export const BulkOperations: React.FC = () => {
                   </ListItemIcon>
                   <ListItemText primary={channel.name} />
                 </ListItem>
-              ) : null});
-}
+              ) : null})}
           </List>
 
           {processing && (

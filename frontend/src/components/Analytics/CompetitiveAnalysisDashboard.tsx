@@ -42,8 +42,11 @@ import {
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
   Group as GroupIcon,
-  Info as InfoIcon
+  Info as InfoIcon,
+  Speed as SpeedIcon,
+  Analytics as AnalyticsIcon
 } from '@mui/icons-material';
+import { Badge } from '@mui/material';
 import { 
   BarChart,
   Bar,
@@ -65,47 +68,67 @@ import { format, subDays } from 'date-fns';
 
 // Types
 interface Competitor {
-  id: string;
-  channelName: string;
-  channelId: string;
-  thumbnailUrl: string;
-  subscriberCount: number;
-  videoCount: number;
-  viewCount: number;
-  category: string;
-  country: string;
-  joinedDate: Date;
-  isTracking: boolean;
-  lastUpdated: Date;
+  
+
+id: string;
+channelName: string;
+channelId: string;
+thumbnailUrl: string;
+subscriberCount: number;
+videoCount: number;
+viewCount: number;
+category: string;
+country: string;
+joinedDate: Date;
+isTracking: boolean;
+lastUpdated: Date;
+
+
+
 }
 
 interface CompetitorMetrics {
-  channelId: string;
-  avgViews: number;
-  avgLikes: number;
-  avgComments: number;
-  engagementRate: number;
-  uploadFrequency: number; // videos per week
-  estimatedRevenue: number;
-  growthRate: number; // % per month
-  contentQualityScore: number; // 0-100
-  audienceRetention: number; // percentage
-  clickThroughRate: number;
+  
+
+channelId: string;
+avgViews: number;
+avgLikes: number;
+avgComments: number;
+engagementRate: number;
+uploadFrequency: number; // videos per week;
+estimatedRevenue: number;
+growthRate: number; // % per month;
+contentQualityScore: number; // 0-100;
+audienceRetention: number; // percentage;
+clickThroughRate: number;
+
+
+
 }
 
 interface MarketInsight {
-  trend: string;
-  impact: 'high' | 'medium' | 'low';
-  description: string;
-  recommendedAction: string;
+  
+
+trend: string;
+impact: 'high' | 'medium' | 'low';
+description: string;
+recommendedAction: string;
+
+
+
 }
 
 interface ContentGap {
-  topic: string;
-  competitorsCovering: number;
-  potentialViews: number;
-  difficulty: 'easy' | 'medium' | 'hard';
-  recommendedApproach: string;
+  
+
+topic: string;
+competitorsCovering: number;
+potentialViews: number;
+difficulty: 'easy' | 'medium' | 'hard';
+recommendedApproach: string;
+
+
+
 }
 
 const MOCK_COMPETITORS: Competitor[] = [
@@ -164,7 +187,7 @@ export const CompetitiveAnalysisDashboard: React.FC = () => {
 
   // Mock data generation
   const competitorMetrics = useMemo<Record<string, CompetitorMetrics>>(() => {
-const metrics: Record<string, CompetitorMetrics> = {};
+const metrics: Record<string, CompetitorMetrics>   = {};
     competitors.forEach(comp => {
     
       metrics[comp.id] = {
@@ -178,11 +201,10 @@ const metrics: Record<string, CompetitorMetrics> = {};
         growthRate: 5 + Math.random() * 15,
         contentQualityScore: 70 + Math.random() * 25,
         audienceRetention: 40 + Math.random() * 30,
-        clickThroughRate: 3 + Math.random() * 7,
-
-      };
+        clickThroughRate: 3 + Math.random() * 7
+      }
     });
-    return metrics;
+    return metrics
   }, [competitors]);
 
   const marketInsights: MarketInsight[] = [
@@ -190,22 +212,19 @@ const metrics: Record<string, CompetitorMetrics> = {};
       trend: 'AI-generated content gaining traction',
       impact: 'high',
       description: 'Competitors are increasingly using AI for content creation',
-      recommendedAction: 'Differentiate with unique human insights and storytelling',
-
+      recommendedAction: 'Differentiate with unique human insights and storytelling'
     },
     {
       trend: 'Short-form content outperforming',
       impact: 'high',
       description: 'Videos under 60 seconds seeing 2x engagement',
-      recommendedAction: 'Create YouTube Shorts versions of main content',
-
+      recommendedAction: 'Create YouTube Shorts versions of main content'
     },
     {
       trend: 'Tutorial content saturated',
       impact: 'medium',
       description: 'Market oversaturated with basic tutorials',
-      recommendedAction: 'Focus on advanced topics and case studies',
-
+      recommendedAction: 'Focus on advanced topics and case studies'
     }
   ];
 
@@ -215,24 +234,21 @@ const metrics: Record<string, CompetitorMetrics> = {};
       competitorsCovering: 1,
       potentialViews: 250000,
       difficulty: 'hard',
-      recommendedApproach: 'Create beginner-friendly series with animations',
-
+      recommendedApproach: 'Create beginner-friendly series with animations'
     },
     {
       topic: 'Web3 Development Tools',
       competitorsCovering: 2,
       potentialViews: 180000,
       difficulty: 'medium',
-      recommendedApproach: 'Hands-on tutorials with real projects',
-
+      recommendedApproach: 'Hands-on tutorials with real projects'
     },
     {
       topic: 'AI Ethics Discussion',
       competitorsCovering: 0,
       potentialViews: 150000,
       difficulty: 'easy',
-      recommendedApproach: 'Interview series with experts',
-
+      recommendedApproach: 'Interview series with experts'
     }
   ];
 
@@ -245,15 +261,15 @@ const metrics: Record<string, CompetitorMetrics> = {};
       views: comp.viewCount / 1000000,
       videos: comp.videoCount,
       engagement: competitorMetrics[comp.id]?.engagementRate || 0,
-      revenue: competitorMetrics[comp.id]?.estimatedRevenue / 1000 || 0,
-
-    }))}, [competitors, selectedCompetitors, competitorMetrics]);
+      revenue: competitorMetrics[comp.id]?.estimatedRevenue / 1000 || 0
+    }))
+  }, [competitors, selectedCompetitors, competitorMetrics]);
 
   // Generate radar chart data for competitive positioning
   const radarData = useMemo(() => {
     const metrics = ['Content Quality', 'Upload Frequency', 'Engagement', 'Growth Rate', 'Revenue', 'Retention'];
     return metrics.map(metric => {
-const dataPoint: Record<string, number | string> = { metric };
+const dataPoint: Record<string, number | string>   = { metric };
       selectedCompetitors.forEach(compId => {
         const comp = competitors.find(c => c.id === compId);
         const compMetrics = competitorMetrics[compId];
@@ -276,40 +292,39 @@ const dataPoint: Record<string, number | string> = { metric };
               break;
             case 'Retention':
               dataPoint[comp.channelName] = compMetrics.audienceRetention;
-              break;
+              break
           }
         }
       });
-      return dataPoint;
-    });
+      return dataPoint
+    })
   }, [competitors, selectedCompetitors, competitorMetrics]);
 
   // Generate trend data
   const trendData = useMemo(() => {
     return Array.from({ length: 30 }, (_, i) => {
       const date = subDays(new Date(), 30 - i);
-      const dataPoint: Record<string, string | number> = { date: format(date, 'MMM dd') };
-      
+      const dataPoint: Record<string, string | number>   = { date: format(date, 'MMM dd') };
       selectedCompetitors.forEach(compId => {
         const comp = competitors.find(c => c.id === compId);
         if (comp) {
           // Simulate growth trend
           const baseValue = comp.subscriberCount / 1000;
           const growth = (i / 30) * (competitorMetrics[compId]?.growthRate || 5) / 100;
-          dataPoint[comp.channelName] = Math.floor(baseValue * (1 - 0.1 + growth));
+          dataPoint[comp.channelName] = Math.floor(baseValue * (1 - 0.1 + growth))
         }
       });
       
-      return dataPoint;
-    });
+      return dataPoint
+    })
   }, [competitors, selectedCompetitors, competitorMetrics]);
 
   // Add competitor
   const addCompetitor = () => {
     if (!newCompetitorUrl) return;
     
-    // Extract channel ID from URL (mock, implementation)
-    const newCompetitor: Competitor = {
+    // Extract channel ID from URL (mock, implementation);
+    const newCompetitor: Competitor   = {
   id: Date.now().toString(),
       channelName: 'New Competitor',
       channelId: 'UC_new',
@@ -323,34 +338,29 @@ const dataPoint: Record<string, number | string> = { metric };
       isTracking: false,
       lastUpdated: new Date()
     };
-    
     setCompetitors([...competitors, newCompetitor]);
-    setNewCompetitorUrl('');
+    setNewCompetitorUrl('')
   };
-
   // Remove competitor
   const removeCompetitor = (id: string) => {
     setCompetitors(competitors.filter(c => c.id !== id));
-    setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id));
+    setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id))
   };
-
   // Toggle competitor selection
   const toggleCompetitorSelection = (id: string) => {
     if (selectedCompetitors.includes(id)) {
-      setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id));
+      setSelectedCompetitors(selectedCompetitors.filter(cId => cId !== id))
     } else {
-      setSelectedCompetitors([...selectedCompetitors, id]);
+      setSelectedCompetitors([...selectedCompetitors, id])
     }
   };
-
   // Refresh data
   const refreshData = async () => {
     setIsLoading(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false);
+    setIsLoading(false)
   };
-
   // Export data
   const exportData = () => {
     const data = {
@@ -360,15 +370,13 @@ const dataPoint: Record<string, number | string> = { metric };
       gaps: contentGaps,
       exportDate: new Date().toISOString()
     };
-    
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `competitive_analysis_${format(new Date(), 'yyyy-MM-dd')}.json`;
-    a.click();
+    a.click()
   };
-
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -510,9 +518,9 @@ const dataPoint: Record<string, number | string> = { metric };
                       checked={selectedCompetitors.length === competitors.length}
                       onChange={(_) => {
                         if (_.target.checked) {
-                          setSelectedCompetitors(competitors.map(c => c.id));
+                          setSelectedCompetitors(competitors.map(c => c.id))
                         } else {
-                          setSelectedCompetitors([]);
+                          setSelectedCompetitors([])
                         }
                       }}
                     />
@@ -594,7 +602,7 @@ const dataPoint: Record<string, number | string> = { metric };
                         </IconButton>
                       </TableCell>
                     </TableRow>
-                  );
+                  )
                 })}
               </TableBody>
             </Table>
@@ -648,7 +656,7 @@ const dataPoint: Record<string, number | string> = { metric };
                         fill={colors[index % colors.length]}
                         fillOpacity={0.3}
                       />
-                    ) : null;
+                    ) : null
                   })}
                   <Legend />
                 </RadarChart>
@@ -677,7 +685,7 @@ const dataPoint: Record<string, number | string> = { metric };
                       })}
                     </TableRow>
                   </TableHead>
-      <TableBody>
+                  <TableBody>
                     <TableRow>
                       <TableCell>Avg Views per Video</TableCell>
                       {selectedCompetitors.map(compId => (
@@ -687,7 +695,7 @@ const dataPoint: Record<string, number | string> = { metric };
                       ))}
                     </TableRow>
                     <TableRow>
-                      <TableCell>Upload Frequency (per, week)</TableCell>
+                      <TableCell>Upload Frequency (per week)</TableCell>
                       {selectedCompetitors.map(compId => (
                         <TableCell key={compId} align="center">
                           {competitorMetrics[compId]?.uploadFrequency.toFixed(1)}
@@ -735,7 +743,6 @@ const dataPoint: Record<string, number | string> = { metric };
                       color={
                         insight.impact === 'high' ? 'error' : 
                         insight.impact === 'medium' ? 'warning' : 'info'
-                      }
                     >
                       <AnalyticsIcon />
                     </Badge>
@@ -780,7 +787,6 @@ const dataPoint: Record<string, number | string> = { metric };
                       color={
                         gap.difficulty === 'easy' ? 'success' : 
                         gap.difficulty === 'medium' ? 'warning' : 'error'
-                      }
                       size="small"
                       sx={{ mr: 1 }}
                     />
@@ -825,9 +831,9 @@ const dataPoint: Record<string, number | string> = { metric };
                     onChange={(e) => setTimeRange(e.target.value)}
                     label="Time Range"
                   >
-                    <MenuItem value="7 d">Last 7 Days</MenuItem>
-                    <MenuItem value="30 d">Last 30 Days</MenuItem>
-                    <MenuItem value="90 d">Last 90 Days</MenuItem>
+                    <MenuItem value="7d">Last 7 Days</MenuItem>
+                    <MenuItem value="30d">Last 30 Days</MenuItem>
+                    <MenuItem value="90d">Last 90 Days</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
@@ -851,8 +857,8 @@ const dataPoint: Record<string, number | string> = { metric };
                         fill={colors[index % colors.length]}
                         fillOpacity={0.3}
                       />
-                    ) : null;
-                  })}
+                    ) : null
+                  })
                 </AreaChart>
               </ResponsiveContainer>
             </Paper>

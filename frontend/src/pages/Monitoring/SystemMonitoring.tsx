@@ -61,6 +61,6 @@ const SystemMonitoringPage: React.FC = () => {
       </Box>
     </Container>
   </>
-  )};
-
+  )
+};
 export default SystemMonitoringPage;

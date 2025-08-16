@@ -13,11 +13,14 @@ import {
 import {  YouTube  } from '@mui/icons-material';
 
 interface YouTubeUploadStatusProps {
-  status: 'uploading' | 'processing' | 'published' | 'failed';
-  videoId?: string;
-  youtubeUrl?: string;
-  currentStep: number;
-  error?: string;
+  
+status: 'uploading' | 'processing' | 'published' | 'failed';
+videoId?: string;
+youtubeUrl?: string;
+currentStep: number;
+error?: string;
+
+
 }
 
 export const YouTubeUploadStatus: React.FC<YouTubeUploadStatusProps> = ({ status, videoId, youtubeUrl, currentStep, error }) => {
@@ -54,4 +57,5 @@ export const YouTubeUploadStatus: React.FC<YouTubeUploadStatusProps> = ({ status
       )}
     </Paper>
   </>
-  )};
+  )
+};

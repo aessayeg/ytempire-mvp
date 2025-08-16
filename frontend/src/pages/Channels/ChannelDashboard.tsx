@@ -6,12 +6,13 @@ import {
   Tabs,
   Tab,
   Paper
- } from '@mui/material';
-import {  ChannelDashboard  } from '../../components/Channels/ChannelDashboard';
-import {  ChannelList  } from '../../components/Channels/ChannelList';
-import {  ChannelHealthDashboard  } from '../../components/Channels/ChannelHealthDashboard';
-import {  ChannelTemplates  } from '../../components/Channels/ChannelTemplates';
-import {  BulkOperations  } from '../../components/Channels/BulkOperations';
+} from '@mui/material';
+import Grid from '@mui/material/Grid2';
+import ChannelDashboard from '../../components/Channels/ChannelDashboard';
+import ChannelList from '../../components/Channels/ChannelList';
+import ChannelHealthDashboard from '../../components/Channels/ChannelHealthDashboard';
+import ChannelTemplates from '../../components/Channels/ChannelTemplates';
+import BulkOperations from '../../components/Channels/BulkOperations';
 
 const ChannelDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -26,7 +27,7 @@ const ChannelDashboardPage: React.FC = () => {
       <Paper sx={{ mb: 3 }}>
           <Tabs
             value={activeTab}
-            onChange={(_, v) => setActiveTab(v}
+            onChange={(_, v) => setActiveTab(v)}
             indicatorColor="primary"
             textColor="primary"
             variant="scrollable"
@@ -56,7 +57,7 @@ const ChannelDashboardPage: React.FC = () => {
         {activeTab === 4 && <BulkOperations />}
       </Box>
     </Container>
-  </>
-  )};
-
+    </>
+  );
+};
 export default ChannelDashboardPage;

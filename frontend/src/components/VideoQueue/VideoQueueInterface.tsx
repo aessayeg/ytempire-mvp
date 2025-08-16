@@ -53,24 +53,21 @@ import {  useOptimizedStore  } from '../../stores/optimizedStore';
 import {  api  } from '../../services/api';
 
 interface VideoQueueItem {
-  id: string,
-  channelId: string,
-
+  id: string;
+  channelId: string;
   title: string;
   description?: string;
-  topic: string,
-  style: string,
-
-  duration: number,
-  status: 'pending' | 'scheduled' | 'processing' | 'completed' | 'failed' | 'paused',
-
-  priority: 'low' | 'normal' | 'high' | 'urgent',
+  topic: string;
+  style: string;
+  duration: number;
+  status: 'pending' | 'scheduled' | 'processing' | 'completed' | 'failed' | 'paused';
+  priority: 'low' | 'normal' | 'high' | 'urgent';
   progress: number;
   scheduledTime?: string;
-  estimatedCost: number,
+  estimatedCost: number;
   processingTime: number;
   error?: string;
-  retryCount: number,
+  retryCount: number;
   metadata: {
     thumbnailStyle?: string;
     voiceStyle?: string;
@@ -81,27 +78,26 @@ interface VideoQueueItem {
 }
 
 interface QueueStats {
-  totalItems: number,
-  pending: number,
-
-  processing: number,
-  completed: number,
-
-  failed: number,
+  totalItems: number;
+  pending: number;
+  processing: number;
+  completed: number;
+  failed: number;
   estimatedTotalCost: number;
   estimatedCompletionTime?: string;
-  processingRate: number}
+  processingRate: number;
+}
 
 interface TabPanelProps {
   children?: React.ReactNode;
-  index: number,
-  value: number}
+  index: number;
+  value: number;
+}
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
   return (
-    <>
-      <div
+    <div
       role="tabpanel"
       hidden={value !== index}
       id={`queue-tabpanel-${index}`}
@@ -110,11 +106,11 @@ function TabPanel(props: TabPanelProps) {
     >
       {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
-  )}
+  );
+}
 
 export const VideoQueueInterface: React.FC = () => {
-  const [queueItems, setQueueItems] = useState<VideoQueueItem[]>([]</>
-  );
+  const [queueItems, setQueueItems] = useState<VideoQueueItem[]>([]);
   const [stats, setStats] = useState<QueueStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState(0);
@@ -128,7 +124,7 @@ export const VideoQueueInterface: React.FC = () => {
   const { channels, addNotification } = useOptimizedStore();
 
   // Fetch queue items
-  const fetchQueue = useCallback(_async () => {
+  const fetchQueue = useCallback(async () => {
     try {
       setRefreshing(true);
       const response = await api.get('/queue/list');
@@ -138,19 +134,25 @@ export const VideoQueueInterface: React.FC = () => {
       const statsResponse = await api.get('/queue/stats/summary');
       setStats(statsResponse.data);
       
-      setLoading(false)} catch (error) { console.error('Failed to fetch, queue:', error);
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch queue:', error);
       addNotification({
         type: 'error',
-        message: 'Failed to load video queue' });
-      setLoading(false)} finally {
-      setRefreshing(false)}
+        message: 'Failed to load video queue'
+      });
+      setLoading(false);
+    } finally {
+      setRefreshing(false);
+    }
   }, [addNotification]);
 
   useEffect(() => {
     fetchQueue();
     // Refresh every 30 seconds
     const interval = setInterval(fetchQueue, 30000);
-    return () => clearInterval(interval)}, [fetchQueue]);
+    return () => clearInterval(interval);
+  }, [fetchQueue]);
 
   // Filter and sort queue items
   const filteredItems = useMemo(() => {
@@ -158,10 +160,11 @@ export const VideoQueueInterface: React.FC = () => {
 
     // Apply status filter
     if (filterStatus !== 'all') {
-      filtered = filtered.filter((item) => item.status === filterStatus)}
+      filtered = filtered.filter((item) => item.status === filterStatus);
+    }
 
     // Apply sorting
-    filtered.sort(_(a, _b) => {
+    filtered.sort((a, b) => {
       switch (sortBy) {
         case 'priority':
           const priorityOrder = { urgent: 0, high: 1, normal: 2, low: 3 };
@@ -172,7 +175,9 @@ export const VideoQueueInterface: React.FC = () => {
           return b.estimatedCost - a.estimatedCost;
         case 'duration':
           return b.duration - a.duration;
-          return 0}
+        default:
+          return 0;
+      }
     });
 
     return filtered;
@@ -180,17 +185,18 @@ export const VideoQueueInterface: React.FC = () => {
 
   // Group items by status for tabs
   const itemsByStatus = useMemo(() => {
-     return {
+    return {
       all: queueItems,
       pending: queueItems.filter((item) => item.status === 'pending'),
       processing: queueItems.filter((item) => item.status === 'processing'),
       completed: queueItems.filter((item) => item.status === 'completed'),
-      failed: queueItems.filter((item) => item.status === 'failed'),
-
+      failed: queueItems.filter((item) => item.status === 'failed')
+    };
   }, [queueItems]);
 
   // Handle drag and drop
-  const handleDragEnd = async (result: DropResult) => { if (!result.destination) return;
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
 
     const items = Array.from(filteredItems);
     const [reorderedItem] = items.splice(result.source.index, 1);
@@ -199,90 +205,111 @@ export const VideoQueueInterface: React.FC = () => {
     // Update priority based on new position
     const updatedItems = items.map((item, index) => ({
       ...item,
-      priority: index === 0 ? 'urgent' : index < 3 ? 'high' : 'normal' }));
+      priority: index === 0 ? 'urgent' : index < 3 ? 'high' : 'normal'
+    }));
 
     setQueueItems(updatedItems);
 
     // Update on server
     try {
-      await api.patch(`/queue/${reorderedItem.id}`, { priority: updatedItems.find((i) => i.id === reorderedItem.id)?.priority });
-} catch (error) {
-      console.error('Failed to update, priority:', error)}
+      await api.patch(`/queue/${reorderedItem.id}`, {
+        priority: updatedItems.find((i) => i.id === reorderedItem.id)?.priority
+      });
+    } catch (error) {
+      console.error('Failed to update priority:', error);
+    }
   };
-
   // Handle actions
   const handlePause = async (id: string) => {
     try {
       await api.patch(`/queue/${id}`, { status: 'paused' });
       fetchQueue();
-      addNotification({ type: 'success',
-        message: 'Video paused' });
-} catch (error) { addNotification({
+      addNotification({
+        type: 'success',
+        message: 'Video paused'
+      });
+    } catch (error) {
+      addNotification({
         type: 'error',
-        message: 'Failed to pause video' });
-}
+        message: 'Failed to pause video'
+      });
+    }
   };
-
   const handleResume = async (id: string) => {
     try {
       await api.patch(`/queue/${id}`, { status: 'pending' });
       fetchQueue();
-      addNotification({ type: 'success',
-        message: 'Video resumed' });
-} catch (error) { addNotification({
+      addNotification({
+        type: 'success',
+        message: 'Video resumed'
+      });
+    } catch (error) {
+      addNotification({
         type: 'error',
-        message: 'Failed to resume video' });
-}
+        message: 'Failed to resume video'
+      });
+    }
   };
-
   const handleRetry = async (id: string) => {
     try {
       await api.post(`/queue/${id}/retry`);
       fetchQueue();
-      addNotification({ type: 'success',
-        message: 'Video queued for retry' });
-} catch (error) { addNotification({
+      addNotification({
+        type: 'success',
+        message: 'Video queued for retry'
+      });
+    } catch (error) {
+      addNotification({
         type: 'error',
-        message: 'Failed to retry video' });
-}
+        message: 'Failed to retry video'
+      });
+    }
   };
-
   const handleDelete = async (id: string) => {
     try {
       await api.delete(`/queue/${id}`);
       fetchQueue();
-      addNotification({ type: 'success',
-        message: 'Video removed from queue' });
-} catch (error) { addNotification({
+      addNotification({
+        type: 'success',
+        message: 'Video removed from queue'
+      });
+    } catch (error) {
+      addNotification({
         type: 'error',
-        message: 'Failed to remove video' });
-}
+        message: 'Failed to remove video'
+      });
+    }
   };
-
-  const handlePauseAll = async () => { try {
+  const handlePauseAll = async () => {
+    try {
       await api.post('/queue/pause-all');
       fetchQueue();
       addNotification({
         type: 'success',
-        message: 'All videos paused' });
-} catch (error) { addNotification({
+        message: 'All videos paused'
+      });
+    } catch (error) {
+      addNotification({
         type: 'error',
-        message: 'Failed to pause all videos' });
-}
+        message: 'Failed to pause all videos'
+      });
+    }
   };
-
-  const handleResumeAll = async () => { try {
+  const handleResumeAll = async () => {
+    try {
       await api.post('/queue/resume-all');
       fetchQueue();
       addNotification({
         type: 'success',
-        message: 'All videos resumed' });
-} catch (error) { addNotification({
+        message: 'All videos resumed'
+      });
+    } catch (error) {
+      addNotification({
         type: 'error',
-        message: 'Failed to resume all videos' });
-}
+        message: 'Failed to resume all videos'
+      });
+    }
   };
-
   // Render queue item
   const renderQueueItem = (item: VideoQueueItem, _index: number) => {
     const getStatusIcon = () => {
@@ -297,9 +324,10 @@ export const VideoQueueInterface: React.FC = () => {
           return <Schedule color="action" />;
         case 'paused':
           return <Pause color="warning" />;
-          return <Info color="info" />}
+        default:
+          return <Info color="info" />;
+      }
     };
-
     const getPriorityColor = () => {
       switch (item.priority) {
         case 'urgent':
@@ -310,9 +338,10 @@ export const VideoQueueInterface: React.FC = () => {
           return 'info';
         case 'low':
           return 'default';
-          return 'default'}
+        default:
+          return 'default';
+      }
     };
-
     const channel = channels.list.find((c) => c.id === item.channelId);
 
     return (
@@ -324,10 +353,11 @@ export const VideoQueueInterface: React.FC = () => {
             sx={ {
               mb: 2,
               opacity: snapshot.isDragging ? 0.8 : 1,
-              transform: snapshot.isDragging ? 'rotate(2 deg)' : 'none',
+              transform: snapshot.isDragging ? 'rotate(2deg)' : 'none',
               transition: 'all 0.2s ease',
               '&:hover': {
-                boxShadow: 3 }
+                boxShadow: 3
+              }
             }}
           >
             <CardContent>
@@ -408,7 +438,8 @@ export const VideoQueueInterface: React.FC = () => {
                   <IconButton
                     onClick={(e) => {
                       setAnchorEl(e.currentTarget);
-                      setSelectedItem(item)}}
+                      setSelectedItem(item);
+                    }}
                   >
                     <MoreVert />
                   </IconButton>
@@ -418,11 +449,10 @@ export const VideoQueueInterface: React.FC = () => {
           </Card>
         )}
       </Draggable>
-    )};
-
+    );
+  };
   return (
-    <>
-      <Box>
+    <Box>
       {/* Header */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
@@ -598,37 +628,45 @@ export const VideoQueueInterface: React.FC = () => {
       >
         <MenuItem
           onClick={() => {
-            setEditDialogOpen(true</>
-  );
-            setAnchorEl(null)}}
+            setEditDialogOpen(true);
+            setAnchorEl(null);
+          }}
         >
           <Edit sx={{ mr: 1 }} /> Edit
         </MenuItem>
-        {selectedItem?.status === 'paused' ? (_<MenuItem onClick={() => {
+        {selectedItem?.status === 'paused' ? (
+          <MenuItem onClick={() => {
             handleResume(selectedItem.id);
-            setAnchorEl(null)}}>
+            setAnchorEl(null);
+          }}>
             <PlayArrow sx={{ mr: 1 }} /> Resume
           </MenuItem>
-        ) : (_<MenuItem onClick={() => {
+        ) : (
+          <MenuItem onClick={() => {
             selectedItem && handlePause(selectedItem.id);
-            setAnchorEl(null)}}>
+            setAnchorEl(null);
+          }}>
             <Pause sx={{ mr: 1 }} /> Pause
           </MenuItem>
         )}
-        {selectedItem?.status === 'failed' && (_<MenuItem onClick={() => {
+        {selectedItem?.status === 'failed' && (
+          <MenuItem onClick={() => {
             handleRetry(selectedItem.id);
-            setAnchorEl(null)}}>
+            setAnchorEl(null);
+          }}>
             <Refresh sx={{ mr: 1 }} /> Retry
           </MenuItem>
         )}
         <MenuItem
           onClick={() => {
             selectedItem && handleDelete(selectedItem.id);
-            setAnchorEl(null)}}
+            setAnchorEl(null);
+          }}
           sx={{ color: 'error.main' }}
         >
           <Delete sx={{ mr: 1 }} /> Delete
         </MenuItem>
       </Menu>
     </Box>
-  )};
+  );
+};

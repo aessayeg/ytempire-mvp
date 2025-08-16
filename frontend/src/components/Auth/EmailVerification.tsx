@@ -40,7 +40,7 @@ export const EmailVerification: React.FC = () => {
     if (!token) {
       setStatus('error');
       setMessage('Invalid verification link. Please check your email for the correct link.');
-      return;
+      return
     }
 
     verifyEmail(token)}, [token, verifyEmail]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -55,7 +55,6 @@ export const EmailVerification: React.FC = () => {
       setStatus('error');
       setMessage('Failed to resend verification email.')}
   };
-
   return (
     <>
       <Box
@@ -64,7 +63,7 @@ export const EmailVerification: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+        background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
         padding: 2 }}
     >
       <Paper
@@ -107,9 +106,9 @@ export const EmailVerification: React.FC = () => {
               fullWidth
               onClick={() => navigate('/auth/login'}
               sx={ {
-                background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+                background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
                 '&:hover': {
-                  background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
+                  background: 'linear-gradient(135 deg, #5a6fd80%, #6 a4290 100%)' }
               }}
             >
               Go to Login
@@ -136,9 +135,9 @@ export const EmailVerification: React.FC = () => {
                 fullWidth
                 onClick={() => navigate('/auth/login'}
                 sx={ {
-                  background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+                  background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
                   '&:hover': {
-                    background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
+                    background: 'linear-gradient(135 deg, #5a6fd80%, #6 a4290 100%)' }
                 }}
               >
                 Back to Login
@@ -152,7 +151,7 @@ export const EmailVerification: React.FC = () => {
             <Link
               to="/support"
               style={ {
-                color: '#667 eea',
+                color: '#667eea',
                 textDecoration: 'none',
                 fontWeight: 'bold' }}
             >
@@ -163,4 +162,5 @@ export const EmailVerification: React.FC = () => {
       </Paper>
     </Box>
   </>
-  )};
+  )
+};

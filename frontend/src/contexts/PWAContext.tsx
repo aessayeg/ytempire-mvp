@@ -3,19 +3,22 @@ import {  useRegisterSW  } from 'virtual:pwa-register/react';
 import {  toast  } from 'react-hot-toast';
 
 interface PWAContextValue {
-  isOnline: boolean,
-  isInstallable: boolean,
+  
+isOnline: boolean;
+isInstallable: boolean;
 
-  isInstalled: boolean,
-  updateAvailable: boolean,
+isInstalled: boolean;
+updateAvailable: boolean;
 
-  offlineReady: boolean,
-  needRefresh: boolean,
+offlineReady: boolean;
+needRefresh: boolean;
 
-  installApp: () => Promise<void>,
-  updateApp: () => Promise<void>,
+installApp: () => Promise<void>;
+updateApp: () => Promise<void>;
 
-  clearOfflineData: () => Promise<void>}
+clearOfflineData: () => Promise<void>;
+
+}
 
 const PWAContext = createContext<PWAContextValue | undefined>(undefined);
 
@@ -38,12 +41,12 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      toast.success('Back online!')};
-
+      toast.success('Back online!')
+};
     const handleOffline = () => {
       setIsOnline(false);
-      toast.error('You are offline. Some features may be limited.')};
-
+      toast.error('You are offline. Some features may be limited.')
+};
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
@@ -57,14 +60,14 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const handleBeforeInstallPrompt = (_: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setIsInstallable(true)};
-
+      setIsInstallable(true)
+};
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setIsInstallable(false);
       setDeferredPrompt(null);
-      toast.success('App installed successfully!')};
-
+      toast.success('App installed successfully!')
+};
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
@@ -92,12 +95,12 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             <p>New version available!</p>
             <button
               onClick={() => {
-                updateApp();
+                updateApp(),
                 toast.dismiss(t.id)}}
               style={ {
                 marginTop: 8,
                 padding: '4px 8px',
-                background: '#667 eea',
+                background: '#667eea',
                 color: 'white',
                 border: 'none',
                 borderRadius: 4,
@@ -107,14 +110,13 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             </button>
           </div>
         ),
-        { duration: Infinity }
-      )}
+        { duration: Infinity })}
   }, [needRefresh]);
 
   const installApp = useCallback(_async () => {
     if (!deferredPrompt) {
       toast.error('Installation not available');
-      return;
+      return
     }
 
     deferredPrompt.prompt();
@@ -137,7 +139,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       toast.success('Offline data cleared')}
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const value: PWAContextValue = { isOnline,
+  const value: PWAContextValue  = { isOnline,
     isInstallable,
     isInstalled,
     updateAvailable: needRefresh,
@@ -146,13 +148,12 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     installApp,
     updateApp,
     clearOfflineData };
-
-  return <PWAContext.Provider value={value}>{children}</PWAContext.Provider>;
+  return <PWAContext.Provider value={value}>{children}</PWAContext.Provider>
 };
-
 export const usePWA = () => {
   const context = useContext(PWAContext);
   if (!context) {
     throw new Error('usePWA must be used within PWAProvider')}
-  return context;
-};
+  return context
+}
+}}

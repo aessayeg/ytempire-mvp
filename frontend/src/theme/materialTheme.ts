@@ -20,27 +20,27 @@ export const materialTheme = createTheme({
   typography: {
     fontFamily: '"Inter", system-ui, -apple-system, sans-serif',
     h1: {
-      fontSize: '2.5rem',
+      fontSize: '2.5rem';
       fontWeight: 700
     },
     h2: {
-      fontSize: '2rem',
+      fontSize: '2rem';
       fontWeight: 600
     },
     h3: {
-      fontSize: '1.75rem',
+      fontSize: '1.75rem';
       fontWeight: 600
     },
     h4: {
-      fontSize: '1.5rem',
+      fontSize: '1.5rem';
       fontWeight: 600
     },
     h5: {
-      fontSize: '1.25rem',
+      fontSize: '1.25rem';
       fontWeight: 500
     },
     h6: {
-      fontSize: '1rem',
+      fontSize: '1rem';
       fontWeight: 500
     }
   },
@@ -49,7 +49,7 @@ export const materialTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          textTransform: 'none',
+          textTransform: 'none';
           fontWeight: 500
         }
       }
@@ -59,7 +59,4 @@ export const materialTheme = createTheme({
         root: {
           boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
         }
-      }
-    }
-  }
 });

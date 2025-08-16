@@ -7,7 +7,6 @@ import {
   MenuItem,
   FormControlLabel,
   Switch,
-  Tooltip as RechartsTooltip,
   Box,
   Card,
   CardContent,
@@ -29,7 +28,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   useTheme
- } from '@mui/material';
+} from '@mui/material';
 import { 
   TrendingUp,
   TrendingDown,
@@ -45,7 +44,7 @@ import {
   ShowChart,
   Timeline,
   YouTube
- } from '@mui/icons-material';
+} from '@mui/icons-material';
 import { 
   LineChart,
   Line,
@@ -60,6 +59,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
   RadarChart,
@@ -70,8 +70,8 @@ import {
   Scatter,
   ScatterChart,
   ZAxis
- } from 'recharts';
-import {  format, subDays, parseISO  } from 'date-fns';
+} from 'recharts';
+import { format, subDays, parseISO } from 'date-fns';
 
 interface RevenueData {
   date: string;
@@ -146,7 +146,7 @@ export const AnalyticsDashboard: React.FC = () => {
     // Generate mock revenue data
     const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
     const revenue = Array.from({ length: days }, (_, i) => {
-     const date = subDays(new Date(), days - 1 - i);
+      const date = subDays(new Date(), days - 1 - i);
       const baseRevenue = 100 + Math.random() * 50;
       return {
         date: format(date, 'yyyy-MM-dd'),
@@ -274,14 +274,14 @@ export const AnalyticsDashboard: React.FC = () => {
   const renderRevenueTab = () => (
     <Grid container spacing={3}>
       {/* Summary Cards */}
-      <Grid size={{ xs:  12, sm: 6, md: 3 }}>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
                 <AttachMoney />
               </Avatar>
-      <Box>
+              <Box>
                 <Typography variant="h4" fontWeight="bold">
                   ${totalRevenue.toFixed(2)}
                 </Typography>
@@ -307,7 +307,7 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </Grid>
 
-      <Grid size={{ xs:  12, sm: 6, md: 3 }}>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -330,7 +330,7 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </Grid>
 
-      <Grid size={{ xs:  12, sm: 6, md: 3 }}>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -353,7 +353,7 @@ export const AnalyticsDashboard: React.FC = () => {
         </Card>
       </Grid>
 
-      <Grid size={{ xs:  12, sm: 6, md: 3 }}>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -377,7 +377,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Revenue Chart */}
-      <Grid size={{ xs:  12, md: 8 }}>
+      <Grid size={{ xs: 12, md: 8 }}>
         <Card>
           <CardHeader
             title="Revenue Trend"
@@ -408,8 +408,8 @@ export const AnalyticsDashboard: React.FC = () => {
                   <XAxis dataKey="date" tickFormatter={(date) => format(parseISO(date), 'MM/dd')} />
                   <YAxis />
                   <RechartsTooltip
-                    labelFormatter={(date) => format(parseISO(date), 'PPP')}
-                    formatter={ (value:  number) => `$${value.toFixed(2) }`}
+                    labelFormatter={(date) => format(parseISO(date as string), 'PPP')}
+                    formatter={(value: number) => `$${value.toFixed(2)}`}
                   />
                   <Legend />
                   <Line type="monotone" dataKey="revenue" stroke={COLORS[0]} name="Total Revenue" strokeWidth={2} />
@@ -423,8 +423,8 @@ export const AnalyticsDashboard: React.FC = () => {
                   <XAxis dataKey="date" tickFormatter={(date) => format(parseISO(date), 'MM/dd')} />
                   <YAxis />
                   <RechartsTooltip
-                    labelFormatter={(date) => format(parseISO(date), 'PPP')}
-                    formatter={ (value:  number) => `$${value.toFixed(2) }`}
+                    labelFormatter={(date) => format(parseISO(date as string), 'PPP')}
+                    formatter={(value: number) => `$${value.toFixed(2)}`}
                   />
                   <Legend />
                   <Bar dataKey="adRevenue" stackId="a" fill={COLORS[1]} name="Ad Revenue" />
@@ -437,8 +437,8 @@ export const AnalyticsDashboard: React.FC = () => {
                   <XAxis dataKey="date" tickFormatter={(date) => format(parseISO(date), 'MM/dd')} />
                   <YAxis />
                   <RechartsTooltip
-                    labelFormatter={(date) => format(parseISO(date), 'PPP')}
-                    formatter={ (value:  number) => `$${value.toFixed(2) }`}
+                    labelFormatter={(date) => format(parseISO(date as string), 'PPP')}
+                    formatter={(value: number) => `$${value.toFixed(2)}`}
                   />
                   <Legend />
                   <Area type="monotone" dataKey="adRevenue" stackId="1" stroke={COLORS[1]} fill={COLORS[1]} name="Ad Revenue" />
@@ -452,7 +452,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </Grid>
 
       {/* Revenue Breakdown Pie Chart */}
-      <Grid size={{ xs:  12, md: 4 }}>
+      <Grid size={{ xs: 12, md: 4 }}>
         <Card>
           <CardHeader title="Revenue Breakdown" />
           <CardContent>
@@ -472,11 +472,11 @@ export const AnalyticsDashboard: React.FC = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <RechartsTooltip formatter={ (value:  number) => `$${value.toFixed(2) }`} />
+                <RechartsTooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
               </PieChart>
             </ResponsiveContainer>
             
-            <Box sx={{ mt:  2 }}>
+            <Box sx={{ mt: 2 }}>
               {revenueBreakdown.map((item, index) => (
                 <Box key={item.name} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <Box
@@ -485,9 +485,10 @@ export const AnalyticsDashboard: React.FC = () => {
                       height: 12,
                       borderRadius: '50%',
                       bgcolor: COLORS[index % COLORS.length],
-                      mr: 1 }}
+                      mr: 1
+                    }}
                   />
-                  <Typography variant="body2" sx={{ flex:  1 }}>
+                  <Typography variant="body2" sx={{ flex: 1 }}>
                     {item.name}
                   </Typography>
                   <Typography variant="body2" fontWeight="bold">
@@ -511,8 +512,8 @@ export const AnalyticsDashboard: React.FC = () => {
                 <XAxis dataKey="date" tickFormatter={(date) => format(parseISO(date), 'MM/dd')} />
                 <YAxis />
                 <RechartsTooltip
-                  labelFormatter={(date) => format(parseISO(date), 'PPP')}
-                  formatter={ (value:  number) => `$${value.toFixed(2) }`}
+                  labelFormatter={(date) => format(parseISO(date as string), 'PPP')}
+                  formatter={(value: number) => `$${value.toFixed(2)}`}
                 />
                 <Line type="monotone" dataKey="rpm" stroke={theme.palette.primary.main} name="RPM" strokeWidth={2} dot={false} />
               </LineChart>
@@ -567,8 +568,8 @@ export const AnalyticsDashboard: React.FC = () => {
                             <Avatar variant="rounded" sx={{ width: 60, height: 34 }}>
                               <PlayCircle />
                             </Avatar>
-      <Box>
-                              <Typography variant="body2" noWrap sx={{ maxWidth:  300 }}>
+                            <Box>
+                              <Typography variant="body2" noWrap sx={{ maxWidth: 300 }}>
                                 {video.title}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
@@ -589,14 +590,14 @@ export const AnalyticsDashboard: React.FC = () => {
                           <Chip
                             label={`${video.ctr.toFixed(1)}%`}
                             size="small"
-                            color={ video.ctr > 5 ? 'success' :  video.ctr > 3 ? 'warning' : 'error' }
+                            color={video.ctr > 5 ? 'success' : video.ctr > 3 ? 'warning' : 'error'}
                           />
                         </TableCell>
                         <TableCell align="right">
                           <Chip
                             label={`${video.avd.toFixed(0)}%`}
                             size="small"
-                            color={ video.avd > 50 ? 'success' :  video.avd > 30 ? 'warning' : 'error' }
+                            color={video.avd > 50 ? 'success' : video.avd > 30 ? 'warning' : 'error'}
                           />
                         </TableCell>
                         <TableCell align="right">
@@ -618,7 +619,7 @@ export const AnalyticsDashboard: React.FC = () => {
                               variant="determinate"
                               value={Math.min(100, performanceScore)}
                               sx={{ width: 60, height: 6 }}
-                              color={ performanceScore > 70 ? 'success' :  performanceScore > 40 ? 'warning' : 'error' }
+                              color={performanceScore > 70 ? 'success' : performanceScore > 40 ? 'warning' : 'error'}
                             />
                             <Typography variant="caption">
                               {performanceScore.toFixed(0)}
@@ -652,7 +653,8 @@ export const AnalyticsDashboard: React.FC = () => {
                   data={videoPerformance.map(v => ({
                     views: v.views,
                     revenue: v.revenue,
-                    engagement: (v.likes + v.comments) / v.views * 100 }))}
+                    engagement: (v.likes + v.comments) / v.views * 100
+                  }))}
                   fill={theme.palette.primary.main}
                 />
               </ScatterChart>
@@ -673,7 +675,8 @@ export const AnalyticsDashboard: React.FC = () => {
                   { range: '4-6%', videos: videoPerformance.filter(v => v.ctr >= 4 && v.ctr < 6).length },
                   { range: '6-8%', videos: videoPerformance.filter(v => v.ctr >= 6 && v.ctr < 8).length },
                   { range: '8%+', videos: videoPerformance.filter(v => v.ctr >= 8).length }
-                ]}>
+                ]}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="range" />
                 <YAxis />
@@ -699,7 +702,7 @@ export const AnalyticsDashboard: React.FC = () => {
                 control={
                   <Switch
                     checked={comparisonMode}
-                    onChange={(_) => setComparisonMode(_.target.checked)}
+                    onChange={(e) => setComparisonMode(e.target.checked)}
                   />
                 }
                 label="Compare Mode"
@@ -752,7 +755,7 @@ export const AnalyticsDashboard: React.FC = () => {
                         <Chip
                           label={`${channel.avgEngagement.toFixed(1)}%`}
                           size="small"
-                          color={ channel.avgEngagement > 5 ? 'success' :  channel.avgEngagement > 3 ? 'warning' : 'error' }
+                          color={channel.avgEngagement > 5 ? 'success' : channel.avgEngagement > 3 ? 'warning' : 'error'}
                         />
                       </TableCell>
                       <TableCell align="right">
@@ -764,9 +767,9 @@ export const AnalyticsDashboard: React.FC = () => {
                           )}
                           <Typography
                             variant="body2"
-                            color={ channel.growthRate > 0 ? 'success.main' :  'error.main' }
+                            color={channel.growthRate > 0 ? 'success.main' : 'error.main'}
                           >
-                            { channel.growthRate > 0 ? '+' :  '' }{channel.growthRate.toFixed(1)}%
+                            {channel.growthRate > 0 ? '+' : ''}{channel.growthRate.toFixed(1)}%
                           </Typography>
                         </Box>
                       </TableCell>
@@ -776,7 +779,7 @@ export const AnalyticsDashboard: React.FC = () => {
                             variant="determinate"
                             value={channel.health}
                             sx={{ width: 60, height: 6 }}
-                            color={ channel.health > 80 ? 'success' :  channel.health > 60 ? 'warning' : 'error' }
+                            color={channel.health > 80 ? 'success' : channel.health > 60 ? 'warning' : 'error'}
                           />
                           <Typography variant="caption">
                             {channel.health}%
@@ -872,8 +875,8 @@ export const AnalyticsDashboard: React.FC = () => {
         <Typography variant="h4" fontWeight="bold">
           Analytics Dashboard
         </Typography>
-      <Box sx={{ display: 'flex', gap: 2 }}>
-          <FormControl size="small" sx={{ minWidth:  120 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Time Range</InputLabel>
             <Select
               value={timeRange}

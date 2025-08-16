@@ -31,24 +31,33 @@ import {
   RadioGroup,
   Radio,
   FormControl
- } from '@mui/material';
-import {  Print as PrintIcon  } from '@mui/icons-material';
-import {  format  } from 'date-fns';
+} from '@mui/material';
+import { 
+  Print as PrintIcon,
+  Download as DownloadIcon,
+  Description as CsvIcon,
+  TableChart as ExcelIcon,
+  PictureAsPdf as PdfIcon,
+  Code as JsonIcon,
+  Check as CheckIcon,
+  Warning as WarningIcon
+} from '@mui/icons-material';
+import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import {  saveAs  } from 'file-saver';
+import 'jspdf-autotable';
+import { saveAs } from 'file-saver';
 
 // Export types
 export type ExportFormat = 'csv' | 'excel' | 'pdf' | 'json' | 'xml' | 'print';
 
 export interface ExportConfig {
-  format: ExportFormat,
-  filename: string;,
-
-  includeHeaders: boolean,
+  format: ExportFormat;
+  filename: string;
+  includeHeaders: boolean;
   includeMetadata: boolean;
   dateRange?: [Date, Date];
-  filters?: Record<string, unknown>;
+  filters?: Record<string, any>;
   columns?: string[];
   customTemplate?: string;
   compression?: boolean;
@@ -57,18 +66,17 @@ export interface ExportConfig {
 }
 
 export interface ExportData {
-  title: string,
-  data: unknown[];
+  title: string;
+  data: any[];
   columns?: { key: string; label: string; type?: string }[];
-  metadata?: Record<string, unknown>;
-  charts?: { type: string; data: unknown }[];
-  summary?: Record<string, unknown>;
+  metadata?: Record<string, any>;
+  charts?: { type: string; data: any }[];
+  summary?: Record<string, any>;
 }
 
 interface ExportManagerProps {
-  open: boolean,
-  onClose: () => void,
-
+  open: boolean;
+  onClose: () => void;
   data: ExportData;
   onExport?: (config: ExportConfig) => void;
   allowedFormats?: ExportFormat[];
@@ -83,8 +91,7 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
     filename: `${data.title.toLowerCase().replace(/\s+/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}`,
     includeHeaders: true,
     includeMetadata: true,
-    columns: data.columns?.map(c => c.key) || [],
-
+    columns: data.columns?.map(c => c.key) || []
   });
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
@@ -95,47 +102,41 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
 
   // Format configurations
   const formatConfigs = {
-    csv: {,
-  icon: <CsvIcon />,
+    csv: {
+      icon: <CsvIcon />,
       label: 'CSV',
       description: 'Comma-separated values, compatible with all spreadsheet applications',
-      color: 'success',
-
+      color: 'success'
     },
-    excel: {,
-  icon: <ExcelIcon />,
+    excel: {
+      icon: <ExcelIcon />,
       label: 'Excel',
       description: 'Microsoft Excel format with formatting and multiple sheets support',
-      color: 'primary',
-
+      color: 'primary'
     },
-    pdf: {,
-  icon: <PdfIcon />,
+    pdf: {
+      icon: <PdfIcon />,
       label: 'PDF',
       description: 'Portable document format with charts and formatting',
-      color: 'error',
-
+      color: 'error'
     },
-    json: {,
-  icon: <JsonIcon />,
+    json: {
+      icon: <JsonIcon />,
       label: 'JSON',
       description: 'JavaScript Object Notation for developers and APIs',
-      color: 'info',
-
+      color: 'info'
     },
-    xml: {,
-  icon: <JsonIcon />,
+    xml: {
+      icon: <JsonIcon />,
       label: 'XML',
       description: 'Extensible Markup Language for data interchange',
-      color: 'warning',
-
+      color: 'warning'
     },
-    print: {,
-  icon: <PrintIcon />,
+    print: {
+      icon: <PrintIcon />,
       label: 'Print',
       description: 'Send directly to printer with print-friendly formatting',
-      color: 'default',
-
+      color: 'default'
     }
   };
 
@@ -152,7 +153,9 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
         if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
           return `"${value.replace(/"/g, '""')}"`;
         }
-        return value}).join(',')}).join('\n');
+        return value;
+      }).join(',');
+    }).join('\n');
     
     let csvContent = headers ? `${headers}\n${rows}` : rows;
     
@@ -164,7 +167,8 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
     }
     
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, `${exportConfig.filename}.csv`)}, [data, exportConfig]);
+    saveAs(blob, `${exportConfig.filename}.csv`);
+  }, [data, exportConfig]);
 
   // Export to Excel
   const exportToExcel = useCallback(() => {
@@ -172,11 +176,13 @@ export const UniversalExportManager: React.FC<ExportManagerProps> = ({
     
     // Main data sheet
     const mainData = data.data.map(row => {
-const exportRow: unknown = {};
+      const exportRow: any = {};
       exportConfig.columns?.forEach(col => {
         const column = data.columns?.find(c => c.key === col);
-        exportRow[column?.label || col] = row[col]});
-      return exportRow});
+        exportRow[column?.label || col] = row[col];
+      });
+      return exportRow;
+    });
     
     const mainSheet = XLSX.utils.json_to_sheet(mainData);
     XLSX.utils.book_append_sheet(workbook, mainSheet, 'Data');
@@ -186,23 +192,26 @@ const exportRow: unknown = {};
       const metadataArray = Object.entries(data.metadata).map(([key, value]) => ({
         Property: key,
         Value: value
-}));
+      }));
       const metadataSheet = XLSX.utils.json_to_sheet(metadataArray);
-      XLSX.utils.book_append_sheet(workbook, metadataSheet, 'Metadata')}
+      XLSX.utils.book_append_sheet(workbook, metadataSheet, 'Metadata');
+    }
     
     // Summary sheet
     if (data.summary) {
       const summaryArray = Object.entries(data.summary).map(([key, value]) => ({
         Metric: key,
         Value: value
-}));
+      }));
       const summarySheet = XLSX.utils.json_to_sheet(summaryArray);
-      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary')}
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+    }
     
     // Generate and save file
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, `${exportConfig.filename}.xlsx`)}, [data, exportConfig]);
+    saveAs(blob, `${exportConfig.filename}.xlsx`);
+  }, [data, exportConfig]);
 
   // Export to PDF
   const exportToPDF = useCallback(() => {
@@ -218,7 +227,8 @@ const exportRow: unknown = {};
       let yPosition = 30;
       Object.entries(data.metadata).forEach(([key, value]) => {
         doc.text(`${key}: ${value}`, 14, yPosition);
-        yPosition += 5});
+        yPosition += 5;
+      });
       yPosition += 5;
     }
     
@@ -228,7 +238,8 @@ const exportRow: unknown = {};
       .map(c => c.label) || [];
     
     const tableRows = data.data.map(row => {
-      return exportConfig.columns?.map(col => row[col] || '')});
+      return exportConfig.columns?.map(col => row[col] || '');
+    });
     
     (doc as any).autoTable({
       head: [tableColumns],
@@ -245,23 +256,27 @@ const exportRow: unknown = {};
       doc.text('Summary', 14, finalY);
       doc.setFontSize(10);
       let summaryY = finalY + 5;
-      Object.entries(data.summary).forEach(_([key, _value]) => {
+      Object.entries(data.summary).forEach(([key, value]) => {
         doc.text(`${key}: ${value}`, 14, summaryY);
-        summaryY += 5});
-}
+        summaryY += 5;
+      });
+    }
     
-    doc.save(`${exportConfig.filename}.pdf`)}, [data, exportConfig]);
+    doc.save(`${exportConfig.filename}.pdf`);
+  }, [data, exportConfig]);
 
   // Export to JSON
   const exportToJSON = useCallback(() => {
-const exportData: unknown = {,
-  title: data.title,
+    const exportData: any = {
+      title: data.title,
       exportDate: new Date().toISOString(),
       data: data.data.map(row => {
-const exportRow: unknown = {};
+        const exportRow: any = {};
         exportConfig.columns?.forEach(col => {
-          exportRow[col] = row[col]});
-        return exportRow})
+          exportRow[col] = row[col];
+        });
+        return exportRow;
+      })
     };
     
     if (exportConfig.includeMetadata && data.metadata) {
@@ -274,30 +289,33 @@ const exportRow: unknown = {};
     
     const jsonString = JSON.stringify(exportData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
-    saveAs(blob, `${exportConfig.filename}.json`)}, [data, exportConfig]);
+    saveAs(blob, `${exportConfig.filename}.json`);
+  }, [data, exportConfig]);
 
   // Export to XML
   const exportToXML = useCallback(() => {
-    const jsonToXml = (obj: unknown, rootName: string = 'root'): string => {
+    const jsonToXml = (obj: any, rootName: string = 'root'): string => {
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<${rootName}>`;
       
-      const convertToXml = (data: unknown, indent: string = '  '): string => {
+      const convertToXml = (data: any, indent: string = '  '): string => {
         let result = '';
         
         if (Array.isArray(data)) {
           data.forEach(item => {
-            result += `\n${indent}<item>${convertToXml(item, indent + '  ')}\n${indent}</item>`});
-} else if (typeof data === 'object' && data !== null) {
-          Object.entries(data).forEach(_([key, _value]) => {
-            const safeKey = key.replace(/[^a-zA-Z0-9 _]/g, '_');
+            result += `\n${indent}<item>${convertToXml(item, indent + '  ')}\n${indent}</item>`;
+          });
+        } else if (typeof data === 'object' && data !== null) {
+          Object.entries(data).forEach(([key, value]) => {
+            const safeKey = key.replace(/[^a-zA-Z0-9_]/g, '_');
             if (typeof value === 'object') {
               result += `\n${indent}<${safeKey}>${convertToXml(value, indent + '  ')}\n${indent}</${safeKey}>`;
             } else {
               result += `\n${indent}<${safeKey}>${value}</${safeKey}>`;
             }
           });
-} else {
-          result = String(data)}
+        } else {
+          result = String(data);
+        }
         
         return result;
       };
@@ -308,14 +326,16 @@ const exportRow: unknown = {};
       return xml;
     };
     
-    const exportData: unknown = {,
-  title: data.title,
+    const exportData: any = {
+      title: data.title,
       exportDate: new Date().toISOString(),
       data: data.data.map(row => {
-const exportRow: unknown = {};
+        const exportRow: any = {};
         exportConfig.columns?.forEach(col => {
-          exportRow[col] = row[col]});
-        return exportRow})
+          exportRow[col] = row[col];
+        });
+        return exportRow;
+      })
     };
     
     if (exportConfig.includeMetadata && data.metadata) {
@@ -324,12 +344,10 @@ const exportRow: unknown = {};
     
     const xmlString = jsonToXml(exportData, 'export');
     const blob = new Blob([xmlString], { type: 'application/xml' });
-    saveAs(blob, `${exportConfig.filename}.xml`)}, [data, exportConfig]);
+    saveAs(blob, `${exportConfig.filename}.xml`);
+  }, [data, exportConfig]);
 
-  // Handle export const createOptimizedRouter = () => {
-  return createBrowserRouter([
-    // Router configuration would go here
-  ])}
+  // Handle export
   const handleExport = async () => {
     setIsExporting(true);
     setExportError(null);
@@ -338,7 +356,8 @@ const exportRow: unknown = {};
     try {
       // Simulate progress for better UX
       const progressInterval = setInterval(() => {
-        setExportProgress(prev => Math.min(prev + 20, 90))}, 200);
+        setExportProgress(prev => Math.min(prev + 20, 90));
+      }, 200);
       
       switch (exportConfig.format) {
         case 'csv':
@@ -373,9 +392,13 @@ const exportRow: unknown = {};
         onClose();
         setActiveStep(0);
         setExportSuccess(false);
-        setExportProgress(0)}, 1500)} catch (error) {
-      setExportError(error instanceof Error ? error.message : 'Export failed')} finally {
-      setIsExporting(false)}
+        setExportProgress(0);
+      }, 1500);
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'Export failed');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Handle column selection
@@ -385,26 +408,31 @@ const exportRow: unknown = {};
       columns: prev.columns?.includes(column)
         ? prev.columns.filter(c => c !== column)
         : [...(prev.columns || []), column]
-    }))};
+    }));
+  };
 
   // Get preview data
   const getPreviewData = () => {
     return data.data.slice(0, 5).map(row => {
-const previewRow: unknown = {};
+      const previewRow: any = {};
       exportConfig.columns?.forEach(col => {
         const column = data.columns?.find(c => c.key === col);
-        previewRow[column?.label || col] = row[col]});
-      return previewRow})};
+        previewRow[column?.label || col] = row[col];
+      });
+      return previewRow;
+    });
+  };
 
   const handleNext = () => {
-    setActiveStep(prev => prev + 1)};
+    setActiveStep(prev => prev + 1);
+  };
 
   const handleBack = () => {
-    setActiveStep(prev => prev - 1)};
+    setActiveStep(prev => prev - 1);
+  };
 
   return (
-    <>
-      <Dialog
+    <Dialog
       open={open}
       onClose={onClose}
       maxWidth="md"
@@ -419,6 +447,7 @@ const previewRow: unknown = {};
           Export {data.title}
         </Box>
       </DialogTitle>
+      
       <DialogContent>
         <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
           {steps.map(label => (
@@ -435,15 +464,13 @@ const previewRow: unknown = {};
             </Typography>
             <RadioGroup
               value={exportConfig.format}
-              onChange={(e) => setExportConfig({ ...exportConfig, format: e.target.value as ExportFormat });
-}
+              onChange={(e) => setExportConfig({ ...exportConfig, format: e.target.value as ExportFormat })}
             >
               <Grid container spacing={2}>
                 {allowedFormats.map(format => {
                   const config = formatConfigs[format];
                   return (
-    <>
-      <Grid item xs={12} sm={6} key={format}>
+                    <Grid item xs={12} sm={6} key={format}>
                       <Paper
                         sx={{
                           p: 2,
@@ -451,12 +478,10 @@ const previewRow: unknown = {};
                           border: 2,
                           borderColor: exportConfig.format === format ? 'primary.main' : 'transparent',
                           '&:hover': {
-                            borderColor: 'primary.light',
-
+                            borderColor: 'primary.light'
                           }
                         }}
-                        onClick={() => setExportConfig({ ...exportConfig, format });
-}
+                        onClick={() => setExportConfig({ ...exportConfig, format })}
                       >
                         <FormControlLabel
                           value={format}
@@ -466,7 +491,7 @@ const previewRow: unknown = {};
                               <Box sx={{ color: `${config.color}.main` }}>
                                 {config.icon}
                               </Box>
-      <Box>
+                              <Box>
                                 <Typography variant="subtitle1">
                                   {config.label}
                                 </Typography>
@@ -479,12 +504,13 @@ const previewRow: unknown = {};
                         />
                       </Paper>
                     </Grid>
-                  )});
-}
+                  );
+                })}
               </Grid>
             </RadioGroup>
           </Box>
         )}
+        
         {activeStep === 1 && (
           <Box>
             <Typography variant="h6" gutterBottom>
@@ -496,7 +522,7 @@ const previewRow: unknown = {};
                 fullWidth
                 label="Filename"
                 value={exportConfig.filename}
-                onChange={(e) => setExportConfig({ ...exportConfig, filename: e.target.value)})
+                onChange={(e) => setExportConfig({ ...exportConfig, filename: e.target.value })}
                 helperText={`File will be saved as ${exportConfig.filename}.${exportConfig.format}`}
                 margin="normal"
               />
@@ -508,8 +534,7 @@ const previewRow: unknown = {};
                   control={
                     <Checkbox
                       checked={exportConfig.includeHeaders}
-                      onChange={(e) => setExportConfig({ ...exportConfig, includeHeaders: e.target.checked });
-}
+                      onChange={(e) => setExportConfig({ ...exportConfig, includeHeaders: e.target.checked })}
                     />
                   }
                   label="Include column headers"
@@ -518,8 +543,7 @@ const previewRow: unknown = {};
                   control={
                     <Checkbox
                       checked={exportConfig.includeMetadata}
-                      onChange={(e) => setExportConfig({ ...exportConfig, includeMetadata: e.target.checked });
-}
+                      onChange={(e) => setExportConfig({ ...exportConfig, includeMetadata: e.target.checked })}
                     />
                   }
                   label="Include metadata"
@@ -529,8 +553,7 @@ const previewRow: unknown = {};
                     control={
                       <Checkbox
                         checked={exportConfig.compression || false}
-                        onChange={(e) => setExportConfig({ ...exportConfig, compression: e.target.checked });
-}
+                        onChange={(e) => setExportConfig({ ...exportConfig, compression: e.target.checked })}
                       />
                     }
                     label="Compress file"
@@ -551,7 +574,7 @@ const previewRow: unknown = {};
                       control={
                         <Checkbox
                           checked={exportConfig.columns?.includes(column.key) || false}
-                          onChange={() => handleColumnToggle(column.key}
+                          onChange={() => handleColumnToggle(column.key)}
                         />
                       }
                       label={
@@ -569,6 +592,7 @@ const previewRow: unknown = {};
             </Box>
           </Box>
         )}
+        
         {activeStep === 2 && (
           <Box>
             <Typography variant="h6" gutterBottom>
@@ -616,15 +640,16 @@ const previewRow: unknown = {};
                 </Alert>
                 
                 <Typography variant="subtitle2" gutterBottom>
-                  Data Preview (First 5, rows)
+                  Data Preview (First 5 rows)
                 </Typography>
                 <Paper variant="outlined" sx={{ p: 1, overflow: 'auto', maxHeight: 200 }}>
-                  <pre style={{ margin: 0, fontSize: '0.75 rem' }}>
+                  <pre style={{ margin: 0, fontSize: '0.75rem' }}>
                     {JSON.stringify(getPreviewData(), null, 2)}
                   </pre>
                 </Paper>
               </>
             )}
+            
             {isExporting && (
               <Box sx={{ mt: 2 }}>
                 <LinearProgress variant="determinate" value={exportProgress} />
@@ -662,21 +687,20 @@ const previewRow: unknown = {};
         )}
       </DialogActions>
     </Dialog>
-  </>
-  )};
+  );
+};
 
 // Export hook for easy integration
-export const createOptimizedRouter = () => {
-  return createBrowserRouter([
-    // Router configuration would go here
-  ])}
+export const useExportManager = (data: ExportData) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
   const openExportDialog = useCallback(() => {
-    setIsOpen(true</>
-  )}, []</>
-  ); // eslint-disable-line react-hooks/exhaustive-deps
+    setIsOpen(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   
   const closeExportDialog = useCallback(() => {
-    setIsOpen(false)}, []); // eslint-disable-line react-hooks/exhaustive-deps
+    setIsOpen(false);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   
   const ExportComponent = useCallback(() => (
     <UniversalExportManager

@@ -11,27 +11,32 @@ import {
   List,
   AppBar,
   Toolbar,
-  Fab
- } from '@mui/material';
-import {  Search as SearchIcon, Refresh as RefreshIcon ,
+  Fab,
+  Badge
+} from '@mui/material';
+import { 
+  Search as SearchIcon, 
+  Refresh as RefreshIcon,
   Add as AddIcon,
-  Search as SearchIcon
- } from '@mui/icons-material';
+  Menu as MenuIcon,
+  Close as CloseIcon,
+  Notifications as NotificationsIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon
+} from '@mui/icons-material';
 
 interface MobileDataCard {
-  title: string,
-  value: string,
-
-  change: number,
+  title: string;
+  value: string;
+  change: number;
   changeType: 'positive' | 'negative' | 'neutral';
   icon?: React.ReactNode;
 }
 
 interface MobileListItem {
-  id: string,
-  title: string,
-
-  subtitle: string,
+  id: string;
+  title: string;
+  subtitle: string;
   avatar: string;
   action?: React.ReactNode;
 }
@@ -50,7 +55,7 @@ const MobileOptimizedDashboard: React.FC = () => {
       value: '$12,450',
       change: 15.3,
       changeType: 'positive',
-      icon: <TrendingUpIcon />,
+      icon: <TrendingUpIcon />
 
     },
     {
@@ -58,21 +63,21 @@ const MobileOptimizedDashboard: React.FC = () => {
       value: '2.4 M',
       change: -5.2,
       changeType: 'negative',
-      icon: <TrendingDownIcon />,
+      icon: <TrendingDownIcon />
 
     },
     {
       title: 'Subscribers',
       value: '48.2 K',
       change: 8.7,
-      changeType: 'positive',
+      changeType: 'positive'
 
     },
     {
       title: 'Avg. Cost/Video',
       value: '$2.45',
       change: -12.1,
-      changeType: 'positive',
+      changeType: 'positive'
 
     }
   ];
@@ -82,34 +87,37 @@ const MobileOptimizedDashboard: React.FC = () => {
       id: '1',
       title: 'Gaming Channel Update',
       subtitle: 'Video published 2 hours ago',
-      avatar: '/avatars/gaming.jpg',
+      avatar: '/avatars/gaming.jpg'
 
     },
     {
       id: '2', 
       title: 'Tech Review Generated',
       subtitle: 'Processing completed successfully',
-      avatar: '/avatars/tech.jpg',
+      avatar: '/avatars/tech.jpg'
 
     },
     {
       id: '3',
       title: 'Cooking Tutorial',
       subtitle: 'Scheduled for tomorrow 9 AM',
-      avatar: '/avatars/cooking.jpg',
+      avatar: '/avatars/cooking.jpg'
 
     }
   ];
 
   useEffect(() => {
     // Simulate loading
-    setTimeout(() => setIsLoading(false), 2000)}, []);
+    setTimeout(() => setIsLoading(false), 2000);
+  }, []);
 
-  
+  const handleRefresh = () => {
+    setIsRefreshing(true);
     // Simulate API call
     setTimeout(() => {
-      setIsRefreshing(false)}, 1500)};
-
+      setIsRefreshing(false);
+    }, 1500);
+  };
   const renderDataCard = (card: MobileDataCard, index: number) => (
     <div key={index} className="data-card-mobile">
       <div className="data-card-mobile-header">
@@ -187,7 +195,7 @@ const MobileOptimizedDashboard: React.FC = () => {
             {searchQuery && (
               <button
                 className="mobile-search-clear"
-                onClick={() => setSearchQuery(''}
+                onClick={() => setSearchQuery('')}
               >
                 <CloseIcon />
               </button>
@@ -207,15 +215,14 @@ const MobileOptimizedDashboard: React.FC = () => {
               {/* Data Cards Grid */}
               <Box sx={{ 
                 display: 'grid',
-                gridTemplateColumns: { ,
-  xs: '1 fr',
-                  sm: '1 fr 1 fr',
-                  lg: '1 fr 1 fr 1 fr 1 fr',
-
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: '1fr 1fr',
+                  lg: '1fr 1fr 1fr 1fr'
                 },
                 gap: 2,
                 mb: 3
-}}>
+              }}>
                 {dataCards.map(renderDataCard)}
               </Box>
 
@@ -233,7 +240,7 @@ const MobileOptimizedDashboard: React.FC = () => {
                   <div className="mobile-chart-scroll">
                     <Box sx={{ 
                       height: 200,
-                      background: 'linear-gradient(45 deg, #f3 f4 f6, #e5 e7 eb)',
+                      background: 'linear-gradient(45deg, #f3f4f6, #e5e7eb)',
                       borderRadius: 1,
                       display: 'flex',
                       alignItems: 'center',
@@ -261,11 +268,9 @@ const MobileOptimizedDashboard: React.FC = () => {
                       placeholder="Enter video title..."
                       style={{
                         padding: '12px',
-                        border: '1px solid #d1 d5 db',
+                        border: '1px solid #d1d5db',
                         borderRadius: '8px',
-                        fontSize: '16px',
-
-                      }}
+                        fontSize: '16px'}}
                     />
                   </div>
                   <div className="form-mobile-row two-cols">
@@ -274,11 +279,9 @@ const MobileOptimizedDashboard: React.FC = () => {
                       <select
                         style={{
                           padding: '12px',
-                          border: '1px solid #d1 d5 db',
+                          border: '1px solid #d1d5db',
                           borderRadius: '8px',
-                          fontSize: '16px',
-
-                        }}
+                          fontSize: '16px'}}
                       >
                         <option>Gaming</option>
                         <option>Tech</option>
@@ -290,11 +293,10 @@ const MobileOptimizedDashboard: React.FC = () => {
                       <select
                         style={{
                           padding: '12px',
-                          border: '1px solid #d1 d5 db',
+                          border: '1px solid #d1d5db',
                           borderRadius: '8px',
-                          fontSize: '16px',
-
-                        }}
+                          fontSize: '16px'
+}}
                       >
                         <option>High</option>
                         <option>Medium</option>
@@ -306,14 +308,13 @@ const MobileOptimizedDashboard: React.FC = () => {
                     type="submit"
                     className="btn-responsive"
                     style={{
-                      background: '#3 b82 f6',
+                      background: '#3b82f6',
                       color: 'white',
                       border: 'none',
                       borderRadius: '8px',
                       padding: '12px 24px',
                       fontSize: '16px',
-                      fontWeight: 600
-}}
+                      fontWeight: 600}}
                   >
                     Generate Video
                   </button>
@@ -332,14 +333,15 @@ const MobileOptimizedDashboard: React.FC = () => {
             { id: 'videos', label: 'Videos', icon: '🎥' },
             { id: 'analytics', label: 'Analytics', icon: '📈' },
             { id: 'settings', label: 'Settings', icon: '⚙️' }
-          ].map((tab) => (_<a
+          ].map((tab) => (
+            <a
               key={tab.id}
               href="#"
               className={`mobile-nav-tab ${activeTab === tab.id ? 'active' : ''}`}
               onClick={(e) => {
-                e.preventDefault(</>
-  );
-                setActiveTab(tab.id)}}
+                e.preventDefault();
+                setActiveTab(tab.id);
+              }}
             >
               <span className="mobile-nav-tab-icon">{tab.icon}</span>
               <span className="mobile-nav-tab-label">{tab.label}</span>
@@ -357,7 +359,7 @@ const MobileOptimizedDashboard: React.FC = () => {
           right: 20,
           display: { md: 'none' }
         }}
-        onClick={() => setShowMobileModal(true}
+        onClick={() => setShowMobileModal(true)}
       >
         <AddIcon />
       </Fab>
@@ -367,14 +369,14 @@ const MobileOptimizedDashboard: React.FC = () => {
         <div className="mobile-modal-header">
           <button
             className="mobile-modal-close"
-            onClick={() => setShowMobileModal(false}
+            onClick={() => setShowMobileModal(false)}
           >
             <CloseIcon />
           </button>
           <div className="mobile-modal-title">New Video</div>
           <button
             style={{
-              background: '#3 b82 f6',
+              background: '#3b82f6',
               color: 'white',
               border: 'none',
               borderRadius: '6px',
@@ -400,11 +402,9 @@ const MobileOptimizedDashboard: React.FC = () => {
                 placeholder="Video title..."
                 style={{
                   padding: '12px',
-                  border: '1px solid #d1 d5 db',
+                  border: '1px solid #d1d5db',
                   borderRadius: '8px',
-                  fontSize: '16px',
-
-                }}
+                  fontSize: '16px'}}
               />
             </div>
             
@@ -415,12 +415,10 @@ const MobileOptimizedDashboard: React.FC = () => {
                 rows={4}
                 style={{
                   padding: '12px',
-                  border: '1px solid #d1 d5 db',
+                  border: '1px solid #d1d5db',
                   borderRadius: '8px',
                   fontSize: '16px',
-                  resize: 'vertical',
-
-                }}
+                  resize: 'vertical'}}
               />
             </div>
 
@@ -430,15 +428,13 @@ const MobileOptimizedDashboard: React.FC = () => {
                 <select
                   style={{
                     padding: '12px',
-                    border: '1px solid #d1 d5 db',
+                    border: '1px solid #d1d5db',
                     borderRadius: '8px',
-                    fontSize: '16px',
-
-                  }}
+                    fontSize: '16px'}}
                 >
-                  <option>Short (&lt; 1, min)</option>
-                  <option>Medium (1-5, min)</option>
-                  <option>Long (&gt; 5, min)</option>
+                  <option>Short (&lt; 1 min)</option>
+                  <option>Medium (1-5 min)</option>
+                  <option>Long (&gt; 5 min)</option>
                 </select>
               </div>
               
@@ -447,11 +443,10 @@ const MobileOptimizedDashboard: React.FC = () => {
                 <select
                   style={{
                     padding: '12px',
-                    border: '1px solid #d1 d5 db',
+                    border: '1px solid #d1d5db',
                     borderRadius: '8px',
-                    fontSize: '16px',
-
-                  }}
+                    fontSize: '16px'
+}}
                 >
                   <option>High</option>
                   <option>Medium</option>
@@ -474,11 +469,13 @@ const MobileOptimizedDashboard: React.FC = () => {
             bottom: 0,
             background: 'rgba(0, 0, 0, 0.3)',
             zIndex: 9998
-}}
-          onClick={() => setShowMobileModal(false}
+          }}
+          onClick={() => setShowMobileModal(false)}
         />
       )}
     </Box>
-  )};
+    </>
+  );
+};
 
 export default MobileOptimizedDashboard;

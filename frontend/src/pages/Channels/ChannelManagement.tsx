@@ -42,35 +42,41 @@ import {
  } from '@mui/icons-material';
 
 interface Channel {
-  id: string,
-  name: string,
+  
+id: string;
+name: string;
 
-  youtubeId: string,
-  thumbnail: string,
+youtubeId: string;
+thumbnail: string;
 
-  status: 'active' | 'paused' | 'pending' | 'error',
-  subscribers: number,
+status: 'active' | 'paused' | 'pending' | 'error';
+subscribers: number;
 
-  totalVideos: number,
-  totalViews: number,
+totalVideos: number;
+totalViews: number;
 
-  isMonetized: boolean,
-  autoUpload: boolean,
+isMonetized: boolean;
+autoUpload: boolean;
 
-  uploadSchedule: string,
-  category: string,
+uploadSchedule: string;
+category: string;
 
-  apiQuota: {,
-  used: number,
+apiQuota: {;
+used: number;
 
-    limit: number};
-  lastSync: Date,
+limit: number;
+
+};
+  lastSync: Date;
   created: Date}
 
 interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number,
-  value: number}
+  
+children?: React.ReactNode;
+index: number;
+value: number;
+
+}
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -97,7 +103,7 @@ export const ChannelManagement: React.FC = () => {
       category: 'Technology',
       apiQuota: { used: 8500, limit: 10000 },
       lastSync: new Date(),
-      created: new Date('2024-01-15'),
+      created: new Date('2024-01-15')
 
     },
     {
@@ -115,7 +121,7 @@ export const ChannelManagement: React.FC = () => {
       category: 'Gaming',
       apiQuota: { used: 6200, limit: 10000 },
       lastSync: new Date(),
-      created: new Date('2024-02-20'),
+      created: new Date('2024-02-20')
 
     },
     {
@@ -133,7 +139,7 @@ export const ChannelManagement: React.FC = () => {
       category: 'Food & Cooking',
       apiQuota: { used: 3100, limit: 10000 },
       lastSync: new Date(),
-      created: new Date('2024-03-10'),
+      created: new Date('2024-03-10')
 
     } ]</>
   );
@@ -148,8 +154,8 @@ export const ChannelManagement: React.FC = () => {
     uploadSchedule: '' });
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue)};
-
+    setTabValue(newValue)
+};
   const handleAddChannel = () => { setEditingChannel(null);
     setFormData({
       name: '',
@@ -157,8 +163,8 @@ export const ChannelManagement: React.FC = () => {
       category: '',
       autoUpload: false,
       uploadSchedule: '' });
-    setOpenDialog(true)};
-
+    setOpenDialog(true)
+};
   const handleEditChannel = (channel: Channel) => { setEditingChannel(channel);
     setFormData({
       name: channel.name,
@@ -166,20 +172,20 @@ export const ChannelManagement: React.FC = () => {
       category: channel.category,
       autoUpload: channel.autoUpload,
       uploadSchedule: channel.uploadSchedule });
-    setOpenDialog(true)};
-
+    setOpenDialog(true)
+};
   const handleSaveChannel = () => {
     
     // Save channel logic
-    setOpenDialog(false)};
-
+    setOpenDialog(false)
+};
   const handleToggleStatus = (channelId: string) => {
-    setChannels(channels.map(c => {}
+    setChannels(channels.map(c =>
       c.id === channelId 
         ? { ...c, status: c.status === 'active' ? 'paused' : 'active' as any }
         : c
-    ))};
-
+    ))
+};
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'success';
@@ -188,7 +194,6 @@ export const ChannelManagement: React.FC = () => {
       case 'error': return 'error';
       default: return 'default'}
   };
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'active': return <CheckCircle />;
@@ -197,12 +202,10 @@ export const ChannelManagement: React.FC = () => {
       case 'error': return <ErrorIcon />;
       default: return null}
   };
-
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${num / 1000000.toFixed(1}M`;
     if (num >= 1000) return `${num / 1000.toFixed(1}K`;
     return num.toString()};
-
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Header */}
@@ -398,7 +401,7 @@ export const ChannelManagement: React.FC = () => {
                     </Typography>
                     <Switch
                       checked={channel.autoUpload}
-                      onChange={() => {}
+                      onChange={() =>
                       size="small"
                     />
                   </Box>
@@ -444,8 +447,7 @@ export const ChannelManagement: React.FC = () => {
             fullWidth
             variant="outlined"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value)});
-}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value)})}
             sx={{ mb: 2 }}
           />
           <TextField
@@ -454,8 +456,7 @@ export const ChannelManagement: React.FC = () => {
             fullWidth
             variant="outlined"
             value={formData.youtubeId}
-            onChange={(e) => setFormData({ ...formData, youtubeId: e.target.value)});
-}
+            onChange={(e) => setFormData({ ...formData, youtubeId: e.target.value)})}
             sx={{ mb: 2 }}
           />
           <FormControl fullWidth sx={{ mb: 2 }}>
@@ -463,8 +464,7 @@ export const ChannelManagement: React.FC = () => {
             <Select
               value={formData.category}
               label="Category"
-              onChange={(e) => setFormData({ ...formData, category: e.target.value)});
-}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value)})}
             >
               <MenuItem value="Technology">Technology</MenuItem>
               <MenuItem value="Gaming">Gaming</MenuItem>
@@ -479,10 +479,8 @@ export const ChannelManagement: React.FC = () => {
             control={
               <Switch
                 checked={formData.autoUpload}
-                onChange={(e) => setFormData({ ...formData, autoUpload: e.target.checked });
-}
-              />
-            }
+                onChange={(e) => setFormData({ ...formData, autoUpload: e.target.checked })}
+              />}
             label="Enable Auto Upload"
           />
           {formData.autoUpload && (
@@ -492,8 +490,7 @@ export const ChannelManagement: React.FC = () => {
               fullWidth
               variant="outlined"
               value={formData.uploadSchedule}
-              onChange={(e) => setFormData({ ...formData, uploadSchedule: e.target.value)});
-}
+              onChange={(e) => setFormData({ ...formData, uploadSchedule: e.target.value)})}
               placeholder="e.g., Daily at 2:00 PM"
             />
           )}
@@ -506,4 +503,5 @@ export const ChannelManagement: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  )};
+  )
+}}

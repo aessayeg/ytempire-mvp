@@ -2,22 +2,28 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import {  ErrorFallback  } from './ErrorFallback';
 
 interface Props {
-  children: ReactNode;
-  fallback?: ReactNode;
-  onError?: (error: Error, errorInfo: ErrorInfo) => void;
-  resetKeys?: Array<string | number>;
-  resetOnPropsChange?: boolean;
-  isolate?: boolean;
-  level?: 'page' | 'section' | 'component';
-  showDetails?: boolean;
+  
+children: ReactNode;
+fallback?: ReactNode;
+onError?: (error: Error, errorInfo: ErrorInfo) => void;
+resetKeys?: Array<string | number>;
+resetOnPropsChange?: boolean;
+isolate?: boolean;
+level?: 'page' | 'section' | 'component';
+showDetails?: boolean;
+
+
 }
 
 interface State {
-  hasError: boolean,
-  error: Error | null,
+  
+hasError: boolean;
+error: Error | null;
 
-  errorInfo: ErrorInfo | null,
-  errorCount: number}
+errorInfo: ErrorInfo | null;
+errorCount: number;
+
+}
 
 export class ErrorBoundary extends Component<Props, State> { private resetTimeoutId: NodeJS.Timeout | null = null;
   private previousResetKeys: Array<string | number> = [];
@@ -28,12 +34,12 @@ export class ErrorBoundary extends Component<Props, State> { private resetTimeou
       hasError: false,
       error: null,
       errorInfo: null,
-      errorCount: 0 };
+      errorCount: 0 }
   }
 
-  static getDerivedStateFromError(error: Error): Partial<State> { return {,
+  static getDerivedStateFromError(error: Error): Partial<State> { return {
   hasError: true,
-      error };
+      error }
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -75,7 +81,7 @@ export class ErrorBoundary extends Component<Props, State> { private resetTimeou
       );
       if (hasResetKeyChanged) {
         this.resetErrorBoundary();
-        this.previousResetKeys = resetKeys;
+        this.previousResetKeys = resetKeys
       }
     }
   }
@@ -94,7 +100,6 @@ export class ErrorBoundary extends Component<Props, State> { private resetTimeou
       url: window.location.href,
       userAgent: navigator.userAgent,
       level: this.props.level || 'component' };
-
     // Store in localStorage for debugging
     const errors = JSON.parse(localStorage.getItem('app_errors') || '[]');
     errors.push(errorData);
@@ -108,18 +113,17 @@ export class ErrorBoundary extends Component<Props, State> { private resetTimeou
     if (process.env.NODE_ENV === 'production') {
       // sendToErrorTrackingService(errorData)}
   };
-
   resetErrorBoundary = () => {
     if (this.resetTimeoutId) {
       clearTimeout(this.resetTimeoutId);
-      this.resetTimeoutId = null;
+      this.resetTimeoutId = null
     }
 
     this.setState({ hasError: false,
       error: null,
       errorInfo: null,
-      errorCount: 0 })};
-
+      errorCount: 0 })
+};
   render() {
     const { hasError, error, errorInfo, errorCount } = this.state;
     const { children, fallback, isolate, level = 'component', showDetails } = this.props;
@@ -143,7 +147,7 @@ export class ErrorBoundary extends Component<Props, State> { private resetTimeou
         />
       )}
 
-    return children;
+    return children
   }
 }
 
@@ -160,5 +164,4 @@ export function withErrorBoundary<P extends object>(
 
   WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
 
-  return WrappedComponent;
-}
+  return WrappedComponent}

@@ -35,6 +35,6 @@ const VideoGenerationPage: React.FC = () => {
       </Box>
     </Container>
   </>
-  )};
-
+  )
+};
 export default VideoGenerationPage;

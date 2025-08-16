@@ -3,109 +3,130 @@ import {  apiClient  } from '../services/api';
 import {  useAuthStore  } from '../stores/authStore';
 
 interface BehaviorOverview {
-  total_events: number,
-  unique_users: number,
+  
+total_events: number;
+unique_users: number;
 
-  event_breakdown: Array<{
-  event_type: string,
+event_breakdown: Array<{;
+event_type: string;
 
-    count: number,
-  percentage: number}>;
+count: number;
+percentage: number;
+
+}>;
   journey_stats: {
-  total_sessions: number,
+  total_sessions: number;
 
-    avg_events_per_session: number,
+    avg_events_per_session: number;
   top_patterns: Array<{
 
-      pattern: string,
-  count: number}>;
+      pattern: string;
+  count: number}>
   };
   feature_usage: Array<{
   feature: string;,
 
-    usage_count: number,
+    usage_count: number;
   adoption_rate: number}>;
   session_stats: {
   total_sessions: number;,
 
-    avg_duration: number,
+    avg_duration: number;
   median_duration: number;,
 
-    bounce_rate: number,
-  avg_events_per_session: number};
+    bounce_rate: number;
+  avg_events_per_session: number}
 }
 
 interface FunnelData {
-  funnel_name: string,
-  steps: Array<{
+  
+funnel_name: string;
+steps: Array<{;
 
-    step: string,
-  step_number: number,
+step: string;
+step_number: number;
 
-    users: number,
-  conversion_rate: number,
+users: number;
+conversion_rate: number;
 
-    drop_off_rate: number}>;
-  overall_conversion: number,
+drop_off_rate: number;
+
+}>;
+  overall_conversion: number;
   total_completions: number}
 
 interface CohortData {
-  cohort_type: string,
-  metric: string,
+  
+cohort_type: string;
+metric: string;
 
-  cohorts: Array<{
-  cohort: string,
+cohorts: Array<{;
+cohort: string;
 
-    size: number,
-  retention: Array<{
+size: number;
+retention: Array<{;
 
-      period: number,
-  active_users: number,
+period: number;
+active_users: number;
 
-      retention_rate: number}>}>;
+retention_rate: number;
+
+}>}>;
   periods: number}
 
 interface HeatmapData {
-  heatmap: Array<{
-  date: string,
+  
+heatmap: Array<{;
+date: string;
 
-    hour: number,
-  value: number,
+hour: number;
+value: number;
 
-    intensity: number}>;
+intensity: number;
+
+}>;
   max_value: number}
 
 interface UserSegments {
-  segments: {
-    [key: string]: {
-  count: number,
+  
+segments: {;
+[key: string]: {;
+count: number;
 
-      user_ids: number[]};
+user_ids: number[];
+
+}
   };
-  total_users: number,
+  total_users: number;
   criteria: unknown}
 
 interface UseBehaviorAnalyticsProps {
-  userId?: number;
-  dateRange?: {
-    start: Date,
-  end: Date};
+  
+userId?: number;
+dateRange?: {;
+start: Date;
+end: Date;
+
+};
   funnelSteps?: string[];
-  cohortType?: string;
+  cohortType?: string
 }
 
 interface UseBehaviorAnalyticsReturn {
-  overview: BehaviorOverview | null,
-  funnelData: FunnelData | null,
+  
+overview: BehaviorOverview | null;
+funnelData: FunnelData | null;
 
-  cohortData: CohortData | null,
-  heatmapData: HeatmapData | null,
+cohortData: CohortData | null;
+heatmapData: HeatmapData | null;
 
-  segments: UserSegments | null,
-  loading: boolean,
+segments: UserSegments | null;
+loading: boolean;
 
-  error: string | null,
-  refetch: () => Promise<void>}
+error: string | null;
+refetch: () => Promise<void>;
+
+}
 
 export const useBehaviorAnalytics = ({ userId,
   dateRange,
@@ -124,7 +145,7 @@ export const useBehaviorAnalytics = ({ userId,
   const fetchAnalyticsData = useCallback(_async () => {
     if (!token) {
       setError('Authentication required');
-      return;
+      return
     }
 
     setLoading(true);
@@ -132,9 +153,9 @@ export const useBehaviorAnalytics = ({ userId,
 
     try {
       // Prepare query parameters
-      const params: unknown = {};
+      const params: unknown  = {};
       if (userId) {
-        params.user_id = userId;
+        params.user_id = userId
       }
       if (dateRange) {
         params.start_date = dateRange.start.toISOString();
@@ -143,8 +164,7 @@ export const useBehaviorAnalytics = ({ userId,
       // Fetch overview
       const overviewResponse = await apiClient.get('/api/v1/analytics/behavior/overview', {
         params,
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        headers: { Authorization: `Bearer ${token}` }});
       setOverview(overviewResponse.data);
 
       // Fetch funnel data if steps provided
@@ -155,27 +175,24 @@ export const useBehaviorAnalytics = ({ userId,
             params: {
   funnel_steps: funnelSteps,
               ...params },
-            headers: { Authorization: `Bearer ${token}` }
-          }
+            headers: { Authorization: `Bearer ${token}` }}
         );
         setFunnelData(funnelResponse.data)}
 
       // Fetch cohort data
       try { const cohortResponse = await apiClient.get('/api/v1/analytics/cohorts', {
           params: {
-  cohort_type: cohortType,
-            metric: 'retention',
+  cohort_type: cohortType;
+            metric: 'retention';
             periods: 6 },
-          headers: { Authorization: `Bearer ${token}` }
-        });
+          headers: { Authorization: `Bearer ${token}` }});
         setCohortData(cohortResponse.data)} catch (error) {
         console.warn('Cohort analysis not, available:', err)}
 
       // Fetch heatmap data
       const heatmapResponse = await apiClient.get('/api/v1/analytics/heatmaps', {
         params,
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        headers: { Authorization: `Bearer ${token}` }});
       setHeatmapData(heatmapResponse.data);
 
       // Fetch user segments (admin, only)
@@ -194,8 +211,7 @@ export const useBehaviorAnalytics = ({ userId,
     } catch (_err: unknown) {
       console.error('Error fetching behavior, analytics:', err);
       setError(err.response?.data?.detail || 'Failed to fetch analytics data')} finally {
-      setLoading(false)}
-  }, [token, userId, dateRange, funnelSteps, cohortType]);
+      setLoading(false)}}, [token, userId, dateRange, funnelSteps, cohortType]);
 
   useEffect(() => {
     fetchAnalyticsData()}, [fetchAnalyticsData]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -207,5 +223,4 @@ export const useBehaviorAnalytics = ({ userId,
     segments,
     loading,
     error,
-    refetch: fetchAnalyticsData };
-};
+    refetch: fetchAnalyticsData }};

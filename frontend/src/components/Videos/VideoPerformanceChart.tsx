@@ -9,10 +9,13 @@ import {
 import {  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer  } from 'recharts';
 
 interface VideoPerformanceChartProps {
-  videoId: string;
-  data?: unknown[];
-  metric?: 'views' | 'engagement' | 'revenue';
-  timeRange?: '24 h' | '7 d' | '30 d' | '90 d';
+  
+videoId: string;
+data?: unknown[];
+metric?: 'views' | 'engagement' | 'revenue';
+timeRange?: '24 h' | '7 d' | '30 d' | '90 d';
+
+
 }
 
 export const VideoPerformanceChart: React.FC<VideoPerformanceChartProps> = ({ videoId, data = [], metric = 'views', timeRange = '7 d' }) => {
@@ -41,10 +44,10 @@ export const VideoPerformanceChart: React.FC<VideoPerformanceChartProps> = ({ vi
             <ToggleButton value="revenue">Revenue</ToggleButton>
           </ToggleButtonGroup>
           <ToggleButtonGroup value={selectedRange} exclusive onChange={(_, v) => v && setSelectedRange(v} size="small">
-            <ToggleButton value="24 h">24 h</ToggleButton>
-            <ToggleButton value="7 d">7 d</ToggleButton>
-            <ToggleButton value="30 d">30 d</ToggleButton>
-            <ToggleButton value="90 d">90 d</ToggleButton>
+            <ToggleButton value="24h">24 h</ToggleButton>
+            <ToggleButton value="7d">7 d</ToggleButton>
+            <ToggleButton value="30d">30 d</ToggleButton>
+            <ToggleButton value="90d">90 d</ToggleButton>
           </ToggleButtonGroup>
         </Box>
       </Box>
@@ -53,17 +56,18 @@ export const VideoPerformanceChart: React.FC<VideoPerformanceChartProps> = ({ vi
         <AreaChart data={chartData}>
           <defs>
             <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#2196 F3" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#2196 F3" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#2196F3" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#2196F3" stopOpacity={0}/>
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" />
           <YAxis />
           <Tooltip />
-          <Area type="monotone" dataKey={selectedMetric} stroke="#2196 F3" fillOpacity={1} fill="url(#colorGradient)" />
+          <Area type="monotone" dataKey={selectedMetric} stroke="#2196F3" fillOpacity={1} fill="url(#colorGradient)" />
         </AreaChart>
       </ResponsiveContainer>
     </Paper>
   </>
-  )};
+  )
+};

@@ -58,14 +58,17 @@ const drawerWidth = 280;
 const miniDrawerWidth = 80;
 
 interface MenuItem {
-  id: string,
-  label: string,
+  
+id: string;
+label: string;
 
-  icon: React.ReactNode;
-  path?: string;
-  children?: MenuItem[];
-  badge?: string | number;
-  requiredTier?: string;
+icon: React.ReactNode;
+path?: string;
+children?: MenuItem[];
+badge?: string | number;
+requiredTier?: string;
+
+
 }
 
 export const Sidebar: React.FC = () => {
@@ -91,10 +94,10 @@ export const Sidebar: React.FC = () => {
           path: '/dashboard/mobile',
           badge: 'NEW' } ]
     },
-    { id: 'videos',
-      label: 'Videos',
-      icon: <VideoLibrary />,
-      children: [ {,
+    { id: 'videos';
+      label: 'Videos';
+      icon: <VideoLibrary />;
+      children: [ {
   id: 'create-video',
           label: 'Create New',
           icon: <AddCircleOutline />,
@@ -120,10 +123,10 @@ export const Sidebar: React.FC = () => {
           badge: 'NEW' } ]
     },
     {
-      id: 'channels',
-      label: 'Channels',
-      icon: <YouTube />,
-      children: [ {,
+      id: 'channels';
+      label: 'Channels';
+      icon: <YouTube />;
+      children: [ {
   id: 'channels-manage',
           label: 'Manage',
           icon: <YouTube />,
@@ -136,15 +139,15 @@ export const Sidebar: React.FC = () => {
           path: '/channels/dashboard',
           badge: 'NEW' } ]
     },
-    { id: 'bulk-operations',
-      label: 'Bulk Operations',
-      icon: <ViewList />,
-      path: '/bulk-operations',
+    { id: 'bulk-operations';
+      label: 'Bulk Operations';
+      icon: <ViewList />;
+      path: '/bulk-operations';
       badge: 'NEW' },
-    { id: 'analytics',
-      label: 'Analytics',
-      icon: <Analytics />,
-      children: [ {,
+    { id: 'analytics';
+      label: 'Analytics';
+      icon: <Analytics />;
+      children: [ {
   id: 'overview',
           label: 'Overview',
           icon: <BarChart />,
@@ -174,10 +177,10 @@ export const Sidebar: React.FC = () => {
           path: '/analytics/advanced',
           badge: 'NEW' } ]
     },
-    { id: 'monetization',
-      label: 'Monetization',
-      icon: <AttachMoney />,
-      children: [ {,
+    { id: 'monetization';
+      label: 'Monetization';
+      icon: <AttachMoney />;
+      children: [ {
   id: 'revenue',
           label: 'Revenue',
           icon: <MonetizationOn />,
@@ -191,10 +194,10 @@ export const Sidebar: React.FC = () => {
           icon: <AccountBalance />,
           path: '/monetization/billing' } ]
     },
-    { id: 'settings',
-      label: 'Settings',
-      icon: <Settings />,
-      children: [ {,
+    { id: 'settings';
+      label: 'Settings';
+      icon: <Settings />;
+      children: [ {
   id: 'profile',
           label: 'Profile',
           icon: <Person />,
@@ -222,10 +225,10 @@ export const Sidebar: React.FC = () => {
           path: '/settings/advanced',
           requiredTier: 'enterprise' } ]
     },
-    { id: 'monitoring',
-      label: 'System Monitoring',
-      icon: <Monitor />,
-      path: '/monitoring',
+    { id: 'monitoring';
+      label: 'System Monitoring';
+      icon: <Monitor />;
+      path: '/monitoring';
       badge: 'NEW' }];
 
   const bottomMenuItems: MenuItem[] = [ { id: 'help',
@@ -239,31 +242,29 @@ export const Sidebar: React.FC = () => {
       requiredTier: 'enterprise' } ];
 
   const handleDrawerToggle = () => {
-    setOpen(!open)};
-
+    setOpen(!open)
+};
   const handleItemClick = (item: MenuItem) => {
     if (item.path) {
       navigate(item.path)} else if (item.children) {
-      setExpandedItems(prev => {}
+      setExpandedItems(prev =>
         prev.includes(item.id)
           ? prev.filter(id => id !== item.id)
           : [...prev, item.id]
       )}
   };
-
   const handleLogout = () => {
     logout();
-    navigate('/auth/login')};
-
+    navigate('/auth/login')
+};
   const isItemActive = (item: MenuItem): boolean => {
     if (item.path) {
-      return location.pathname === item.path;
+      return location.pathname === item.path
     }
     if (item.children) {
       return item.children.some(child => child.path === location.pathname)}
-    return false;
+    return false
   };
-
   const renderMenuItem = (item: MenuItem, _depth = 0) => {
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = expandedItems.includes(item.id);
@@ -336,8 +337,8 @@ export const Sidebar: React.FC = () => {
         )}
       </React.Fragment>
     </>
-  )};
-
+  )
+};
   return (
     <>
       <Drawer
@@ -351,10 +352,8 @@ export const Sidebar: React.FC = () => {
           transition: theme => theme.transitions.create('width', {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen }),
-          overflowX: 'hidden',
-
-        }
-      }}
+          overflowX: 'hidden'
+}}}
     >
       <Box
         sx={ {

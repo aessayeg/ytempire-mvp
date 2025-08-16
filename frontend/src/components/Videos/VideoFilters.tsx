@@ -15,8 +15,11 @@ import {
 import {  FilterList, Clear  } from '@mui/icons-material';
 
 interface VideoFiltersProps {
-  onApplyFilters: (filters: React.ChangeEvent<HTMLInputElement>) => void,
-  onClearFilters: () => void}
+  
+onApplyFilters: (filters: React.ChangeEvent<HTMLInputElement>) => void;
+onClearFilters: () => void;
+
+}
 
 export const VideoFilters: React.FC<VideoFiltersProps> = ({ onApplyFilters, onClearFilters }) => {
   const [filters, setFilters] = useState({
@@ -27,13 +30,13 @@ export const VideoFilters: React.FC<VideoFiltersProps> = ({ onApplyFilters, onCl
     duration: 'all',
     hasRevenue: false,
     minViews: 0,
-    categories: [],
+    categories: []
 
   });
 
   const handleApply = () => {
-    onApplyFilters(filters)};
-
+    onApplyFilters(filters)
+};
   const handleClear = () => {
     setFilters({
       status: 'all',
@@ -43,11 +46,11 @@ export const VideoFilters: React.FC<VideoFiltersProps> = ({ onApplyFilters, onCl
       duration: 'all',
       hasRevenue: false,
       minViews: 0,
-      categories: [],
+      categories: []
 
     });
-    onClearFilters()};
-
+    onClearFilters()
+};
   return (
     <>
       <Paper sx={{ p: 2 }}>
@@ -61,7 +64,7 @@ export const VideoFilters: React.FC<VideoFiltersProps> = ({ onApplyFilters, onCl
 
       <FormControl fullWidth margin="normal" size="small">
         <InputLabel>Status</InputLabel>
-        <Select value={filters.status} onChange={(e) => setFilters({...filters, status: e.target.value)});
+        <Select value={filters.status} onChange={(e) => setFilters({...filters, status: e.target.value)})
 }>
           <MenuItem value="all">All</MenuItem>
           <MenuItem value="draft">Draft</MenuItem>
@@ -73,7 +76,7 @@ export const VideoFilters: React.FC<VideoFiltersProps> = ({ onApplyFilters, onCl
 
       <FormControl fullWidth margin="normal" size="small">
         <InputLabel>Date Range</InputLabel>
-        <Select value={filters.dateRange} onChange={(e) => setFilters({...filters, dateRange: e.target.value)});
+        <Select value={filters.dateRange} onChange={(e) => setFilters({...filters, dateRange: e.target.value)})
 }>
           <MenuItem value="all">All Time</MenuItem>
           <MenuItem value="today">Today</MenuItem>
@@ -85,13 +88,13 @@ export const VideoFilters: React.FC<VideoFiltersProps> = ({ onApplyFilters, onCl
 
       <Box mt={2} mb={1}>
         <Typography variant="body2">Quality Score</Typography>
-        <Slider value={filters.qualityScore} onChange={(_, v) => setFilters({...filters, qualityScore: v as number[]});
+        <Slider value={filters.qualityScore} onChange={(_, v) => setFilters({...filters, qualityScore: v as number[]})
 } valueLabelDisplay="auto" min={0} max={100} />
       </Box>
 
       <FormControl fullWidth margin="normal" size="small">
         <InputLabel>Duration</InputLabel>
-        <Select value={filters.duration} onChange={(e) => setFilters({...filters, duration: e.target.value)});
+        <Select value={filters.duration} onChange={(e) => setFilters({...filters, duration: e.target.value)})
 }>
           <MenuItem value="all">All</MenuItem>
           <MenuItem value="short">Short (&lt; 3, min</>
@@ -101,11 +104,12 @@ export const VideoFilters: React.FC<VideoFiltersProps> = ({ onApplyFilters, onCl
         </Select>
       </FormControl>
 
-      <FormControlLabel control={<Checkbox checked={filters.hasRevenue} onChange={(e) => setFilters({...filters, hasRevenue: e.target.checked});
+      <FormControlLabel control={<Checkbox checked={filters.hasRevenue} onChange={(e) => setFilters({...filters, hasRevenue: e.target.checked})
 } />} label="Has Revenue" />
 
       <Box mt={2}>
         <Button fullWidth variant="contained" onClick={handleApply}>Apply Filters</Button>
       </Box>
     </Paper>
-  )};
+  )
+};

@@ -79,88 +79,102 @@ import {  useOptimizedStore  } from '../../stores/optimizedStore';
 import {  api  } from '../../services/api';
 
 interface ExecutiveMetric {
-  id: string,
-  name: string,
+  
+id: string;
+name: string;
 
-  value: number | string,
-  previousValue: number | string,
+value: number | string;
+previousValue: number | string;
 
-  change: number,
-  changePercent: number,
+change: number;
+changePercent: number;
 
-  trend: 'up' | 'down' | 'flat',
-  status: 'excellent' | 'good' | 'warning' | 'critical';
-  target?: number;
-  unit: string,
-  category: 'revenue' | 'growth' | 'efficiency' | 'quality',
+trend: 'up' | 'down' | 'flat';
+status: 'excellent' | 'good' | 'warning' | 'critical';
+target?: number;
+unit: string;
+category: 'revenue' | 'growth' | 'efficiency' | 'quality';
 
-  description: string,
-  icon: React.ReactNode,
+description: string;
+icon: React.ReactNode;
 
-  color: string}
+color: string;
+
+}
 
 interface BusinessKPI {
-  id: string,
-  name: string,
+  
+id: string;
+name: string;
 
-  current: number,
-  target: number,
+current: number;
+target: number;
 
-  benchmark: number,
-  trend: number[],
+benchmark: number;
+trend: number[];
 
-  status: 'on_track' | 'at_risk' | 'critical',
-  category: string,
+status: 'on_track' | 'at_risk' | 'critical';
+category: string;
 
-  unit: string}
+unit: string;
+
+}
 
 interface FinancialMetric {
-  period: string,
-  revenue: number,
+  
+period: string;
+revenue: number;
 
-  costs: number,
-  profit: number,
+costs: number;
+profit: number;
 
-  margin: number,
-  users: number,
+margin: number;
+users: number;
 
-  arpu: number,
-  ltv: number,
+arpu: number;
+ltv: number;
 
-  cac: number}
+cac: number;
+
+}
 
 interface UserSegment {
-  segment: string,
-  count: number,
+  
+segment: string;
+count: number;
 
-  percentage: number,
-  revenue: number,
+percentage: number;
+revenue: number;
 
-  avgLifetime: number,
-  churnRate: number,
+avgLifetime: number;
+churnRate: number;
 
-  growthRate: number}
+growthRate: number;
+
+}
 
 interface CompetitiveMetric {
-  metric: string,
-  ourValue: number,
+  
+metric: string;
+ourValue: number;
 
-  industry: number,
-  leader: number,
+industry: number;
+leader: number;
 
-  position: string}
+position: string;
 
-const CHART_COLORS = { primary: '#1976 d2',
-  secondary: '#dc004 e',
-  success: '#2 e7 d32',
-  warning: '#ed6 c02',
-  error: '#d32 f2 f',
-  info: '#0288 d1',
+}
+
+const CHART_COLORS = { primary: '#1976d2',
+  secondary: '#dc004e',
+  success: '#2e7d32',
+  warning: '#ed6c02',
+  error: '#d32f2 f',
+  info: '#0288d1',
   revenue: '#4 caf50',
   costs: '#f44336',
-  profit: '#2 e7 d32',
+  profit: '#2e7d32',
   users: '#3 f51 b5' };
-
 const TIME_PERIODS = [ { value: '24 h', label: '24 Hours' },
   { value: '7 d', label: '7 Days' },
   { value: '30 d', label: '30 Days' },
@@ -312,8 +326,7 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
       addNotification({
         type: 'error',
         message: 'Failed to load business intelligence data' });
-      setLoading(false)}
-  }, [timePeriod, addNotification]);
+      setLoading(false)}}, [timePeriod, addNotification]);
 
   // Effects
   useEffect(() => {
@@ -334,24 +347,19 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
         case 'good': return 'info';
         case 'warning': return 'warning';
         case 'critical': return 'error';
-        default: return 'info'}
-    };
-
+        default: return 'info'}};
     const formatValue = (value: number | string) => {
       if (typeof value === 'string') return value;
       if (metric.unit === '$') return `$${value.toLocaleString()}`;
-      return `${value.toLocaleString()}${metric.unit}`;
+      return `${value.toLocaleString()}${metric.unit}
     };
-
     const getTrendIcon = () => {
       switch (metric.trend) {
         case 'up':
           return <TrendingUp sx={{ color: metric.category === 'efficiency' && metric.id === 'cost_per_video' ? 'error.main' : 'success.main' }} />;
         case 'down':
           return <TrendingDown sx={{ color: metric.category === 'efficiency' && metric.id === 'cost_per_video' ? 'success.main' : 'error.main' }} />;
-          return <TrendingFlat color="action" />}
-    };
-
+          return <TrendingFlat color="action" />}};
     return (
     <>
       <Card key={metric.id} sx={{ height: '100%' }}>
@@ -385,9 +393,7 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
                 variant="body2" 
                 sx={{ 
                   ml: 0.5,
-                  color: metric.changePercent >= 0 ? 'success.main' : 'error.main',
-
-                }}
+                  color: metric.changePercent >= 0 ? 'success.main' : 'error.main'}}
               >
                 {metric.changePercent >= 0 ? '+' : ''}{metric.changePercent.toFixed(1)}%
               </Typography>
@@ -414,8 +420,7 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
                   height: 6,
                   borderRadius: 3,
                   backgroundColor: `${metric.color}20`,
-                  '& .MuiLinearProgress-bar': { backgroundColor: metric.color }
-                }}
+                  '& .MuiLinearProgress-bar': { backgroundColor: metric.color }}}
               />
             </Box>
           )}
@@ -426,7 +431,6 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
       </Card>
     </>
   )};
-
   // Render financial performance chart
   const renderFinancialChart = () => (
     <ResponsiveContainer width="100%" height={400}>
@@ -451,7 +455,7 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
       count: segment.count,
       revenue: segment.revenue }));
 
-    const COLORS = ['#0088 FE', '#00 C49 F', '#FFBB28', '#FF8042', '#8884 D8'];
+    const COLORS = ['#0088FE', '#00 C49 F', '#FFBB28', '#FF8042', '#8884D8'];
 
     return (
     <>
@@ -464,8 +468,8 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
         </RechartsPie>
       </ResponsiveContainer>
     </>
-  )};
-
+  )
+};
   // Render KPI dashboard
   const renderKPIDashboard = () => (
     <Grid container spacing={2}>
@@ -502,7 +506,7 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
               />
               <ResponsiveContainer width="100%" height={60}>
                 <LineChart data={kpi.trend.map((value, index) => ({ index, value }))}>
-                  <Line type="monotone" dataKey="value" stroke="#8884 d8" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -669,8 +673,7 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
                 <Switch
                   checked={autoRefresh}
                   onChange={(e) => setAutoRefresh(e.target.checked)}
-                />
-              }
+                />}
               label="Auto Refresh"
             />
           </Grid>
@@ -681,8 +684,7 @@ export const BusinessIntelligenceDashboard: React.FC = () => {
                 <Switch
                   checked={showTargets}
                   onChange={(e) => setShowTargets(e.target.checked)}
-                />
-              }
+                />}
               label="Show Targets"
             />
           </Grid>

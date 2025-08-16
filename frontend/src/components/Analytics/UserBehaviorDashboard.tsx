@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React,{ useState } from 'react';
 import { 
   Box,
   Card,
@@ -42,12 +42,12 @@ import {
 import { useBehaviorAnalytics } from '../../hooks/useBehaviorAnalytics';
 import { formatNumber, formatPercentage, formatDuration } from '../../utils/formatters';
 
-interface UserBehaviorDashboardProps {
+interface 
   userId?: number;
   dateRange?: {
-    start: Date;
+    start: Date,
     end: Date;
-  };
+   {UserBehaviorDashboardProps}
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
@@ -85,7 +85,7 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
       case 'upgrade':
         return ['pricing_view', 'plan_select', 'checkout', 'payment_complete'];
       default:
-        return [];
+        return []
     }
   }
 
@@ -124,8 +124,9 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
         </BarChart>
       </ResponsiveContainer>
     </>
-  )};
-
+  )
+}
+  };
   const renderFunnelChart = () => { if (!funnelData?.steps) return null;
 
     const funnelChartData = funnelData.steps.map(step => ({
@@ -160,7 +161,7 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
             <YAxis dataKey="name" type="category" width={120} />
             <RechartsTooltip
               formatter={(value: number) => formatNumber(value)}
-              labelFormatter={(label) => `${label}: ${formatPercentage(funnelChartData.find(d => d.name === label)?.rate || 0)}`}
+              labelFormatter={(label) => `${label}: ${formatPercentage(funnelChartData.find(d => d.name === label)?.rate || 0)}
             />
             <Bar dataKey="value" fill="#8884d8">
               {funnelChartData.map((entry, index) => (
@@ -200,9 +201,9 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
           </Table>
         </TableContainer>
       </Box>
-    );
+    )
+}
   };
-
   const renderCohortAnalysis = () => {
     if (!cohortData?.cohorts) return null;
 
@@ -252,22 +253,22 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
                           size="small"
                           sx={{
                             backgroundColor: `rgba(0, 136, 254, ${rate / 100})`,
-                            color: rate > 50 ? 'white' : 'inherit',
+                            color: rate > 50 ? 'white' : 'inherit'
 
                           }}
                         />
                       </TableCell>
-                    );
-                  })}
+                    )
+})}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       </Box>
-    );
+    )
+}
   };
-
   const renderHeatmap = () => {
     if (!heatmapData?.heatmap) return null;
 
@@ -306,10 +307,9 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
                         padding: 4,
                         backgroundColor: `rgba(0, 136, 254, ${intensity})`,
                         border: '1px solid #f0f0f0',
-                        width: 20,
+                        width: 20;
                         height: 20
-}}
-                      title={`${day} ${hour}:00 - Intensity: ${(intensity * 100).toFixed(0)}%`}
+                      title={`${day} ${hour}:00 - Intensity: ${(intensity * 100).toFixed(0)}%
                     />
                   ))}
                 </tr>
@@ -327,9 +327,8 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
           </Typography>
         </Box>
       </Box>
-    );
+    )
   };
-
   const renderUserSegments = () => {
     if (!segments?.segments) return null;
 
@@ -366,17 +365,14 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
           ))}
         </Grid>
       </Box>
-    );
+    )
   };
-
   if (loading) {
-    return <LinearProgress />;
+    return <LinearProgress />
   }
 
   if (error) {
     return <Alert severity="error">{error}</Alert>;
-  }
-
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
@@ -479,5 +475,6 @@ export const UserBehaviorDashboard: React.FC<UserBehaviorDashboardProps> = ({
         </CardContent>
       </Card>
     </Box>
-  );
-};
+  )
+}
+  };

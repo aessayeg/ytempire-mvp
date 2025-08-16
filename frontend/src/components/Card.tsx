@@ -2,12 +2,15 @@ import React from 'react';
 import {  clsx  } from 'clsx';
 
 interface CardProps {
-  title?: string;
-  subtitle?: string;
-  children: React.ReactNode;
-  className?: string;
-  padding?: 'sm' | 'md' | 'lg' | 'none';
-  footer?: React.ReactNode;
+  
+title?: string;
+subtitle?: string;
+children: React.ReactNode;
+className?: string;
+padding?: 'sm' | 'md' | 'lg' | 'none';
+footer?: React.ReactNode;
+
+
 }
 
 export const Card: React.FC<CardProps> = ({ title, subtitle, children, className, padding = 'md', footer }) => { const paddingSizes = {
@@ -15,7 +18,6 @@ export const Card: React.FC<CardProps> = ({ title, subtitle, children, className
     sm: 'p-4',
     md: 'p-6',
     lg: 'p-8' };
-
   return (
     <div className={clsx('bg-white rounded-lg shadow-sm border border-gray-200', className)}>
       {(title || subtitle) && (
@@ -31,4 +33,5 @@ export const Card: React.FC<CardProps> = ({ title, subtitle, children, className
         </div>
       )}
     </div>
-  )};
+  )
+};

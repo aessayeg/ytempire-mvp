@@ -42,6 +42,6 @@ const MobileDashboardPage: React.FC = () => {
       </Box>
     </Box>
   </>
-  )};
-
+  )
+};
 export default MobileDashboardPage;

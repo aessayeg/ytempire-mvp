@@ -14,7 +14,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Grid,
   Switch,
   FormControlLabel,
   Divider,
@@ -28,6 +27,7 @@ import {
   Zoom,
   FormControl
  } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { 
   DragIndicator,
   Settings,
@@ -48,17 +48,15 @@ import {
   CloudQueue,
   Schedule
  } from '@mui/icons-material';
-import {  DragDropContext, Droppable, Draggable  } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {  format  } from 'date-fns';
 
 // Widget Types
 export interface Widget {
-  id: string,
-  type: 'metric' | 'chart' | 'list' | 'progress' | 'custom';,
-
-  title: string,
-  size: 'small' | 'medium' | 'large' | 'full';,
-
+  id: string;
+  type: 'metric' | 'chart' | 'list' | 'progress' | 'custom';
+  title: string;
+  size: 'small' | 'medium' | 'large' | 'full';
   position: { x: number; y: number };
   config: unknown;
   locked?: boolean;
@@ -68,16 +66,14 @@ export interface Widget {
 }
 
 interface WidgetLibraryItem {
-  id: string,
-  type: Widget['type'],
-
-  title: string,
-  description: string,
-
-  icon: React.ReactNode,
-  defaultConfig: unknown,
-
-  sizes: Widget['size'][]}
+  id: string;
+  type: Widget['type'];
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  defaultConfig: unknown;
+  sizes: Widget['size'][];
+}
 
 const widgetLibrary: WidgetLibraryItem[] = [
   {
@@ -122,7 +118,7 @@ const widgetLibrary: WidgetLibraryItem[] = [
     title: 'Trend Analysis',
     description: 'Analyze trending topics and niches',
     icon: <TrendingUp />,
-    defaultConfig: { chartType: 'heatmap', period: '7 d' },
+    defaultConfig: { chartType: 'heatmap', period: '7d' },
     sizes: ['large', 'full']
   },
   {
@@ -136,9 +132,12 @@ const widgetLibrary: WidgetLibraryItem[] = [
   }];
 
 interface CustomizableWidgetsProps {
-  initialWidgets?: Widget[];
-  onSave?: (widgets: Widget[]) => void;
-  allowEdit?: boolean;
+  
+initialWidgets?: Widget[];
+onSave?: (widgets: Widget[]) => void;
+allowEdit?: boolean;
+
+
 }
 
 export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({ initialWidgets = [], onSave, allowEdit = true }) => {
@@ -159,11 +158,11 @@ export const CustomizableWidgets: React.FC<CustomizableWidgetsProps> = ({ initia
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    setWidgets(items)};
-
+    setWidgets(items)
+};
   // Add new widget
-  const handleAddWidget = (_libraryItem: WidgetLibraryItem, _size: Widget['size']) => {
-const newWidget: Widget = {,
+  const handleAddWidget = (libraryItem: WidgetLibraryItem, size: Widget['size']) => {
+const newWidget: Widget = {
   id: `widget-${Date.now()}`,
       type: libraryItem.type,
       title: libraryItem.title,
@@ -171,30 +170,27 @@ const newWidget: Widget = {,
       position: { x: 0, y: widgets.length },
       config: libraryItem.defaultConfig,
       visible: true,
-      lastUpdated: new Date(),
-
-    };
-
+      lastUpdated: new Date()
+};
     setWidgets([...widgets, newWidget]);
-    setAddDialogOpen(false)};
-
+    setAddDialogOpen(false)
+};
   // Remove widget
   const handleRemoveWidget = (widgetId: string) => {
     setWidgets(widgets.filter(w => w.id !== widgetId));
-    setAnchorEl(null)};
-
+    setAnchorEl(null)
+};
   // Toggle widget visibility
   const handleToggleVisibility = (widgetId: string) => {
-    setWidgets(widgets.map(w => {}
+    setWidgets(widgets.map(w =>
       w.id === widgetId ? { ...w, visible: !w.visible } : w
-    ))};
-
+    ))
+};
   // Toggle widget lock
   const handleToggleLock = (widgetId: string) => {
-    setWidgets(widgets.map(w => {}
+    setWidgets(widgets.map(w =>
       w.id === widgetId ? { ...w, locked: !w.locked } : w
     ))};
-
   // Duplicate widget
   const handleDuplicateWidget = (widgetId: string) => {
     const widget = widgets.find(w => w.id === widgetId);
@@ -202,19 +198,19 @@ const newWidget: Widget = {,
 const newWidget: Widget = {
         ...widget,
         id: `widget-${Date.now()}`,
-        title: `${widget.title} (Copy)
+        title: `${widget.title} (Copy)`
       };
-      setWidgets([...widgets, newWidget])}
-    setAnchorEl(null)};
-
+      setWidgets([...widgets, newWidget]);
+    }
+    setAnchorEl(null);
+  };
   // Refresh widget data
   const handleRefreshWidget = (widgetId: string) => {
-    setWidgets(widgets.map(w => {}
+    setWidgets(widgets.map(w =>
       w.id === widgetId ? { ...w, lastUpdated: new Date() } : w
     ));
     // Trigger actual data refresh here
   };
-
   // Export widget data
   const handleExportWidget = (widgetId: string) => {
     const widget = widgets.find(w => w.id === widgetId);
@@ -224,34 +220,34 @@ const newWidget: Widget = {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${widget.title.replace(/\s+/g, '-')}-${format(new Date(), 'yyyy-MM-dd')}.json`;
+      a.download = widget.title.replace(/\s+/g, '-') + '-' + format(new Date(), 'yyyy-MM-dd') + '.json';
       a.click();
-      URL.revokeObjectURL(url)}
-    setAnchorEl(null)};
-
+      URL.revokeObjectURL(url);
+    }
+    setAnchorEl(null);
+};
   // Widget menu actions
   const handleWidgetMenu = (event: React.MouseEvent<HTMLElement>, widgetId: string) => {
     setAnchorEl(event.currentTarget);
-    setMenuWidget(widgetId)};
-
+    setMenuWidget(widgetId)
+};
   const handleCloseMenu = () => {
     setAnchorEl(null);
-    setMenuWidget(null)};
-
+    setMenuWidget(null)
+};
   // Save widgets configuration
   const handleSaveConfiguration = () => {
     onSave?.(widgets);
-    setEditMode(false)};
-
+    setEditMode(false)
+};
   // Render individual widget
-  const renderWidget = (_widget: Widget) => {
+  const renderWidget = (widget: Widget) => {
     const gridSizes = {
       small: { xs: 12, sm: 6, md: 3 },
       medium: { xs: 12, sm: 12, md: 6 },
       large: { xs: 12, sm: 12, md: 9 },
       full: { xs: 12, sm: 12, md: 12 }
     };
-
     const size = gridSizes[widget.size];
 
     return (
@@ -296,8 +292,7 @@ const newWidget: Widget = {
                     <VisibilityOff fontSize="small" color="action" />
                   </Tooltip>
                 )}
-              </Box>
-            }
+              </Box>}
             action={
               <Box>
                 {widget.lastUpdated && (
@@ -307,12 +302,11 @@ const newWidget: Widget = {
                 )}
                 <IconButton
                   size="small"
-                  onClick={(e) => handleWidgetMenu(e, widget.id}
+                  onClick={(e) => handleWidgetMenu(e, widget.id)}
                 >
                   <MoreVert fontSize="small" />
                 </IconButton>
-              </Box>
-            }
+              </Box>}
             sx={{ pb: 1 }}
           />
 
@@ -356,7 +350,7 @@ const newWidget: Widget = {
                       <CloudQueue color="primary" />
                     </ListItemIcon>
                     <ListItemText
-                      primary={`Video ${item}`}
+                      primary={'Video ' + item}
                       secondary="Processing..."
                     />
                     <ListItemSecondaryAction>
@@ -377,11 +371,11 @@ const newWidget: Widget = {
         </Card>
       </Grid>
     </>
-  )};
+  );
+  };
 
   return (
-    <>
-      <Box>
+    <Box>
       {/* Edit Mode Toggle */}
       {allowEdit && (
         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -389,7 +383,7 @@ const newWidget: Widget = {
             control={
               <Switch
                 checked={editMode}
-                onChange={(e) => setEditMode(e.target.checked}
+                onChange={(e) => setEditMode(e.target.checked)}
               />
             }
             label="Edit Dashboard"
@@ -400,7 +394,7 @@ const newWidget: Widget = {
               <Button
                 variant="outlined"
                 startIcon={<Add />}
-                onClick={() => setAddDialogOpen(true}
+                onClick={() => setAddDialogOpen(true)}
               >
                 Add Widget
               </Button>
@@ -464,9 +458,9 @@ const newWidget: Widget = {
       >
         <MenuItem onClick={() => {
           if (menuWidget) {
-            setFullscreenWidget(menuWidget</>
-  );
-            handleCloseMenu()}
+            setFullscreenWidget(menuWidget);
+            handleCloseMenu();
+          }
         }}>
           <ListItemIcon>
             <Fullscreen fontSize="small" />
@@ -476,7 +470,7 @@ const newWidget: Widget = {
         
         <MenuItem onClick={() => {
           if (menuWidget) {
-            handleRefreshWidget(menuWidget);
+            handleRefreshWidget(menuWidget),
             handleCloseMenu()}
         }}>
           <ListItemIcon>
@@ -487,8 +481,8 @@ const newWidget: Widget = {
         
         <MenuItem onClick={() => {
           if (menuWidget) {
-            setSelectedWidget(widgets.find(w => w.id === menuWidget) || null);
-            setConfigDialogOpen(true);
+            setSelectedWidget(widgets.find(w => w.id === menuWidget) || null),
+            setConfigDialogOpen(true),
             handleCloseMenu()}
         }}>
           <ListItemIcon>
@@ -501,7 +495,7 @@ const newWidget: Widget = {
         
         <MenuItem onClick={() => {
           if (menuWidget) {
-            handleToggleVisibility(menuWidget);
+            handleToggleVisibility(menuWidget),
             handleCloseMenu()}
         }}>
           <ListItemIcon>
@@ -512,7 +506,7 @@ const newWidget: Widget = {
         
         <MenuItem onClick={() => {
           if (menuWidget) {
-            handleToggleLock(menuWidget);
+            handleToggleLock(menuWidget),
             handleCloseMenu()}
         }}>
           <ListItemIcon>
@@ -545,8 +539,7 @@ const newWidget: Widget = {
         
         <MenuItem onClick={() => {
           if (menuWidget) {
-            handleRemoveWidget(menuWidget)}
-        }} sx={{ color: 'error.main' }}>
+            handleRemoveWidget(menuWidget)}}} sx={{ color: 'error.main' }}>
           <ListItemIcon>
             <Delete fontSize="small" color="error" />
           </ListItemIcon>
@@ -557,7 +550,7 @@ const newWidget: Widget = {
       {/* Add Widget Dialog */}
       <Dialog
         open={addDialogOpen}
-        onClose={() => setAddDialogOpen(false}
+        onClose={() => setAddDialogOpen(false)}
         maxWidth="md"
         fullWidth
       >
@@ -570,8 +563,7 @@ const newWidget: Widget = {
                   sx={{
                     p: 2,
                     cursor: 'pointer',
-                    '&:hover': { bgcolor: 'action.hover' }
-                  }}
+                    '&:hover': { bgcolor: 'action.hover' }}}
                 >
                   <Box sx={{ display: 'flex', gap: 2 }}>
                     <Box sx={{ color: 'primary.main' }}>
@@ -590,7 +582,7 @@ const newWidget: Widget = {
                             key={size}
                             size="small"
                             variant="outlined"
-                            onClick={() => handleAddWidget(item, size}
+                            onClick={() => handleAddWidget(item, size)}
                           >
                             {size}
                           </Button>
@@ -604,7 +596,7 @@ const newWidget: Widget = {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddDialogOpen(false}>Cancel</Button>
+          <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
         </DialogActions>
       </Dialog>
 
@@ -617,11 +609,12 @@ const newWidget: Widget = {
               position: 'fixed',
               bottom: 16,
               right: 16 }}
-            onClick={() => setEditMode(true}
+            onClick={() => setEditMode(true)}
           >
             <Edit />
           </Fab>
         </Zoom>
       )}
     </Box>
-  )};
+  );
+};

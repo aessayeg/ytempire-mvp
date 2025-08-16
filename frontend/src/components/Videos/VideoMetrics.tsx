@@ -11,7 +11,10 @@ import {  TrendingUp, Visibility, ThumbUp, Comment, WatchLater, AttachMoney  } f
 import {  api  } from '../../services/api';
 
 interface VideoMetricsProps {
-  videoId: string}
+  
+videoId: string;
+
+}
 
 export const VideoMetrics: React.FC<VideoMetricsProps> = ({ videoId }) => {
   const [metrics, setMetrics] = useState<any>(null);
@@ -25,7 +28,6 @@ export const VideoMetrics: React.FC<VideoMetricsProps> = ({ videoId }) => {
       setMetrics(response)} catch (error) {
       console.error('Failed to fetch, metrics:', error)}
   };
-
   if (!metrics) return null;
 
   const MetricCard = ({ icon, label, value, change }: React.ChangeEvent<HTMLInputElement>) => (

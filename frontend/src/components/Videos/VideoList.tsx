@@ -19,13 +19,16 @@ import {  VideoCard  } from './VideoCard';
 import {  api  } from '../../services/api';
 
 interface VideoListProps {
-  channelId?: string;
-  status?: 'all' | 'generated' | 'published' | 'draft';
-  onVideoSelect?: (videoId: string) => void;
-  onVideoEdit?: (videoId: string) => void;
-  onVideoDelete?: (videoId: string) => void;
-  onVideoPublish?: (videoId: string) => void;
-  onVideoPreview?: (videoId: string) => void}
+  
+channelId?: string;
+status?: 'all' | 'generated' | 'published' | 'draft';
+onVideoSelect?: (videoId: string) => void;
+onVideoEdit?: (videoId: string) => void;
+onVideoDelete?: (videoId: string) => void;
+onVideoPublish?: (videoId: string) => void;
+onVideoPreview?: (videoId: string) => void;
+
+}
 
 export const VideoList: React.FC<VideoListProps> = ({ channelId, status = 'all', onVideoSelect, onVideoEdit, onVideoDelete, onVideoPublish, onVideoPreview }) => {
   const [page, setPage] = useState(1);
@@ -57,28 +60,26 @@ export const VideoList: React.FC<VideoListProps> = ({ channelId, status = 'all',
       setError(err.message || 'Failed to load videos')} finally {
       setIsLoading(false)}
   };
-
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
-    window.scrollTo({ top: 0, behavior: 'smooth' })};
-
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+};
   const handleItemsPerPageChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     setItemsPerPage(event.target.value);
-    setPage(1)};
-
+    setPage(1)
+};
   const handleSortChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     setSortBy(event.target.value);
-    setPage(1)};
-
+    setPage(1)
+};
   const handleSortOrderToggle = () => {
     setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-    setPage(1)};
-
+    setPage(1)
+};
   const handleViewModeChange = (_: React.MouseEvent<HTMLElement>, newMode: 'grid' | 'list' | null) => {
     if (newMode !== null) {
       setViewMode(newMode)}
   };
-
   const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   // Sort options
@@ -294,4 +295,5 @@ export const VideoList: React.FC<VideoListProps> = ({ channelId, status = 'all',
       )}
     </Box>
   </>
-  )};
+  )
+};

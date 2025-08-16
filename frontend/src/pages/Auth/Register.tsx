@@ -3,7 +3,7 @@
  * Production-ready registration form with Material-UI styling
  */
 import React, { useState, useEffect } from 'react';
-import {  useNavigate, Link as RouterLink  } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { 
   Box,
   Card,
@@ -43,43 +43,48 @@ import {
   Stars,
   Rocket
  } from '@mui/icons-material';
-import {  useAuthStore  } from '../../stores/authStore';
+import { useAuthStore } from '../../stores/authStore';
 
 interface PasswordStrength {
-  score: number,
-  feedback: string[],
-
-  color: 'error' | 'warning' | 'info' | 'success'}
+  score: number;
+  feedback: string[];
+  color: 'error' | 'warning' | 'info' | 'success';
+}
 
 export const Register: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { register, isLoading, error, clearError, isAuthenticated } = useAuthStore();
 
-  const [formData, setFormData] = useState({ email: '',
+  const [formData, setFormData] = useState({
+    email: '',
     username: '',
     full_name: '',
     password: '',
-    confirmPassword: '' });
+    confirmPassword: ''
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({ score: 0,
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
+    score: 0,
     feedback: [],
-    color: 'error' });
+    color: 'error'
+  });
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard', { replace: true });
-}
+    }
   }, [isAuthenticated, navigate]);
 
   // Clear errors when component mounts
   useEffect(() => {
-    clearError()}, [clearError]); // eslint-disable-line react-hooks/exhaustive-deps
+    clearError();
+  }, [clearError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Password strength checker
   const checkPasswordStrength = (password: string): PasswordStrength => {
@@ -98,10 +103,7 @@ export const Register: React.FC = () => {
     if (/\d/.test(password)) score += 1;
     else feedback.push('Number');
 
-    if (/[!@#$%^&*(</>
-  )_+\-=\[\]{};':"\\|,.<>\/?]/.test(password</>
-  )</>
-  ) score += 1;
+    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 1;
     else feedback.push('Special character');
 
     let color: 'error' | 'warning' | 'info' | 'success' = 'error';
@@ -111,25 +113,28 @@ export const Register: React.FC = () => {
 
     return { score, feedback, color };
   };
-
-  const handleInputChange = (_: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setFormData(prev => ({ ...prev,
-      [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
     
     // Clear field error when user starts typing
-    if (formErrors[name]) { setFormErrors(prev => ({
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
         ...prev,
-        [name]: '' }))}
+        [name]: ''
+      }));
+    }
 
     // Check password strength
     if (name === 'password') {
-      setPasswordStrength(checkPasswordStrength(value))}
+      setPasswordStrength(checkPasswordStrength(value));
+    }
   };
-
   const validateForm = () => {
-const errors: {[key: string]: string} = {};
-
+    const errors: {[key: string]: string} = {};
     if (!formData.email) {
       errors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -140,7 +145,7 @@ const errors: {[key: string]: string} = {};
       errors.username = 'Username is required';
     } else if (formData.username.length < 3) {
       errors.username = 'Username must be at least 3 characters';
-    } else if (!/^[a-zA-Z0-9 _]+$/.test(formData.username)) {
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
       errors.username = 'Username can only contain letters, numbers, and underscores';
     }
 
@@ -173,8 +178,7 @@ const errors: {[key: string]: string} = {};
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-
-  const handleSubmit = async (_: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
     if (!validateForm()) {
@@ -188,36 +192,42 @@ const errors: {[key: string]: string} = {};
       // Error is handled by the store
     }
   };
-
   const handleTogglePassword = () => {
-    setShowPassword(prev => !prev)};
-
+    setShowPassword(prev => !prev);
+  };
   const handleToggleConfirmPassword = () => {
-    setShowConfirmPassword(prev => !prev)};
-
+    setShowConfirmPassword(prev => !prev);
+  };
   // Mock social login handlers
   const handleGoogleLogin = () => {
-    console.log('Google login not implemented yet')};
-
+    console.log('Google login not implemented yet');
+  };
   const handleGitHubLogin = () => {
-    console.log('GitHub login not implemented yet')};
-
+    console.log('GitHub login not implemented yet');
+  };
   const subscriptionTiers = [
-    { name: 'Starter',
+    {
+      name: 'Starter',
       price: 'Free',
       features: ['5 videos/month', '1 YouTube channel', 'Basic analytics', 'Community support'],
       icon: <Rocket color="primary" />,
-      popular: false },
-    { name: 'Creator',
+      popular: false
+    },
+    {
+      name: 'Creator',
       price: '$29/month',
       features: ['100 videos/month', '5 YouTube channels', 'Advanced analytics', 'Priority support'],
       icon: <Stars color="warning" />,
-      popular: true },
-    { name: 'Enterprise',
+      popular: true
+    },
+    {
+      name: 'Enterprise',
       price: '$99/month',
       features: ['Unlimited videos', 'Unlimited channels', 'White-label solution', '24/7 support'],
       icon: <Security color="success" />,
-      popular: false }];
+      popular: false
+    }
+  ];
 
   return (
     <>
@@ -255,9 +265,10 @@ const errors: {[key: string]: string} = {};
                     mb: 2, 
                     position: 'relative',
                     border: tier.popular ? '2px solid' : '1px solid',
-                    borderColor: tier.popular ? 'primary.main' : 'divider' }}
+                    borderColor: tier.popular ? 'primary.main' : 'divider'
+                  }}
                 >
-                  { tier.popular && (
+                  {tier.popular && (
                     <Chip
                       label="Most Popular"
                       color="primary"
@@ -266,7 +277,8 @@ const errors: {[key: string]: string} = {};
                         position: 'absolute',
                         top: -10,
                         right: 16,
-                        zIndex: 1 }}
+                        zIndex: 1
+                      }}
                     />
                   )}
                   <CardContent sx={{ p: 2 }}>
@@ -301,7 +313,8 @@ const errors: {[key: string]: string} = {};
               background: theme.palette.mode === 'dark' 
                 ? 'rgba(255, 255, 255, 0.05)' 
                 : 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(10px)' }}
+              backdropFilter: 'blur(10px)'
+            }}
           >
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <PersonAdd sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
@@ -340,7 +353,8 @@ const errors: {[key: string]: string} = {};
                         <InputAdornment position="start">
                           <Person color="action" />
                         </InputAdornment>
-                      ) }}
+                      )
+                    }}
                     disabled={isLoading}
                     autoComplete="name"
                   />
@@ -375,7 +389,8 @@ const errors: {[key: string]: string} = {};
                     <InputAdornment position="start">
                       <Email color="action" />
                     </InputAdornment>
-                  ) }}
+                  )
+                }}
                 disabled={isLoading}
                 autoComplete="email"
               />
@@ -403,7 +418,7 @@ const errors: {[key: string]: string} = {};
                         edge="end"
                         disabled={isLoading}
                       >
-                        {showPassword ? <VisibilityOff /> </>: <Visibility />}
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
                   )
@@ -417,7 +432,7 @@ const errors: {[key: string]: string} = {};
                 <Box sx={{ mt: 1, mb: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <Typography variant="body2" sx={{ mr: 1 }}>
-                      Password, Strength:
+                      Password Strength:
                     </Typography>
                     <LinearProgress
                       variant="determinate"
@@ -469,7 +484,7 @@ const errors: {[key: string]: string} = {};
                         edge="end"
                         disabled={isLoading}
                       >
-                        {showConfirmPassword ? <VisibilityOff /> </>: <Visibility />}
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
                   )
@@ -484,7 +499,7 @@ const errors: {[key: string]: string} = {};
                   control={
                     <Checkbox
                       checked={acceptedTerms}
-                      onChange={(e) => setAcceptedTerms(e.target.checked}
+                      onChange={(e) => setAcceptedTerms(e.target.checked)}
                       disabled={isLoading}
                     />
                   }
@@ -509,7 +524,7 @@ const errors: {[key: string]: string} = {};
                   control={
                     <Checkbox
                       checked={acceptedPrivacy}
-                      onChange={(e) => setAcceptedPrivacy(e.target.checked}
+                      onChange={(e) => setAcceptedPrivacy(e.target.checked)}
                       disabled={isLoading}
                     />
                   }
@@ -541,9 +556,10 @@ const errors: {[key: string]: string} = {};
                   py: 1.5,
                   borderRadius: 2,
                   textTransform: 'none',
-                  fontSize: '1.1 rem',
-                  fontWeight: 600 }}
-                startIcon={isLoading ? <CircularProgress size={20} /> </>: <PersonAdd />}
+                  fontSize: '1.1rem',
+                  fontWeight: 600
+                }}
+                startIcon={isLoading ? <CircularProgress size={20} /> : <PersonAdd />}
               >
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </Button>
@@ -598,7 +614,6 @@ const errors: {[key: string]: string} = {};
         </Grid>
       </Grid>
     </Container>
-  </>
-  )};
-
+  );
+};
 export default Register;

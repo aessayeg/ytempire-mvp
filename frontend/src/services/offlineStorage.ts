@@ -1,63 +1,63 @@
 import {  openDB, DBSchema, IDBPDatabase  } from 'idb';
 
 interface YTEmpireDB extends DBSchema {
-  videos: {,
+  videos: {
   key: string;,
 
-    value: {,
+    value: {
   id: string;,
 
-      title: string,
+      title: string;
   channel: string;,
 
       status: string;
       thumbnail?: string;
       createdAt: Date;
       syncedAt?: Date;
-      offline?: boolean;
-    };
+      offline?: boolean
+    }
   };
-  channels: {,
+  channels: {
   key: string;,
 
-    value: {,
+    value: {
   id: string;,
 
-      name: string,
+      name: string;
   subscribers: number;,
 
-      videos: number,
+      videos: number;
   revenue: number;
-      lastSync?: Date;
-    };
+      lastSync?: Date
+    }
   };
-  analytics: {,
+  analytics: {
   key: string;,
 
-    value: {,
+    value: {
   id: string;,
 
-      date: Date,
+      date: Date;
   type: string;,
 
-      data: unknown,
-  synced: boolean};
+      data: unknown;
+  synced: boolean}
   };
-  pendingActions: {,
+  pendingActions: {
   key: string;,
 
-    value: {,
+    value: {
   id: string;,
 
-      action: string,
+      action: string;
   endpoint: string;,
 
-      method: string,
+      method: string;
   data: unknown;,
 
-      timestamp: Date,
-  retries: number};
-  };
+      timestamp: Date;
+  retries: number}
+  }
 }
 
 class OfflineStorage {
@@ -94,20 +94,15 @@ class OfflineStorage {
           const actionsStore = db.createObjectStore('pendingActions', { keyPath: 'id' });
           actionsStore.createIndex('timestamp', 'timestamp');
           actionsStore.createIndex('action', 'action')}
-      }
-    });
-}
-
+      })}
   // Videos operations
   async saveVideo(video: YTEmpireDB['videos']['value']) { await this.init();
     if (!this.db) throw new Error('Database not initialized');
     
     return this.db.put('videos', {
       ...video,
-      syncedAt: new Date(),
-      offline: !navigator.onLine });
-}
-
+      syncedAt: new Date();
+      offline: !navigator.onLine })}
   async getVideos(limit = 50) {
     await this.init();
     if (!this.db) throw new Error('Database not initialized');
@@ -127,9 +122,7 @@ class OfflineStorage {
     
     return this.db.put('channels', {
       ...channel,
-      lastSync: new Date() });
-}
-
+      lastSync: new Date() })}
   async getChannels() {
     await this.init();
     if (!this.db) throw new Error('Database not initialized');
@@ -144,9 +137,7 @@ class OfflineStorage {
     const id = `${analytics.type}-${Date.now()}`;
     return this.db.put('analytics', { ...analytics,
       id,
-      synced: navigator.onLine });
-}
-
+      synced: navigator.onLine })}
   async getAnalytics(type?: string, startDate?: Date, endDate?: Date) {
     await this.init();
     if (!this.db) throw new Error('Database not initialized');
@@ -161,8 +152,7 @@ class OfflineStorage {
         (a) => a.date >= startDate && a.date <= endDate
       )}
     
-    return analytics;
-  }
+    return analytics}
 
   // Pending actions for offline sync
   async queueAction(action: Omit<YTEmpireDB['pendingActions']['value'], 'id' | 'timestamp' | 'retries'>) {
@@ -172,10 +162,8 @@ class OfflineStorage {
     const id = `${action.action}-${Date.now()}`;
     return this.db.put('pendingActions', { ...action,
       id,
-      timestamp: new Date(),
-      retries: 0 });
-}
-
+      timestamp: new Date();
+      retries: 0 })}
   async getPendingActions() {
     await this.init();
     if (!this.db) throw new Error('Database not initialized');
@@ -208,17 +196,17 @@ class OfflineStorage {
       if (action.retries >= 3) {
         console.error('Max retries reached for, action:', action);
         await this.removePendingAction(action.id);
-        continue;
+        continue
       }
       
       try {
         const response = await fetch(action.endpoint, {
-          method: action.method,
+          method: action.method;
           headers: {
             'Content-Type': 'application/json',
             // Add auth headers here
           },
-          body: JSON.stringify(action.data),
+          body: JSON.stringify(action.data)
 
         });
         
@@ -281,16 +269,14 @@ class OfflineStorage {
       return {
         usage: estimate.usage || 0,
         quota: estimate.quota || 0,
-        percentage: ((estimate.usage || 0) / (estimate.quota || 1)) * 100 };
+        percentage: ((estimate.usage || 0) / (estimate.quota || 1)) * 100 }
     }
-    return null;
-  }
-}
+    return null
+  }}
 
 export const offlineStorage = new OfflineStorage();
 
 // Auto-sync when coming back online
 if (typeof window !== 'undefined') {
   window.addEventListener(_'online', () => {
-    offlineStorage.syncPendingActions()});
-}
+    offlineStorage.syncPendingActions()})}

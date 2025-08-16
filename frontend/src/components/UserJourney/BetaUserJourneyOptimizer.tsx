@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Box,
-  Grid,
   Card,
   CardContent,
   CardHeader,
@@ -35,6 +34,7 @@ import {
   useTheme,
   Divider
  } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { 
   PlayCircle,
   Pause,
@@ -58,80 +58,68 @@ import {
 import {  format  } from 'date-fns';
 
 interface SessionRecording {
-  id: string,
-  userId: string,
-
-  userName: string,
-  startTime: Date,
-
-  endTime: Date,
-  duration: number,
-
-  pages: string[],
-  actions: UserAction[],
-
-  painPoints: PainPoint[],
-  sentiment: 'positive' | 'neutral' | 'negative',
-
-  completionRate: number,
-  device: 'desktop' | 'mobile' | 'tablet'}
+  id: string;
+  userId: string;
+  userName: string;
+  startTime: Date;
+  endTime: Date;
+  duration: number;
+  pages: string[];
+  actions: UserAction[];
+  painPoints: PainPoint[];
+  sentiment: 'positive' | 'neutral' | 'negative';
+  completionRate: number;
+  device: 'desktop' | 'mobile' | 'tablet';
+}
 
 interface UserAction {
-  id: string,
-  timestamp: Date,
-
-  type: 'click' | 'scroll' | 'input' | 'navigation' | 'error' | 'rage_click' | 'dead_click',
-  element: string,
-
+  id: string;
+  timestamp: Date;
+  type: 'click' | 'scroll' | 'input' | 'navigation' | 'error' | 'rage_click' | 'dead_click';
+  element: string;
   page: string;
   value?: string;
   duration?: number;
   coordinates?: { x: number; y: number };
-  success: boolean}
+  success: boolean;
+}
 
 interface PainPoint {
-  id: string,
-  type: 'confusion' | 'frustration' | 'error' | 'abandonment' | 'slow_task',
-
-  severity: 'low' | 'medium' | 'high' | 'critical',
-  page: string,
-
-  element: string,
-  description: string,
-
-  timestamp: Date,
-  duration: number,
-
-  recommendation: string,
-  impactedUsers: number}
+  id: string;
+  type: 'confusion' | 'frustration' | 'error' | 'abandonment' | 'slow_task';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  page: string;
+  element: string;
+  description: string;
+  timestamp: Date;
+  duration: number;
+  recommendation: string;
+  impactedUsers: number;
+}
 
 interface JourneyStep {
-  id: string,
-  name: string,
-
-  expectedDuration: number,
-  actualDuration: number,
-
-  completionRate: number,
-  dropoffRate: number,
-
-  painPoints: number,
-  satisfaction: number}
+  id: string;
+  name: string;
+  expectedDuration: number;
+  actualDuration: number;
+  completionRate: number;
+  dropoffRate: number;
+  painPoints: number;
+  satisfaction: number;
+}
 
 interface WireframeImprovement {
-  id: string,
-  page: string,
+  id: string;
+  page: string;
+  component: string;
+  currentDesign: string;
+  proposedDesign: string;
+  reason: string;
+  impact: 'high' | 'medium' | 'low';
+  effort: 'high' | 'medium' | 'low';
+  status: 'pending' | 'in_progress' | 'completed' | 'tested';
 
-  component: string,
-  currentDesign: string,
-
-  proposedDesign: string,
-  reason: string,
-
-  impact: 'high' | 'medium' | 'low',
-  effort: 'high' | 'medium' | 'low',
-
-  status: 'pending' | 'in_progress' | 'completed' | 'tested'}
+}
 
 export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme();
   const [selectedSession, setSelectedSession] = useState<SessionRecording | null>(null);
@@ -152,7 +140,7 @@ export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme
       endTime: new Date('2024-01-15 T10:45:00'),
       duration: 900,
       pages: ['/dashboard', '/videos/create', '/channels', '/analytics'],
-      actions: [ {,
+      actions: [ {
   id: 'a1',
           timestamp: new Date('2024-01-15 T10:30:00'),
           type: 'navigation',
@@ -197,20 +185,20 @@ export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme
           duration: 8,
           recommendation: 'Add tooltips explaining each metric',
           impactedUsers: 8 } ],
-      sentiment: 'negative',
-      completionRate: 65,
-      device: 'desktop',
+      sentiment: 'negative';
+      completionRate: 65;
+      device: 'desktop'
 
     },
-    { id: '2',
-      userId: 'beta_user_2',
-      userName: 'Jane Smith',
-      startTime: new Date('2024-01-15 T11:00:00'),
-      endTime: new Date('2024-01-15 T11:20:00'),
-      duration: 1200,
+    { id: '2';
+      userId: 'beta_user_2';
+      userName: 'Jane Smith';
+      startTime: new Date('2024-01-15 T11:00:00');
+      endTime: new Date('2024-01-15 T11:20:00');
+      duration: 1200;
       pages: ['/onboarding', '/dashboard', '/channels', '/videos/create', '/analytics'],
-      actions: [],
-      painPoints: [{,
+      actions: [];
+      painPoints: [{
   id: 'pp3',
           type: 'slow_task',
           severity: 'medium',
@@ -221,9 +209,9 @@ export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme
           duration: 45,
           recommendation: 'Optimize API calls and add progress indicator',
           impactedUsers: 15 }],
-      sentiment: 'positive',
-      completionRate: 85,
-      device: 'desktop',
+      sentiment: 'positive';
+      completionRate: 85;
+      device: 'desktop'
 
     }]);
 
@@ -344,14 +332,12 @@ export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme
       case 'low': return theme.palette.success.main;
       default: return theme.palette.grey[500]}
   };
-
   const getSentimentIcon = (sentiment: string) => {
     switch (sentiment) {
       case 'positive': return <EmojiEmotions color="success" />;
       case 'negative': return <SentimentDissatisfied color="error" />;
       default: return <SentimentNeutral color="action" />}
   };
-
   const getActionIcon = (type: string) => {
     switch (type) {
       case 'click': return <Mouse />;
@@ -360,7 +346,6 @@ export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme
       case 'navigation': return <NavigateNext />;
       default: return <TouchApp />}
   };
-
   const renderSessionRecordings = () => (
     <Grid container spacing={3}>
       {/* Session List */}
@@ -427,8 +412,7 @@ export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme
                   <IconButton onClick={() => setPlaybackSpeed(2}>
                     <FastForward />
                   </IconButton>
-                </Box>
-              }
+                </Box>}
             />
             <CardContent>
               {/* Session Timeline */}
@@ -648,10 +632,8 @@ export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme
                   color={
                     improvement.status === 'completed' ? 'success' :
                     improvement.status === 'tested' ? 'info' :
-                    improvement.status === 'in_progress' ? 'warning' : 'default'
-                  }
-                />
-              }
+                    improvement.status === 'in_progress' ? 'warning' : 'default'}
+                />}
             />
             <CardContent>
               <Box sx={{ mb: 2 }}>
@@ -722,4 +704,5 @@ export const BetaUserJourneyOptimizer: React.FC = () => { const theme = useTheme
       {tabValue === 2 && renderWireframeImprovements()}
     </Box>
   </>
-  )};
+  )
+}}

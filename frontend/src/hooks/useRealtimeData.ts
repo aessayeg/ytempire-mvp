@@ -2,10 +2,13 @@ import {  useEffect, useState, useCallback, useRef  } from 'react';
 import {  useAuthStore  } from '../stores/authStore';
 
 interface WebSocketMessage {
-  type: string,
-  data: unknown,
+  
+type: string;
+data: unknown;
 
-  timestamp: string}
+timestamp: string;
+
+}
 
 export const createOptimizedRouter = () => {
   return createBrowserRouter([
@@ -25,8 +28,8 @@ export const createOptimizedRouter = () => {
 
     wsRef.current.onopen = () => {
       setIsConnected(true);
-      console.log('WebSocket connected')};
-
+      console.log('WebSocket connected')
+};
     wsRef.current.onmessage = (event) => {
       const message = JSON.parse(event.data);
       setLastMessage(message);
@@ -37,12 +40,10 @@ export const createOptimizedRouter = () => {
           [message.data.metric_name]: message.data.value
         }))}
     };
-
     wsRef.current.onclose = () => {
       setIsConnected(false);
       setTimeout(connect, 5000); // Reconnect after 5 seconds
     };
-
     wsRef.current.onerror = (error) => {
     
       console.error('WebSocket, error:', error)}, [accessToken, user, endpoint]);
@@ -50,7 +51,7 @@ export const createOptimizedRouter = () => {
   const disconnect = useCallback(() => {
     if (wsRef.current) {
       wsRef.current.close();
-      wsRef.current = null;
+      wsRef.current = null
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -59,7 +60,7 @@ export const createOptimizedRouter = () => {
       wsRef.current.send(JSON.stringify(message))}
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const subscribe = useCallback(_(room: string) => {
+  const subscribe = useCallback((room: string) => {
     sendMessage({ type: 'subscribe', room_id: room })}, [sendMessage]);
 
   useEffect(() => {
@@ -72,6 +73,4 @@ export const createOptimizedRouter = () => {
     metrics,
     sendMessage,
     subscribe,
-    disconnect
-  };
-};
+    disconnect}};

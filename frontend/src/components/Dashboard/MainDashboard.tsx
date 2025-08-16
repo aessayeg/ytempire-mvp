@@ -70,51 +70,60 @@ ChartJS.register(
 );
 
 interface DashboardStats {
-  totalChannels: number,
-  totalVideos: number,
+  
+totalChannels: number;
+totalVideos: number;
 
-  totalViews: number,
-  totalRevenue: number,
+totalViews: number;
+totalRevenue: number;
 
-  totalCost: number,
-  profit: number,
+totalCost: number;
+profit: number;
 
-  avgEngagementRate: number,
-  videosInQueue: number,
+avgEngagementRate: number;
+videosInQueue: number;
 
-  videosPublishedToday: number,
-  monthlyGrowthRate: number,
+videosPublishedToday: number;
+monthlyGrowthRate: number;
 
-  bestPerformingVideo: {,
-  id: string,
+bestPerformingVideo: {;
+id: string;
 
-    title: string,
-  views: number,
+title: string;
+views: number;
 
-    revenue: number} | null;
+revenue: number;
+
+} | null
 }
 
 interface RecentActivity {
-  id: string,
-  type: 'video_generated' | 'video_published' | 'channel_connected' | 'milestone_reached',
+  
+id: string;
+type: 'video_generated' | 'video_published' | 'channel_connected' | 'milestone_reached';
 
-  title: string,
-  description: string,
+title: string;
+description: string;
 
-  timestamp: string,
-  icon: React.ReactNode,
+timestamp: string;
+icon: React.ReactNode;
 
-  color: string}
+color: string;
+
+}
 
 interface VideoInQueue {
-  id: string,
-  title: string,
+  
+id: string;
+title: string;
 
-  channel: string,
-  status: 'generating' | 'scheduled' | 'ready';
-  progress?: number;
-  scheduledTime?: string;
-  thumbnail?: string;
+channel: string;
+status: 'generating' | 'scheduled' | 'ready';
+progress?: number;
+scheduledTime?: string;
+thumbnail?: string;
+
+
 }
 
 export const MainDashboard: React.FC = () => {
@@ -159,42 +168,38 @@ export const MainDashboard: React.FC = () => {
       console.error('Dashboard, error:', error)} finally {
       setLoading(false)}
   };
-
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchDashboardData();
-    setRefreshing(false)};
-
+    setRefreshing(false)
+};
   const handleRealtimeUpdate = (data: unknown) => {
     if (data.type === 'stats_update') {
       setStats(data.stats)} else if (data.type === 'new_activity') {
       setRecentActivity(prev => [formatActivityItem(data.activity), ...prev].slice(0, 10))} else if (data.type === 'queue_update') {
       setVideosInQueue(data.queue)}
   };
-
   const formatActivity = (activities: unknown[]): RecentActivity[] => {
-    return activities.map(formatActivityItem)};
-
-  const formatActivityItem = (activity: unknown): RecentActivity => { const typeConfig = {,
-  video_generated: {,
+    return activities.map(formatActivityItem)
+};
+  const formatActivityItem = (activity: unknown): RecentActivity => { const typeConfig = {
+  video_generated: {
 
         icon: <AutoAwesome />,
         color: '#4 caf50' },
-      video_published: { icon: <PlayCircleOutline />,
-        color: '#2196 f3' },
-      channel_connected: { icon: <YouTube />,
+      video_published: { icon: <PlayCircleOutline />;
+        color: '#2196f3' },
+      channel_connected: { icon: <YouTube />;
         color: '#f44336' },
-      milestone_reached: { icon: <TrendingUp />,
+      milestone_reached: { icon: <TrendingUp />;
         color: '#ff9800' }
     };
-
     const config = typeConfig[activity.type as keyof typeof typeConfig];
     
     return { ...activity,
       icon: config.icon,
-      color: config.color };
+      color: config.color }
   };
-
   // Chart data
   const revenueChartData = { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
@@ -205,51 +210,47 @@ export const MainDashboard: React.FC = () => {
         backgroundColor: 'rgba(76, 175, 80, 0.1)',
         fill: true,
         tension: 0.4 },
-      { label: 'Cost',
+      { label: 'Cost';
         data: [30, 35, 40, 38, 42, 45, 48],
-        borderColor: '#f44336',
+        borderColor: '#f44336';
         backgroundColor: 'rgba(244, 67, 54, 0.1)',
-        fill: true,
+        fill: true;
         tension: 0.4 }]
   };
-
   const viewsChartData = { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    datasets: [{,
+    datasets: [{
   label: 'Views',
         data: [1200, 1900, 3000, 5000, 4000, 3000, 4500],
         backgroundColor: 'rgba(103, 126, 234, 0.8)' }]
   };
-
   const categoryChartData = { labels: ['Gaming', 'Education', 'Tech', 'Entertainment', 'Music'],
-    datasets: [{,
+    datasets: [{
   data: [30, 25, 20, 15, 10],
-        backgroundColor: [ '#e91 e63',
-          '#2196 f3',
+        backgroundColor: [ '#e91e63',
+          '#2196f3',
           '#9 c27 b0',
           '#ff9800',
           '#4 caf50' ] }]
   };
-
   const chartOptions = { responsive: true,
     maintainAspectRatio: false,
-    plugins: {,
-  legend: {,
+    plugins: {
+  legend: {
 
         display: false }
     },
-    scales: { y: {,
-  beginAtZero: true,
-        grid: {,
+    scales: { y: {
+  beginAtZero: true;
+        grid: {
   display: false }
       },
-      x: { grid: {,
+      x: { grid: {
   display: false }
       }
     }
   };
-
   if (loading) {
-    return <DashboardSkeleton />;
+    return <DashboardSkeleton />
   }
 
   if (error) {
@@ -293,9 +294,9 @@ export const MainDashboard: React.FC = () => {
             startIcon={<Add />}
             onClick={() => navigate('/videos/generate')}
             sx={ {
-              background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+              background: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
               '&:hover': {
-                background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
+                background: 'linear-gradient(135 deg, #5a6fd80%, #6 a4290 100%)' }
             }}
           >
             Generate Video

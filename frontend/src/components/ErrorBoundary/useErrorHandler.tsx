@@ -2,12 +2,15 @@ import {  useCallback, useState  } from 'react';
 import {  toast  } from 'react-hot-toast';
 
 interface ErrorHandlerOptions {
-  showToast?: boolean;
-  fallbackMessage?: string;
-  retryCount?: number;
-  retryDelay?: number;
-  onError?: (error: Error) => void;
-  onRetry?: () => void;
+  
+showToast?: boolean;
+fallbackMessage?: string;
+retryCount?: number;
+retryDelay?: number;
+onError?: (error: Error) => void;
+onRetry?: () => void;
+
+
 }
 
 export const createOptimizedRouter = () => {
@@ -45,7 +48,7 @@ export const createOptimizedRouter = () => {
     async (fn: () => Promise<any>) => {
       if (attemptCount >= retryCount) {
         toast.error('Maximum retry attempts reached');
-        return;
+        return
       }
 
       setIsRetrying(true);
@@ -63,11 +66,11 @@ export const createOptimizedRouter = () => {
         if (onRetry) {
           onRetry()}
         
-        return result;
+        return result
       } catch (error) {
         setIsRetrying(false);
         handleError(err);
-        throw err;
+        throw err
       }
     },
     [attemptCount, retryCount, retryDelay, handleError, onRetry]
@@ -81,7 +84,7 @@ export const createOptimizedRouter = () => {
   const throwError = useCallback((error: Error | string) => {
     const errorObj = error instanceof Error ? error : new Error(error);
     handleError(errorObj);
-    throw errorObj;
+    throw errorObj
   }, [handleError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { error,
@@ -90,9 +93,8 @@ export const createOptimizedRouter = () => {
     handleError,
     retry,
     reset,
-    throwError };
+    throwError }
 };
-
 // Async error handler wrapper
 export const createOptimizedRouter = () => {
   return createBrowserRouter([
@@ -108,6 +110,6 @@ export const createOptimizedRouter = () => {
       options.onError(error instanceof Error ? error : new Error(String(error)))}
     
     console.error('Error in async, operation:', error);
-    return null;
+    return null
   }
 };

@@ -42,20 +42,19 @@ export const InstallPrompt: React.FC = () => {
 
   const handleInstall = async () => {
     await installApp();
-    setOpen(false)};
-
+    setOpen(false)
+};
   const handleDismiss = () => {
     setOpen(false);
     setDismissed(true);
-    localStorage.setItem('pwa-prompt-dismissed', 'true')};
-
+    localStorage.setItem('pwa-prompt-dismissed', 'true')
+};
   const handleRemindLater = () => {
     setOpen(false);
     // Show again in next session
   };
-
   if (!isInstallable || dismissed || isInstalled) {
-    return null;
+    return null
   }
 
   return (
@@ -90,9 +89,9 @@ export const InstallPrompt: React.FC = () => {
         maxWidth="sm"
         fullWidth
         PaperProps={ {
-          sx: {,
+          sx: {
   borderRadius: 2,
-            backgroundImage: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+            backgroundImage: 'linear-gradient(135 deg, #667eea0%, #764ba2100%)',
             color: 'white' }
         }}
       >
@@ -126,7 +125,7 @@ export const InstallPrompt: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center' }}
             >
-              <Typography variant="h3" sx={{ color: '#667 eea' }}>
+              <Typography variant="h3" sx={{ color: '#667eea' }}>
                 YT
               </Typography>
             </Box>
@@ -180,7 +179,7 @@ export const InstallPrompt: React.FC = () => {
             variant="contained"
             sx={ {
               backgroundColor: 'white',
-              color: '#667 eea',
+              color: '#667eea',
               '&:hover': {
                 backgroundColor: 'rgba(255, 255, 255, 0.9)' }
             }}
@@ -191,14 +190,14 @@ export const InstallPrompt: React.FC = () => {
         </DialogActions>
       </Dialog>
     </>
-  )};
-
+  )
+};
 // Offline indicator component
 export const OfflineIndicator: React.FC = () => {
   const { isOnline, offlineReady } = usePWA();
 
   if (isOnline) {
-    return null;
+    return null
   }
 
   return (
@@ -213,4 +212,5 @@ export const OfflineIndicator: React.FC = () => {
         transform: 'translateX(-50%)',
         zIndex: 1300 }}
     />
-  )};
+  )
+};

@@ -17,14 +17,17 @@ import {  RocketLaunch, CheckCircle, Star  } from '@mui/icons-material';
 import {  api  } from '../services/api';
 
 interface BetaFormData {
-  full_name: string,
-  email: string,
+  
+full_name: string;
+email: string;
 
-  company: string,
-  use_case: string,
+company: string;
+use_case: string;
 
-  expected_volume: string,
-  referral_source: string}
+expected_volume: string;
+referral_source: string;
+
+}
 
 const BetaSignup: React.FC = () => {
   const [formData, setFormData] = useState<BetaFormData>({
@@ -33,7 +36,7 @@ const BetaSignup: React.FC = () => {
     company: '',
     use_case: '',
     expected_volume: '10-50',
-    referral_source: '',
+    referral_source: ''
 
   });
   
@@ -71,12 +74,11 @@ const BetaSignup: React.FC = () => {
       setError(err.response?.data?.detail || 'Failed to submit application')} finally {
       setLoading(false)}
   };
-
   const handleChange = (_: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value)})};
-
+      [e.target.name]: e.target.value)})
+};
   if (success) {
     return (
     <>
@@ -252,6 +254,6 @@ const BetaSignup: React.FC = () => {
       </Paper>
     </Container>
   </>
-  )};
-
+  )
+};
 export default BetaSignup;

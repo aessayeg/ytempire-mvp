@@ -14,10 +14,13 @@ import {
 import {  CheckCircle, Cancel, Edit  } from '@mui/icons-material';
 
 interface VideoApprovalProps {
-  video: unknown,
-  onApprove: (feedback: React.ChangeEvent<HTMLInputElement>) => void,
-  onReject: (reason: string) => void,
-  onRequestChanges: (changes: string) => void}
+  
+video: unknown;
+onApprove: (feedback: React.ChangeEvent<HTMLInputElement>) => void;
+onReject: (reason: string) => void;
+onRequestChanges: (changes: string) => void;
+
+}
 
 export const VideoApproval: React.FC<VideoApprovalProps> = ({ video, onApprove, onReject, onRequestChanges }) => {
   const [decision, setDecision] = useState<'approve' | 'reject' | 'changes'>('approve');
@@ -26,12 +29,11 @@ export const VideoApproval: React.FC<VideoApprovalProps> = ({ video, onApprove, 
   
   const handleSubmit = () => {
     if (decision === 'approve') {
-      onApprove({ quality, feedback });
+      onApprove({ quality, feedback })
 } else if (decision === 'reject') {
       onReject(feedback)} else {
       onRequestChanges(feedback)}
   };
-
   return (
     <>
       <Paper sx={{ p: 3 }}>
@@ -55,4 +57,5 @@ export const VideoApproval: React.FC<VideoApprovalProps> = ({ video, onApprove, 
       </Box>
     </Paper>
   </>
-  )};
+  )
+};

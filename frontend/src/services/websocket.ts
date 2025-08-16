@@ -39,48 +39,57 @@ export enum WSEventType {
 }
 
 export interface WSMessage<T = unknown> {
-  event: string,
+  event: string;
   timestamp: string;,
 
   data: T;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown>
 }
 
 export interface VideoGenerationUpdate {
-  videoId: string,
-  channelId: string;,
+  
+videoId: string;
+channelId: string;;
 
-  status: 'started' | 'processing' | 'completed' | 'failed',
-  progress: number;
-  currentStep?: string;
-  estimatedCompletion?: string;
-  error?: string;
-  metadata?: Record<string, unknown>;
+status: 'started' | 'processing' | 'completed' | 'failed';
+progress: number;
+currentStep?: string;
+estimatedCompletion?: string;
+error?: string;
+metadata?: Record<string, unknown>;
+
+
 }
 
 export interface ChannelMetricsUpdate {
-  channelId: string,
-  subscribers: number;,
+  
+channelId: string;
+subscribers: number;;
 
-  viewsToday: number,
-  revenueToday: number;,
+viewsToday: number;
+revenueToday: number;;
 
-  videosPublished: number,
-  healthScore: number;,
+videosPublished: number;
+healthScore: number;;
 
-  quotaUsed: number,
-  quotaLimit: number}
+quotaUsed: number;
+quotaLimit: number;
+
+}
 
 export interface SystemMetrics {
-  activeGenerations: number,
-  queueDepth: number;,
+  
+activeGenerations: number;
+queueDepth: number;;
 
-  avgGenerationTime: number,
-  successRate: number;,
+avgGenerationTime: number;
+successRate: number;;
 
-  costToday: number,
-  apiHealth: Record<string, string>;
-  performanceMetrics: Record<string, number>}
+costToday: number;
+apiHealth: Record<string, string>;
+performanceMetrics: Record<string, number>;
+
+}
 
 class WebSocketClient extends EventEmitter {
   private socket: Socket | null = null;
@@ -101,19 +110,18 @@ class WebSocketClient extends EventEmitter {
   connect(token?: string): void {
     if (this.socket?.connected) {
       console.log('WebSocket already connected');
-      return;
+      return
     }
     
     const socketUrl = `${this.url}/ws/${this.clientId}`;
     
     this.socket = io(socketUrl, {
-      transports: ['websocket'],
+      transports: ['websocket'];
       auth: token ? { token } : undefined,
-      reconnection: true,
-      reconnectionAttempts: this.maxReconnectAttempts,
-      reconnectionDelay: this.reconnectDelay,
-      reconnectionDelayMax: 10000
-});
+      reconnection: true;
+      reconnectionAttempts: this.maxReconnectAttempts;
+      reconnectionDelay: this.reconnectDelay;
+      reconnectionDelayMax: 10000});
     
     this.setupEventListeners()}
   
@@ -122,8 +130,7 @@ class WebSocketClient extends EventEmitter {
       this.socket.disconnect();
       this.socket = null;
       this.isConnected = false;
-      this.emit(WSEventType.DISCONNECT)}
-  }
+      this.emit(WSEventType.DISCONNECT)}}
   
   private setupEventListeners(): void {
     if (!this.socket) return;
@@ -152,11 +159,7 @@ class WebSocketClient extends EventEmitter {
     Object.values(WSEventType).forEach(eventType => {
       if (!['connect', 'disconnect', 'error', 'reconnect'].includes(eventType)) {
         this.socket?.on(eventType, _(data: React.ChangeEvent<HTMLInputElement>) => {
-          this.handleMessage({ event: eventType, data, timestamp: new Date().toISOString() })});
-}
-    });
-}
-  
+          this.handleMessage({ event: eventType, data, timestamp: new Date().toISOString() })})})}
   private handleMessage(message: WSMessage<unknown>): void {
     console.log('WebSocket message, received:', message.event);
     
@@ -181,13 +184,12 @@ class WebSocketClient extends EventEmitter {
       this.subscriptions.get(event)?.delete(callback)}
   
   send(event: string, data: unknown): void {
-    const message: WSMessage<unknown> = {
+    const message: WSMessage<unknown>  = {
       event,
       data,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
 
     };
-    
     if (this.isConnected && this.socket) {
       this.socket.emit(event, message)} else {
       // Queue message for later
@@ -195,31 +197,25 @@ class WebSocketClient extends EventEmitter {
   }
   
   joinRoom(roomId: string): void {
-    this.send('subscribe', { roomId });
-}
-  
+    this.send('subscribe', { roomId })}
   leaveRoom(roomId: string): void {
-    this.send('unsubscribe', { roomId });
-}
-  
+    this.send('unsubscribe', { roomId })}
   private flushMessageQueue(): void {
     while (this.messageQueue.length > 0 && this.isConnected) {
       const message = this.messageQueue.shift();
       if (message) {
-        this.socket?.emit(message.event, message)}
-    }
-  }
+        this.socket?.emit(message.event, message)}}}
   
   private generateClientId(): string {
-    return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}
   }
   
   getConnectionStatus(): boolean {
-    return this.isConnected;
+    return this.isConnected
   }
   
   getSocket(): Socket | null {
-    return this.socket;
+    return this.socket
   }
 }
 
@@ -254,7 +250,7 @@ export function useWebSocket() {
   const send = useCallback((event: string, data: React.ChangeEvent<HTMLInputElement>) => {
     wsClient.send(event, data)}, []);
   
-  const connect = useCallback(_(token?: string) => {
+  const connect = useCallback((token?: string) => {
     wsClient.connect(token)}, []); // eslint-disable-line react-hooks/exhaustive-deps
   
   const disconnect = useCallback(() => {
@@ -275,8 +271,7 @@ export function useWebSocket() {
     disconnect,
     joinRoom,
     leaveRoom
-  };
-}
+  }}
 
 // Hook for video generation updates
 export function useVideoGenerationUpdates(videoId?: string) {
@@ -298,8 +293,9 @@ export function useVideoGenerationUpdates(videoId?: string) {
     ];
     
     return () => {
-    
-      unsubscribes.forEach(unsubscribe => unsubscribe())}, [videoId, subscribe]);
+      unsubscribes.forEach(unsubscribe => unsubscribe());
+    };
+  }, [videoId, subscribe]);
   
   return status;
 }
@@ -317,15 +313,15 @@ export function useChannelMetrics(channelId?: string) {
     
     const unsubscribe = subscribe(_WSEventType.CHANNEL_METRICS_UPDATE, (data: ChannelMetricsUpdate) => {
       if (data.channelId === channelId) {
-        setMetrics(data)}
-    });
+        setMetrics(data)}});
     
     return () => {
       leaveRoom(`channel:${channelId}`);
-      unsubscribe()};
+      unsubscribe()
+}
   }, [channelId, subscribe, joinRoom, leaveRoom]);
   
-  return metrics;
+  return metrics
 }
 
 // Hook for system metrics
@@ -337,10 +333,10 @@ export function useSystemMetrics() {
     const unsubscribe = subscribe(WSEventType.SYSTEM_METRICS, (data: SystemMetrics) => {
       setMetrics(data)});
     
-    return unsubscribe;
+    return unsubscribe
   }, [subscribe]);
   
-  return metrics;
+  return metrics
 }
 
 // Hook for notifications
@@ -352,10 +348,10 @@ export function useNotifications() {
     const unsubscribe = subscribe(WSEventType.USER_NOTIFICATION, (data: React.ChangeEvent<HTMLInputElement>) => {
       setNotifications(prev => [...prev, { ...data, id: Date.now(), timestamp: new Date() }])});
     
-    return unsubscribe;
+    return unsubscribe
   }, [subscribe]);
   
-  const clearNotification = useCallback(_(id: number) => {
+  const clearNotification = useCallback((id: number) => {
     setNotifications(prev => prev.filter(n => n.id !== id))}, []); // eslint-disable-line react-hooks/exhaustive-deps
   
   const clearAll = useCallback(() => {
@@ -364,8 +360,6 @@ export function useNotifications() {
   return {
     notifications,
     clearNotification,
-    clearAll
-  };
-}
+    clearAll}}
 
-export default wsClient;
+export default wsClient}}}

@@ -13,14 +13,295 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Select,
-  MenuItem,
-  TextField
+  Grid,
+  Chip,
+  Paper,
+  Alert,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Avatar,
+  Checkbox,
+  FormControlLabel,
+  LinearProgress,
+  Backdrop,
+  CircularProgress,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import {
+  YouTube,
+  Check,
+  CheckCircle,
+  Add,
+  ArrowBack,
+  ArrowForward,
+  PlayCircle,
+  Celebration,
+  FiberManualRecord,
+  Person,
+  Settings,
+  School,
+  Rocket
+} from '@mui/icons-material';
+import { motion, AnimatePresence } from 'framer-motion';
+import Confetti from 'react-confetti';
+import { useNavigate } from 'react-router-dom';
+
+// Interfaces
+interface UserProfile {
+  name: string;
+  email: string;
+  company: string;
+  role: string;
+  goals: string[];
+  uploadFrequency: string;
+}
+
+interface Channel {
+  id: string;
+  name: string;
+  handle: string;
+  subscribers: number;
+}
+
+interface Plan {
+  id: string;
+  name: string;
+  price: string;
+  features: string[];
+  recommended?: boolean;
+}
+
+interface Preferences {
+  autoUpload: boolean;
+  emailNotifications: boolean;
+  aiOptimization: boolean;
+  qualityCheck: boolean;
+}
+
+interface TutorialStep {
+  id: string;
+  title: string;
+  description: string;
+}
+
+interface OnboardingStep {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  skippable?: boolean;
+}
+
+export const OnboardingFlow: React.FC = () => {
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // State
+  const [activeStep, setActiveStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // User data state
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    name: '',
+    email: '',
+    company: '',
+    role: '',
+    goals: [],
+    uploadFrequency: ''
+  });
+
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<string>('pro');
+  const [preferences, setPreferences] = useState<Preferences>({
+    autoUpload: true,
+    emailNotifications: true,
+    aiOptimization: true,
+    qualityCheck: true
+  });
+
+  // Steps configuration
+  const steps: OnboardingStep[] = [
+    { id: 'welcome', title: 'Welcome', icon: <Rocket /> },
+    { id: 'profile', title: 'Your Profile', icon: <Person /> },
+    { id: 'channels', title: 'Connect Channels', icon: <YouTube /> },
+    { id: 'preferences', title: 'Preferences', icon: <Settings /> },
+    { id: 'tutorial', title: 'Quick Tutorial', icon: <School />, skippable: true }
+  ];
+
+  // Plans data
+  const plans: Plan[] = [
+    {
+      id: 'starter',
+      name: 'Starter',
+      price: '$29/mo',
+      features: ['5 videos/month', 'Basic AI', '1 channel', 'Email support']
+    },
+    {
+      id: 'pro',
+      name: 'Pro',
+      price: '$79/mo',
+      features: ['20 videos/month', 'Advanced AI', '3 channels', 'Priority support'],
+      recommended: true
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      price: '$199/mo',
+      features: ['Unlimited videos', 'Custom AI', 'Unlimited channels', '24/7 support']
+    }
+  ];
+
+  // Tutorial steps
+  const tutorialSteps: TutorialStep[] = [
+    {
+      id: 'dashboard',
+      title: 'Dashboard Overview',
+      description: 'Get familiar with your analytics and quick actions'
+    },
+    {
+      id: 'create',
+      title: 'Create Your First Video',
+      description: 'Learn how to generate videos with AI in minutes'
+    },
+    {
+      id: 'schedule',
+      title: 'Schedule Publishing',
+      description: 'Set up automatic publishing to your channels'
+    },
+    {
+      id: 'optimize',
+      title: 'Optimize Performance',
+      description: 'Use analytics to improve your content strategy'
+    }
+  ];
+
+  // Handlers
+  const handleNext = () => {
+    if (activeStep === steps.length - 1) {
+      handleComplete();
+    } else {
+      setCompletedSteps([...completedSteps, activeStep]);
+      setActiveStep(activeStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setActiveStep(activeStep - 1);
+  };
+
+  const handleSkip = () => {
+    setCompletedSteps([...completedSteps, activeStep]);
+    setActiveStep(activeStep + 1);
+  };
+
+  const handleComplete = async () => {
+    setLoading(true);
+    try {
+      // Save onboarding data to backend
+      // await api.post('/onboarding/complete', { userProfile, channels, selectedPlan, preferences });
+      
+      setShowCelebration(true);
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 3000);
+    } catch (error) {
+      console.error('Failed to complete onboarding:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const connectChannel = async () => {
+    setLoading(true);
+    try {
+      // Simulate OAuth flow
+      setTimeout(() => {
+        setChannels([
+          {
+            id: '1',
+            name: 'Tech Reviews Pro',
+            handle: '@techreviewspro',
+            subscribers: 15420
+          }
+        ]);
+        setLoading(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to connect channel:', error);
+      setLoading(false);
+    }
+  };
+
+  // Render functions
+  const renderWelcomeScreen = () => (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      }}
+    >
+      <Card sx={{ maxWidth: 600, p: 4, textAlign: 'center' }}>
+        <CardContent>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Rocket sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
+          </motion.div>
+          
+          <Typography variant="h3" fontWeight="bold" gutterBottom>
+            Welcome to YTEmpire!
+          </Typography>
+          
+          <Typography variant="h6" color="text.secondary" paragraph>
+            Let's get you set up in just 5 minutes
+          </Typography>
+          
+          <Typography variant="body1" color="text.secondary" paragraph>
+            We'll help you connect your YouTube channels, set your preferences, 
+            and start creating amazing content with AI.
+          </Typography>
+          
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => setShowWelcome(false)}
+            sx={{ mt: 3 }}
+          >
+            Get Started
+          </Button>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+
+  const renderProfileStep = () => (
+    <Box>
+      <Typography variant="h5" fontWeight="bold" gutterBottom>
+        Tell us about yourself
+      </Typography>
+      <Typography variant="body2" color="text.secondary" paragraph>
+        This helps us personalize your experience
+      </Typography>
+      
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6}>
+          <TextField
             fullWidth
             label="Your Name"
             value={userProfile.name}
-            onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value)});
-}
+            onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
             required
           />
         </Grid>
@@ -30,8 +311,7 @@ import {
             label="Email"
             type="email"
             value={userProfile.email}
-            onChange={(e) => setUserProfile({ ...userProfile, email: e.target.value)});
-}
+            onChange={(e) => setUserProfile({ ...userProfile, email: e.target.value })}
             required
           />
         </Grid>
@@ -40,8 +320,7 @@ import {
             fullWidth
             label="Company (Optional)"
             value={userProfile.company}
-            onChange={(e) => setUserProfile({ ...userProfile, company: e.target.value)});
-}
+            onChange={(e) => setUserProfile({ ...userProfile, company: e.target.value })}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -49,8 +328,7 @@ import {
             <InputLabel>Your Role</InputLabel>
             <Select
               value={userProfile.role}
-              onChange={(e) => setUserProfile({ ...userProfile, role: e.target.value)});
-}
+              onChange={(e) => setUserProfile({ ...userProfile, role: e.target.value })}
               label="Your Role"
             >
               <MenuItem value="content-creator">Content Creator</MenuItem>
@@ -64,10 +342,11 @@ import {
         
         <Grid item xs={12}>
           <Typography variant="subtitle1" gutterBottom>
-            What are your main goals? (Select all that, apply)
+            What are your main goals? (Select all that apply)
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {['Grow subscribers', 'Increase revenue', 'Save time', 'Improve quality', 'Scale content'].map((goal) => (_<Chip
+            {['Grow subscribers', 'Increase revenue', 'Save time', 'Improve quality', 'Scale content'].map((goal) => (
+              <Chip
                 key={goal}
                 label={goal}
                 onClick={() => {
@@ -75,7 +354,7 @@ import {
                     ? userProfile.goals.filter(g => g !== goal)
                     : [...userProfile.goals, goal];
                   setUserProfile({ ...userProfile, goals });
-}}
+                }}
                 color={userProfile.goals.includes(goal) ? 'primary' : 'default'}
                 icon={userProfile.goals.includes(goal) ? <Check /> : undefined}
               />
@@ -88,8 +367,7 @@ import {
             <InputLabel>How often do you plan to upload?</InputLabel>
             <Select
               value={userProfile.uploadFrequency}
-              onChange={(e) => setUserProfile({ ...userProfile, uploadFrequency: e.target.value)});
-}
+              onChange={(e) => setUserProfile({ ...userProfile, uploadFrequency: e.target.value })}
               label="How often do you plan to upload?"
             >
               <MenuItem value="daily">Daily</MenuItem>
@@ -130,7 +408,7 @@ import {
           
           <Box sx={{ mt: 3 }}>
             <Typography variant="subtitle2" gutterBottom>
-              Authorization, Steps:
+              Authorization Steps:
             </Typography>
             <List sx={{ maxWidth: 400, mx: 'auto', textAlign: 'left' }}>
               <ListItem>
@@ -201,6 +479,7 @@ import {
           <Button
             variant="outlined"
             startIcon={<Add />}
+            onClick={connectChannel}
             sx={{ mt: 2 }}
           >
             Add Another Channel
@@ -228,12 +507,13 @@ import {
             {plans.map((plan) => (
               <Grid item xs={12} sm={4} key={plan.id}>
                 <Paper
-                  sx={ {
+                  sx={{
                     p: 2,
                     border: 2,
                     borderColor: selectedPlan === plan.id ? 'primary.main' : 'divider',
                     cursor: 'pointer',
-                    position: 'relative' }}
+                    position: 'relative'
+                  }}
                   onClick={() => setSelectedPlan(plan.id)}
                 >
                   {plan.recommended && (
@@ -276,8 +556,7 @@ import {
                 control={
                   <Checkbox
                     checked={preferences.autoUpload}
-                    onChange={(e) => setPreferences({ ...preferences, autoUpload: e.target.checked });
-}
+                    onChange={(e) => setPreferences({ ...preferences, autoUpload: e.target.checked })}
                   />
                 }
                 label="Auto-upload videos when ready"
@@ -288,8 +567,7 @@ import {
                 control={
                   <Checkbox
                     checked={preferences.emailNotifications}
-                    onChange={(e) => setPreferences({ ...preferences, emailNotifications: e.target.checked });
-}
+                    onChange={(e) => setPreferences({ ...preferences, emailNotifications: e.target.checked })}
                   />
                 }
                 label="Email notifications for important updates"
@@ -300,8 +578,7 @@ import {
                 control={
                   <Checkbox
                     checked={preferences.aiOptimization}
-                    onChange={(e) => setPreferences({ ...preferences, aiOptimization: e.target.checked });
-}
+                    onChange={(e) => setPreferences({ ...preferences, aiOptimization: e.target.checked })}
                   />
                 }
                 label="AI optimization for titles and descriptions"
@@ -312,8 +589,7 @@ import {
                 control={
                   <Checkbox
                     checked={preferences.qualityCheck}
-                    onChange={(e) => setPreferences({ ...preferences, qualityCheck: e.target.checked });
-}
+                    onChange={(e) => setPreferences({ ...preferences, qualityCheck: e.target.checked })}
                   />
                 }
                 label="Quality check before publishing"
@@ -398,93 +674,102 @@ import {
       case 3:
         return renderPreferencesStep();
       case 4:
-        return renderTutorialStep(),
-        return null}
+        return renderTutorialStep();
+      default:
+        return null;
+    }
   };
 
   if (showWelcome) {
-    return renderWelcomeScreen()}
+    return renderWelcomeScreen();
+  }
 
   return (
     <>
       <Box sx={{ maxWidth: 900, mx: 'auto', p: 3 }}>
-      {showCelebration && (
-        <Confetti
-          width={window.innerWidth}
-          height={window.innerHeight}
-          recycle={false}
-          numberOfPieces={200}
-        />
-      )}
-      <Box sx={{ mb: 4 }}>
-        <LinearProgress
-          variant="determinate"
-          value={(completedSteps.length / steps.length) * 100}
-          sx={{ height: 8, borderRadius: 1 }}
-        />
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-          Step {activeStep + 1} of {steps.length}
-        </Typography>
-      </Box>
-      <Stepper activeStep={activeStep} orientation={isMobile ? 'vertical' : 'horizontal'}>
-        {steps.map((step, index) => (
-          <Step key={step.id} completed={completedSteps.includes(index)}>
-            <StepLabel
-              icon={step.icon}
-              optional={
-                step.skippable && (
-                  <Typography variant="caption">Optional</Typography>
-                )}
-            >
-              {step.title}
-            </StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-      
-      <Box sx={{ mt: 4 }}>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {renderStepContent(activeStep)}
-          </motion.div>
-        </AnimatePresence>
-      </Box>
-      
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-        <Button
-          disabled={activeStep === 0}
-          onClick={handleBack}
-          startIcon={<ArrowBack />}
-        >
-          Back
-        </Button>
+        {showCelebration && (
+          <Confetti
+            width={window.innerWidth}
+            height={window.innerHeight}
+            recycle={false}
+            numberOfPieces={200}
+          />
+        )}
         
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          {steps[activeStep].skippable && (
-            <Button onClick={handleSkip}>
-              Skip
-            </Button>
-          )}
-          <Button
-            variant="contained"
-            onClick={handleNext}
-            endIcon={activeStep === steps.length - 1 ? <Celebration /> </>: <ArrowForward />}
-          >
-            {activeStep === steps.length - 1 ? 'Complete Setup' : 'Continue'}
-          </Button>
+        <Box sx={{ mb: 4 }}>
+          <LinearProgress
+            variant="determinate"
+            value={(completedSteps.length / steps.length) * 100}
+            sx={{ height: 8, borderRadius: 1 }}
+          />
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            Step {activeStep + 1} of {steps.length}
+          </Typography>
         </Box>
+        
+        <Stepper activeStep={activeStep} orientation={isMobile ? 'vertical' : 'horizontal'}>
+          {steps.map((step, index) => (
+            <Step key={step.id} completed={completedSteps.includes(index)}>
+              <StepLabel
+                icon={step.icon}
+                optional={
+                  step.skippable && (
+                    <Typography variant="caption">Optional</Typography>
+                  )
+                }
+              >
+                {step.title}
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+        
+        <Box sx={{ mt: 4 }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {renderStepContent(activeStep)}
+            </motion.div>
+          </AnimatePresence>
+        </Box>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+          <Button
+            disabled={activeStep === 0}
+            onClick={handleBack}
+            startIcon={<ArrowBack />}
+          >
+            Back
+          </Button>
+          
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            {steps[activeStep]?.skippable && (
+              <Button onClick={handleSkip}>
+                Skip
+              </Button>
+            )}
+            <Button
+              variant="contained"
+              onClick={handleNext}
+              endIcon={activeStep === steps.length - 1 ? <Celebration /> : <ArrowForward />}
+            >
+              {activeStep === steps.length - 1 ? 'Complete Setup' : 'Continue'}
+            </Button>
+          </Box>
+        </Box>
+        
+        {/* Loading Backdrop */}
+        <Backdrop open={loading} sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+          <CircularProgress color="inherit" />
+        </Backdrop>
       </Box>
-      
-      {/* Loading Backdrop */}
-      <Backdrop open={loading} sx={{ zIndex: theme.zIndex.drawer + 1 }}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
-    </Box>
-  </>
-  )};
+    </>
+  );
+};
+
+export default OnboardingFlow;

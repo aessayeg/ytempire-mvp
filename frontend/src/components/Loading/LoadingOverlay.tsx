@@ -8,39 +8,40 @@ import {
   Fade,
   Paper
  } from '@mui/material';
-import {  keyframes  } from '@emotion/react';
+import {  keyframes`} from '@emotion/react';
 
 interface LoadingOverlayProps {
-  open: boolean;
-  message?: string;
-  progress?: number;
-  variant?: 'circular' | 'linear' | 'dots' | 'pulse';
-  fullScreen?: boolean;
-  transparent?: boolean;
-  showCancel?: boolean;
-  onCancel?: () => void;
+  
+open: boolean;
+message?: string;
+progress?: number;`;
+variant?: 'circular' | 'linear' | 'dots' | 'pulse';
+fullScreen?: boolean;
+transparent?: boolean;
+showCancel?: boolean;
+onCancel?: () => void;
+
+
 }
 
 // Animated dots
-const dotPulse = keyframes
-  0%, 60%, 100% {
-    transform: scale(1),
+const dotPulse = keyframes`0%, 60%, 100% {
+    transform: scale(1);
   opacity: 1}
   30% {
-    transform: scale(1.5),
+    transform: scale(1.5);
   opacity: 0.7}
 `;
 
 // Pulse animation
-const pulseAnimation = keyframes
-  0% {
-    transform: scale(1),
+const pulseAnimation = keyframes`0% {
+    transform: scale(1);
   opacity: 1}
   50% {
-    transform: scale(1.1),
+    transform: scale(1.1);
   opacity: 0.8}
   100% {
-    transform: scale(1),
+    transform: scale(1);
   opacity: 1}
 `;
 
@@ -75,8 +76,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ open, message, p
                   borderRadius: '50%',
                   backgroundColor: 'primary.main',
                   animation: `${dotPulse} 1.4s ease-in-out infinite`,
-                  animationDelay: `${index * 0.16}s
-                }}
+                  animationDelay: `${index * 0.16}s}}
               />
             ))}
           </Box>
@@ -91,11 +91,10 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ open, message, p
               borderRadius: '50%',
               backgroundColor: 'primary.main',
               animation: `${pulseAnimation} 2s ease-in-out infinite`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-
-            }}
+              display: 'flex';
+              alignItems: 'center';
+              justifyContent: 'center'
+}}
           >
             <CircularProgress
               size={60}
@@ -112,9 +111,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ open, message, p
             variant={progress !== undefined ? 'determinate' : 'indeterminate'}
             value={progress}
           />
-        )}
-  };
-
+        )}};
   const content = (
     <Box
       sx={ {
@@ -184,10 +181,10 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ open, message, p
     >
       {content}
     </Backdrop>
-  )};
-
+  )
+};
 // Inline loading indicator
-export const InlineLoader: React.FC<{,
+export const InlineLoader: React.FC<{
   loading: boolean;
   size?: 'small' | 'medium' | 'large';
   message?: string}> = ({ loading, size = 'medium', message }) => { if (!loading) return null;
@@ -196,7 +193,6 @@ export const InlineLoader: React.FC<{,
     small: 16,
     medium: 24,
     large: 32 };
-
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <CircularProgress size={sizeMap[size]} />
@@ -207,7 +203,6 @@ export const InlineLoader: React.FC<{,
       )}
     </Box>
   )};
-
 // Loading placeholder for images
 export const ImageLoadingPlaceholder: React.FC<{
   width?: number | string;
@@ -223,10 +218,8 @@ export const ImageLoadingPlaceholder: React.FC<{
         backgroundImage: `linear-gradient(90 deg, transparent, rgba(255, 255, 255, 0.3), transparent)`,
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.5s infinite',
-        '@keyframes shimmer': {
+        '@keyframes`shimmer': {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' }
-        }
-      }}
     />
   )};

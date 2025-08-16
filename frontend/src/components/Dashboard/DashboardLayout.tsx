@@ -38,8 +38,7 @@ export const DashboardLayout: React.FC = () => {
           'fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out, lg:translate-x-0',
           {
             'translate-x-0': sidebarOpen,
-            '-translate-x-full': !sidebarOpen }
-        )}
+            '-translate-x-full': !sidebarOpen })}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -60,14 +59,12 @@ export const DashboardLayout: React.FC = () => {
                     'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
                     {
                       'bg-primary-100 text-primary-900': isActive,
-                      'text-gray-600, hover:bg-gray-50, hover:text-gray-900': !isActive }
-                  )}
+                      'text-gray-600, hover:bg-gray-50, hover:text-gray-900': !isActive })}
                 >
                   <span className="mr-3 text-lg">{item.icon}</span>
                   {item.name}
                 </Link>
-              )});
-}
+              )})}
           </nav>
 
           {/* User info */}
@@ -131,4 +128,5 @@ export const DashboardLayout: React.FC = () => {
       </div>
     </div>
   </>
-  )};
+  )
+};

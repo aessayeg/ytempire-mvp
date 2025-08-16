@@ -62,35 +62,44 @@ import {  api  } from '../../services/api';
 
 // Types
 interface MetricCard {
-  title: string,
-  value: number | string,
+  
+title: string;
+value: number | string;
 
-  change: number,
-  trend: 'up' | 'down' | 'flat',
+change: number;
+trend: 'up' | 'down' | 'flat';
 
-  icon: React.ReactNode,
-  color: string;
-  suffix?: string;
-  prefix?: string;
+icon: React.ReactNode;
+color: string;
+suffix?: string;
+prefix?: string;
+
+
 }
 
 interface ChartData {
-  date: string,
-  views: number,
+  
+date: string;
+views: number;
 
-  revenue: number,
-  subscribers: number,
+revenue: number;
+subscribers: number;
 
-  engagement: number}
+engagement: number;
+
+}
 
 interface PerformanceMetric {
-  name: string,
-  value: number,
+  
+name: string;
+value: number;
 
-  target: number,
-  unit: string}
+target: number;
+unit: string;
 
-const COLORS = ['#0088 FE', '#00 C49 F', '#FFBB28', '#FF8042', '#8884 D8'];
+}
+
+const COLORS = ['#0088FE', '#00 C49 F', '#FFBB28', '#FF8042', '#8884D8'];
 
 export const MetricsDashboard: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'24 h' | '7 d' | '30 d' | '90 d'>('7 d');
@@ -133,7 +142,7 @@ export const MetricsDashboard: React.FC = () => {
       const response = await api.post('/analytics/query', { metric_types: ['views', 'revenue', 'subscribers', 'engagement_rate'],
         time_range: timeRange === '24 h' ? 'last_24 _hours' : 
                      timeRange === '7 d' ? 'last_7 _days' :
-                     timeRange === '30 d' ? 'last_30 _days' : 'last_90 _days',
+                     timeRange === '30 d' ? 'last_30 _days' : 'last_90 _days';
         aggregation_level: timeRange === '24 h' ? 'hour' : 'day' });
 
       setMetrics(response.data);
@@ -150,8 +159,7 @@ export const MetricsDashboard: React.FC = () => {
           views: Math.floor(Math.random() * 10000) + 1000,
           revenue: Math.random() * 500 + 100,
           subscribers: Math.floor(Math.random() * 100) + 10,
-          engagement: Math.random() * 10 + 2 });
-}
+          engagement: Math.random() * 10 + 2 })}
       setChartData(newChartData);
 
       // Set performance data
@@ -164,7 +172,6 @@ export const MetricsDashboard: React.FC = () => {
       console.error('Failed to fetch, metrics:', error);
       setLoading(false)}
   };
-
   useEffect(() => {
     fetchMetrics()}, [timeRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -177,9 +184,8 @@ export const MetricsDashboard: React.FC = () => {
 
     const calculateChange = (current: number, previous: number) => {
       if (previous === 0) return 0;
-      return ((current - previous) / previous) * 100;
+      return ((current - previous) / previous) * 100
     };
-
     return [ { title: 'Total Views',
         value: current.views.toLocaleString(),
         change: calculateChange(current.views, previous.views),
@@ -191,7 +197,7 @@ export const MetricsDashboard: React.FC = () => {
         change: calculateChange(current.revenue, previous.revenue),
         trend: current.revenue > previous.revenue ? 'up' : current.revenue < previous.revenue ? 'down' : 'flat',
         icon: <AttachMoney />,
-        color: '#2196 F3',
+        color: '#2196F3',
         prefix: '$' },
       { title: 'New Subscribers',
         value: current.subscribers.toLocaleString(),
@@ -205,7 +211,7 @@ export const MetricsDashboard: React.FC = () => {
         trend: current.engagement > previous.engagement ? 'up' : current.engagement < previous.engagement ? 'down' : 'flat',
         icon: <ThumbUp />,
         color: '#9 C27 B0',
-        suffix: '%' } ];
+        suffix: '%' } ]
   }, [chartData]);
 
   // Render metric card
@@ -236,18 +242,16 @@ export const MetricsDashboard: React.FC = () => {
           <Box
             sx={{
               backgroundColor: `${card.color}20`,
-              borderRadius: 2,
-              p: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              borderRadius: 2;
+              p: 1;
+              display: 'flex';
+              alignItems: 'center';
+              justifyContent: 'center'
 
             }}
           >
             {React.cloneElement(card.icon as React.ReactElement, {
-              sx: { color: card.color, fontSize: 32 }
-            });
-}
+              sx: { color: card.color, fontSize: 32 }})}
           </Box>
         </Box>
       </CardContent>
@@ -297,7 +301,6 @@ export const MetricsDashboard: React.FC = () => {
       </Box>
     </>
   )};
-
   return (
     <>
       <Box>
@@ -414,7 +417,7 @@ export const MetricsDashboard: React.FC = () => {
                   <Area
                     type="monotone"
                     dataKey="views"
-                    stroke="#8884 d8"
+                    stroke="#8884d8"
                     fill="#8884d8"
                     fillOpacity={0.6}
                   />
@@ -481,7 +484,7 @@ export const MetricsDashboard: React.FC = () => {
                   <Line
                     type="monotone"
                     dataKey="engagement"
-                    stroke="#8884 d8"
+                    stroke="#8884d8"
                     strokeWidth={2}
                     dot={{ fill: '#8884d8' }}
                   />
@@ -525,4 +528,5 @@ export const MetricsDashboard: React.FC = () => {
       )}
     </Box>
   </>
-  )};
+  )
+}}

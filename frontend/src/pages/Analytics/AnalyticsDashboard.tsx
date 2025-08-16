@@ -20,9 +20,12 @@ import {  PerformanceDashboard  } from '../../components/Performance/Performance
 import {  ABTestDashboard  } from '../../components/Experiments/ABTestDashboard';
 
 interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number,
-  value: number}
+  
+children?: React.ReactNode;
+index: number;
+value: number;
+
+}
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -45,8 +48,8 @@ export const AnalyticsDashboard: React.FC = () => {
   );
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue)};
-
+    setActiveTab(newValue)
+};
   return (
     <Container maxWidth="xl">
       <Box sx={{ py: 4 }}>

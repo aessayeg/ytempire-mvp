@@ -61,167 +61,199 @@ import {
   History,
   WorkspacePremium
  } from '@mui/icons-material';
-import {  format  } from 'date-fns';
-import {  useAuthStore  } from '../../stores/authStore';
+import { format } from 'date-fns';
+import { useAuthStore } from '../../stores/authStore';
 
 interface TabPanelProps {
   children?: React.ReactNode;
-  index: number,
-  value: number}
+  index: number;
+  value: number;
+}
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
   return (
-    <>
-      <div
+    <div
       role="tabpanel"
       hidden={value !== index}
       {...other}
     >
       {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
     </div>
-  )}
+  );
+}
 
-const mockUserStats = { totalVideos: 156,
+const mockUserStats = {
+  totalVideos: 156,
   totalViews: 2450000,
   totalSubscribers: 471000,
   totalRevenue: 31300,
   averageEngagement: 8.7,
   channelsManaged: 5,
   joinDate: '2023-03-15',
-  lastActive: '2024-01-14 T10:30:00 Z' };
-
-const mockAchievements = [ { id: 1,
+  lastActive: '2024-01-14T10:30:00Z'
+};
+const mockAchievements = [
+  {
+    id: 1,
     title: 'First Million Views',
     description: 'Reached 1 million total views',
     icon: <TrendingUp />,
     earned: true,
     dateEarned: '2023-08-15',
-    rarity: 'rare' },
-  { id: 2,
+    rarity: 'rare'
+  },
+  {
+    id: 2,
     title: 'Content Creator',
     description: 'Published 100+ videos',
     icon: <VideoLibrary />,
     earned: true,
     dateEarned: '2023-12-01',
-    rarity: 'common' },
-  { id: 3,
+    rarity: 'common'
+  },
+  {
+    id: 3,
     title: 'Revenue Milestone',
     description: 'Earned $10,000+ in revenue',
     icon: <AttachMoney />,
     earned: true,
     dateEarned: '2023-10-20',
-    rarity: 'uncommon' },
-  { id: 4,
+    rarity: 'uncommon'
+  },
+  {
+    id: 4,
     title: 'AI Pioneer',
     description: 'Used AI tools for 6+ months',
     icon: <WorkspacePremium />,
     earned: true,
     dateEarned: '2023-09-15',
-    rarity: 'epic' },
-  { id: 5,
+    rarity: 'epic'
+  },
+  {
+    id: 5,
     title: 'Multi-Channel Master',
     description: 'Manage 5+ channels simultaneously',
     icon: <Group />,
     earned: false,
     dateEarned: null,
-    rarity: 'legendary' } ];
+    rarity: 'legendary'
+  }
+];
 
-const mockRecentActivity = [ { id: 1,
+const mockRecentActivity = [
+  {
+    id: 1,
     action: 'Published video',
     details: '"10 AI Tools Every Creator Needs"',
-    timestamp: '2024-01-14 T08:30:00 Z',
-    channel: 'Tech Reviews' },
-  { id: 2,
+    timestamp: '2024-01-14T08:30:00Z',
+    channel: 'Tech Reviews'
+  },
+  {
+    id: 2,
     action: 'Updated channel settings',
     details: 'Gaming Central - Changed upload schedule',
-    timestamp: '2024-01-13 T15:45:00 Z',
-    channel: 'Gaming Central' },
-  { id: 3,
+    timestamp: '2024-01-13T15:45:00Z',
+    channel: 'Gaming Central'
+  },
+  {
+    id: 3,
     action: 'Generated AI script',
     details: 'Tutorial on video editing',
-    timestamp: '2024-01-13 T12:20:00 Z',
-    channel: 'Educational Hub' },
-  { id: 4,
+    timestamp: '2024-01-13T12:20:00Z',
+    channel: 'Educational Hub'
+  },
+  {
+    id: 4,
     action: 'Revenue milestone',
     details: 'Reached $30,000 total earnings',
-    timestamp: '2024-01-12 T09:15:00 Z',
-    channel: 'All Channels' } ];
+    timestamp: '2024-01-12T09:15:00Z',
+    channel: 'All Channels'
+  }
+];
 
-const mockSocialConnections = [ { platform: 'YouTube', handle: '@techcreator', followers: '471 K', connected: true, verified: true },
-  { platform: 'Twitter', handle: '@techcreator', followers: '89 K', connected: true, verified: false },
-  { platform: 'Instagram', handle: '@techcreator', followers: '145 K', connected: true, verified: true },
-  { platform: 'LinkedIn', handle: 'Tech Creator', followers: '23 K', connected: false, verified: false } ];
+const mockSocialConnections = [
+  { platform: 'YouTube', handle: '@techcreator', followers: '471K', connected: true, verified: true },
+  { platform: 'Twitter', handle: '@techcreator', followers: '89K', connected: true, verified: false },
+  { platform: 'Instagram', handle: '@techcreator', followers: '145K', connected: true, verified: true },
+  { platform: 'LinkedIn', handle: 'Tech Creator', followers: '23K', connected: false, verified: false }
+];
 
 export const Profile: React.FC = () => {
-  const theme = useTheme(</>
-  );
+  const theme = useTheme();
   const { user, logout } = useAuthStore();
   const [activeTab, setActiveTab] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const [profileData, setProfileData] = useState({ fullName: user?.full_name || 'Tech Creator',
+  const [profileData, setProfileData] = useState({
+    fullName: user?.full_name || 'Tech Creator',
     email: user?.email || 'tech@creator.com',
     bio: 'YouTube automation enthusiast helping creators scale with AI. Building the future of content, creation, one video at a time.',
-    location: 'San, Francisco, CA',
+    location: 'San Francisco, CA',
     website: 'https://techcreator.com',
     phone: '+1 (555) 123-4567',
     timezone: 'America/Los_Angeles',
     language: 'English',
-    notifications: {,
-  email: true,
+    notifications: {
+      email: true,
       push: true,
-      marketing: false }
+      marketing: false
+    }
   });
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue)};
-
+    setActiveTab(newValue);
+  };
   const handleSaveProfile = async () => {
     setLoading(true);
     // Simulate API call
     setTimeout(() => {
       setLoading(false);
-      setEditMode(false)}, 2000)};
-
-  const handleInputChange = (field: string, value: string) => { setProfileData(prev => ({
+      setEditMode(false);
+    }, 2000);
+  };
+  const handleInputChange = (field: string, value: string) => {
+    setProfileData(prev => ({
       ...prev,
-      [field]: value }))};
-
+      [field]: value
+    }));
+  };
   const formatNumber = (value: number) => {
     if (value >= 1000000) {
-      return `${(value / 1000000.toFixed(1)}M`;
+      return `${(value / 1000000).toFixed(1)}M`;
     } else if (value >= 1000) {
-      return `${(value / 1000.toFixed(1)}K`;
+      return `${(value / 1000).toFixed(1)}K`;
     }
-    return value.toString()};
-
-  const formatCurrency = (_value: number) => { return new Intl.NumberFormat('en-US', {
+    return value.toString();
+  };
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0 }).format(value)};
-
+      maximumFractionDigits: 0
+    }).format(value);
+  };
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
       case 'legendary': return '#FFD700';
-      case 'epic': return '#9 C27 B0';
-      case 'rare': return '#2196 F3';
-      case 'uncommon': return '#4 CAF50';
-      default: return '#9 E9 E9 E'}
+      case 'epic': return '#9C27B0';
+      case 'rare': return '#2196F3';
+      case 'uncommon': return '#4CAF50';
+      default: return '#9E9E9E';
+    }
   };
-
   const getSocialIcon = (platform: string) => {
     switch (platform) {
       case 'YouTube': return <YouTube />;
       case 'Twitter': return <Twitter />;
       case 'Instagram': return <Instagram />;
       case 'LinkedIn': return <LinkedIn />;
-      default: return <Share />}
+      default: return <Share />;
+    }
   };
-
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Header */}
@@ -237,22 +269,21 @@ export const Profile: React.FC = () => {
                     badgeContent={
                       <Avatar sx={{ width: 24, height: 24, bgcolor: 'success.main' }}>
                         <Verified sx={{ fontSize: 16 }} />
-                      </Avatar>
-                    }
+                      </Avatar>}
                   >
                     <Avatar 
                       sx={{ 
                         width: 120, 
                         height: 120, 
-                        fontSize: '3 rem',
-                        border: `4px solid ${theme.palette.primary.main}
+                        fontSize: '3rem',
+                        border: `4px solid ${theme.palette.primary.main}`
                       }}
                     >
                       {profileData.fullName.charAt(0)}
                     </Avatar>
                   </Badge>
                 </Grid>
-      <Grid item xs>
+                <Grid item xs>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <Typography variant="h4" fontWeight="bold" sx={{ mr: 2 }}>
                       {profileData.fullName}
@@ -309,8 +340,8 @@ export const Profile: React.FC = () => {
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Button 
                       variant={editMode ? 'contained' : 'outlined'} 
-                      startIcon={editMode ? <Save /> </>: <Edit />}
-                      onClick={(editMode ? handleSaveProfile : () => setEditMode(true)}
+                      startIcon={editMode ? <Save /> : <Edit />}
+                      onClick={editMode ? handleSaveProfile : () => setEditMode(true)}
                       disabled={loading}
                     >
                       {loading ? 'Saving...' : editMode ? 'Save' : 'Edit Profile'}
@@ -538,12 +569,13 @@ export const Profile: React.FC = () => {
                     >
                       <CardContent sx={{ textAlign: 'center' }}>
                         <Avatar 
-                          sx={ { 
+                          sx={{ 
                             bgcolor: getRarityColor(achievement.rarity),
                             width: 64,
                             height: 64,
                             mx: 'auto',
-                            mb: 2 }}
+                            mb: 2
+                          }}
                         >
                           {achievement.icon}
                         </Avatar>
@@ -556,10 +588,11 @@ export const Profile: React.FC = () => {
                         <Chip 
                           label={achievement.rarity} 
                           size="small" 
-                          sx={ { 
+                          sx={{ 
                             bgcolor: getRarityColor(achievement.rarity),
                             color: 'white',
-                            textTransform: 'capitalize' }}
+                            textTransform: 'capitalize'
+                          }}
                         />
                         {achievement.earned && (
                           <Typography variant="caption" display="block" sx={{ mt: 1 }}>
@@ -693,6 +726,7 @@ export const Profile: React.FC = () => {
         </DialogActions>
       </Dialog>
     </Box>
-  )};
+  );
+};
 
 export default Profile;

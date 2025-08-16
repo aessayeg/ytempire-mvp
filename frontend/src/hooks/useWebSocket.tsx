@@ -13,22 +13,28 @@ import {
 import {  useOptimizedStore  } from '../stores/optimizedStore';
 
 interface UseWebSocketOptions {
-  autoConnect?: boolean;
-  debug?: boolean;
-  onConnect?: () => void;
-  onDisconnect?: () => void;
-  onError?: (error: React.ChangeEvent<HTMLInputElement>) => void;
-  onMessage?: (message: WebSocketMessage) => void}
+  
+autoConnect?: boolean;
+debug?: boolean;
+onConnect?: () => void;
+onDisconnect?: () => void;
+onError?: (error: React.ChangeEvent<HTMLInputElement>) => void;
+onMessage?: (message: WebSocketMessage) => void;
+
+}
 
 interface UseWebSocketReturn {
-  status: WebSocketStatus,
-  latency: number,
+  
+status: WebSocketStatus;
+latency: number;
 
-  connect: () => void,
-  disconnect: () => void,
+connect: () => void;
+disconnect: () => void;
 
-  send: (type: string, data: React.ChangeEvent<HTMLInputElement>) => void,
-  subscribe: (type: string, callback: (data: React.ChangeEvent<HTMLInputElement>) => void) => () => void}
+send: (type: string, data: React.ChangeEvent<HTMLInputElement>) => void;
+subscribe: (type: string, callback: (data: React.ChangeEvent<HTMLInputElement>) => void) => () => void;
+
+}
 
 export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketReturn {
   const [status, setStatus] = useState<WebSocketStatus>(WebSocketStatus.DISCONNECTED);
@@ -62,36 +68,36 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
       
       // Update store
       setWsConnected(newStatus === WebSocketStatus.CONNECTED);
-      setWsReconnecting(newStatus === WebSocketStatus.RECONNECTING)};
-
+      setWsReconnecting(newStatus === WebSocketStatus.RECONNECTING)
+};
     const handleConnected = () => { addNotification({
         type: 'success',
         message: 'Real-time updates connected' });
-      options.onConnect?.()};
-
+      options.onConnect?.()
+};
     const handleDisconnected = () => {
-      options.onDisconnect?.()};
-
+      options.onDisconnect?.()
+};
     const handleError = (_: React.ChangeEvent<HTMLInputElement>) => { console.error('WebSocket, error:', error);
       addNotification({
         type: 'error',
         message: 'Connection error. Retrying...' });
-      options.onError?.(error)};
-
+      options.onError?.(error)
+};
     const handleMessage = (message: WebSocketMessage) => {
       // Handle message in store
       handleWsMessage(message);
       
       // Call custom handler if provided
-      options.onMessage?.(message)};
-
+      options.onMessage?.(message)
+};
     const handleLatency = (newLatency: number) => {
-      setLatency(newLatency)};
-
+      setLatency(newLatency)
+};
     const handleReconnectFailed = () => { addNotification({
         type: 'error',
-        message: 'Failed to reconnect. Please refresh the page.' })};
-
+        message: 'Failed to reconnect. Please refresh the page.' })
+};
     // Register event listeners
     ws.on('status', handleStatus);
     ws.on('connected', handleConnected);
@@ -150,7 +156,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
       const index = subscriptionsRef.current.indexOf(unsubscribe);
       if (index > -1) {
         subscriptionsRef.current.splice(index, 1)}
-      unsubscribe()};
+      unsubscribe()
+}
   }, []);
 
   return { status,
@@ -158,22 +165,22 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     connect,
     disconnect,
     send,
-    subscribe };
+    subscribe }
 }
 
 /**
  * Hook for subscribing to specific WebSocket message types
  */
 export function useWebSocketSubscription<T = any>(
-  messageType: string,
-  callback: (data: T) => void,
+  messageType: string;
+  callback: (data: T) => void;
   deps: React.DependencyList = []
 ): void {
   const { subscribe } = useWebSocket({ autoConnect: true });
 
   useEffect(() => {
     const unsubscribe = subscribe(messageType, callback);
-    return unsubscribe;
+    return unsubscribe
   }, [messageType, ...deps])}
 
 /**
@@ -212,20 +219,16 @@ export function useAnalyticsUpdates(): void {
     updateRealtimeMetrics(data)});
 
   useWebSocketSubscription(_'analytics_daily', (data) => {
-    addDailyMetrics(data)});
-}
-
+    addDailyMetrics(data)})}
 /**
  * Hook for real-time notifications
  */
 export function useNotificationUpdates(): void {
   const { addNotification } = useOptimizedStore();
 
-  useWebSocketSubscription(_'notification', _(data: unknown) => { addNotification({,
+  useWebSocketSubscription(_'notification', _(data: unknown) => { addNotification({
   type: data.level || 'info',
-      message: data.message })});
-}
-
+      message: data.message })})}
 /**
  * Hook for real-time cost alerts
  */
@@ -235,6 +238,4 @@ export function useCostAlerts(): void {
   useWebSocketSubscription(_'cost_alert', _(data: React.ChangeEvent<HTMLInputElement>) => {
     addNotification({
       type: 'warning',
-      message: `Cost, alert: ${data.message}
-    })});
-}
+      message: `Cost, alert: ${data.message}})})}}}

@@ -10,12 +10,15 @@ import {
 export type SkeletonVariant = 'text' | 'card' | 'table' | 'chart' | 'metric' | 'list' | 'form';
 
 interface LoadingSkeletonProps {
-  variant?: SkeletonVariant;
-  rows?: number;
-  columns?: number;
-  height?: number | string;
-  width?: number | string;
-  animation?: 'pulse' | 'wave' | false;
+  
+variant?: SkeletonVariant;
+rows?: number;
+columns?: number;
+height?: number | string;
+width?: number | string;
+animation?: 'pulse' | 'wave' | false;
+
+
 }
 
 export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ variant = 'text', rows = 3, columns = 1, height, width = '100%', animation = 'wave' }) => {
@@ -161,9 +164,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ variant = 'tex
     )}
 
   // Default rectangular skeleton
-  return <Skeleton animation={animation} variant="rectangular" width={width} height={height || 200} />;
-};
-
+  return <Skeleton animation={animation} variant="rectangular" width={width} height={height || 200} />};
 // Dashboard skeleton composition
 export const DashboardSkeleton: React.FC = () => {
   return (
@@ -213,8 +214,8 @@ export const DashboardSkeleton: React.FC = () => {
       </Grid>
     </Grid>
   </>
-  )};
-
+  )
+};
 // Video Queue skeleton
 export const VideoQueueSkeleton: React.FC = () => {
   return (
@@ -237,8 +238,8 @@ export const VideoQueueSkeleton: React.FC = () => {
       ))}
     </Grid>
   </>
-  )};
-
+  )
+};
 // Channel List skeleton
 export const ChannelListSkeleton: React.FC = () => {
   return (

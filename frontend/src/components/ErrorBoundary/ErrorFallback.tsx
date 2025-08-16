@@ -23,14 +23,17 @@ import {
 import {  useNavigate  } from 'react-router-dom';
 
 interface ErrorFallbackProps {
-  error: Error,
-  errorInfo: ErrorInfo | null,
+  
+error: Error;
+errorInfo: ErrorInfo | null;
 
-  onReset: () => void;
-  level?: 'page' | 'section' | 'component';
-  showDetails?: boolean;
-  errorCount?: number;
-  isolate?: boolean;
+onReset: () => void;
+level?: 'page' | 'section' | 'component';
+showDetails?: boolean;
+errorCount?: number;
+isolate?: boolean;
+
+
 }
 
 export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo, onReset, level = 'component', showDetails = process.env.NODE_ENV === 'development', errorCount = 0, isolate = false }) => {
@@ -47,13 +50,13 @@ Component, Stack: ${errorInfo?.componentStack || 'N/A'}
 
     navigator.clipboard.writeText(errorText);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000)};
+    setTimeout(() => setCopied(false), 2000)
+};
 
   const handleGoHome = () => {
     navigate('/dashboard');
     onReset()};
-
-  // Component-level error (small, inline)
+  // Component-level error (small, inline);
   if (level === 'component') {
     return (
     <>
@@ -67,8 +70,7 @@ Component, Stack: ${errorInfo?.componentStack || 'N/A'}
             aria-label="Retry"
           >
             <Refresh />
-          </IconButton>
-        }
+          </IconButton>}
       >
         <AlertTitle>Component Error</AlertTitle>
         Something went wrong. {errorCount > 2 && 'Multiple attempts failed.'}
@@ -146,7 +148,7 @@ Component, Stack: ${errorInfo?.componentStack || 'N/A'}
       </Paper>
     )}
 
-  // Page-level error (full, page)
+  // Page-level error (full, page);
   return (
     <>
       <Box
@@ -293,8 +295,8 @@ Component, Stack: ${errorInfo?.componentStack || 'N/A'}
       </Paper>
     </Box>
   </>
-  )};
-
+  )
+};
 // Minimal error fallback for critical errors
 export const MinimalErrorFallback: React.FC<{
   onReset?: () => void}> = ({ onReset }) => { return (
@@ -319,7 +321,7 @@ export const MinimalErrorFallback: React.FC<{
         onClick={(onReset || (() => window.location.reload())}
         style={ {
           padding: '10px 20px',
-          backgroundColor: '#1976 d2',
+          backgroundColor: '#1976d2',
           color: 'white',
           border: 'none',
           borderRadius: '4px',

@@ -53,51 +53,63 @@ import {
 import {  format, subDays  } from 'date-fns';
 
 interface CostMetric {
-  service: string,
-  icon: React.ReactNode,
+  
+service: string;
+icon: React.ReactNode;
 
-  currentCost: number,
-  previousCost: number,
+currentCost: number;
+previousCost: number;
 
-  budget: number,
-  usage: number,
+budget: number;
+usage: number;
 
-  trend: 'up' | 'down' | 'stable',
-  color: string}
+trend: 'up' | 'down' | 'stable';
+color: string;
+
+}
 
 interface ServiceCost {
-  id: string,
-  name: string,
+  
+id: string;
+name: string;
 
-  provider: string,
-  category: string,
+provider: string;
+category: string;
 
-  costToday: number,
-  costYesterday: number,
+costToday: number;
+costYesterday: number;
 
-  costThisMonth: number,
-  callsToday: number,
+costThisMonth: number;
+callsToday: number;
 
-  avgCostPerCall: number,
-  status: 'normal' | 'warning' | 'critical'}
+avgCostPerCall: number;
+status: 'normal' | 'warning' | 'critical';
+
+}
 
 interface CostAlert {
-  id: string,
-  severity: 'low' | 'medium' | 'high' | 'critical',
+  
+id: string;
+severity: 'low' | 'medium' | 'high' | 'critical';
 
-  title: string,
-  description: string,
+title: string;
+description: string;
 
-  timestamp: Date;
-  action?: string;
+timestamp: Date;
+action?: string;
+
+
 }
 
 interface BudgetLimit {
-  service: string,
-  daily: number,
+  
+service: string;
+daily: number;
 
-  monthly: number,
-  alertThreshold: number}
+monthly: number;
+alertThreshold: number;
+
+}
 
 export const CostTrackingDashboard: React.FC = () => { const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
@@ -225,7 +237,6 @@ export const CostTrackingDashboard: React.FC = () => { const theme = useTheme();
       case 'down': return <TrendingDown color="success" fontSize="small" />;
       default: return <ArrowUpward color="action" fontSize="small" />}
   };
-
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical': return 'error';
@@ -234,7 +245,6 @@ export const CostTrackingDashboard: React.FC = () => { const theme = useTheme();
       case 'low': return 'info';
       default: return 'default'}
   };
-
   const totalCostToday = costMetrics.reduce((sum, m) => sum + m.currentCost, 0);
   const totalBudget = costMetrics.reduce((sum, m) => sum + m.budget, 0);
   const budgetUsagePercent = (totalCostToday / totalBudget) * 100;
@@ -556,4 +566,5 @@ export const CostTrackingDashboard: React.FC = () => { const theme = useTheme();
       )}
     </Box>
   </>
-  )};
+  )
+}}

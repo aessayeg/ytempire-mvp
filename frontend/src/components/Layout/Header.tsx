@@ -38,19 +38,25 @@ import {  useNavigate  } from 'react-router-dom';
 import {  useAuthStore  } from '../../stores/authStore';
 
 interface HeaderProps {
-  darkMode?: boolean;
-  onToggleDarkMode?: () => void;
+  
+darkMode?: boolean;
+onToggleDarkMode?: () => void;
+
+
 }
 
 interface Notification {
-  id: string,
-  type: 'success' | 'error' | 'warning' | 'info',
+  
+id: string;
+type: 'success' | 'error' | 'warning' | 'info';
 
-  title: string,
-  message: string,
+title: string;
+message: string;
 
-  timestamp: Date,
-  read: boolean}
+timestamp: Date;
+read: boolean;
+
+}
 
 export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMode }) => {
   const navigate = useNavigate();
@@ -84,31 +90,30 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleOpenUserMenu = (_: React.MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget)};
-
+    setAnchorElUser(event.currentTarget)
+};
   const handleCloseUserMenu = () => {
-    setAnchorElUser(null)};
-
+    setAnchorElUser(null)
+};
   const handleOpenNotifications = (_: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNotif(event.currentTarget)};
-
+    setAnchorElNotif(event.currentTarget)
+};
   const handleCloseNotifications = () => {
-    setAnchorElNotif(null)};
-
+    setAnchorElNotif(null)
+};
   const handleMarkAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })))};
-
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+};
   const handleLogout = () => {
     handleCloseUserMenu();
     logout();
-    navigate('/auth/login')};
-
+    navigate('/auth/login')
+};
   const handleSearch = (_: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`)}
   };
-
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
       case 'success':
@@ -118,10 +123,7 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
       case 'warning':
         return <Warning color="warning" fontSize="small" />;
       case 'info':
-        return <Info color="info" fontSize="small" />;
-    }
-  };
-
+        return <Info color="info" fontSize="small" />}};
   const formatTimestamp = (date: Date) => {
     const diff = Date.now() - date.getTime();
     const minutes = Math.floor(diff / 60000);
@@ -131,9 +133,8 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
     if (minutes < 1) return 'Just now';
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
+    return `${days}d ago
   };
-
   return (
     <>
       <AppBar
@@ -141,7 +142,7 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
         sx={ {
           zIndex: (theme) => theme.zIndex.drawer + 1,
           backdropFilter: 'blur(8px)',
-          backgroundColor: (theme) => {}
+          backgroundColor: (theme) =>
             theme.palette.mode === 'dark' 
               ? 'rgba(18, 18, 18, 0.9)' 
               : 'rgba(255, 255, 255, 0.9)' }}
@@ -281,21 +282,21 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
         
         <Divider />
         
-        <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/settings/profile')}}>
+        <MenuItem onClick={() => { handleCloseUserMenu(), navigate('/settings/profile')}}>
           <ListItemIcon>
             <Person fontSize="small" />
           </ListItemIcon>
           <ListItemText>My Profile</ListItemText>
         </MenuItem>
         
-        <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/settings')}}>
+        <MenuItem onClick={() => { handleCloseUserMenu(), navigate('/settings')}}>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
           <ListItemText>Settings</ListItemText>
         </MenuItem>
         
-        <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/feedback')}}>
+        <MenuItem onClick={() => { handleCloseUserMenu(), navigate('/feedback')}}>
           <ListItemIcon>
             <Feedback fontSize="small" />
           </ListItemIcon>
@@ -318,8 +319,7 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
         open={Boolean(anchorElNotif)}
         onClose={handleCloseNotifications}
         PaperProps={{
-          sx: { width: 360, maxHeight: 480, mt: 1.5 }
-        }}
+          sx: { width: 360, maxHeight: 480, mt: 1.5 }}}
       >
         <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6">Notifications</Typography>
@@ -347,14 +347,13 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
             <MenuItem
               key={notification.id}
               onClick={() => {
-                setNotifications(prev => {}
+                setNotifications(prev =>
                   prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
                 )}}
               sx={ {
                 backgroundColor: notification.read ? 'transparent' : 'action.hover',
                 '&:hover': {
-                  backgroundColor: 'action.selected' }
-              }}
+                  backgroundColor: 'action.selected' }}}
             >
               <ListItemIcon>
                 {getNotificationIcon(notification.type)}
@@ -377,7 +376,7 @@ export const Header: React.FC<HeaderProps> = ({ darkMode = false, onToggleDarkMo
         
         <MenuItem
           onClick={() => {
-            handleCloseNotifications();
+            handleCloseNotifications(),
             navigate('/notifications')}}
           sx={{ justifyContent: 'center' }}
         >

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React,{ forwardRef } from 'react';
 import { 
   Button,
   Tooltip
@@ -13,11 +13,10 @@ interface AccessibleButtonProps extends ButtonProps {
   ariaPressed?: boolean;
   tooltip?: string;
   keyboardShortcut?: string;
-  role?: string;
+  role?: string
 }
 
-export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonProps>((
-    {
+export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonProps>(({
       ariaLabel, ariaDescribedBy, ariaExpanded, ariaPressed, tooltip, keyboardShortcut, role, disabled, children, onClick, ...props
     }, ref) => {
     const ariaProps = getAriaProps({
@@ -44,18 +43,17 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
             case 'meta':
               return e.metaKey;
             default:
-              return e.key.toLowerCase() === key;
+              return e.key.toLowerCase() === key
           }
         });
 
         if (isMatch) {
           e.preventDefault();
-          onClick?.(e as unknown as React.MouseEvent<HTMLButtonElement>);
+          onClick?.(e as unknown as React.MouseEvent<HTMLButtonElement>)
         }
       };
-
       document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown)
     }, [keyboardShortcut, disabled, onClick]);
 
     const button = (
@@ -73,7 +71,7 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
 
     if (tooltip) {
       const tooltipTitle = keyboardShortcut
-        ? `${tooltip} (${keyboardShortcut})`
+        ? `${tooltip} (${keyboardShortcut})
         : tooltip;
 
       return (
@@ -81,10 +79,7 @@ export const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonPr
           <span>{button}</span>
         </Tooltip>
       );
-    }
-
     return button;
-  }
-);
+};
 
 AccessibleButton.displayName = 'AccessibleButton';

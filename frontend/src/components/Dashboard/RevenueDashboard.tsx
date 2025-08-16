@@ -49,14 +49,17 @@ import {  useRevenueData  } from '../../hooks/useRevenueData';
 import {  formatCurrency, formatPercentage  } from '../../utils/formatters';
 
 interface RevenueDashboardProps {
-  userId?: number;
-  channelId?: number;
-  dateRange?: {
-    start: Date,
-  end: Date};
+  
+userId?: number;
+channelId?: number;
+dateRange?: {;
+start: Date;
+end: Date;
+
+}
 }
 
-const COLORS = ['#0088 FE', '#00 C49 F', '#FFBB28', '#FF8042', '#8884 D8', '#82 CA9 D'];
+const COLORS = ['#0088FE', '#00 C49 F', '#FFBB28', '#FF8042', '#8884D8', '#82 CA9 D'];
 
 export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
   userId, channelId, dateRange }) => { const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
@@ -85,12 +88,10 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
       await exportData(format)} finally {
       setIsExporting(false)}
   };
-
   const handlePeriodChange = (_: React.MouseEvent<HTMLElement>, newPeriod: string | null) => {
     if (newPeriod) {
       setSelectedPeriod(newPeriod as 'daily' | 'weekly' | 'monthly')}
   };
-
   const renderRevenueCard = (title: string, value: number | string, trend?: number, icon?: React.ReactNode) => (
     <Card sx={{ height: '100%', position: 'relative' }}>
       <CardContent>
@@ -147,7 +148,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
           <DataComponent
             type="monotone"
             dataKey="revenue"
-            stroke="#8884 d8"
+            stroke="#8884d8"
             fill="#8884d8"
             strokeWidth={2}
             name="Revenue"
@@ -156,7 +157,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
             <Area
               type="monotone"
               dataKey="revenue"
-              stroke="#8884 d8"
+              stroke="#8884d8"
               fillOpacity={0.3}
               fill="#8884d8"
             />
@@ -165,7 +166,6 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
       </ResponsiveContainer>
     </>
   )};
-
   const renderBreakdownChart = () => {
     if (!breakdown || breakdown.length === 0) return null;
 
@@ -191,7 +191,6 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
         </PieChart>
       </ResponsiveContainer>
     )};
-
   const renderForecastChart = () => {
     if (!forecast || forecast.length === 0) return null;
 
@@ -239,7 +238,6 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
       </ResponsiveContainer>
     </>
   )};
-
   if (loading) {
     return (
     <Box sx={{ width: '100%', mt: 2 }}>
@@ -416,7 +414,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
             <Box sx={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ borderBottom: '2px solid #e0 e0 e0' }}>
+                  <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
                     <th style={{ padding: '12px', textAlign: 'left' }}>Channel</th>
                     <th style={{ padding: '12px', textAlign: 'right' }}>Revenue</th>
                     <th style={{ padding: '12px', textAlign: 'right' }}>Videos</th>
@@ -426,7 +424,7 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
                 </thead>
                 <tbody>
                   {channelRevenue.map((channel) => (
-                    <tr key={channel.channel_id} style={{ borderBottom: '1px solid #f0 f0 f0' }}>
+                    <tr key={channel.channel_id} style={{ borderBottom: '1px solid #f0f0f0' }}>
                       <td style={{ padding: '12px' }}>{channel.channel_name}</td>
                       <td style={{ padding: '12px', textAlign: 'right' }}>
                         {formatCurrency(channel.revenue)}

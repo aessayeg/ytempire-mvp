@@ -13,12 +13,208 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  TextField
+  Alert,
+  Chip,
+  IconButton,
+  Autocomplete,
+  FormControlLabel,
+  Switch,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  RadioGroup,
+  Radio,
+  LinearProgress,
+  CircularProgress
+} from '@mui/material';
+import {
+  AutoAwesome,
+  SmartToy,
+  Psychology,
+  RecordVoiceOver,
+  Image,
+  Speed,
+  Balance,
+  HighQuality
+} from '@mui/icons-material';
+
+interface VideoGenerationConfig {
+  channelId: string;
+  topic: string;
+  title: string;
+  style: string;
+  duration: string;
+  targetAudience: string;
+  tone: string;
+  keywords: string[];
+  voiceStyle: string;
+  language: string;
+  musicStyle: string;
+  thumbnailStyle: string;
+  autoPublish: boolean;
+  scheduledTime: string;
+  qualityPreset: string;
+}
+
+interface VideoGenerationFormProps {
+  channelId?: string;
+  onGenerate?: (config: VideoGenerationConfig) => void;
+}
+
+const steps = [
+  'Topic & Title',
+  'Content Style',
+  'Voice & Audio',
+  'Visuals',
+  'Publishing',
+  'Review & Generate'
+];
+
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(amount);
+};
+
+export const VideoGenerationForm: React.FC<VideoGenerationFormProps> = ({ 
+  channelId = '', 
+  onGenerate 
+}) => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [config, setConfig] = useState<VideoGenerationConfig>({
+    channelId,
+    topic: '',
+    title: '',
+    style: 'informative',
+    duration: 'medium',
+    targetAudience: 'general',
+    tone: 'professional',
+    keywords: [],
+    voiceStyle: 'natural',
+    language: 'en',
+    musicStyle: 'none',
+    thumbnailStyle: 'modern',
+    autoPublish: false,
+    scheduledTime: '',
+    qualityPreset: 'balanced'
+  });
+  
+  const [titleSuggestions, setTitleSuggestions] = useState<string[]>([]);
+  const [generating, setGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  
+  const [costEstimate, setCostEstimate] = useState({
+    script: 0.10,
+    voice: 0.30,
+    thumbnail: 0.10,
+    processing: 0.05,
+    total: 0.55
+  });
+
+  useEffect(() => {
+    // Calculate cost based on configuration
+    const calculateCost = () => {
+      let script = 0.10;
+      let voice = 0.30;
+      let thumbnail = 0.10;
+      const processing = 0.05;
+      
+      // Adjust based on duration
+      if (config.duration === 'short') {
+        script *= 0.5;
+        voice *= 0.5;
+      } else if (config.duration === 'long') {
+        script *= 2;
+        voice *= 2;
+      }
+      
+      // Adjust based on quality
+      if (config.qualityPreset === 'quality') {
+        script *= 1.5;
+        voice *= 1.5;
+        thumbnail *= 1.5;
+      } else if (config.qualityPreset === 'fast') {
+        script *= 0.7;
+        voice *= 0.7;
+        thumbnail *= 0.7;
+      }
+      
+      setCostEstimate({
+        script,
+        voice,
+        thumbnail,
+        processing,
+        total: script + voice + thumbnail + processing
+      });
+    };
+    
+    calculateCost();
+  }, [config]);
+
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      // Simulate generation progress
+      const interval = setInterval(() => {
+        setGenerationProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + 10;
+        });
+      }, 1000);
+      
+      if (onGenerate) {
+        await onGenerate(config);
+      }
+      
+      setSuccess('Video generation started successfully!');
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate video');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const generateTitleSuggestions = () => {
+    // Generate AI-powered title suggestions based on topic
+    if (config.topic) {
+      setTitleSuggestions([
+        `The Ultimate Guide to ${config.topic}`,
+        `${config.topic}: Everything You Need to Know`,
+        `Why ${config.topic} Matters in 2024`,
+        `${config.topic} Explained in Simple Terms`,
+        `Top 10 Facts About ${config.topic}`
+      ]);
+    }
+  };
+
+  const renderStepContent = (step: number) => {
+    switch (step) {
+      case 0: // Topic & Title
+        return (
+          <Box sx={{ mt: 2 }}>
+            <TextField
               fullWidth
               label="Topic"
               value={config.topic}
-              onChange={(e) => setConfig({ ...config, topic: e.target.value)});
-}
+              onChange={(e) => setConfig({ ...config, topic: e.target.value })}
               placeholder="Enter your video topic or select from trending"
               sx={{ mb: 3 }}
               multiline
@@ -29,10 +225,8 @@ import {
               freeSolo
               options={titleSuggestions}
               value={config.title}
-              onChange={(e, value) => setConfig({ ...config, title: value || '' });
-}
-              onInputChange={(e, value) => setConfig({ ...config, title: value });
-}
+              onChange={(e, value) => setConfig({ ...config, title: value || '' })}
+              onInputChange={(e, value) => setConfig({ ...config, title: value })}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -61,15 +255,13 @@ import {
 
       case 1: // Content Style
         return (
-    <>
-      <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 2 }}>
             <FormControl fullWidth sx={{ mb: 3 }}>
               <InputLabel>Content Style</InputLabel>
-      <Select
+              <Select
                 value={config.style}
                 label="Content Style"
-                onChange={(e) => setConfig({ ...config, style: e.target.value)});
-}
+                onChange={(e) => setConfig({ ...config, style: e.target.value })}
               >
                 <MenuItem value="informative">Informative</MenuItem>
                 <MenuItem value="entertaining">Entertaining</MenuItem>
@@ -85,11 +277,10 @@ import {
               <Select
                 value={config.duration}
                 label="Video Duration"
-                onChange={(e) => setConfig({ ...config, duration: e.target.value)});
-}
+                onChange={(e) => setConfig({ ...config, duration: e.target.value })}
               >
-                <MenuItem value="short">Short (1-3, min)</MenuItem>
-                <MenuItem value="medium">Medium (5-10, min)</MenuItem>
+                <MenuItem value="short">Short (1-3 min)</MenuItem>
+                <MenuItem value="medium">Medium (5-10 min)</MenuItem>
                 <MenuItem value="long">Long (10+ min)</MenuItem>
               </Select>
             </FormControl>
@@ -99,8 +290,7 @@ import {
               <Select
                 value={config.targetAudience}
                 label="Target Audience"
-                onChange={(e) => setConfig({ ...config, targetAudience: e.target.value)});
-}
+                onChange={(e) => setConfig({ ...config, targetAudience: e.target.value })}
               >
                 <MenuItem value="general">General</MenuItem>
                 <MenuItem value="kids">Kids</MenuItem>
@@ -115,8 +305,7 @@ import {
               <Select
                 value={config.tone}
                 label="Tone"
-                onChange={(e) => setConfig({ ...config, tone: e.target.value)});
-}
+                onChange={(e) => setConfig({ ...config, tone: e.target.value })}
               >
                 <MenuItem value="professional">Professional</MenuItem>
                 <MenuItem value="casual">Casual</MenuItem>
@@ -131,8 +320,7 @@ import {
               freeSolo
               options={[]}
               value={config.keywords}
-              onChange={(e, value) => setConfig({ ...config, keywords: value });
-}
+              onChange={(e, value) => setConfig({ ...config, keywords: value })}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -141,27 +329,24 @@ import {
                   helperText="Press Enter to add keywords"
                 />
               )}
-              renderTags={(value, getTagProps) => {}
+              renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
-                  <Chip label={option} {...getTagProps({ index });
-} />
-                ))}
+                  <Chip label={option} {...getTagProps({ index })} key={index} />
+                ))
+              }
             />
           </Box>
-        </>
-  );
+        );
 
       case 2: // Voice & Audio
         return (
-    <>
-      <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 2 }}>
             <FormControl fullWidth sx={{ mb: 3 }}>
               <InputLabel>Voice Style</InputLabel>
-      <Select
+              <Select
                 value={config.voiceStyle}
                 label="Voice Style"
-                onChange={(e) => setConfig({ ...config, voiceStyle: e.target.value)});
-}
+                onChange={(e) => setConfig({ ...config, voiceStyle: e.target.value })}
               >
                 <MenuItem value="natural">Natural</MenuItem>
                 <MenuItem value="energetic">Energetic</MenuItem>
@@ -177,8 +362,7 @@ import {
               <Select
                 value={config.language}
                 label="Language"
-                onChange={(e) => setConfig({ ...config, language: e.target.value)});
-}
+                onChange={(e) => setConfig({ ...config, language: e.target.value })}
               >
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="es">Spanish</MenuItem>
@@ -197,8 +381,7 @@ import {
               <Select
                 value={config.musicStyle}
                 label="Background Music"
-                onChange={(e) => setConfig({ ...config, musicStyle: e.target.value)});
-}
+                onChange={(e) => setConfig({ ...config, musicStyle: e.target.value })}
               >
                 <MenuItem value="none">None</MenuItem>
                 <MenuItem value="upbeat">Upbeat</MenuItem>
@@ -216,25 +399,22 @@ import {
               </Typography>
             </Alert>
           </Box>
-        </>
-  );
+        );
 
       case 3: // Visuals
         return (
-    <>
-      <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 2 }}>
             <FormControl fullWidth sx={{ mb: 3 }}>
               <InputLabel>Thumbnail Style</InputLabel>
-      <Select
+              <Select
                 value={config.thumbnailStyle}
                 label="Thumbnail Style"
-                onChange={(e) => setConfig({ ...config, thumbnailStyle: e.target.value)});
-}
+                onChange={(e) => setConfig({ ...config, thumbnailStyle: e.target.value })}
               >
                 <MenuItem value="modern">Modern</MenuItem>
                 <MenuItem value="minimalist">Minimalist</MenuItem>
                 <MenuItem value="bold">Bold</MenuItem>
-                <MenuItem value="custom">Custom (AI, Generated)</MenuItem>
+                <MenuItem value="custom">Custom (AI Generated)</MenuItem>
               </Select>
             </FormControl>
 
@@ -245,19 +425,16 @@ import {
               </Typography>
             </Alert>
           </Box>
-        </>
-  );
+        );
 
       case 4: // Publishing
         return (
-    <>
-      <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Switch
                   checked={config.autoPublish}
-                  onChange={(e) => setConfig({ ...config, autoPublish: e.target.checked });
-}
+                  onChange={(e) => setConfig({ ...config, autoPublish: e.target.checked })}
                 />
               }
               label="Auto-publish after generation"
@@ -270,30 +447,29 @@ import {
                 label="Schedule Publishing Time"
                 type="datetime-local"
                 value={config.scheduledTime || ''}
-                onChange={(e) => setConfig({ ...config, scheduledTime: e.target.value)});
-}
+                onChange={(e) => setConfig({ ...config, scheduledTime: e.target.value })}
                 InputLabelProps={{ shrink: true }}
                 helperText="Leave empty to publish immediately"
                 sx={{ mb: 3 }}
               />
             )}
+            
             <Alert severity="warning">
               <Typography variant="body2">
                 Make sure your YouTube channel is connected and verified before enabling auto-publish.
               </Typography>
             </Alert>
           </Box>
-        </>
-  );
+        );
 
       case 5: // Review & Generate
         return (
-    <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 2 }}>
             <Paper sx={{ p: 3, mb: 3, bgcolor: 'grey.50' }}>
               <Typography variant="h6" gutterBottom>
                 Generation Summary
               </Typography>
-      <List dense>
+              <List dense>
                 <ListItem>
                   <ListItemIcon><SmartToy /></ListItemIcon>
                   <ListItemText primary="Topic" secondary={config.topic} />
@@ -353,8 +529,7 @@ import {
               <RadioGroup
                 row
                 value={config.qualityPreset}
-                onChange={(e) => setConfig({ ...config, qualityPreset: e.target.value)});
-}
+                onChange={(e) => setConfig({ ...config, qualityPreset: e.target.value })}
               >
                 <FormControlLabel
                   value="fast"
@@ -397,11 +572,13 @@ import {
                 <LinearProgress variant="determinate" value={generationProgress} />
               </Box>
             )}
+            
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
                 {error}
               </Alert>
             )}
+            
             {success && (
               <Alert severity="success" sx={{ mb: 2 }}>
                 {success}
@@ -410,17 +587,19 @@ import {
           </Box>
         );
 
-        return null}
+      default:
+        return null;
+    }
   };
 
   return (
-    <>
-      <Box>
+    <Box>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom>
           Generate New Video
         </Typography>
-      <Stepper activeStep={activeStep} orientation="vertical">
+        
+        <Stepper activeStep={activeStep} orientation="vertical">
           {steps.map((label, index) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
@@ -439,10 +618,11 @@ import {
                       variant="contained"
                       onClick={handleGenerate}
                       disabled={generating || !config.channelId || !config.topic}
-                      sx={ {
-                        background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+                      sx={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                         '&:hover': {
-                          background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
+                          background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4290 100%)'
+                        }
                       }}
                     >
                       {generating ? (
@@ -458,10 +638,11 @@ import {
                     <Button
                       variant="contained"
                       onClick={handleNext}
-                      sx={ {
-                        background: 'linear-gradient(135 deg, #667 eea 0%, #764 ba2 100%)',
+                      sx={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                         '&:hover': {
-                          background: 'linear-gradient(135 deg, #5 a6 fd8 0%, #6 a4290 100%)' }
+                          background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4290 100%)'
+                        }
                       }}
                     >
                       Next
@@ -474,5 +655,5 @@ import {
         </Stepper>
       </Paper>
     </Box>
-  </>
-  )};
+  );
+};

@@ -10,18 +10,18 @@ export class EventEmitter {
 
   on(event: string, listener: EventListener): this {
     if (!this.events.has(event)) {
-      this.events.set(event, new Set());
+      this.events.set(event, new Set())
     }
     this.events.get(event)!.add(listener);
-    return this;
+    return this
   }
 
   once(event: string, listener: EventListener): this {
     const onceWrapper = (...args: unknown[]) => {
       listener(...args);
-      this.off(event, onceWrapper);
+      this.off(event, onceWrapper)
     };
-    return this.on(event, onceWrapper);
+    return this.on(event, onceWrapper)
   }
 
   off(event: string, listener: EventListener): this {
@@ -29,42 +29,40 @@ export class EventEmitter {
     if (listeners) {
       listeners.delete(listener);
       if (listeners.size === 0) {
-        this.events.delete(event);
+        this.events.delete(event)
       }
     }
-    return this;
+    return this
   }
 
   emit(event: string, ...args: unknown[]): boolean {
     const listeners = this.events.get(event);
     if (!listeners || listeners.size === 0) {
-      return false;
+      return false
     }
     listeners.forEach(listener => {
       try {
-        listener(...args);
+        listener(...args)
       } catch (error) {
-        console.error(`Error in event listener for "${event}":`, error);
+        console.error(`Error in event listener for "${event}":`, error)
       }
     });
-    return true;
+    return true
   }
 
   removeAllListeners(event?: string): this {
     if (event) {
-      this.events.delete(event);
+      this.events.delete(event)
     } else {
-      this.events.clear();
+      this.events.clear()
     }
-    return this;
+    return this
   }
 
   listenerCount(event: string): number {
     const listeners = this.events.get(event);
-    return listeners ? listeners.size : 0;
+    return listeners ? listeners.size : 0
   }
 
   eventNames(): string[] {
-    return Array.from(this.events.keys());
-  }
-}
+    return Array.from(this.events.keys())}}

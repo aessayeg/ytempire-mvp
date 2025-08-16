@@ -10,13 +10,16 @@ import {
 import {  CloudUpload  } from '@mui/icons-material';
 
 interface UploadProgressProps {
-  progress: number,
-  status: 'preparing' | 'uploading' | 'processing' | 'completed' | 'failed';
-  fileName?: string;
-  fileSize?: number;
-  uploadSpeed?: number;
-  timeRemaining?: number;
-  error?: string;
+  
+progress: number;
+status: 'preparing' | 'uploading' | 'processing' | 'completed' | 'failed';
+fileName?: string;
+fileSize?: number;
+uploadSpeed?: number;
+timeRemaining?: number;
+error?: string;
+
+
 }
 
 export const VideoUploadProgress: React.FC<UploadProgressProps> = ({ progress, status, fileName, fileSize, uploadSpeed, timeRemaining, error }) => {
@@ -24,9 +27,8 @@ export const VideoUploadProgress: React.FC<UploadProgressProps> = ({ progress, s
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     if (bytes === 0) return '0 Bytes';
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
   };
-
   return (
     <>
       <Paper sx={{ p: 3 }}>
@@ -46,4 +48,5 @@ export const VideoUploadProgress: React.FC<UploadProgressProps> = ({ progress, s
       {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
     </Paper>
   </>
-  )};
+  )
+};

@@ -221,8 +221,7 @@ import {
                               color={getStatusColor(api.status) as any}
                               variant="outlined"
                             />
-                          </Box>
-                        }
+                          </Box>}
                         secondary={
                           <Box>
                             <Typography variant="body2" color="text.secondary">
@@ -237,8 +236,7 @@ import {
                             <Typography variant="caption" color="text.secondary">
                               Usage: {api.usage}%
                             </Typography>
-                          </Box>
-                        }
+                          </Box>}
                       />
                       <ListItemSecondaryAction>
                         <IconButton onClick={() => handleEditApiKey(api)}>
@@ -528,6 +526,6 @@ import {
         </DialogActions>
       </Dialog>
     </Box>
-  )};
-
-export default Settings;
+  )
+};
+export default Settings}}}

@@ -30,29 +30,38 @@ import {
  } from '@mui/icons-material';
 
 interface ErrorAction {
-  label: string,
-  action: () => void;
-  icon?: React.ReactNode;
+  
+label: string;
+action: () => void;
+icon?: React.ReactNode;
+
+
 }
 
 interface ErrorSolution {
-  description: string;
-  action?: () => void;
+  
+description: string;
+action?: () => void;
+
+
 }
 
 interface ErrorMessageProps {
-  severity?: 'error' | 'warning' | 'info' | 'success';
-  title: string,
-  message: string;
-  errorCode?: string;
-  details?: string;
-  solutions?: ErrorSolution[];
-  actions?: ErrorAction[];
-  onClose?: () => void;
-  autoHideDuration?: number;
-  showReportButton?: boolean;
-  retryable?: boolean;
-  onRetry?: () => void;
+  
+severity?: 'error' | 'warning' | 'info' | 'success';
+title: string;
+message: string;
+errorCode?: string;
+details?: string;
+solutions?: ErrorSolution[];
+actions?: ErrorAction[];
+onClose?: () => void;
+autoHideDuration?: number;
+showReportButton?: boolean;
+retryable?: boolean;
+onRetry?: () => void;
+
+
 }
 
 export const ErrorMessage: React.FC<ErrorMessageProps> = ({ severity = 'error', title, message, errorCode, details, solutions, actions, onClose, autoHideDuration, showReportButton = true, retryable = false, onRetry }) => {
@@ -89,7 +98,8 @@ Time: ${new Date().toISOString()
 - Code: ${errorCode || 'N/A'}
 - Time: ${new Date().toISOString()
     `);
-    window.open(`/feedback?type=bug&details=${errorInfo}`, '_blank')};
+    window.open(`/feedback?type=bug&details=${errorInfo}`, '_blank')
+};
 
   const getSeverityIcon = () => {
     switch (severity) {
@@ -100,10 +110,8 @@ Time: ${new Date().toISOString()
       case 'info':
         return <Info />;
       case 'success':
-        return <CheckCircle />;
-    }
-  };
-
+        return <CheckCircle />
+    }};
   if (!visible) return null;
 
   return (
@@ -117,7 +125,7 @@ Time: ${new Date().toISOString()
               size="small"
               onClick={() => {
                 setVisible(false</>
-  );
+  ),
                 onClose()}}
             >
               <Close fontSize="small" />
@@ -125,8 +133,7 @@ Time: ${new Date().toISOString()
           )}
         sx={{
           mb: 2,
-          '.MuiAlert-message': { width: '100%' }
-        }}
+          '.MuiAlert-message': { width: '100%' }}}
       >
         <AlertTitle sx={{ fontWeight: 'bold' }}>
           {title}
@@ -267,4 +274,5 @@ Time: ${new Date().toISOString()
         </Box>
       </Alert>
     </Collapse>
-  )};
+  )
+}}}

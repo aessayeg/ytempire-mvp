@@ -19,15 +19,18 @@ import {
  } from '@mui/icons-material';
 
 interface VideoPlayerProps {
-  videoUrl: string;
-  thumbnail?: string;
-  autoPlay?: boolean;
-  controls?: boolean;
-  muted?: boolean;
-  onPlay?: () => void;
-  onPause?: () => void;
-  onEnded?: () => void;
-  onTimeUpdate?: (currentTime: number, duration: number) => void}
+  
+videoUrl: string;
+thumbnail?: string;
+autoPlay?: boolean;
+controls?: boolean;
+muted?: boolean;
+onPlay?: () => void;
+onPause?: () => void;
+onEnded?: () => void;
+onTimeUpdate?: (currentTime: number, duration: number) => void;
+
+}
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, autoPlay = false, controls = true, muted = false, onPlay, onPause, onEnded, onTimeUpdate }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -50,28 +53,28 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
-      setIsLoading(false)};
-
+      setIsLoading(false)
+};
     const handleTimeUpdate = () => {
       setCurrentTime(video.currentTime);
-      onTimeUpdate?.(video.currentTime, video.duration)};
-
+      onTimeUpdate?.(video.currentTime, video.duration)
+};
     const handlePlay = () => {
       setIsPlaying(true);
-      onPlay?.()};
-
+      onPlay?.()
+};
     const handlePause = () => {
       setIsPlaying(false);
-      onPause?.()};
-
+      onPause?.()
+};
     const handleEnded = () => {
       setIsPlaying(false);
-      onEnded?.()};
-
+      onEnded?.()
+};
     const handleError = () => {
       setError('Failed to load video');
-      setIsLoading(false)};
-
+      setIsLoading(false)
+};
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('play', handlePlay);
@@ -96,14 +99,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
       video.pause()} else {
       video.play()}
   };
-
   const toggleMute = () => {
     const video = videoRef.current;
     if (!video) return;
 
     video.muted = !isMuted;
-    setIsMuted(!isMuted)};
-
+    setIsMuted(!isMuted)
+};
   const handleVolumeChange = (_: Event, newValue: number | number[]) => {
     const video = videoRef.current;
     if (!video) return;
@@ -115,15 +117,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
       setIsMuted(true)} else if (isMuted) {
       setIsMuted(false)}
   };
-
   const handleSeek = (_: Event, newValue: number | number[]) => {
     const video = videoRef.current;
     if (!video) return;
 
     const time = newValue as number;
     video.currentTime = time;
-    setCurrentTime(time)};
-
+    setCurrentTime(time)
+};
   const toggleFullscreen = async () => {
     const container = containerRef.current;
     if (!container) return;
@@ -136,7 +137,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
         await document.exitFullscreen()}
       setIsFullscreen(false)}
   };
-
   const togglePictureInPicture = async () => {
     const video = videoRef.current;
     if (!video) return;
@@ -148,7 +148,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
     } catch (error) {
       console.error('PiP not supported')}
   };
-
   const changePlaybackRate = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -159,14 +158,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
     const newRate = rates[nextIndex];
     
     video.playbackRate = newRate;
-    setPlaybackRate(newRate)};
-
+    setPlaybackRate(newRate)
+};
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}
   };
-
   const handleMouseMove = () => {
     setShowControls(true);
     if (controlsTimeoutRef.current) {
@@ -174,8 +172,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
     controlsTimeoutRef.current = setTimeout(() => {
       if (isPlaying) {
         setShowControls(false)}
-    }, 3000)};
-
+    }, 3000)
+};
   if (error) {
     return (
     <>
@@ -243,8 +241,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
                   color: 'primary.main',
                   '& .MuiSlider-thumb': {
                     width: 12,
-                    height: 12 }
-                }}
+                    height: 12 }}}
               />
             </Box>
 
@@ -274,8 +271,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
                       color: 'white',
                       '& .MuiSlider-thumb': {
                         width: 12,
-                        height: 12 }
-                    }}
+                        height: 12 }}}
                   />
                 </Box>
 
@@ -315,4 +311,5 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, a
       </Box>
     </Paper>
   </>
-  )};
+  )
+}}

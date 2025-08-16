@@ -25,21 +25,27 @@ import {
  } from '@mui/icons-material';
 
 interface HelpItem {
-  id: string,
-  title: string,
+  
+id: string;
+title: string;
 
-  content: string;
-  type?: 'tip' | 'tutorial' | 'faq';
-  link?: string;
-  videoUrl?: string;
+content: string;
+type?: 'tip' | 'tutorial' | 'faq';
+link?: string;
+videoUrl?: string;
+
+
 }
 
 interface InlineHelpProps {
-  context: string;
-  items?: HelpItem[];
-  onClose?: () => void;
-  persistent?: boolean;
-  variant?: 'compact' | 'expanded';
+  
+context: string;
+items?: HelpItem[];
+onClose?: () => void;
+persistent?: boolean;
+variant?: 'compact' | 'expanded';
+
+
 }
 const defaultHelpItems: Record<string, HelpItem[]> = { 'video-creation': [ {
       id: '1',
@@ -77,7 +83,6 @@ const defaultHelpItems: Record<string, HelpItem[]> = { 'video-creation': [ {
       type: 'tutorial',
       videoUrl: '/tutorials/revenue-tracking' } ]
 };
-
 export const InlineHelp: React.FC<InlineHelpProps> = ({ context, items, onClose, persistent = false, variant = 'compact' }) => {
   const [expanded, setExpanded] = useState(variant === 'expanded');
   const [completedItems, setCompletedItems] = useState<string[]>([]);
@@ -85,8 +90,8 @@ export const InlineHelp: React.FC<InlineHelpProps> = ({ context, items, onClose,
   const helpItems = items || defaultHelpItems[context] || [];
   
   const handleItemComplete = (itemId: string) => {
-    setCompletedItems(prev => [...prev, itemId])};
-  
+    setCompletedItems(prev => [...prev, itemId])
+};
   const getIcon = (_type?: string) => {
     switch (type) {
       case 'tip':
@@ -97,7 +102,6 @@ export const InlineHelp: React.FC<InlineHelpProps> = ({ context, items, onClose,
         return <QuestionAnswer />;
         return <CheckCircle color="success" />}
   };
-  
   if (helpItems.length === 0) return null;
   
   return (

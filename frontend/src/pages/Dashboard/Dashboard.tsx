@@ -71,20 +71,23 @@ const mockRevenueData = [ { month: 'Jan', revenue: 4500, costs: 1200 },
   { month: 'Jun', revenue: 9800, costs: 2200 } ];
 
 interface DashboardMetrics {
-  totalVideos: number,
-  totalViews: number,
+  
+totalVideos: number;
+totalViews: number;
 
-  totalRevenue: number,
-  totalCosts: number,
+totalRevenue: number;
+totalCosts: number;
 
-  activeChannels: number,
-  queuedVideos: number,
+activeChannels: number;
+queuedVideos: number;
 
-  processingVideos: number,
-  completedToday: number,
+processingVideos: number;
+completedToday: number;
 
-  averageCostPerVideo: number,
-  engagementRate: number}
+averageCostPerVideo: number;
+engagementRate: number;
+
+}
 
 export const Dashboard: React.FC = () => {
   const theme = useTheme();
@@ -117,21 +120,17 @@ export const Dashboard: React.FC = () => {
       console.error('Failed to refresh, dashboard:', error)} finally {
       setLoading(false)}
   };
-
   const formatCurrency = (_value: number) => { return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0 }).format(value)};
-
+      style: 'currency';
+      currency: 'USD';
+      minimumFractionDigits: 0;
+      maximumFractionDigits: 0 }).format(value)
+};
   const formatNumber = (value: number) => {
     if (value >= 1000000) {
-      return `${(value / 1000000.toFixed(1)}M`;
-    } else if (value >= 1000) {
-      return `${(value / 1000.toFixed(1)}K`;
-    }
+      return `${(value / 1000000.toFixed(1)}M`} else if (value >= 1000) {
+      return `${(value / 1000.toFixed(1)}K`}
     return value.toString()};
-
   return (
     <>
       <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -151,8 +150,7 @@ export const Dashboard: React.FC = () => {
           icon={<Warning />}
           sx={{ mb: 3 }}
           action={
-            <Chip label="View Details" size="small" clickable color="warning" />
-          }
+            <Chip label="View Details" size="small" clickable color="warning" />}
         >
           Monthly cost threshold approaching. Current: {formatCurrency(metrics.totalCosts)} / {formatCurrency(2500)}
         </Alert>
@@ -166,7 +164,7 @@ export const Dashboard: React.FC = () => {
             icon={<VideoLibrary />}
             trend="+12%"
             trendDirection="up"
-            color="#8884 d8"
+            color="#8884d8"
           />
         </Grid>
       <Grid item xs={12} sm={6} md={3}>
@@ -196,7 +194,7 @@ export const Dashboard: React.FC = () => {
             icon={<AttachMoney />}
             trend="-5%"
             trendDirection="down"
-            color="#ff7 c7 c"
+            color="#ff7c7 c"
           />
         </Grid>
       </Grid>
@@ -220,7 +218,7 @@ export const Dashboard: React.FC = () => {
                   type="monotone"
                   dataKey="views"
                   stackId="1"
-                  stroke="#8884 d8"
+                  stroke="#8884d8"
                   fill="#8884d8"
                   fillOpacity={0.6}
                 />
@@ -298,7 +296,7 @@ export const Dashboard: React.FC = () => {
                 <RechartsTooltip />
                 <Legend />
                 <Bar dataKey="revenue" fill="#82 ca9 d" />
-                <Bar dataKey="costs" fill="#ff7 c7 c" />
+                <Bar dataKey="costs" fill="#ff7c7 c" />
               </BarChart>
             </ResponsiveContainer>
           </Paper>

@@ -50,8 +50,8 @@ const RouteWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         {children}
       </Suspense>
     </ErrorBoundary>
-  )};
-
+  )
+};
 // Protected route wrapper
 const ProtectedRoute: React.FC = () => {
   return (
@@ -60,8 +60,8 @@ const ProtectedRoute: React.FC = () => {
         <Outlet />
       </DashboardLayout>
     </RouteWrapper>
-  )};
-
+  )
+};
 // Create router with optimized lazy loading
 // export const optimizedRouter = createBrowserRouter([
   {
@@ -73,7 +73,7 @@ const ProtectedRoute: React.FC = () => {
     )
   },
   {
-    path: '/register',
+    path: '/register';
     element: (
       <RouteWrapper>
         <Register />
@@ -81,7 +81,7 @@ const ProtectedRoute: React.FC = () => {
     )
   },
   {
-    path: '/beta-signup',
+    path: '/beta-signup';
     element: (
       <RouteWrapper>
         <BetaSignup />
@@ -89,8 +89,8 @@ const ProtectedRoute: React.FC = () => {
     )
   },
   {
-    path: '/',
-    element: <ProtectedRoute />,
+    path: '/';
+    element: <ProtectedRoute />;
     children: [
       {
         index: true,
@@ -101,7 +101,7 @@ const ProtectedRoute: React.FC = () => {
         )
       },
       {
-        path: 'dashboard',
+        path: 'dashboard';
         element: (
           <RouteWrapper>
             <Dashboard />
@@ -109,7 +109,7 @@ const ProtectedRoute: React.FC = () => {
         )
       },
       {
-        path: 'channels',
+        path: 'channels';
         element: (
           <RouteWrapper>
             <ChannelManagement />
@@ -117,7 +117,7 @@ const ProtectedRoute: React.FC = () => {
         )
       },
       {
-        path: 'videos',
+        path: 'videos';
         children: [
           {
             index: true,
@@ -145,7 +145,7 @@ const ProtectedRoute: React.FC = () => {
         ]
       },
       {
-        path: 'analytics',
+        path: 'analytics';
         children: [
           {
             index: true,
@@ -165,7 +165,7 @@ const ProtectedRoute: React.FC = () => {
         ]
       },
       {
-        path: 'costs',
+        path: 'costs';
         element: (
           <RouteWrapper>
             <CostTracking />
@@ -173,7 +173,7 @@ const ProtectedRoute: React.FC = () => {
         )
       },
       {
-        path: 'ai-tools',
+        path: 'ai-tools';
         element: (
           <RouteWrapper>
             <AITools />
@@ -181,7 +181,7 @@ const ProtectedRoute: React.FC = () => {
         )
       },
       {
-        path: 'profile',
+        path: 'profile';
         element: (
           <RouteWrapper>
             <Profile />
@@ -189,7 +189,7 @@ const ProtectedRoute: React.FC = () => {
         )
       },
       {
-        path: 'settings',
+        path: 'settings';
         element: (
           <RouteWrapper>
             <Settings />
@@ -200,5 +200,5 @@ const ProtectedRoute: React.FC = () => {
 ]);
 
 // export const OptimizedRouter: React.FC = () => {
-  return <RouterProvider router={optimizedRouter} />;
+  return <RouterProvider router={optimizedRouter} />
 };

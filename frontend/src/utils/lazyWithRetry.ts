@@ -30,7 +30,6 @@ export function lazyWithRetry(
   
   return lazy(async () => {
     const state = retryStates.get(key) || { count: 0 };
-    
     const retry = async (error: Error): Promise<ImportCallbackModule> => {
       state.count += 1;
       state.lastError = error;
@@ -62,7 +61,6 @@ export function lazyWithRetry(
         return retry(retryError as Error);
       }
     };
-    
     try {
       const module = await importCallback();
       // Reset state on success
@@ -75,7 +73,6 @@ export function lazyWithRetry(
     }
   });
 }
-
 // Preload function for critical routes
 export function preloadComponent(
   importCallback: ImportCallback

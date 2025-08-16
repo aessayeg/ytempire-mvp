@@ -40,40 +40,49 @@ import {
  } from 'recharts';
 
 interface ChannelMetrics {
-  date: string,
-  views: number,
+  
+date: string;
+views: number;
 
-  subscribers: number,
-  revenue: number,
+subscribers: number;
+revenue: number;
 
-  watchTime: number,
-  engagement: number,
+watchTime: number;
+engagement: number;
 
-  ctr: number; // Click-through rate,
-  avgViewDuration: number,
+ctr: number; // Click-through rate;
+avgViewDuration: number;
 
-  likes: number,
-  comments: number,
+likes: number;
+comments: number;
 
-  shares: number}
+shares: number;
+
+}
 
 interface VideoPerformance {
-  id: string,
-  title: string,
+  
+id: string;
+title: string;
 
-  views: number,
-  revenue: number,
+views: number;
+revenue: number;
 
-  engagement: number,
-  publishedAt: string,
+engagement: number;
+publishedAt: string;
 
-  category: string}
+category: string;
+
+}
 
 interface ChannelPerformanceChartsProps {
-  channelId: string,
-  timeRange: '7 d' | '30 d' | '90 d' | '1 y',
+  
+channelId: string;
+timeRange: '7 d' | '30 d' | '90 d' | '1 y';
 
-  onTimeRangeChange: (range: '7 d' | '30 d' | '90 d' | '1 y') => void}
+onTimeRangeChange: (range: '7 d' | '30 d' | '90 d' | '1 y') => void;
+
+}
 const ChannelPerformanceCharts: React.FC<ChannelPerformanceChartsProps> = ({
   channelId, timeRange, onTimeRangeChange
 }) => {
@@ -107,14 +116,11 @@ const data: ChannelMetrics[] = [];
           avgViewDuration: Math.random() * 300 + 60,
           likes: Math.floor(Math.random() * 2000) + 100,
           comments: Math.floor(Math.random() * 500) + 20,
-          shares: Math.floor(Math.random() * 200) + 10,
+          shares: Math.floor(Math.random() * 200) + 10
 
-        });
-}
-      
-      return data;
+        })}
+      return data
     };
-
     // Generate sample video data
     const generateVideoData = (): VideoPerformance[] => {
       return [
@@ -123,9 +129,8 @@ const data: ChannelMetrics[] = [];
         { id: '3', title: 'Cooking Masterclass: Italian Cuisine', views: 28000, revenue: 156, engagement: 9.1, publishedAt: '2024-01-06', category: 'Food' },
         { id: '4', title: 'Fitness Journey: 30-Day Challenge', views: 52000, revenue: 298, engagement: 8.8, publishedAt: '2024-01-05', category: 'Fitness' },
         { id: '5', title: 'Travel Vlog: Hidden Gems in Tokyo', views: 38000, revenue: 221, engagement: 7.9, publishedAt: '2024-01-04', category: 'Travel' }
-      ];
+      ]
     };
-
     setTimeout(() => {
       setMetrics(generateSampleData());
       setVideos(generateVideoData());
@@ -135,30 +140,25 @@ const data: ChannelMetrics[] = [];
     if (num >= 1000000) return `${(num / 1000000.toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000.toFixed(1)}K`;
     return num.toString()};
-
   const formatCurrency = (num: number) => `$${num.toFixed(2)}`;
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, '0')}
   };
-
   const getMetricColor = (value: number, baseline: number) => {
-    return value >= baseline ? '#10 b981' : '#ef4444';
-  };
-
+    return value >= baseline ? '#10 b981' : '#ef4444'};
   const CustomTooltip = ({ active, payload, label }: React.ChangeEvent<HTMLInputElement>) => {
     if (active && payload && payload.length) {
       return (
     <>
       <Box sx={{
           background: 'white',
-          border: '1px solid #e5 e7 eb',
+          border: '1px solid #e5e7eb',
           borderRadius: 1,
           p: 2,
-          boxShadow: 2
-}}>
+          boxShadow: 2}}>
           <Typography variant="subtitle2">{label}</Typography>
           {payload.map((entry: React.ChangeEvent<HTMLInputElement>, index: number) => (
             <Typography key={index} sx={{ color: entry.color }}>
@@ -167,9 +167,7 @@ const data: ChannelMetrics[] = [];
           ))}
         </Box>
       )}
-    return null;
-  };
-
+    return null};
   const renderOverviewMetrics = () => {
     if (loading</>
   ) return <CircularProgress />;
@@ -184,8 +182,8 @@ const data: ChannelMetrics[] = [];
         {[
           { label: 'Total Views', value: formatNumber(totalViews), color: '#3 b82 f6', trend: 12.5 },
           { label: 'Revenue', value: formatCurrency(totalRevenue), color: '#10 b981', trend: 8.3 },
-          { label: 'Avg. Engagement', value: `${avgEngagement.toFixed(1)}%`, color: '#f59 e0 b', trend: -2.1 },
-          { label: 'Avg. CTR', value: `${avgCTR.toFixed(2)}%`, color: '#8 b5 cf6', trend: 5.7 }
+          { label: 'Avg. Engagement', value: `${avgEngagement.toFixed(1)}%`, color: '#f59e0 b', trend: -2.1 },
+          { label: 'Avg. CTR', value: `${avgCTR.toFixed(2)}%`, color: '#8b5cf6', trend: 5.7 }
         ].map((metric, index) => (
           <Grid item xs={6} sm={3} key={index}>
             <Card>
@@ -199,7 +197,7 @@ const data: ChannelMetrics[] = [];
                     icon={metric.trend >= 0 ? <TrendingUpIcon /> </>: <TrendingDownIcon />}
                     label={`${metric.trend >= 0 ? '+' : ''}${metric.trend}%`}
                     color={metric.trend >= 0 ? 'success' : 'error'}
-                    sx={{ height: 20, fontSize: '0.75 rem' }}
+                    sx={{ height: 20, fontSize: '0.75rem' }}
                   />
                 </Box>
                 <Typography variant="h6" sx={{ color: metric.color, fontWeight: 'bold' }}>
@@ -211,7 +209,6 @@ const data: ChannelMetrics[] = [];
         ))}
       </Grid>
     )};
-
   const renderMainPerformanceChart = () => {
     if (loading) {
       return (
@@ -246,13 +243,12 @@ const data: ChannelMetrics[] = [];
           
           <ResponsiveContainer width="100%" height={300}>
             <ComposedChart data={metrics}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0 f0 f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
                 dataKey="date" 
                 stroke="#666"
                 fontSize={12}
-                tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
+                tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
               />
               <YAxis 
                 stroke="#666"
@@ -273,8 +269,8 @@ const data: ChannelMetrics[] = [];
         </CardContent>
       </Card>
     </>
-  )};
-
+  )
+};
   const renderEngagementRadar = () => {
     if (loading) return <CircularProgress />;
 
@@ -313,7 +309,6 @@ const data: ChannelMetrics[] = [];
       </Card>
     </>
   )};
-
   const renderVideoPerformanceScatter = () => {
     if (loading) return <CircularProgress />;
 
@@ -331,10 +326,10 @@ const data: ChannelMetrics[] = [];
               <Tooltip 
                 cursor={{ strokeDasharray: '3 3' }}
                 formatter={(value: React.ChangeEvent<HTMLInputElement>, name: string) => {
-                  if (name === 'views') return [formatNumber(value), 'Views'];
-                  if (name === 'revenue') return [formatCurrency(value), 'Revenue'];
+                  if (name === 'views') return [formatNumber(value), 'Views'],
+                  if (name === 'revenue') return [formatCurrency(value), 'Revenue'],
                   if (name === 'engagement') return [`${value}%`, 'Engagement'];
-                  return [value, name];
+                  return [value, name]
                 }}
                 labelFormatter={() => ''}
               />
@@ -348,8 +343,8 @@ const data: ChannelMetrics[] = [];
           </ResponsiveContainer>
         </CardContent>
       </Card>
-    )};
-
+    )
+};
   const renderTopVideosTable = () => {
     if (loading) return <CircularProgress />;
 
@@ -363,7 +358,7 @@ const data: ChannelMetrics[] = [];
       <Box sx={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ borderBottom: '2px solid #e5 e7 eb' }}>
+                <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
                   <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: 600 }}>Video</th>
                   <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: 600 }}>Views</th>
                   <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: 600 }}>Revenue</th>
@@ -373,7 +368,7 @@ const data: ChannelMetrics[] = [];
               </thead>
               <tbody>
                 {videos.slice(0, 5).map((video, index) => (
-                  <tr key={video.id} style={{ borderBottom: '1px solid #f3 f4 f6' }}>
+                  <tr key={video.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
                     <td style={{ padding: '12px 8px' }}>
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -414,7 +409,6 @@ const data: ChannelMetrics[] = [];
       </Card>
     </>
   )};
-
   const renderRevenueTrendChart = () => {
     if (loading) return <CircularProgress />;
 
@@ -433,12 +427,11 @@ const data: ChannelMetrics[] = [];
                   <stop offset="95%" stopColor="#10 b981" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0 f0 f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
                 dataKey="date" 
                 fontSize={12}
-                tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
+                tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
               />
               <YAxis fontSize={12} tickFormatter={formatCurrency} />
               <Tooltip content={<CustomTooltip />} />
@@ -455,8 +448,8 @@ const data: ChannelMetrics[] = [];
         </CardContent>
       </Card>
     </>
-  )};
-
+  )
+};
   return (
     <>
       <Box>
@@ -474,10 +467,10 @@ const data: ChannelMetrics[] = [];
               onChange={(e) => onTimeRangeChange(e.target.value as any)}
               sx={{ minWidth: 120 }}
             >
-              <MenuItem value="7 d">Last 7 Days</MenuItem>
-              <MenuItem value="30 d">Last 30 Days</MenuItem>
-              <MenuItem value="90 d">Last 90 Days</MenuItem>
-              <MenuItem value="1 y">Last Year</MenuItem>
+              <MenuItem value="7d">Last 7 Days</MenuItem>
+              <MenuItem value="30d">Last 30 Days</MenuItem>
+              <MenuItem value="90d">Last 90 Days</MenuItem>
+              <MenuItem value="1y">Last Year</MenuItem>
             </Select>
           </FormControl>
           <Button
@@ -551,5 +544,4 @@ const data: ChannelMetrics[] = [];
     </Box>
   </>
   )};
-
 export default ChannelPerformanceCharts;

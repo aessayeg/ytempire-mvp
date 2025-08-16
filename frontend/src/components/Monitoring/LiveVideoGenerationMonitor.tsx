@@ -46,51 +46,57 @@ import {  format, formatDistanceToNow, addMinutes  } from 'date-fns';
 import {  motion  } from 'framer-motion';
 
 interface VideoGenerationTask {
-  id: string,
-  title: string,
+  
+id: string;
+title: string;
 
-  channelId: string,
-  channelName: string,
+channelId: string;
+channelName: string;
 
-  status: 'queued' | 'processing' | 'completed' | 'failed' | 'paused',
-  currentStep: number,
+status: 'queued' | 'processing' | 'completed' | 'failed' | 'paused';
+currentStep: number;
 
-  totalSteps: number,
-  progress: number,
+totalSteps: number;
+progress: number;
 
-  startTime: Date,
-  estimatedCompletion: Date,
+startTime: Date;
+estimatedCompletion: Date;
 
-  steps: GenerationStep[],
-  metrics: {,
+steps: GenerationStep[];
+metrics: {;
 
-    costSoFar: number,
-  estimatedTotalCost: number,
+costSoFar: number;
+estimatedTotalCost: number;
 
-    processingTime: number,
-  gpuUsage: number,
+processingTime: number;
+gpuUsage: number;
 
-    memoryUsage: number};
+memoryUsage: number;
+
+};
   errors?: string[];
-  warnings?: string[];
+  warnings?: string[]
 }
 
 interface GenerationStep {
-  id: string,
-  name: string,
+  
+id: string;
+name: string;
 
-  description: string,
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'skipped',
+description: string;
+status: 'pending' | 'processing' | 'completed' | 'failed' | 'skipped';
 
-  progress: number;
-  startTime?: Date;
-  endTime?: Date;
-  duration?: number;
-  cost?: number;
-  output?: string;
-  error?: string;
-  retryCount?: number;
-  maxRetries?: number;
+progress: number;
+startTime?: Date;
+endTime?: Date;
+duration?: number;
+cost?: number;
+output?: string;
+error?: string;
+retryCount?: number;
+maxRetries?: number;
+
+
 }
 
 const generationSteps: GenerationStep[] = [ { id: 'analyze',
@@ -222,7 +228,7 @@ export const LiveVideoGenerationMonitor: React.FC = () => { const [tasks, setTas
             if (updatedSteps[currentStepIndex].progress >= 100) {
               updatedSteps[currentStepIndex].status = 'completed';
               if (currentStepIndex + 1 < updatedSteps.length) {
-                updatedSteps[currentStepIndex + 1].status = 'processing';
+                updatedSteps[currentStepIndex + 1].status = 'processing'
               }
             }
           }
@@ -235,42 +241,42 @@ export const LiveVideoGenerationMonitor: React.FC = () => { const [tasks, setTas
               ...task.metrics,
               costSoFar: task.metrics.costSoFar + Math.random() * 0.01,
               processingTime: task.metrics.processingTime + 1 },
-            status: newProgress >= 100 ? 'completed' : 'processing',
+            status: newProgress >= 100 ? 'completed' : 'processing'
 
-          };
+          }
         }
         return task}))}, 1000);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)}
-    };
+    }
   }, []);
 
   const handleToggleExpand = (taskId: string) => {
-    setExpandedTasks(prev => {}
+    setExpandedTasks(prev =>
       prev.includes(taskId)
         ? prev.filter(id => id !== taskId)
         : [...prev, taskId]
-    )};
-
+    )
+};
   const handlePauseTask = (taskId: string) => {
-    setTasks(prev => prev.map(task => {}
+    setTasks(prev => prev.map(task =>
       task.id === taskId ? { ...task, status: 'paused' } : task
-    ))};
-
+    ))
+};
   const handleResumeTask = (taskId: string) => {
-    setTasks(prev => prev.map(task => {}
+    setTasks(prev => prev.map(task =>
       task.id === taskId ? { ...task, status: 'processing' } : task
-    ))};
-
+    ))
+};
   const handleCancelTask = (taskId: string) => {
-    setTasks(prev => prev.filter(task => task.id !== taskId))};
-
+    setTasks(prev => prev.filter(task => task.id !== taskId))
+};
   const handleRetryStep = (taskId: string, stepId: string) => {
     // Retry logic
-    console.log('Retrying step', stepId, 'for task', taskId)};
-
+    console.log('Retrying step', stepId, 'for task', taskId)
+};
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return 'success';
@@ -280,7 +286,6 @@ export const LiveVideoGenerationMonitor: React.FC = () => { const [tasks, setTas
       case 'queued': return 'default';
       default: return 'default'}
   };
-
   const getStepIcon = (stepId: string) => {
     switch (stepId) {
       case 'analyze': return <TrendingUp />;
@@ -292,7 +297,6 @@ export const LiveVideoGenerationMonitor: React.FC = () => { const [tasks, setTas
       case 'upload': return <Upload />;
       default: return <PlayCircle />}
   };
-
   const renderTaskCard = (task: VideoGenerationTask) => {
     const isExpanded = expandedTasks.includes(task.id);
 
@@ -319,8 +323,7 @@ export const LiveVideoGenerationMonitor: React.FC = () => { const [tasks, setTas
                   color={getStatusColor(task.status) as any}
                 />
                 <Typography variant="caption" color="text.secondary">
-                  Started {formatDistanceToNow(task.startTime, { addSuffix: true });
-}
+                  Started {formatDistanceToNow(task.startTime, { addSuffix: true })}
                 </Typography>
               </Box>
             </Box>
@@ -479,8 +482,8 @@ export const LiveVideoGenerationMonitor: React.FC = () => { const [tasks, setTas
         </CardContent>
       </Card>
     </>
-  )};
-
+  )
+};
   return (
     <>
       <Box>
@@ -576,4 +579,5 @@ export const LiveVideoGenerationMonitor: React.FC = () => { const [tasks, setTas
       {tasks.map(renderTaskCard)}
     </Box>
   </>
-  )};
+  )
+};

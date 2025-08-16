@@ -44,51 +44,69 @@ import {
  } from '@mui/icons-material';
 
 interface VideoEditorProps {
-  videoUrl?: string;
-  videoId?: string;
-  onSave?: (editedVideo: EditedVideo) => void;
-  onExport?: (format: string) => void}
+  
+videoUrl?: string;
+videoId?: string;
+onSave?: (editedVideo: EditedVideo) => void;
+onExport?: (format: string) => void;
+
+}
 
 interface EditedVideo {
-  id: string,
-  url: string,
+  
+id: string;
+url: string;
 
-  metadata: VideoMetadata,
-  edits: VideoEdit[],
+metadata: VideoMetadata;
+edits: VideoEdit[];
 
-  timeline: TimelineItem[]}
+timeline: TimelineItem[];
+
+}
 
 interface VideoMetadata {
-  title: string,
-  description: string,
+  
+title: string;
+description: string;
 
-  tags: string[];
-  thumbnail?: string;
-  duration: number,
-  resolution: string,
+tags: string[];
+thumbnail?: string;
+duration: number;
+resolution: string;
 
-  fps: number,
-  bitrate: string}
+fps: number;
+bitrate: string;
+
+}
 
 interface VideoEdit {
-  type: 'trim' | 'crop' | 'filter' | 'text' | 'audio',
-  timestamp: number,
+  
+type: 'trim' | 'crop' | 'filter' | 'text' | 'audio';
+timestamp: number;
 
-  parameters: unknown}
+parameters: unknown;
+
+}
 
 interface TimelineItem {
-  id: string,
-  type: 'video' | 'audio' | 'text' | 'image',
+  
+id: string;
+type: 'video' | 'audio' | 'text' | 'image';
 
-  startTime: number,
-  endTime: number,
+startTime: number;
+endTime: number;
 
-  layer: number,
-  content: unknown}
+layer: number;
+content: unknown;
+
+}
 
 interface TrimMarkers {
-  start: number,
-  end: number}
+  
+start: number;
+end: number;
+
+}
 
 export const VideoEditor: React.FC<VideoEditorProps> = ({
   videoUrl = '', videoId = '', onSave, onExport
@@ -113,7 +131,7 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
     duration: 0,
     resolution: '1920 x1080',
     fps: 30,
-    bitrate: '5000 kbps',
+    bitrate: '5000 kbps'
 
   });
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
@@ -132,13 +150,13 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
       videoRef.current.play()}
     setIsPlaying(!isPlaying)}, [isPlaying]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSeek = useCallback(_(event: Event, value: number | number[]) => {
+  const handleSeek = useCallback((event: Event, value: number | number[]) => {
     if (!videoRef.current) return;
     const newTime = value as number;
     videoRef.current.currentTime = newTime;
     setCurrentTime(newTime)}, []);
 
-  const handleVolumeChange = useCallback(_(event: Event, value: number | number[]) => {
+  const handleVolumeChange = useCallback((event: Event, value: number | number[]) => {
     if (!videoRef.current) return;
     const newVolume = value as number;
     videoRef.current.volume = newVolume;
@@ -171,12 +189,11 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({
     setTrimMarkers(prev => ({ ...prev, end: currentTime }))}, [currentTime]);
 
   const handleApplyTrim = useCallback(() => {
-const edit: VideoEdit = {,
+const edit: VideoEdit = {
   type: 'trim',
       timestamp: Date.now(),
       parameters: { ...trimMarkers }
     };
-    
     setEditHistory(prev => [...prev.slice(0, historyIndex + 1), edit]);
     setHistoryIndex(prev => prev + 1);
     setIsTrimming(false);
@@ -220,14 +237,13 @@ const edit: VideoEdit = {,
 
   // Save functionality
   const handleSaveClick = useCallback_(() => {
-const editedVideo: EditedVideo = {,
+const editedVideo: EditedVideo  = {
   id: videoId,
       url: videoUrl,
       metadata,
       edits: editHistory,
       timeline
     };
-    
     if (onSave) {
       onSave(editedVideo)}
   }, [videoId, videoUrl, metadata, editHistory, timeline, onSave]);
@@ -236,25 +252,24 @@ const editedVideo: EditedVideo = {,
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}
   };
-
   // Video event handlers
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime)};
-
+      setCurrentTime(video.currentTime)
+};
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
       setTrimMarkers({ start: 0, end: video.duration });
-      setMetadata(prev => ({ ...prev, duration: video.duration }))};
-
+      setMetadata(prev => ({ ...prev, duration: video.duration }))
+};
     const handleEnded = () => {
-      setIsPlaying(false)};
-
+      setIsPlaying(false)
+};
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('ended', handleEnded);
@@ -331,9 +346,7 @@ const editedVideo: EditedVideo = {,
                   style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'contain',
-
-                  }}
+                    objectFit: 'contain'}}
                 />
                 
                 {isProcessing && (
@@ -380,14 +393,14 @@ const editedVideo: EditedVideo = {,
                       value={[ trimMarkers.start, trimMarkers.end ]
                       max={duration}
                       onChange={(_, value) => {
-                        const [start, end] = value as number[];
-                        setTrimMarkers({ start, end });
+                        const [start, end] = value as number[],
+                        setTrimMarkers({ start, end })
 }}
                       valueLabelDisplay="auto"
                       valueLabelFormat={formatTime}
                       sx={{
                         '& .MuiSlider-track': {
-                          backgroundColor: 'error.main',
+                          backgroundColor: 'error.main'
 
                         }
                       }}
@@ -408,7 +421,7 @@ const editedVideo: EditedVideo = {,
                       backgroundColor: 'primary.main',
                       color: 'primary.contrastText',
                       '&:hover': {
-                        backgroundColor: 'primary.dark',
+                        backgroundColor: 'primary.dark'
 
                       }
                     }}>
@@ -512,8 +525,7 @@ const editedVideo: EditedVideo = {,
                             >
                               Set Current
                             </Button>
-                          )
-                        }}
+                          )}}
                       />
                       
                       <Typography variant="body2" color="text.secondary">
@@ -572,14 +584,13 @@ const editedVideo: EditedVideo = {,
                         freeSolo
                         value={metadata.tags}
                         onChange={(_, value) => setMetadata(prev => ({ ...prev, tags: value }))}
-                        renderTags={(value, getTagProps) => {}
+                        renderTags={(value, getTagProps) =>
                           value.map((option, index) => (
                             <Chip
                               variant="outlined"
                               label={option}
                               size="small"
-                              {...getTagProps({ index });
-}
+                              {...getTagProps({ index })}
                             />
                           ))}
                         renderInput={(params) => (
@@ -719,4 +730,5 @@ const editedVideo: EditedVideo = {,
       </Dialog>
     </Box>
   </>
-  )};
+  )
+}}}

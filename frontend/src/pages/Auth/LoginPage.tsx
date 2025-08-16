@@ -51,26 +51,23 @@ export const LoginPage: React.FC = () => {
     if (validationErrors[name]) {
       setValidationErrors((prev: React.ChangeEvent<HTMLInputElement>) => ({ ...prev, [name]: '' }))}
   };
-
   const validateForm = () => {
-const errors: unknown = {};
-    
+const errors: unknown  = {};
     if (!formData.email) {
-      errors.email = 'Email is required';
+      errors.email = 'Email is required'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Email is invalid';
+      errors.email = 'Email is invalid'
     }
     
     if (!formData.password) {
-      errors.password = 'Password is required';
+      errors.password = 'Password is required'
     } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
+      errors.password = 'Password must be at least 6 characters'
     }
     
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors).length === 0
   };
-
   const handleSubmit = async (_: React.FormEvent) => {
     e.preventDefault();
     
@@ -81,14 +78,12 @@ const errors: unknown = {};
       navigate('/dashboard')} catch (error) {
       console.error('Login, failed:', err)}
   };
-
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
       navigate('/dashboard')} catch (error) {
       console.error('Google login, failed:', err)}
   };
-
   const handleDemoLogin = async () => { setFormData({
       email: 'demo@ytempire.com',
       password: 'demo123',
@@ -98,7 +93,6 @@ const errors: unknown = {};
       navigate('/dashboard')} catch (error) {
       console.error('Demo login, failed:', err)}
   };
-
   return (
     <>
       <Container component="main" maxWidth="sm">
@@ -299,4 +293,5 @@ const errors: unknown = {};
       </Box>
     </Container>
   </>
-  )};
+  )
+};

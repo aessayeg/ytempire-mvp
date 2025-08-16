@@ -72,60 +72,71 @@ import {  useOptimizedStore  } from '../../stores/optimizedStore';
 
 // Types
 interface CostCategory {
-  name: string,
-  amount: number,
+  
+name: string;
+amount: number;
 
-  percentage: number,
-  trend: number,
+percentage: number;
+trend: number;
 
-  color: string}
+color: string;
+
+}
 
 interface Budget {
-  id: string,
-  name: string,
+  
+id: string;
+name: string;
 
-  amount: number,
-  spent: number,
+amount: number;
+spent: number;
 
-  remaining: number,
-  percentage: number,
+remaining: number;
+percentage: number;
 
-  period: 'daily' | 'weekly' | 'monthly' | 'quarterly';
-  category?: string;
-  alertThresholds: number[],
-  status: 'healthy' | 'warning' | 'critical' | 'exceeded'}
+period: 'daily' | 'weekly' | 'monthly' | 'quarterly';
+category?: string;
+alertThresholds: number[];
+status: 'healthy' | 'warning' | 'critical' | 'exceeded';
+
+}
 
 interface CostItem {
-  id: string,
-  date: Date,
+  
+id: string;
+date: Date;
 
-  category: string,
-  service: string,
+category: string;
+service: string;
 
-  amount: number,
-  description: string;
-  userId?: string;
-  channelId?: string;
-  videoId?: string;
+amount: number;
+description: string;
+userId?: string;
+channelId?: string;
+videoId?: string;
+
+
 }
 
 interface CostForecast {
-  date: string,
-  predicted: number;
-  actual?: number;
-  confidenceLow: number,
-  confidenceHigh: number}
+  
+date: string;
+predicted: number;
+actual?: number;
+confidenceLow: number;
+confidenceHigh: number;
+
+}
 
 const CATEGORY_COLORS = { 'openai_api': '#4 CAF50',
-  'youtube_api': '#2196 F3',
+  'youtube_api': '#2196F3',
   'elevenlabs_tts': '#FF9800',
   'storage': '#9 C27 B0',
   'compute': '#F44336',
   'bandwidth': '#00 BCD4',
   'database': '#795548',
-  'third_party': '#607 D8 B',
-  'other': '#9 E9 E9 E' };
-
+  'third_party': '#607D8 B',
+  'other': '#9E9E9E' };
 export const CostVisualization: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly' | 'quarterly'>('monthly');
   const [viewMode, setViewMode] = useState<'overview' | 'detailed' | 'forecast'>('overview');
@@ -165,11 +176,11 @@ export const CostVisualization: React.FC = () => {
           break;
         case 'quarterly':
           startDate = subMonths(new Date(), 3);
-          break;
+          break
       }
 
       // Fetch cost summary
-      const summaryResponse = await api.get('/costs/summary', { params: {,
+      const summaryResponse = await api.get('/costs/summary', { params: {
   start_date: format(startDate, 'yyyy-MM-dd'),
           end_date: format(endDate, 'yyyy-MM-dd') }
       });
@@ -183,7 +194,7 @@ export const CostVisualization: React.FC = () => {
         ([name, amount]: [string, any]) => ({ name,
           amount: Number(amount),
           percentage: (Number(amount) / summary.total_cost) * 100,
-          trend: Math.random() * 20 - 10, // Mock trend, color: CATEGORY_COLORS[name] || '#9 E9 E9 E' })
+          trend: Math.random() * 20 - 10, // Mock trend, color: CATEGORY_COLORS[name] || '#9E9E9E' })
       );
       setCategories(categoryData);
 
@@ -205,8 +216,7 @@ export const CostVisualization: React.FC = () => {
           openai: Math.random() * 80 + 20,
           youtube: Math.random() * 30 + 10,
           storage: Math.random() * 20 + 5,
-          compute: Math.random() * 40 + 10 });
-}
+          compute: Math.random() * 40 + 10 })}
       setCostHistory(history);
 
       // Generate mock forecasts
@@ -219,8 +229,7 @@ export const CostVisualization: React.FC = () => {
           predicted,
           actual: i === 0 ? predicted * 0.95 : undefined,
           confidenceLow: predicted * 0.8,
-          confidenceHigh: predicted * 1.2 });
-}
+          confidenceHigh: predicted * 1.2 })}
       setForecasts(forecastData);
 
       // Fetch alerts
@@ -233,7 +242,6 @@ export const CostVisualization: React.FC = () => {
         message: 'Failed to load cost data' });
       setLoading(false)}
   };
-
   useEffect(() => {
     fetchCostData()}, [timeRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -250,7 +258,7 @@ export const CostVisualization: React.FC = () => {
       totalSpent,
       totalRemaining: totalBudget - totalSpent,
       percentage,
-      status: percentage > 100 ? 'exceeded' : percentage > 90 ? 'critical' : percentage > 75 ? 'warning' : 'healthy',
+      status: percentage > 100 ? 'exceeded' : percentage > 90 ? 'critical' : percentage > 75 ? 'warning' : 'healthy'
 
   }, [budgets]);
 
@@ -266,13 +274,11 @@ export const CostVisualization: React.FC = () => {
       setSelectedBudget(null);
       
       addNotification({ type: 'success',
-        message: selectedBudget ? 'Budget updated' : 'Budget created' });
+        message: selectedBudget ? 'Budget updated' : 'Budget created' })
 } catch (error) { addNotification({
         type: 'error',
-        message: 'Failed to save budget' });
-}
+        message: 'Failed to save budget' })}
   };
-
   // Render category card
   const renderCategoryCard = (category: CostCategory) => (
     <Card key={category.name} variant="outlined">
@@ -301,7 +307,7 @@ export const CostVisualization: React.FC = () => {
           sx={ {
             height: 6,
             borderRadius: 3,
-            backgroundColor: '#e0 e0 e0',
+            backgroundColor: '#e0e0e0',
             '& .MuiLinearProgress-bar': {
               backgroundColor: category.color }
           }}
@@ -323,7 +329,6 @@ export const CostVisualization: React.FC = () => {
         case 'exceeded': return 'error';
         default: return 'info'}
     };
-
     return (
     <>
       <Card key={budget.id} variant="outlined">
@@ -364,7 +369,6 @@ export const CostVisualization: React.FC = () => {
       </Card>
     </>
   )};
-
   return (
     <>
       <Box>
@@ -395,7 +399,7 @@ export const CostVisualization: React.FC = () => {
             variant="contained"
             onClick={() => {
               setSelectedBudget(null</>
-  );
+  ),
               setBudgetDialogOpen(true)}}
           >
             Add Budget
@@ -471,8 +475,7 @@ export const CostVisualization: React.FC = () => {
                     value={Math.min(budgetStatus.percentage, 100)}
                     color={
                       budgetStatus.status === 'healthy' ? 'success' :
-                      budgetStatus.status === 'warning' ? 'warning' : 'error'
-                    }
+                      budgetStatus.status === 'warning' ? 'warning' : 'error'}
                     sx={{ mt: 2, height: 8, borderRadius: 4 }}
                   />
                 </CardContent>
@@ -586,7 +589,7 @@ export const CostVisualization: React.FC = () => {
                       <Area
                         type="monotone"
                         dataKey="cost"
-                        stroke="#8884 d8"
+                        stroke="#8884d8"
                         fill="#8884d8"
                         fillOpacity={0.6}
                       />
@@ -640,7 +643,7 @@ export const CostVisualization: React.FC = () => {
                       <ChartTooltip />
                       <Legend />
                       <Bar dataKey="openai" stackId="a" fill="#4 CAF50" />
-                      <Bar dataKey="youtube" stackId="a" fill="#2196 F3" />
+                      <Bar dataKey="youtube" stackId="a" fill="#2196F3" />
                       <Bar dataKey="storage" stackId="a" fill="#9 C27 B0" />
                       <Bar dataKey="compute" stackId="a" fill="#F44336" />
                     </BarChart>
@@ -662,7 +665,7 @@ export const CostVisualization: React.FC = () => {
                       <Radar
                         name="Cost"
                         dataKey="amount"
-                        stroke="#8884 d8"
+                        stroke="#8884d8"
                         fill="#8884d8"
                         fillOpacity={0.6}
                       />
@@ -731,7 +734,7 @@ export const CostVisualization: React.FC = () => {
                       <Line
                         type="monotone"
                         dataKey="predicted"
-                        stroke="#8884 d8"
+                        stroke="#8884d8"
                         strokeWidth={2}
                         name="Predicted"
                       />
@@ -866,11 +869,11 @@ export const CostVisualization: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setBudgetDialogOpen(false)}>Cancel</Button>
-          <Button onClick={() => handleSaveBudget({});
-} variant="contained">
+          <Button onClick={() => handleSaveBudget({})} variant="contained">
             Save
           </Button>
         </DialogActions>
       </Dialog>
     </Box>
-  )};
+  )
+}}

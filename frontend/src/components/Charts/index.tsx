@@ -20,21 +20,22 @@ import {
   PolarRadiusAxis,
   Radar,
   Treemap
- } from 'recharts';
+  Tooltip
+} from 'recharts';
 import { 
   Box,
   Paper,
   Typography,
   useTheme
- } from '@mui/material';
-import {  format  } from 'date-fns';
+} from '@mui/material';
+import { format } from 'date-fns';
 
 // Color palette
-const COLORS = ['#667 eea', '#764 ba2', '#f093 fb', '#fda085', '#84 fab0', '#8 fd3 f4'];
+const COLORS = ['#667eea', '#764ba2', '#f093fb', '#fda085', '#84fab0', '#8fd3f4'];
 
 interface ChartProps {
   title?: string;
-  data: unknown[];
+  data: any[];
   height?: number;
 }
 
@@ -42,37 +43,36 @@ export const ViewsLineChart: React.FC<ChartProps> = ({ title = 'Views Over Time'
   const theme = useTheme();
   
   return (
-    <>
-      <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: 2 }}>
       <Typography variant="h6" gutterBottom>{title}</Typography>
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
           <XAxis 
             dataKey="date" 
-            tickFormatter={date) => format(new Date(date), 'MMM dd'}
+            tickFormatter={(date) => format(new Date(date), 'MMM dd')}
             stroke={theme.palette.text.secondary}
           />
           <YAxis stroke={theme.palette.text.secondary} />
           <Tooltip 
             contentStyle={{ 
               backgroundColor: theme.palette.background.paper,
-              border: `1px solid ${theme.palette.divider}
+              border: `1px solid ${theme.palette.divider}`
             }}
           />
           <Legend />
           <Line 
             type="monotone" 
             dataKey="views" 
-            stroke="#667 eea" 
+            stroke="#667eea" 
             strokeWidth={2}
-            dot={{ fill: '#667 eea', r: 4 }}
+            dot={{ fill: '#667eea', r: 4 }}
             activeDot={{ r: 6 }}
           />
           <Line 
             type="monotone" 
             dataKey="projectedViews" 
-            stroke="#764 ba2" 
+            stroke="#764ba2" 
             strokeWidth={2}
             strokeDasharray="5 5"
             dot={false}
@@ -80,57 +80,55 @@ export const ViewsLineChart: React.FC<ChartProps> = ({ title = 'Views Over Time'
         </LineChart>
       </ResponsiveContainer>
     </Paper>
-  </>
-  )};
+  );
+};
 
 export const RevenueAreaChart: React.FC<ChartProps> = ({ title = 'Revenue Trend', data, height = 300 }) => {
   const theme = useTheme();
   
   return (
-    <>
-      <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: 2 }}>
       <Typography variant="h6" gutterBottom>{title}</Typography>
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <defs>
             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#667 eea" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#667 eea" stopOpacity={0.1}/>
+              <stop offset="5%" stopColor="#667eea" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#667eea" stopOpacity={0.1}/>
             </linearGradient>
             <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f093 fb" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#f093 fb" stopOpacity={0.1}/>
+              <stop offset="5%" stopColor="#f093fb" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#f093fb" stopOpacity={0.1}/>
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
           <XAxis 
             dataKey="date" 
-            tickFormatter={date) => format(new Date(date), 'MMM dd'}
+            tickFormatter={(date) => format(new Date(date), 'MMM dd')}
             stroke={theme.palette.text.secondary}
           />
           <YAxis stroke={theme.palette.text.secondary} />
           <Tooltip 
             contentStyle={{ 
               backgroundColor: theme.palette.background.paper,
-              border: `1px solid ${theme.palette.divider}
+              border: `1px solid ${theme.palette.divider}`
             }}
-            formatter={(value: number) => `$${value.toFixed(2}`}
+            formatter={(value: number) => `$${value.toFixed(2)}`}
           />
           <Legend />
-          <Area type="monotone" dataKey="revenue" stroke="#667 eea" fillOpacity={1} fill="url(#colorRevenue)" />
-          <Area type="monotone" dataKey="cost" stroke="#f093 fb" fillOpacity={1} fill="url(#colorCost)" />
+          <Area type="monotone" dataKey="revenue" stroke="#667eea" fillOpacity={1} fill="url(#colorRevenue)" />
+          <Area type="monotone" dataKey="cost" stroke="#f093fb" fillOpacity={1} fill="url(#colorCost)" />
         </AreaChart>
       </ResponsiveContainer>
     </Paper>
-  </>
-  )};
+  );
+};
 
 export const VideoPerformanceBar: React.FC<ChartProps> = ({ title = 'Video Performance', data, height = 300 }) => {
   const theme = useTheme();
   
   return (
-    <>
-      <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: 2 }}>
       <Typography variant="h6" gutterBottom>{title}</Typography>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -146,25 +144,24 @@ export const VideoPerformanceBar: React.FC<ChartProps> = ({ title = 'Video Perfo
           <Tooltip 
             contentStyle={{ 
               backgroundColor: theme.palette.background.paper,
-              border: `1px solid ${theme.palette.divider}
+              border: `1px solid ${theme.palette.divider}`
             }}
           />
           <Legend />
-          <Bar dataKey="views" fill="#667 eea" />
-          <Bar dataKey="likes" fill="#764 ba2" />
-          <Bar dataKey="comments" fill="#f093 fb" />
+          <Bar dataKey="views" fill="#667eea" />
+          <Bar dataKey="likes" fill="#764ba2" />
+          <Bar dataKey="comments" fill="#f093fb" />
         </BarChart>
       </ResponsiveContainer>
     </Paper>
-  </>
-  )};
+  );
+};
 
 export const ChannelDistributionPie: React.FC<ChartProps> = ({ title = 'Channel Distribution', data, height = 300 }) => {
   const theme = useTheme();
   
   return (
-    <>
-      <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: 2 }}>
       <Typography variant="h6" gutterBottom>{title}</Typography>
       <ResponsiveContainer width="100%" height={height}>
         <PieChart>
@@ -185,61 +182,60 @@ export const ChannelDistributionPie: React.FC<ChartProps> = ({ title = 'Channel 
           <Tooltip 
             contentStyle={{ 
               backgroundColor: theme.palette.background.paper,
-              border: `1px solid ${theme.palette.divider}
+              border: `1px solid ${theme.palette.divider}`
             }}
           />
         </PieChart>
       </ResponsiveContainer>
     </Paper>
-  </>
-  )};
+  );
+};
 
 export const MetricsRadar: React.FC<ChartProps> = ({ title = 'Performance Metrics', data, height = 300 }) => {
   const theme = useTheme();
   
   return (
-    <>
-      <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: 2 }}>
       <Typography variant="h6" gutterBottom>{title}</Typography>
       <ResponsiveContainer width="100%" height={height}>
         <RadarChart data={data}>
           <PolarGrid stroke={theme.palette.divider} />
           <PolarAngleAxis dataKey="metric" stroke={theme.palette.text.secondary} />
           <PolarRadiusAxis angle={90} domain={[0, 100]} stroke={theme.palette.text.secondary} />
-          <Radar name="Current" dataKey="current" stroke="#667 eea" fill="#667 eea" fillOpacity={0.6} />
-          <Radar name="Target" dataKey="target" stroke="#764 ba2" fill="#764 ba2" fillOpacity={0.3} />
+          <Radar name="Current" dataKey="current" stroke="#667eea" fill="#667eea" fillOpacity={0.6} />
+          <Radar name="Target" dataKey="target" stroke="#764ba2" fill="#764ba2" fillOpacity={0.3} />
           <Legend />
           <Tooltip 
             contentStyle={{ 
               backgroundColor: theme.palette.background.paper,
-              border: `1px solid ${theme.palette.divider}
+              border: `1px solid ${theme.palette.divider}`
             }}
           />
         </RadarChart>
       </ResponsiveContainer>
     </Paper>
-  </>
-  )};
+  );
+};
 
 export const ContentTreemap: React.FC<ChartProps> = ({ title = 'Content Categories', data, height = 300 }) => {
   const theme = useTheme();
   
-  const CustomContent = (props: unknown) => {
+  const CustomContent = (props: any) => {
     const { root, depth, x, y, width, height, index, colors, name, value } = props;
     
     return (
-    <>
       <g>
         <rect
           x={x}
           y={y}
           width={width}
           height={height}
-          style={ {
+          style={{
             fill: COLORS[index % COLORS.length],
             stroke: '#fff',
-            strokeWidth: 2 / (depth + 1 e-10),
-            strokeOpacity: 1 / (depth + 1 e-10) }}
+            strokeWidth: 2 / (depth + 1e-10),
+            strokeOpacity: 1 / (depth + 1e-10)
+          }}
         />
         {depth === 1 && width > 50 && height > 30 && (
           <>
@@ -264,12 +260,10 @@ export const ContentTreemap: React.FC<ChartProps> = ({ title = 'Content Categori
           </>
         )}
       </g>
-    </>
-  )};
-  
+    );
+  };
   return (
-    <>
-      <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: 2 }}>
       <Typography variant="h6" gutterBottom>{title}</Typography>
       <ResponsiveContainer width="100%" height={height}>
         <Treemap
@@ -282,35 +276,33 @@ export const ContentTreemap: React.FC<ChartProps> = ({ title = 'Content Categori
         />
       </ResponsiveContainer>
     </Paper>
-  </>
-  )};
-
-export const RealTimeMetrics: React.FC<{ data: unknown[] }> = ({ data }) => {
+  );
+};
+export const RealTimeMetrics: React.FC<{ data: any[] }> = ({ data }) => {
   const theme = useTheme();
   
   return (
-    <>
-      <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: 2 }}>
       <Typography variant="h6" gutterBottom>Real-Time Metrics</Typography>
       <ResponsiveContainer width="100%" height={200}>
         <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
           <XAxis 
             dataKey="time" 
-            tickFormatter={time) => format(new Date(time), 'HH:mm:ss'}
+            tickFormatter={(time) => format(new Date(time), 'HH:mm:ss')}
             stroke={theme.palette.text.secondary}
           />
           <YAxis stroke={theme.palette.text.secondary} />
           <Tooltip 
             contentStyle={{ 
               backgroundColor: theme.palette.background.paper,
-              border: `1px solid ${theme.palette.divider}
+              border: `1px solid ${theme.palette.divider}`
             }}
           />
           <Line 
             type="monotone" 
             dataKey="value" 
-            stroke="#667 eea" 
+            stroke="#667eea" 
             strokeWidth={2}
             dot={false}
             isAnimationActive={false}
@@ -318,13 +310,12 @@ export const RealTimeMetrics: React.FC<{ data: unknown[] }> = ({ data }) => {
         </LineChart>
       </ResponsiveContainer>
     </Paper>
-  </>
-  )};
-
+  );
+};
 // Composite dashboard component
-export const DashboardCharts: React.FC<{ metrics: unknown }> = ({ metrics }) => {
+export const DashboardCharts: React.FC<{ metrics: any }> = ({ metrics }) => {
   return (
-    <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1 fr))' }}>
+    <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))' }}>
       <ViewsLineChart data={metrics.viewsData} />
       <RevenueAreaChart data={metrics.revenueData} />
       <VideoPerformanceBar data={metrics.videoPerformance} />
@@ -332,7 +323,7 @@ export const DashboardCharts: React.FC<{ metrics: unknown }> = ({ metrics }) => 
       <MetricsRadar data={metrics.performanceMetrics} />
       <ContentTreemap data={metrics.contentCategories} />
     </Box>
-  )};
-
+  );
+};
 // Export the new Channel Performance Charts component
 export { default as ChannelPerformanceCharts } from './ChannelPerformanceCharts';

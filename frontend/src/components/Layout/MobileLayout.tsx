@@ -35,7 +35,10 @@ import {
 import {  useNavigate, useLocation, Outlet  } from 'react-router-dom';
 
 interface MobileLayoutProps {
-  children?: React.ReactNode;
+  
+children?: React.ReactNode;
+
+
 }
 
 const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
@@ -63,7 +66,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
 
   useEffect(() => {
     // Update bottom navigation based on current path
-    const currentIndex = bottomNavItems.findIndex(item => {}
+    const currentIndex = bottomNavItems.findIndex(item =>
       location.pathname.startsWith(item.path)
     );
     if (currentIndex !== -1) {
@@ -71,16 +74,16 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen)};
-
+    setDrawerOpen(!drawerOpen)
+};
   const handleNavigation = (path: string) => {
     navigate(path);
-    setDrawerOpen(false)};
-
+    setDrawerOpen(false)
+};
   const handleBottomNavChange = (_: React.SyntheticEvent, newValue: number) => {
     setBottomNavValue(newValue);
-    navigate(bottomNavItems[newValue].path)};
-
+    navigate(bottomNavItems[newValue].path)
+};
   const drawerContent = (
     <Box sx={{ width: 280, height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Drawer Header */}
@@ -125,8 +128,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
                 backgroundColor: theme.palette.primary.main + '20',
                 '&:hover': {
                   backgroundColor: theme.palette.primary.main + '30' }
-              }
-            }}
           >
             <ListItemIcon sx={{ minWidth: 40 }}>
               {item.icon}
@@ -281,8 +282,7 @@ export default MobileLayout;
 // Export additional mobile-specific components
 export const MobileHeader: React.FC<{ title: string; onMenuClick?: () => void }> = ({ 
   title, 
-  onMenuClick 
-}) => (
+  onMenuClick }) => (
   <AppBar position="static" elevation={0} color="transparent">
     <Toolbar>
       {onMenuClick && (
@@ -304,8 +304,7 @@ export const MobileCard: React.FC<{ children: React.ReactNode }> = ({ children }
       p: 2,
       mb: 2,
       borderRadius: 2,
-      border: (theme) => `1px solid ${theme.palette.divider}
-    }}
+      border: (theme) => `1px solid ${theme.palette.divider}}}
   >
     {children}
   </Paper>

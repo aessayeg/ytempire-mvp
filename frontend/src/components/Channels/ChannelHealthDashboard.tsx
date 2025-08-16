@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -22,6 +21,7 @@ import {
   AccordionSummary,
   AccordionDetails
  } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { 
   CheckCircle,
   Warning,
@@ -37,37 +37,42 @@ import {  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Respons
 import {  format, subDays  } from 'date-fns';
 
 interface HealthMetric {
-  category: string,
-  score: number,
-  maxScore: 100,
-  status: 'healthy' | 'warning' | 'critical',
-  factors: {,
-  name: string,
-    value: number,
-  impact: 'positive' | 'negative' | 'neutral';
+  category: string;
+  score: number;
+  maxScore: number;
+  status: 'healthy' | 'warning' | 'critical';
+  factors: {
+    name: string;
+    value: number;
+    impact: 'positive' | 'negative' | 'neutral';
     recommendation?: string;
-  }[];
+  }[]
 }
 
 interface HealthIssue {
-  id: string,
-  severity: 'low' | 'medium' | 'high' | 'critical',
-  category: string,
-  title: string,
-  description: string,
-  impact: string,
-  solution: string,
-  autoFixAvailable: boolean}
+  id: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  category: string;
+title: string;
+description: string;
+impact: string;
+solution: string;
+autoFixAvailable: boolean;
+
+}
 
 interface ChannelHealthData {
-  channelId: string,
-  channelName: string,
-  overallHealth: number,
-  trend: 'improving' | 'stable' | 'declining',
-  lastChecked: Date,
-  metrics: HealthMetric[],
-  issues: HealthIssue[],
-  history: {  date:  Date; score: number  }[];
+  
+channelId: string;
+channelName: string;
+overallHealth: number;
+trend: 'improving' | 'stable' | 'declining';
+lastChecked: Date;
+metrics: HealthMetric[];
+issues: HealthIssue[];
+history: {  date:  Date; score: number;
+
+}[]
 }
 
 export const ChannelHealthDashboard: React.FC<{  channelId?:  string  }> = ({ channelId }) => {
@@ -86,7 +91,7 @@ export const ChannelHealthDashboard: React.FC<{  channelId?:  string  }> = ({ ch
         overallHealth: 85,
         trend: 'improving',
         lastChecked: new Date(),
-        metrics: [ {,
+        metrics: [ {
   category: 'Content Performance',
             score: 88,
             maxScore: 100,
@@ -174,15 +179,13 @@ export const ChannelHealthDashboard: React.FC<{  channelId?:  string  }> = ({ ch
   const getHealthColor = (score: number) => {
     if (score >= 80) return theme.palette.success.main;
     if (score >= 60) return theme.palette.warning.main;
-    return theme.palette.error.main;
+    return theme.palette.error.main
   };
-
   const getHealthLabel = (score: number) => {
     if (score >= 80) return 'Healthy';
     if (score >= 60) return 'Needs Attention';
-    return 'Critical';
+    return 'Critical'
   };
-
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical': return 'error';
@@ -191,18 +194,19 @@ export const ChannelHealthDashboard: React.FC<{  channelId?:  string  }> = ({ ch
       case 'low': return 'info';
       default: return 'default'}
   };
-
   const handleAutoFix = async (issue: HealthIssue) => { setAutoFixing(true);
     // Simulate auto-fix
     await new Promise(resolve => setTimeout(resolve, 2000));
     setHealthData(prev => prev ? {
       ...prev,
       issues: prev.issues.filter(i => i.id !== issue.id) } : null);
-    setAutoFixing(false)};
-
-  const radarData = healthData?.metrics.map(metric => () { category: metric.category,
+    setAutoFixing(false)
+};
+  const radarData = healthData?.metrics.map(metric => ({
+    category: metric.category,
     score: metric.score,
-    fullMark: 100 })) || [];
+    fullMark: 100
+  })) || [];
 
   if (loading) {
     return (
@@ -210,7 +214,9 @@ export const ChannelHealthDashboard: React.FC<{  channelId?:  string  }> = ({ ch
       <Box sx={ { display:  'flex', justifyContent: 'center', p: 4  }}>
         <CircularProgress />
       </Box>
-    )}
+    </>
+  );
+  }
 
   return (
     <Box>
@@ -262,7 +268,7 @@ export const ChannelHealthDashboard: React.FC<{  channelId?:  string  }> = ({ ch
                         size="small"
                       />
                       <Chip
-                        icon={ healthData?.trend === 'improving' ? <TrendingUp /> :  healthData?.trend === 'declining' ? <TrendingDown /> </>: <TrendingUp /> }
+                        icon={ healthData?.trend === 'improving' ? <TrendingUp /> :  healthData?.trend === 'declining' ? <TrendingDown /> : <TrendingUp /> }
                         label={healthData?.trend}
                         size="small"
                         variant="outlined"
@@ -352,7 +358,7 @@ export const ChannelHealthDashboard: React.FC<{  channelId?:  string  }> = ({ ch
             <Accordion
               key={metric.category}
               expanded={expandedMetric === metric.category}
-              onChange={(() => setExpandedMetric(
+              onChange={() => setExpandedMetric(
                 expandedMetric === metric.category ? null : metric.category
               )}
             >
@@ -447,8 +453,7 @@ export const ChannelHealthDashboard: React.FC<{  channelId?:  string  }> = ({ ch
                               size="small"
                               variant="outlined"
                             />
-                          </Box>
-                        }
+                          </Box>}
                         secondary={
                           <Box>
                             <Typography variant="body2" color="text.secondary">
@@ -460,8 +465,7 @@ export const ChannelHealthDashboard: React.FC<{  channelId?:  string  }> = ({ ch
                             <Typography variant="body2" color="primary.main" sx={ { mt:  1  }}>
                               Solution: {issue.solution}
                             </Typography>
-                          </Box>
-                        }
+                          </Box>}
                       />
                       <ListItemSecondaryAction>
                         {issue.autoFixAvailable && (
@@ -485,5 +489,5 @@ export const ChannelHealthDashboard: React.FC<{  channelId?:  string  }> = ({ ch
         </Grid>
       </Grid>
     </Box>
-  </>
-  )};
+  );
+};

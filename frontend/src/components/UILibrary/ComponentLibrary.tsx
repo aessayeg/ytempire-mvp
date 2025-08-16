@@ -6,6 +6,7 @@
 import React, { ReactNode, useState, useEffect, useRef } from 'react';
 import { 
   Box,
+  Button,
   ButtonProps,
   Card as MuiCard,
   CircularProgress,
@@ -17,6 +18,7 @@ import {
   AlertProps,
   Chip,
   ChipProps,
+  Badge,
   BadgeProps,
   Fade,
   Slide,
@@ -25,56 +27,69 @@ import {
   keyframes,
   useTheme,
   alpha
- } from '@mui/material';
+} from '@mui/material';
 import { 
   Check,
   ContentCopy,
   CloudUpload,
   Visibility,
   VisibilityOff
- } from '@mui/icons-material';
+} from '@mui/icons-material';
 
 // ============= Animations =============
-const pulse = keyframes
+const pulse = keyframes`
   0% {
-    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7)}
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7);
+  }
   70% {
-    box-shadow: 0 0 0 10px rgba(33, 150, 243, 0)}
+    box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+  }
   100% {
-    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0)}
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+  }
 `;
 
-const shimmer = keyframes
+const shimmer = keyframes`
   0% {
-    background-position: -1000px 0}
+    background-position: -1000px 0;
+  }
   100% {
-    background-position: 1000px 0}
+    background-position: 1000px 0;
+  }
 `;
 
-const rotate = keyframes
+const rotate = keyframes`
   from {
-    transform: rotate(0 deg)}
+    transform: rotate(0deg);
+  }
   to {
-    transform: rotate(360 deg)}
+    transform: rotate(360deg);
+  }
 `;
 
 // ============= Loading Components =============
 export const LoadingButton: React.FC<ButtonProps & { loading?: boolean }> = ({
-  loading, children, disabled, startIcon, ...props
+  loading, 
+  children, 
+  disabled, 
+  startIcon, 
+  ...props
 }) => {
   return (
-    <>
-      <MuiButton
+    <Button
       {...props}
       disabled={disabled || loading}
       startIcon={loading ? <CircularProgress size={20} /> : startIcon}
     >
       {children}
-    </MuiButton>
-  </>
-  )};
+    </Button>
+  );
+};
 
-export const SkeletonCard: React.FC<{ height?: number; animate?: boolean }> = ({ height = 200, animate = true }) => {
+export const SkeletonCard: React.FC<{ height?: number; animate?: boolean }> = ({ 
+  height = 200, 
+  animate = true 
+}) => {
   return (
     <MuiCard sx={{ height, overflow: 'hidden' }}>
       <Skeleton
@@ -83,15 +98,19 @@ export const SkeletonCard: React.FC<{ height?: number; animate?: boolean }> = ({
         animation={animate ? 'pulse' : false}
         sx={{
           background: animate
-            ? `linear-gradient(90 deg, transparent, rgba(255,255,255,0.1), transparent)
+            ? `linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)`
             : undefined,
           animation: animate ? `${shimmer} 2s infinite` : undefined
         }}
       />
     </MuiCard>
-  )};
+  );
+};
 
-export const LoadingOverlay: React.FC<{ open: boolean; message?: string }> = ({ open, message = 'Loading...' }) => {
+export const LoadingOverlay: React.FC<{ open: boolean; message?: string }> = ({ 
+  open, 
+  message = 'Loading...' 
+}) => {
   return (
     <Backdrop
       sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
@@ -106,17 +125,25 @@ export const LoadingOverlay: React.FC<{ open: boolean; message?: string }> = ({ 
         )}
       </Box>
     </Backdrop>
-  )};
+  );
+};
 
 // ============= Status Components =============
 export interface StatusBadgeProps extends BadgeProps {
-  status: 'online' | 'offline' | 'busy' | 'away'}
+  status: 'online' | 'offline' | 'busy' | 'away';
+}
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, children, ...props }) => { const colors = {
-    online: '#44 b700',
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ 
+  status, 
+  children, 
+  ...props 
+}) => {
+  const colors = {
+    online: '#44b700',
     offline: '#757575',
     busy: '#f44336',
-    away: '#ff9800' };
+    away: '#ff9800'
+  };
 
   const StyledBadge = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
@@ -132,8 +159,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, children, ...p
         borderRadius: '50%',
         animation: status === 'online' ? `${pulse} 1.5s infinite` : undefined,
         border: '1px solid currentColor',
-        content: '""',
-
+        content: '""'
       }
     }
   }));
@@ -147,9 +173,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, children, ...p
     >
       {children}
     </StyledBadge>
-  )};
+  );
+};
 
-export const StatusChip: React.FC<ChipProps & { status: string }> = ({ status, ...props }) => {
+export const StatusChip: React.FC<ChipProps & { status: string }> = ({ 
+  status, 
+  ...props 
+}) => {
   const getColor = () => {
     switch (status.toLowerCase()) {
       case 'active':
@@ -164,7 +194,9 @@ export const StatusChip: React.FC<ChipProps & { status: string }> = ({ status, .
       case 'failed':
       case 'cancelled':
         return 'error';
-        return 'default'}
+      default:
+        return 'default';
+    }
   };
 
   return <Chip size="small" label={status} color={getColor()} {...props} />;
@@ -172,7 +204,7 @@ export const StatusChip: React.FC<ChipProps & { status: string }> = ({ status, .
 
 // ============= Card Components =============
 export interface MetricCardProps {
-  title: string,
+  title: string;
   value: string | number;
   change?: number;
   icon?: ReactNode;
@@ -180,19 +212,27 @@ export interface MetricCardProps {
   loading?: boolean;
 }
 
-export const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon, color = '#2196 F3', loading }) => {
+export const MetricCard: React.FC<MetricCardProps> = ({ 
+  title, 
+  value, 
+  change, 
+  icon, 
+  color = '#2196F3', 
+  loading 
+}) => {
   const theme = useTheme();
 
   if (loading) {
     return (
-    <MuiCard>
+      <MuiCard>
         <Box p={2}>
           <Skeleton variant="text" width="60%" />
           <Skeleton variant="text" width="40%" height={40} />
           <Skeleton variant="text" width="30%" />
         </Box>
       </MuiCard>
-    )}
+    );
+  }
 
   return (
     <MuiCard>
@@ -202,7 +242,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, ic
             <Typography color="text.secondary" gutterBottom variant="body2">
               {title}
             </Typography>
-      <Typography variant="h4">{value}</Typography>
+            <Typography variant="h4">{value}</Typography>
             {change !== undefined && (
               <Typography
                 variant="body2"
@@ -213,7 +253,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, ic
               </Typography>
             )}
           </Box>
-          { icon && (
+          {icon && (
             <Box
               sx={{
                 backgroundColor: alpha(color, 0.1),
@@ -221,23 +261,20 @@ export const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, ic
                 p: 1.5,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center' }}
+                justifyContent: 'center'
+              }}
             >
               {React.cloneElement(icon as React.ReactElement, {
                 sx: { color, fontSize: 32 }
-              });
-}
+              })}
             </Box>
           )}
         </Box>
       </Box>
     </MuiCard>
-  )};
+  );
+};
 
-export const createOptimizedRouter = () => {
-  return createBrowserRouter([
-    // Router configuration would go here
-  ])}
 // ============= Input Components =============
 export interface CopyableTextProps {
   text: string;
@@ -245,31 +282,36 @@ export interface CopyableTextProps {
   showIcon?: boolean;
 }
 
-export const CopyableText: React.FC<CopyableTextProps> = ({ text, variant = 'body2', showIcon = true }) => {
+export const CopyableText: React.FC<CopyableTextProps> = ({ 
+  text, 
+  variant = 'body2', 
+  showIcon = true 
+}) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000)} catch (error) {
-      console.error('Failed to, copy:', err)}
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
   };
 
   return (
-    <>
-      <Box display="flex" alignItems="center" gap={1}>
+    <Box display="flex" alignItems="center" gap={1}>
       <Typography variant={variant} sx={{ fontFamily: 'monospace' }}>
         {text}
       </Typography>
       {showIcon && (
         <IconButton size="small" onClick={handleCopy}>
-          {copied ? <Check fontSize="small" /> </>: <ContentCopy fontSize="small" />}
+          {copied ? <Check fontSize="small" /> : <ContentCopy fontSize="small" />}
         </IconButton>
       )}
     </Box>
-  </>
-  )};
+  );
+};
 
 export interface FileUploadProps {
   onFileSelect: (files: FileList) => void;
@@ -279,14 +321,21 @@ export interface FileUploadProps {
   disabled?: boolean;
 }
 
-export const FileUploadButton: React.FC<FileUploadProps> = ({ onFileSelect, accept, multiple, maxSize, disabled }) => {
+export const FileUploadButton: React.FC<FileUploadProps> = ({ 
+  onFileSelect, 
+  accept, 
+  multiple, 
+  maxSize, 
+  disabled 
+}) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleClick = () => {
-    inputRef.current?.click()};
+    inputRef.current?.click();
+  };
 
-  const handleChange = (_: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
@@ -301,7 +350,8 @@ export const FileUploadButton: React.FC<FileUploadProps> = ({ onFileSelect, acce
     }
 
     setError(null);
-    onFileSelect(files)};
+    onFileSelect(files);
+  };
 
   return (
     <Box>
@@ -313,36 +363,44 @@ export const FileUploadButton: React.FC<FileUploadProps> = ({ onFileSelect, acce
         onChange={handleChange}
         style={{ display: 'none' }}
       />
-      <MuiButton
+      <Button
         variant="outlined"
         startIcon={<CloudUpload />}
         onClick={handleClick}
         disabled={disabled}
       >
         Upload File
-      </MuiButton>
+      </Button>
       {error && (
         <Typography variant="caption" color="error" sx={{ mt: 1 }}>
           {error}
         </Typography>
       )}
     </Box>
-  )};
+  );
+};
 
 // ============= Notification Components =============
 export interface ToastProps extends AlertProps {
-  open: boolean,
+  open: boolean;
   message: string;
   autoHideDuration?: number;
-  onClose: () => void}
+  onClose: () => void;
+}
 
 export const Toast: React.FC<ToastProps> = ({
-  open, message, autoHideDuration = 6000, onClose, severity = 'info', ...props
+  open, 
+  message, 
+  autoHideDuration = 6000, 
+  onClose, 
+  severity = 'info', 
+  ...props
 }) => {
   useEffect(() => {
     if (open && autoHideDuration) {
       const timer = setTimeout(onClose, autoHideDuration);
-      return () => clearTimeout(timer)}
+      return () => clearTimeout(timer);
+    }
   }, [open, autoHideDuration, onClose]);
 
   return (
@@ -350,47 +408,55 @@ export const Toast: React.FC<ToastProps> = ({
       <Alert
         severity={severity}
         onClose={onClose}
-        sx={ {
+        sx={{
           position: 'fixed',
           bottom: 24,
           right: 24,
           zIndex: 9999,
-          minWidth: 300 }}
+          minWidth: 300
+        }}
         {...props}
       >
         {message}
       </Alert>
     </Slide>
-  )};
+  );
+};
 
 // ============= Progress Components =============
 export interface StepperProps {
-  steps: string[],
+  steps: string[];
   activeStep: number;
   completed?: number[];
 }
 
-export const ProgressStepper: React.FC<StepperProps> = ({ steps, activeStep, completed = [] }) => {
+export const ProgressStepper: React.FC<StepperProps> = ({ 
+  steps, 
+  activeStep, 
+  completed = [] 
+}) => {
   return (
     <Box display="flex" alignItems="center">
       {steps.map((step, index) => (
         <React.Fragment key={step}>
           <Box display="flex" flexDirection="column" alignItems="center">
             <Box
-              sx={ {
+              sx={{
                 width: 32,
                 height: 32,
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                backgroundColor: 
                   completed.includes(index) || index < activeStep
                     ? 'primary.main'
                     : index === activeStep
                     ? 'primary.light'
                     : 'grey.300',
                 color: 'white',
-                fontWeight: 'bold' }}
+                fontWeight: 'bold'
+              }}
             >
               {completed.includes(index) ? (
                 <Check fontSize="small" />
@@ -398,48 +464,54 @@ export const ProgressStepper: React.FC<StepperProps> = ({ steps, activeStep, com
                 <Typography variant="caption">{index + 1}</Typography>
               )}
             </Box>
-      <Typography
+            <Typography
               variant="caption"
-              sx={ {
+              sx={{
                 mt: 0.5,
-                color: index <= activeStep ? 'text.primary' : 'text.secondary' }}
+                color: index <= activeStep ? 'text.primary' : 'text.secondary'
+              }}
             >
               {step}
             </Typography>
           </Box>
-          { index < steps.length - 1 && (
+          {index < steps.length - 1 && (
             <Box
               sx={{
                 flex: 1,
                 height: 2,
                 mx: 1,
-                backgroundColor: index < activeStep ? 'primary.main' : 'grey.300' }}
+                backgroundColor: index < activeStep ? 'primary.main' : 'grey.300'
+              }}
             />
           )}
         </React.Fragment>
       ))}
     </Box>
-  )};
+  );
+};
 
-export const CircularProgressWithLabel: React.FC<{ value: number; size?: number }> = ({ value, size = 60 }) => {
+export const CircularProgressWithLabel: React.FC<{ value: number; size?: number }> = ({ 
+  value, 
+  size = 60 
+}) => {
   return (
-    <>
-      <Box position="relative" display="inline-flex">
+    <Box position="relative" display="inline-flex">
       <CircularProgress variant="determinate" value={value} size={size} />
       <Box
         position="absolute"
         top="50%"
         left="50%"
-        sx={ {
-          transform: 'translate(-50%, -50%)' }}
+        sx={{
+          transform: 'translate(-50%, -50%)'
+        }}
       >
         <Typography variant="caption" component="div" color="text.secondary">
           {`${Math.round(value)}%`}
         </Typography>
       </Box>
     </Box>
-  </>
-  )};
+  );
+};
 
 // ============= Data Display Components =============
 export interface EmptyStateProps {
@@ -449,12 +521,19 @@ export interface EmptyStateProps {
   action?: ReactNode;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, icon, action }) => { return (
+export const EmptyState: React.FC<EmptyStateProps> = ({ 
+  title, 
+  description, 
+  icon, 
+  action 
+}) => {
+  return (
     <Paper
       sx={{
         p: 4,
         textAlign: 'center',
-        backgroundColor: 'background.default' }}
+        backgroundColor: 'background.default'
+      }}
     >
       {icon && (
         <Box sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }}>
@@ -471,22 +550,33 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, icon
       )}
       {action && <Box mt={2}>{action}</Box>}
     </Paper>
-  )};
+  );
+};
 
 export interface StatCardProps {
-  label: string,
+  label: string;
   value: string | number;
   icon?: ReactNode;
   trend?: 'up' | 'down' | 'stable';
   trendValue?: string;
 }
 
-export const StatCard: React.FC<StatCardProps> = ({ label, value, icon, trend, trendValue }) => {
+export const StatCard: React.FC<StatCardProps> = ({ 
+  label, 
+  value, 
+  icon, 
+  trend, 
+  trendValue 
+}) => {
   const getTrendColor = () => {
     switch (trend) {
-      case 'up': return 'success.main';
-      case 'down': return 'error.main';
-      default: return 'text.secondary'}
+      case 'up': 
+        return 'success.main';
+      case 'down': 
+        return 'error.main';
+      default: 
+        return 'text.secondary';
+    }
   };
 
   return (
@@ -496,7 +586,7 @@ export const StatCard: React.FC<StatCardProps> = ({ label, value, icon, trend, t
           <Typography variant="body2" color="text.secondary" gutterBottom>
             {label}
           </Typography>
-      <Typography variant="h5">{value}</Typography>
+          <Typography variant="h5">{value}</Typography>
           {trend && trendValue && (
             <Typography variant="caption" color={getTrendColor()}>
               {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'} {trendValue}
@@ -510,58 +600,73 @@ export const StatCard: React.FC<StatCardProps> = ({ label, value, icon, trend, t
         )}
       </Box>
     </Paper>
-  )};
+  );
+};
 
 // ============= Interactive Components =============
 export interface ToggleButtonGroupProps {
   options: { value: string; label: string; icon?: ReactNode }[];
-  value: string,
+  value: string;
   onChange: (value: string) => void;
   exclusive?: boolean;
 }
 
-export const StyledToggleButtonGroup: React.FC<ToggleButtonGroupProps> = ({ options, value, onChange, exclusive = true }) => {
+export const StyledToggleButtonGroup: React.FC<ToggleButtonGroupProps> = ({ 
+  options, 
+  value, 
+  onChange, 
+  exclusive = true 
+}) => {
   return (
-    <>
-      <Paper sx={{ p: 0.5, display: 'inline-flex' }}>
+    <Paper sx={{ p: 0.5, display: 'inline-flex' }}>
       {options.map((option) => (
-        <MuiButton
+        <Button
           key={option.value}
           size="small"
           variant={value === option.value ? 'contained' : 'text'}
-          onClick={() => onChange(option.value}
+          onClick={() => onChange(option.value)}
           startIcon={option.icon}
           sx={{ mx: 0.5 }}
         >
           {option.label}
-        </MuiButton>
+        </Button>
       ))}
     </Paper>
-  </>
-  )};
+  );
+};
 
 // ============= Animation Wrappers =============
-export const FadeIn: React.FC<{ children: ReactNode; delay?: number }> = ({ children, delay = 0 }) => {
+export const FadeIn: React.FC<{ children: ReactNode; delay?: number }> = ({ 
+  children, 
+  delay = 0 
+}) => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShow(true), delay);
-    return () => clearTimeout(timer)}, [delay]);
+    return () => clearTimeout(timer);
+  }, [delay]);
 
   return (
     <Fade in={show} timeout={1000}>
       <Box>{children}</Box>
     </Fade>
-  )};
+  );
+};
 
-export const SlideIn: React.FC<{,
+export const SlideIn: React.FC<{
   children: ReactNode;
-  direction?: 'left' | 'right' | 'up' | 'down'}> = ({ children, direction = 'up' }) => {
+  direction?: 'left' | 'right' | 'up' | 'down';
+}> = ({ 
+  children, 
+  direction = 'up' 
+}) => {
   return (
     <Slide direction={direction} in={true} timeout={500}>
       <Box>{children}</Box>
     </Slide>
-  )};
+  );
+};
 
 // ============= Utility Components =============
 export const Divider: React.FC<{ text?: string }> = ({ text }) => {
@@ -573,17 +678,22 @@ export const Divider: React.FC<{ text?: string }> = ({ text }) => {
           <Typography variant="body2" color="text.secondary" sx={{ mx: 2 }}>
             {text}
           </Typography>
-      <Box flex={1} height={1} bgcolor="divider" />
+          <Box flex={1} height={1} bgcolor="divider" />
         </>
       )}
     </Box>
-  )};
+  );
+};
 
-export const PasswordField: React.FC<{,
-  value: string;,
-
+export const PasswordField: React.FC<{
+  value: string;
   onChange: (value: string) => void;
-  label?: string}> = ({ value, onChange, label = 'Password' }) => {
+  label?: string;
+}> = ({ 
+  value, 
+  onChange, 
+  label = 'Password' 
+}) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -593,24 +703,27 @@ export const PasswordField: React.FC<{,
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={label}
-        style={ {
+        style={{
           width: '100%',
           padding: '12px',
           paddingRight: '40px',
           border: '1px solid #ccc',
           borderRadius: '4px',
-          fontSize: '16px' }}
+          fontSize: '16px'
+        }}
       />
       <IconButton
         size="small"
-        onClick={() => setShowPassword(!showPassword}
-        sx={ {
+        onClick={() => setShowPassword(!showPassword)}
+        sx={{
           position: 'absolute',
           right: 8,
           top: '50%',
-          transform: 'translateY(-50%)' }}
+          transform: 'translateY(-50%)'
+        }}
       >
-        {showPassword ? <VisibilityOff /> </>: <Visibility />}
+        {showPassword ? <VisibilityOff /> : <Visibility />}
       </IconButton>
     </Box>
-  )};
+  );
+};

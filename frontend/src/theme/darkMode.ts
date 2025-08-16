@@ -59,7 +59,6 @@ const darkPalette = {
     disabledBackground: 'rgba(255, 255, 255, 0.12)'
   }
 };
-
 // Light mode palette
 const lightPalette = {
   primary: {
@@ -113,7 +112,6 @@ const lightPalette = {
     disabledBackground: 'rgba(0, 0, 0, 0.12)'
   }
 };
-
 // Shared theme configuration
 const getSharedThemeOptions = (isDarkMode: boolean): ThemeOptions => ({
   palette: {
@@ -384,25 +382,22 @@ export const THEME_KEY = 'ytempire_theme_mode';
 export const getStoredTheme = (): 'light' | 'dark' | null => {
   try {
     const stored = localStorage.getItem(THEME_KEY);
-    return stored === 'light' || stored === 'dark' ? stored : null;
+    return stored === 'light' || stored === 'dark' ? stored : null
   } catch {
-    return null;
+    return null
   }
 };
-
 export const saveTheme = (mode: 'light' | 'dark'): void => {
   try {
-    localStorage.setItem(THEME_KEY, mode);
+    localStorage.setItem(THEME_KEY, mode)
   } catch {
-    console.warn('Failed to save theme preference');
+    console.warn('Failed to save theme preference')
   }
 };
-
 // System preference detection
 export const getSystemPreference = (): 'light' | 'dark' => {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 };
-
 // Theme transition helper
 export const applyThemeTransition = (): void => {
   const style = document.createElement('style');

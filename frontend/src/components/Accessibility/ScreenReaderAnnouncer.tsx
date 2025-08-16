@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React,{ useEffect, useState } from 'react';
 import { 
   Box
  } from '@mui/material';
@@ -15,7 +15,7 @@ export const ScreenReaderAnnouncer: React.FC = () => {
       setTimeout(() => {
         setAnnouncements((prev) => prev.filter((a) => a.id !== announcement.id))}, 1000)});
     
-    return unsubscribe;
+    return unsubscribe
   }, []);
   
   return (
@@ -30,9 +30,7 @@ export const ScreenReaderAnnouncer: React.FC = () => {
           left: '-10000px',
           width: '1px',
           height: '1px',
-          overflow: 'hidden',
-
-        }}
+          overflow: 'hidden'}}
       >
         {announcements
           .filter((a) => a.priority === 'polite')
@@ -50,9 +48,7 @@ export const ScreenReaderAnnouncer: React.FC = () => {
           left: '-10000px',
           width: '1px',
           height: '1px',
-          overflow: 'hidden',
-
-        }}
+          overflow: 'hidden'}}
       >
         {announcements
           .filter((a) => a.priority === 'assertive')
@@ -60,5 +56,5 @@ export const ScreenReaderAnnouncer: React.FC = () => {
           .join('. ')}
       </Box>
     </>
-  )};
-
+  )
+};

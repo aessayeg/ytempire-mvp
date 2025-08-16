@@ -8,13 +8,16 @@ import {
 import {  HelpOutline, Info  } from '@mui/icons-material';
 
 interface HelpTooltipProps {
-  title: string;
-  description?: string;
-  placement?: 'top' | 'bottom' | 'left' | 'right';
-  size?: 'small' | 'medium';
-  variant?: 'help' | 'info';
-  children?: React.ReactNode;
-  interactive?: boolean;
+  
+title: string;
+description?: string;
+placement?: 'top' | 'bottom' | 'left' | 'right';
+size?: 'small' | 'medium';
+variant?: 'help' | 'info';
+children?: React.ReactNode;
+interactive?: boolean;
+
+
 }
 
 export const HelpTooltip: React.FC<HelpTooltipProps> = ({ title, description, placement = 'top', size = 'small', variant = 'help', children, interactive = false }) => {
@@ -62,4 +65,5 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({ title, description, pl
         <Icon fontSize={size} />
       </IconButton>
     </Tooltip>
-  )};
+  )
+};

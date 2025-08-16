@@ -11,21 +11,21 @@ import {  Header  } from '../components/Layout/Header';
 export const DashboardLayout: React.FC = () => { const [darkMode, setDarkMode] = useState(false);
 
   const theme = React.useMemo(
-    () => {}
+    () =>
       createTheme({
-        palette: {,
+        palette: {
   mode: darkMode ? 'dark' : 'light',
-          primary: {,
-  main: '#667 eea' },
-          secondary: { main: '#764 ba2' }
+          primary: {
+  main: '#667eea' },
+          secondary: { main: '#764ba2' }
         }
       }),
     [darkMode]
   );
 
   const handleToggleDarkMode = () => {
-    setDarkMode(!darkMode)};
-
+    setDarkMode(!darkMode)
+};
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -39,7 +39,7 @@ export const DashboardLayout: React.FC = () => { const [darkMode, setDarkMode] =
             p: 3,
             mt: 8,
             minHeight: '100 vh',
-            backgroundColor: (theme) => {}
+            backgroundColor: (theme) =>
               theme.palette.mode === 'light'
                 ? theme.palette.grey[100]
                 : theme.palette.grey[900] }}
@@ -48,4 +48,5 @@ export const DashboardLayout: React.FC = () => { const [darkMode, setDarkMode] =
         </Box>
       </Box>
     </ThemeProvider>
-  )};
+  )
+};

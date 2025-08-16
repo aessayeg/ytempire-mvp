@@ -27,26 +27,45 @@ import {
   InputLabel,
   Select,
   TextField,
-  FormControlLabel
- } from '@mui/material';
-import {  Refresh as RefreshIcon ,
+  FormControlLabel,
+  Stepper,
+  Step,
+  StepLabel,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText
+} from '@mui/material';
+import {
+  Refresh as RefreshIcon,
   Add as AddIcon,
-  Delete as DeleteIcon
- } from '@mui/icons-material';
+  Delete as DeleteIcon,
+  CircularProgress,
+  CheckCircle as CheckCircleIcon,
+  Error as ErrorIcon,
+  Pause as PauseIcon,
+  Schedule as ScheduleIcon,
+  Speed as SpeedIcon,
+  PlayArrow as PlayIcon,
+  VideoLibrary as VideoIcon,
+  Queue as QueueIcon,
+  Stop as StopIcon
+} from '@mui/icons-material';
 
 interface BatchJob {
-  id: string,
-  name: string,
-  type: 'video_generation' | 'thumbnail_update' | 'metadata_update' | 'analytics_sync',
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'paused',
-  totalItems: number,
-  processedItems: number,
-  failedItems: number;
-  startTime?: string;
-  endTime?: string;
-  estimatedCompletion?: string;
-  channels: string[],
-  priority: 'low' | 'medium' | 'high'}
+  id: string;
+  name: string;
+type: 'video_generation' | 'thumbnail_update' | 'metadata_update' | 'analytics_sync';
+status: 'pending' | 'running' | 'completed' | 'failed' | 'paused';
+totalItems: number;
+processedItems: number;
+failedItems: number;
+startTime?: string;
+endTime?: string;
+estimatedCompletion?: string;
+channels: string[];
+  priority: 'low' | 'medium' | 'high';
+}
 
 interface BatchOperationsProps {
   maxConcurrent?: number;
@@ -64,12 +83,12 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({ maxConcurrent = 10 })
     channels: [] as string[],
     priority: 'medium',
     schedule: 'immediate',
-    options: {,
-  generateThumbnails: true,
+    options: {
+      generateThumbnails: true,
       autoUpload: true,
       qualityCheck: true,
       costOptimization: true
-}
+    }
   });
 
   const steps = ['Select Type', 'Configure Options', 'Select Channels', 'Review & Start'];
@@ -77,11 +96,12 @@ const BatchOperations: React.FC<BatchOperationsProps> = ({ maxConcurrent = 10 })
   useEffect(() => {
     loadJobs();
     const interval = setInterval(updateJobProgress, 2000);
-    return () => clearInterval(interval)}, []);
+    return () => clearInterval(interval);
+  }, []);
 
   const loadJobs = () => {
     // Mock data - replace with API call
-const mockJobs: BatchJob[] = [
+    const mockJobs: BatchJob[] = [
       {
         id: '1',
         name: 'Daily Tech Videos',
@@ -93,8 +113,7 @@ const mockJobs: BatchJob[] = [
         startTime: new Date(Date.now() - 3600000).toISOString(),
         estimatedCompletion: new Date(Date.now() + 7200000).toISOString(),
         channels: ['Tech Reviews Pro', 'Gaming Central'],
-        priority: 'high',
-
+        priority: 'high'
       },
       {
         id: '2',
@@ -105,8 +124,7 @@ const mockJobs: BatchJob[] = [
         processedItems: 0,
         failedItems: 0,
         channels: ['DIY Crafts Hub'],
-        priority: 'low',
-
+        priority: 'low'
       },
       {
         id: '3',
@@ -119,26 +137,25 @@ const mockJobs: BatchJob[] = [
         startTime: new Date(Date.now() - 86400000).toISOString(),
         endTime: new Date(Date.now() - 3600000).toISOString(),
         channels: ['Gaming Central'],
-        priority: 'medium',
-
+        priority: 'medium'
       }
     ];
-    setJobs(mockJobs)};
-
+    setJobs(mockJobs);
+  };
   const updateJobProgress = () => {
     setJobs(prevJobs =>
       prevJobs.map(job => {
-    
         if (job.status === 'running' && job.processedItems < job.totalItems) {
           return {
             ...job,
             processedItems: Math.min(job.processedItems + Math.floor(Math.random() * 3), job.totalItems),
             status: job.processedItems + 1 >= job.totalItems ? 'completed' : 'running'
-          
-  }
-        return job})
-    )};
-
+          };
+        }
+        return job;
+      })
+    );
+  };
   const getStatusIcon = (status: BatchJob['status']) => {
     switch (status) {
       case 'running':
@@ -149,9 +166,10 @@ const mockJobs: BatchJob[] = [
         return <ErrorIcon color="error" />;
       case 'paused':
         return <PauseIcon color="warning" />;
-        return <ScheduleIcon color="action" />}
+      default:
+        return <ScheduleIcon color="action" />;
+    }
   };
-
   const getStatusColor = (status: BatchJob['status']) => {
     switch (status) {
       case 'running':
@@ -162,31 +180,31 @@ const mockJobs: BatchJob[] = [
         return 'error';
       case 'paused':
         return 'warning';
-        return 'default'}
+      default:
+        return 'default';
+    }
   };
-
   const handleStartJob = (jobId: string) => {
     setJobs(jobs.map(job =>
       job.id === jobId ? {  ...job, status:  'running', startTime: new Date().toISOString()  } : job
-    ))};
-
+    ))
+};
   const handlePauseJob = (jobId: string) => {
-    setJobs(jobs.map(job => {}
+    setJobs(jobs.map(job =>
       job.id === jobId ? {  ...job, status:  'paused'  } : job
-    ))};
-
+    ))
+};
   const handleStopJob = (jobId: string) => {
-    setJobs(jobs.map(job => {}
+    setJobs(jobs.map(job =>
       job.id === jobId ? {  ...job, status:  'failed', endTime: new Date().toISOString()  } : job
-    ))};
-
+    ))
+};
   const handleDeleteJob = (jobId: string) => {
     if (confirm('Are you sure you want to delete this batch job?')) {
       setJobs(jobs.filter(job => job.id !== jobId))}
   };
-
   const handleCreateBatch = () => {
-const newJob: BatchJob = {,
+const newJob: BatchJob  = {
   id: Date.now().toString(),
       name: newBatch.name,
       type: newBatch.type as BatchJob['type'],
@@ -195,10 +213,9 @@ const newJob: BatchJob = {,
       processedItems: 0,
       failedItems: 0,
       channels: newBatch.channels,
-      priority: newBatch.priority as BatchJob['priority'],
+      priority: newBatch.priority as BatchJob['priority']
 
     };
-    
     setJobs([newJob, ...jobs]);
     setIsCreateDialogOpen(false);
     setActiveStep(0);
@@ -209,14 +226,14 @@ const newJob: BatchJob = {,
       channels: [],
       priority: 'medium',
       schedule: 'immediate',
-      options: {,
-  generateThumbnails: true,
+      options: {
+        generateThumbnails: true,
         autoUpload: true,
         qualityCheck: true,
         costOptimization: true
-}
-    })};
-
+      }
+    });
+  };
   const runningJobs = jobs.filter(j => j.status === 'running').length;
   const totalProcessed = jobs.reduce((sum, job) => sum + job.processedItems, 0);
   const totalFailed = jobs.reduce((sum, job) => sum + job.failedItems, 0);
@@ -428,8 +445,8 @@ const newJob: BatchJob = {,
                         <PlayIcon />
                       </IconButton>
                     )}
-                    {job.status === 'running' || job.status === 'paused') && (
-                      <IconButton size="small" onClick={() => handleStopJob(job.id}>
+                    {(job.status === 'running' || job.status === 'paused') && (
+                      <IconButton size="small" onClick={() => handleStopJob(job.id)}>
                         <StopIcon />
                       </IconButton>
                     )}
@@ -470,8 +487,7 @@ const newJob: BatchJob = {,
               <TextField
                 label="Batch Name"
                 value={newBatch.name}
-                onChange={ (_) => setNewBatch({ ...newBatch, name:  e.target.value) });
-}
+                onChange={ (_) => setNewBatch({ ...newBatch, name:  e.target.value) })}
                 fullWidth
                 margin="normal"
               />
@@ -479,8 +495,7 @@ const newJob: BatchJob = {,
                 <InputLabel>Batch Type</InputLabel>
                 <Select
                   value={newBatch.type}
-                  onChange={ (_) => setNewBatch({ ...newBatch, type:  e.target.value) });
-}
+                  onChange={ (_) => setNewBatch({ ...newBatch, type:  e.target.value) })}
                   label="Batch Type"
                 >
                   <MenuItem value="video_generation">Video Generation</MenuItem>
@@ -493,8 +508,7 @@ const newJob: BatchJob = {,
                 label="Number of Items"
                 type="number"
                 value={newBatch.videoCount}
-                onChange={ (_) => setNewBatch({ ...newBatch, videoCount:  parseInt(e.target.value) });
-}
+                onChange={ (_) => setNewBatch({ ...newBatch, videoCount:  parseInt(e.target.value) })}
                 fullWidth
                 margin="normal"
                 helperText="Maximum 100 items per batch"
@@ -511,9 +525,8 @@ const newJob: BatchJob = {,
                     checked={newBatch.options.generateThumbnails}
                     onChange={(_) => setNewBatch({
                       ...newBatch,
-                      options: {  ...newBatch.options, generateThumbnails:  _.target.checked  }
-                    });
-}
+                      options: { ...newBatch.options, generateThumbnails: _.target.checked }
+                    })}
                   />
                 }
                 label="Generate Thumbnails"
@@ -524,9 +537,8 @@ const newJob: BatchJob = {,
                     checked={newBatch.options.autoUpload}
                     onChange={(_) => setNewBatch({
                       ...newBatch,
-                      options: {  ...newBatch.options, autoUpload:  e.target.checked  }
-                    });
-}
+                      options: { ...newBatch.options, autoUpload: _.target.checked }
+                    })}
                   />
                 }
                 label="Auto Upload to YouTube"
@@ -537,9 +549,8 @@ const newJob: BatchJob = {,
                     checked={newBatch.options.qualityCheck}
                     onChange={(_) => setNewBatch({
                       ...newBatch,
-                      options: {  ...newBatch.options, qualityCheck:  e.target.checked  }
-                    });
-}
+                      options: { ...newBatch.options, qualityCheck: _.target.checked }
+                    })}
                   />
                 }
                 label="Enable Quality Check"
@@ -550,9 +561,8 @@ const newJob: BatchJob = {,
                     checked={newBatch.options.costOptimization}
                     onChange={(_) => setNewBatch({
                       ...newBatch,
-                      options: {  ...newBatch.options, costOptimization:  e.target.checked  }
-                    });
-}
+                      options: { ...newBatch.options, costOptimization: _.target.checked }
+                    })}
                   />
                 }
                 label="Cost Optimization Mode"
@@ -561,8 +571,7 @@ const newJob: BatchJob = {,
                 <InputLabel>Priority</InputLabel>
                 <Select
                   value={newBatch.priority}
-                  onChange={ (_) => setNewBatch({ ...newBatch, priority:  e.target.value) });
-}
+                  onChange={ (_) => setNewBatch({ ...newBatch, priority:  e.target.value) })}
                   label="Priority"
                 >
                   <MenuItem value="low">Low</MenuItem>
@@ -587,14 +596,13 @@ const newJob: BatchJob = {,
                         checked={newBatch.channels.includes(channel)}
                         onChange={(_) => {
                           if (_.target.checked) {
-                            setNewBatch({  ...newBatch, channels:  [...newBatch.channels, channel]  });
-} else {
+                            setNewBatch({ ...newBatch, channels: [...newBatch.channels, channel] });
+                          } else {
                             setNewBatch({ 
                               ...newBatch, 
-                              channels: newBatch.channels.filter(c => c !== channel),
-
+                              channels: newBatch.channels.filter(c => c !== channel)
                             });
-}
+                          }
                         }}
                       />
                     </ListItemIcon>
@@ -626,7 +634,7 @@ const newJob: BatchJob = {,
                 <ListItem>
                   <ListItemText 
                     primary="Estimated Cost" 
-                    secondary={`$${newBatch.videoCount * 2.04.toFixed(2}`}
+                    secondary={`$${(newBatch.videoCount * 2.04).toFixed(2)}`}
                   />
                 </ListItem>
               </List>
@@ -640,7 +648,7 @@ const newJob: BatchJob = {,
           )}
           {activeStep < steps.length - 1 && (
             <Button 
-              onClick={() => setActiveStep(activeStep + 1}
+              onClick={() => setActiveStep(activeStep + 1)}
               variant="contained"
               disabled={activeStep === 0 && !newBatch.name}
             >
@@ -659,7 +667,8 @@ const newJob: BatchJob = {,
         </DialogActions>
       </Dialog>
     </Box>
-  </>
-  )};
+    </>
+  );
+};
 
 export default BatchOperations;

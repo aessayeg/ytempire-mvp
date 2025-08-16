@@ -10,16 +10,19 @@ import {
 import {  PieChart, Pie, Cell, ResponsiveContainer, Tooltip  } from 'recharts';
 
 interface VideoEngagementStatsProps {
-  stats: {,
-  likeRatio: number,
+  
+stats: {;
+likeRatio: number;
 
-    commentRate: number,
-  shareRate: number,
+commentRate: number;
+shareRate: number;
 
-    avgViewDuration: number,
-  clickThroughRate: number,
+avgViewDuration: number;
+clickThroughRate: number;
 
-    audienceRetention: number[]};
+audienceRetention: number[];
+
+}
 }
 
 export const VideoEngagementStats: React.FC<VideoEngagementStatsProps> = ({ stats }) => {

@@ -3,90 +3,111 @@ import {  apiClient  } from '../services/api';
 import {  useAuthStore  } from '../stores/authStore';
 
 interface RevenueOverview {
-  total_revenue: number,
-  average_revenue_per_video: number,
+  
+total_revenue: number;
+average_revenue_per_video: number;
 
-  highest_revenue_video: number,
-  lowest_revenue_video: number,
+highest_revenue_video: number;
+lowest_revenue_video: number;
 
-  total_videos_monetized: number,
-  daily_revenue: Array<{ date: string; revenue: number }>;
+total_videos_monetized: number;
+daily_revenue: Array<{ date: string; revenue: number;
+
+}>;
   channel_breakdown: Array<{ channel_id: number; channel_name: string; revenue: number }>;
-  cpm: number,
-  rpm: number,
+  cpm: number;
+  rpm: number;
 
   forecast: {
     next_7 _days: number;
-    next_30 _days: number,
-  confidence: string,
+    next_30 _days: number;
+  confidence: string;
 
     trend_factor: number};
   revenue_growth?: number;
   cpm_trend?: number;
-  rpm_trend?: number;
+  rpm_trend?: number
 }
 
 interface RevenueTrend {
-  period: string,
-  revenue: number,
+  
+period: string;
+revenue: number;
 
-  views: number,
-  video_count: number,
+views: number;
+video_count: number;
 
-  rpm: number;
-  growth_rate?: number;
+rpm: number;
+growth_rate?: number;
+
+
 }
 
 interface RevenueForecast {
-  date: string,
-  predicted_revenue: number,
+  
+date: string;
+predicted_revenue: number;
 
-  confidence_lower: number,
-  confidence_upper: number}
+confidence_lower: number;
+confidence_upper: number;
+
+}
 
 interface RevenueBreakdown {
-  source?: string;
-  content_type?: string;
-  length_range?: string;
-  time_period?: string;
-  revenue: number;
-  percentage?: number;
+  
+source?: string;
+content_type?: string;
+length_range?: string;
+time_period?: string;
+revenue: number;
+percentage?: number;
+
+
 }
 
 interface ChannelRevenue {
-  channel_id: number,
-  channel_name: string,
+  
+channel_id: number;
+channel_name: string;
 
-  total_revenue: number,
-  video_count: number,
+total_revenue: number;
+video_count: number;
 
-  average_revenue_per_video: number,
-  total_views: number}
+average_revenue_per_video: number;
+total_views: number;
+
+}
 
 interface UseRevenueDataProps {
-  userId?: number;
-  channelId?: number;
-  dateRange?: {
-    start: Date,
-  end: Date};
+  
+userId?: number;
+channelId?: number;
+dateRange?: {;
+start: Date;
+end: Date;
+
+};
   period?: 'daily' | 'weekly' | 'monthly';
-  breakdownBy?: string;
+  breakdownBy?: string
 }
 
 interface UseRevenueDataReturn {
-  overview: RevenueOverview | null,
-  trends: RevenueTrend[] | null,
+  
+overview: RevenueOverview | null;
+trends: RevenueTrend[] | null;
 
-  forecast: RevenueForecast[] | null,
-  breakdown: RevenueBreakdown[] | null,
+forecast: RevenueForecast[] | null;
+breakdown: RevenueBreakdown[] | null;
 
-  channelRevenue: ChannelRevenue[] | null,
-  loading: boolean,
+channelRevenue: ChannelRevenue[] | null;
+loading: boolean;
 
-  error: string | null,
-  refetch: () => Promise<void>,
+error: string | null;
+refetch: () => Promise<void>;
 
-  exportData: (format: 'csv' | 'json') => Promise<void>}
+exportData: (format: 'csv' | 'json') => Promise<void>;
+
+}
 
 export const useRevenueData = ({ userId,
   channelId,
@@ -106,7 +127,7 @@ export const useRevenueData = ({ userId,
   const fetchRevenueData = useCallback(_async () => {
     if (!token) {
       setError('Authentication required');
-      return;
+      return
     }
 
     setLoading(true);
@@ -114,7 +135,7 @@ export const useRevenueData = ({ userId,
 
     try {
       // Prepare query parameters
-      const params: unknown = {};
+      const params: unknown  = {};
       if (dateRange) {
         params.start_date = dateRange.start.toISOString();
         params.end_date = dateRange.end.toISOString()}
@@ -122,8 +143,7 @@ export const useRevenueData = ({ userId,
       // Fetch overview
       const overviewResponse = await apiClient.get('/api/v1/revenue/overview', {
         params,
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        headers: { Authorization: `Bearer ${token}` }});
       setOverview(overviewResponse.data);
 
       // Fetch trends
@@ -132,22 +152,19 @@ export const useRevenueData = ({ userId,
           lookback_days: dateRange ? 
             Math.ceil((dateRange.end.getTime() - dateRange.start.getTime()) / (1000 * 60 * 60 * 24)) : 
             30 },
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        headers: { Authorization: `Bearer ${token}` }});
       setTrends(trendsResponse.data.trends);
 
       // Fetch forecast
       const forecastResponse = await apiClient.get('/api/v1/revenue/forecast', {
         params: { forecast_days: 7 },
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        headers: { Authorization: `Bearer ${token}` }});
       setForecast(forecastResponse.data.forecast);
 
       // Fetch breakdown
       const breakdownResponse = await apiClient.get('/api/v1/revenue/breakdown', {
         params: { breakdown_by: breakdownBy },
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        headers: { Authorization: `Bearer ${token}` }});
       setBreakdown(breakdownResponse.data.breakdown);
 
       // Fetch channel revenue if channelId is provided
@@ -158,7 +175,7 @@ export const useRevenueData = ({ userId,
         });
         setChannelRevenue([channelResponse.data])} else if (overviewResponse.data.channel_breakdown) { // Use channel breakdown from overview
         setChannelRevenue(
-          overviewResponse.data.channel_breakdown.map((ch: React.ChangeEvent<HTMLInputElement>) => ({,
+          overviewResponse.data.channel_breakdown.map((ch: React.ChangeEvent<HTMLInputElement>) => ({
   channel_id: ch.channel_id,
             channel_name: ch.channel_name,
             total_revenue: ch.revenue,
@@ -169,17 +186,15 @@ export const useRevenueData = ({ userId,
     } catch (_err: unknown) {
       console.error('Error fetching revenue, data:', err);
       setError(err.response?.data?.detail || 'Failed to fetch revenue data')} finally {
-      setLoading(false)}
-  }, [token, channelId, dateRange, period, breakdownBy]);
+      setLoading(false)}}, [token, channelId, dateRange, period, breakdownBy]);
 
   const exportData = useCallback(_async (format: 'csv' | 'json') => {
     if (!token) {
       setError('Authentication required');
-      return;
-    }
+      return}
 
     try {
-      const params: unknown = { format };
+      const params: unknown  = { format };
       if (dateRange) {
         params.start_date = dateRange.start.toISOString();
         params.end_date = dateRange.end.toISOString()}
@@ -187,9 +202,8 @@ export const useRevenueData = ({ userId,
       const response = await apiClient.get('/api/v1/revenue/export', {
         params,
         headers: { Authorization: `Bearer ${token}` },
-        responseType: format === 'csv' ? 'blob' : 'json',
-
-      });
+        responseType: format === 'csv' ? 'blob' : 'json'
+});
 
       // Create download link
       const blob = format === 'csv' 
@@ -205,8 +219,7 @@ export const useRevenueData = ({ userId,
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url)} catch (_err: unknown) {
       console.error('Error exporting revenue, data:', err);
-      setError(err.response?.data?.detail || 'Failed to export revenue data')}
-  }, [token, dateRange]);
+      setError(err.response?.data?.detail || 'Failed to export revenue data')}}, [token, dateRange]);
 
   useEffect(() => {
     fetchRevenueData()}, [fetchRevenueData]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -219,5 +232,4 @@ export const useRevenueData = ({ userId,
     loading,
     error,
     refetch: fetchRevenueData,
-    exportData };
-};
+    exportData }};
