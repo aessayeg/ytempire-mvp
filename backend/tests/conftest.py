@@ -18,14 +18,11 @@ from app.models.user import User
 
 # Test database URL - Use environment variables or fallback to defaults
 import os
+
 TEST_DATABASE_URL = os.getenv(
-    "DATABASE_URL", 
-    "postgresql+asyncpg://ytempire:admin@localhost:5432/ytempire_db"
+    "DATABASE_URL", "postgresql+asyncpg://ytempire:admin@localhost:5432/ytempire_db"
 )
-TEST_REDIS_URL = os.getenv(
-    "REDIS_URL",
-    "redis://localhost:6379/0"
-)
+TEST_REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 
 @pytest.fixture(scope="session")
@@ -44,15 +41,15 @@ async def async_engine():
         poolclass=NullPool,
         echo=False,
     )
-    
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     yield engine
-    
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-    
+
     await engine.dispose()
 
 
@@ -64,7 +61,7 @@ async def async_session(async_engine) -> AsyncGenerator[AsyncSession, None]:
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    
+
     async with async_session_maker() as session:
         yield session
 
@@ -81,15 +78,15 @@ async def redis_client():
 @pytest.fixture(scope="function")
 def client(async_session) -> Generator:
     """Create test client with overridden dependencies"""
-    
+
     async def override_get_db():
         yield async_session
-    
+
     app.dependency_overrides[get_db] = override_get_db
-    
+
     with TestClient(app) as test_client:
         yield test_client
-    
+
     app.dependency_overrides.clear()
 
 

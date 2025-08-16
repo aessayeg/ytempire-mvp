@@ -18,8 +18,7 @@ REFRESH_TOKEN_EXPIRE_MINUTES = settings.REFRESH_TOKEN_EXPIRE_MINUTES
 
 
 def create_access_token(
-    subject: Union[str, Any], 
-    expires_delta: Optional[timedelta] = None
+    subject: Union[str, Any], expires_delta: Optional[timedelta] = None
 ) -> str:
     """
     Create JWT access token
@@ -27,22 +26,15 @@ def create_access_token(
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
-            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
-        )
-    
-    to_encode = {
-        "exp": expire,
-        "sub": str(subject),
-        "type": "access"
-    }
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    to_encode = {"exp": expire, "sub": str(subject), "type": "access"}
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
 def create_refresh_token(
-    subject: Union[str, Any],
-    expires_delta: Optional[timedelta] = None
+    subject: Union[str, Any], expires_delta: Optional[timedelta] = None
 ) -> str:
     """
     Create JWT refresh token
@@ -50,15 +42,9 @@ def create_refresh_token(
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
-            minutes=REFRESH_TOKEN_EXPIRE_MINUTES
-        )
-    
-    to_encode = {
-        "exp": expire,
-        "sub": str(subject),
-        "type": "refresh"
-    }
+        expire = datetime.utcnow() + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+
+    to_encode = {"exp": expire, "sub": str(subject), "type": "refresh"}
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 

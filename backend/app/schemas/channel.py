@@ -12,14 +12,14 @@ class ChannelBase(BaseModel):
     channel_description: Optional[str] = None
     niche: Optional[str] = None
     content_type: Optional[str] = Field(None, pattern="^(shorts|long-form|mixed)$")
-    
+
 
 class ChannelCreate(ChannelBase):
     youtube_channel_id: str
     channel_url: Optional[str] = None
     access_token: Optional[str] = None
     refresh_token: Optional[str] = None
-    
+
 
 class ChannelUpdate(BaseModel):
     channel_name: Optional[str] = None
@@ -35,7 +35,7 @@ class ChannelUpdate(BaseModel):
     voice_id: Optional[str] = None
     style_preferences: Optional[Dict[str, Any]] = None
     content_guidelines: Optional[Dict[str, Any]] = None
-    
+
 
 class ChannelResponse(ChannelBase):
     id: str
@@ -56,6 +56,6 @@ class ChannelResponse(ChannelBase):
     updated_at: Optional[datetime]
     last_video_at: Optional[datetime]
     last_sync_at: Optional[datetime]
-    
+
     class Config:
         from_attributes = True

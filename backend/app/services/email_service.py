@@ -13,11 +13,12 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+
 class EmailService:
     """
     Email service for sending transactional emails
     """
-    
+
     def __init__(self):
         self.smtp_host = settings.SMTP_HOST
         self.smtp_port = settings.SMTP_PORT
@@ -26,17 +27,17 @@ class EmailService:
         self.from_email = settings.EMAILS_FROM_EMAIL or "noreply@ytempire.com"
         self.from_name = settings.EMAILS_FROM_NAME or "YTEmpire"
         self.base_url = "http://localhost:3000"  # Frontend URL
-        
+
         # Setup Jinja2 for email templates
         template_dir = os.path.join(os.path.dirname(__file__), "../templates/emails")
         self.template_env = Environment(loader=FileSystemLoader(template_dir))
-    
+
     async def send_email(
         self,
         to_email: str,
         subject: str,
         html_content: str,
-        text_content: Optional[str] = None
+        text_content: Optional[str] = None,
     ) -> bool:
         """
         Send email using SMTP
@@ -46,46 +47,41 @@ class EmailService:
             message["From"] = f"{self.from_name} <{self.from_email}>"
             message["To"] = to_email
             message["Subject"] = subject
-            
+
             # Add text part
             if text_content:
                 text_part = MIMEText(text_content, "plain")
                 message.attach(text_part)
-            
+
             # Add HTML part
             html_part = MIMEText(html_content, "html")
             message.attach(html_part)
-            
+
             # Send email
             async with aiosmtplib.SMTP(
-                hostname=self.smtp_host,
-                port=self.smtp_port,
-                use_tls=True
+                hostname=self.smtp_host, port=self.smtp_port, use_tls=True
             ) as smtp:
                 await smtp.login(self.smtp_user, self.smtp_password)
                 await smtp.send_message(message)
-            
+
             logger.info(f"Email sent successfully to {to_email}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to send email to {to_email}: {str(e)}")
             return False
-    
+
     async def send_verification_email(
-        self,
-        to_email: str,
-        full_name: str,
-        verification_token: str
+        self, to_email: str, full_name: str, verification_token: str
     ) -> bool:
         """
         Send email verification link
         """
         verification_url = f"{self.base_url}/verify-email?token={verification_token}"
-        
+
         # Create email content
         subject = "Verify Your YTEmpire Account"
-        
+
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -125,7 +121,7 @@ class EmailService:
         </body>
         </html>
         """
-        
+
         text_content = f"""
         Welcome to YTEmpire!
         
@@ -143,22 +139,19 @@ class EmailService:
         Best regards,
         The YTEmpire Team
         """
-        
+
         return await self.send_email(to_email, subject, html_content, text_content)
-    
+
     async def send_password_reset_email(
-        self,
-        to_email: str,
-        full_name: str,
-        reset_token: str
+        self, to_email: str, full_name: str, reset_token: str
     ) -> bool:
         """
         Send password reset email
         """
         reset_url = f"{self.base_url}/reset-password?token={reset_token}"
-        
+
         subject = "Reset Your YTEmpire Password"
-        
+
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -202,7 +195,7 @@ class EmailService:
         </body>
         </html>
         """
-        
+
         text_content = f"""
         Password Reset Request
         
@@ -220,19 +213,15 @@ class EmailService:
         Best regards,
         The YTEmpire Team
         """
-        
+
         return await self.send_email(to_email, subject, html_content, text_content)
-    
-    async def send_welcome_email(
-        self,
-        to_email: str,
-        full_name: str
-    ) -> bool:
+
+    async def send_welcome_email(self, to_email: str, full_name: str) -> bool:
         """
         Send welcome email after successful verification
         """
         subject = "Welcome to YTEmpire - Let's Get Started!"
-        
+
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -292,5 +281,5 @@ class EmailService:
         </body>
         </html>
         """
-        
+
         return await self.send_email(to_email, subject, html_content)

@@ -6,8 +6,8 @@ from .handlers import VideoUpdateHandler, ChannelUpdateHandler, CollaborationHan
 from .middleware import WebSocketAuthMiddleware
 
 __all__ = [
-    'VideoUpdateHandler',
-    'ChannelUpdateHandler', 
-    'CollaborationHandler',
-    'WebSocketAuthMiddleware'
+    "VideoUpdateHandler",
+    "ChannelUpdateHandler",
+    "CollaborationHandler",
+    "WebSocketAuthMiddleware",
 ]

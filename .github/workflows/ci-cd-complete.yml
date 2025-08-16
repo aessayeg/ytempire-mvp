@@ -100,13 +100,26 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
-          pip install pytest pytest-cov pytest-asyncio httpx
+          pip install -r backend/requirements-test.txt
+      
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U ytempire; do
+            echo "Waiting for PostgreSQL..."
+            sleep 1
+          done
       
       - name: Run unit tests
         env:
           DATABASE_URL: postgresql://ytempire:testpass@localhost:5432/ytempire_test
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key
+          PYTHONPATH: ${{ github.workspace }}/backend
         run: |
           cd backend
           pytest tests/unit/ -v --cov=app --cov-report=xml --cov-report=html
@@ -116,6 +129,7 @@ jobs:
           DATABASE_URL: postgresql://ytempire:testpass@localhost:5432/ytempire_test
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key
+          PYTHONPATH: ${{ github.workspace }}/backend
         run: |
           cd backend
           pytest tests/integration/ -v --cov=app --cov-append --cov-report=xml

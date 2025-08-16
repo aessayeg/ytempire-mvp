@@ -286,7 +286,7 @@ async def lifespan(app: FastAPI):
 
         await training_data_service.initialize()
         logger.info("Training data service initialized")
-        
+
         await defect_tracker.initialize()
         logger.info("Defect tracker initialized")
 

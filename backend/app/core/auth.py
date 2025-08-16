@@ -21,7 +21,11 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 # JWT settings
-SECRET_KEY = settings.JWT_SECRET_KEY if hasattr(settings, 'JWT_SECRET_KEY') else "your-secret-key-here"
+SECRET_KEY = (
+    settings.JWT_SECRET_KEY
+    if hasattr(settings, "JWT_SECRET_KEY")
+    else "your-secret-key-here"
+)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -62,8 +66,7 @@ def verify_token(token: str) -> dict:
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db)
+    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ) -> User:
     """Get the current authenticated user"""
     credentials_exception = HTTPException(
@@ -71,7 +74,7 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
@@ -79,13 +82,13 @@ async def get_current_user(
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
+
     # For now, return a mock user since we don't have full DB setup
     # In production, you would fetch from database:
     # user = await db.get(User, user_id)
     # if user is None:
     #     raise credentials_exception
-    
+
     # Mock user for testing
     user = User(
         id=user_id or "test-user",
@@ -93,14 +96,14 @@ async def get_current_user(
         username="testuser",
         is_active=True,
         is_superuser=False,
-        created_at=datetime.utcnow()
+        created_at=datetime.utcnow(),
     )
-    
+
     return user
 
 
 async def get_current_active_user(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ) -> User:
     """Ensure the current user is active"""
     if not current_user.is_active:
@@ -108,13 +111,8 @@ async def get_current_active_user(
     return current_user
 
 
-async def get_current_superuser(
-    current_user: User = Depends(get_current_user)
-) -> User:
+async def get_current_superuser(current_user: User = Depends(get_current_user)) -> User:
     """Ensure the current user is a superuser"""
     if not current_user.is_superuser:
-        raise HTTPException(
-            status_code=403,
-            detail="Not enough permissions"
-        )
+        raise HTTPException(status_code=403, detail="Not enough permissions")
     return current_user

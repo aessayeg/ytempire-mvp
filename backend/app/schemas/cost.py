@@ -9,14 +9,20 @@ from decimal import Decimal
 
 class CostRecordCreate(BaseModel):
     """Schema for creating cost record"""
+
     service: str = Field(..., description="Service name (openai, elevenlabs, etc.)")
-    operation: str = Field(..., description="Operation type (gpt-4_input, dall-e_hd, etc.)")
+    operation: str = Field(
+        ..., description="Operation type (gpt-4_input, dall-e_hd, etc.)"
+    )
     units: float = Field(..., description="Number of units consumed")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional metadata")
+    metadata: Optional[Dict[str, Any]] = Field(
+        default=None, description="Additional metadata"
+    )
 
 
 class CostRecordResponse(BaseModel):
     """Schema for cost record response"""
+
     service: str
     operation: str
     units: float
@@ -26,6 +32,7 @@ class CostRecordResponse(BaseModel):
 
 class VideoCostResponse(BaseModel):
     """Schema for video cost response"""
+
     video_id: str
     total_cost: float
     breakdown: Dict[str, float]
@@ -34,6 +41,7 @@ class VideoCostResponse(BaseModel):
 
 class CostAggregationResponse(BaseModel):
     """Schema for cost aggregation response"""
+
     period: str
     service: str
     total_cost: float
@@ -43,14 +51,18 @@ class CostAggregationResponse(BaseModel):
 
 class ThresholdCreate(BaseModel):
     """Schema for creating threshold"""
+
     threshold_type: str = Field(..., pattern="^(daily|monthly|per_video|service)$")
     value: float = Field(..., gt=0, description="Threshold value in USD")
-    service: Optional[str] = Field(None, description="Service name for service-specific thresholds")
+    service: Optional[str] = Field(
+        None, description="Service name for service-specific thresholds"
+    )
     alert_email: Optional[str] = Field(None, description="Email for alerts")
 
 
 class ThresholdResponse(BaseModel):
     """Schema for threshold response"""
+
     threshold_type: str
     value: float
     service: Optional[str]
@@ -60,6 +72,7 @@ class ThresholdResponse(BaseModel):
 
 class CostMetricsResponse(BaseModel):
     """Schema for cost metrics response"""
+
     total_cost: float
     api_costs: Dict[str, float]
     infrastructure_costs: Dict[str, float]
@@ -71,6 +84,7 @@ class CostMetricsResponse(BaseModel):
 
 class DailySummaryResponse(BaseModel):
     """Schema for daily cost summary"""
+
     date: str
     total_cost: float
     cost_by_service: Dict[str, float]
@@ -82,6 +96,7 @@ class DailySummaryResponse(BaseModel):
 
 class CostTrendResponse(BaseModel):
     """Schema for cost trend analysis"""
+
     period_days: int
     daily_costs: Dict[str, float]
     average_daily_cost: float

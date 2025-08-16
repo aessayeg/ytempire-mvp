@@ -23,6 +23,7 @@ from app.services.websocket_manager import ConnectionManager
 
 logger = logging.getLogger(__name__)
 
+
 class NotificationType(str, Enum):
     EMAIL = "email"
     SMS = "sms"
@@ -30,17 +31,20 @@ class NotificationType(str, Enum):
     IN_APP = "in_app"
     WEBHOOK = "webhook"
 
+
 class NotificationPriority(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     URGENT = "urgent"
 
+
 class NotificationStatus(str, Enum):
     PENDING = "pending"
     SENT = "sent"
     FAILED = "failed"
     DELIVERED = "delivered"
+
 
 @dataclass
 class NotificationTemplate:
@@ -51,6 +55,7 @@ class NotificationTemplate:
     variables: List[str]
     type: NotificationType
     priority: NotificationPriority = NotificationPriority.MEDIUM
+
 
 @dataclass
 class NotificationPayload:
@@ -64,12 +69,13 @@ class NotificationPayload:
     scheduled_at: Optional[datetime] = None
     expires_at: Optional[datetime] = None
 
+
 class NotificationService:
     def __init__(self):
         self.email_service = EmailService()
         self.websocket_manager = ConnectionManager()
         self.templates = self._load_templates()
-        
+
     def _load_templates(self) -> Dict[str, NotificationTemplate]:
         """Load notification templates"""
         return {
@@ -80,7 +86,7 @@ class NotificationService:
                 body="Your video '{title}' has been generated successfully and is ready for publishing.\n\nCost: ${cost}\nGeneration Time: {duration}s\nQuality Score: {quality_score}/100",
                 variables=["title", "cost", "duration", "quality_score"],
                 type=NotificationType.EMAIL,
-                priority=NotificationPriority.MEDIUM
+                priority=NotificationPriority.MEDIUM,
             ),
             "video_generation_failed": NotificationTemplate(
                 id="video_generation_failed",
@@ -89,7 +95,7 @@ class NotificationService:
                 body="Video generation failed for '{title}' due to: {error_message}\n\nPlease check your settings and try again.",
                 variables=["title", "error_message"],
                 type=NotificationType.EMAIL,
-                priority=NotificationPriority.HIGH
+                priority=NotificationPriority.HIGH,
             ),
             "cost_threshold_exceeded": NotificationTemplate(
                 id="cost_threshold_exceeded",
@@ -98,7 +104,7 @@ class NotificationService:
                 body="Your daily cost limit of ${threshold} has been exceeded.\n\nCurrent spend: ${current_cost}\nRecommendation: Review your cost settings or pause video generation.",
                 variables=["threshold", "current_cost"],
                 type=NotificationType.EMAIL,
-                priority=NotificationPriority.URGENT
+                priority=NotificationPriority.URGENT,
             ),
             "channel_quota_exceeded": NotificationTemplate(
                 id="channel_quota_exceeded",
@@ -107,7 +113,7 @@ class NotificationService:
                 body="Channel '{channel_name}' has reached its daily YouTube API quota.\n\nAutomatic rotation to backup channels has been activated.",
                 variables=["channel_name"],
                 type=NotificationType.EMAIL,
-                priority=NotificationPriority.HIGH
+                priority=NotificationPriority.HIGH,
             ),
             "revenue_milestone": NotificationTemplate(
                 id="revenue_milestone",
@@ -116,7 +122,7 @@ class NotificationService:
                 body="Congratulations! You've reached ${milestone} in total revenue.\n\nTotal earnings: ${total_revenue}\nThis month: ${monthly_revenue}",
                 variables=["milestone", "total_revenue", "monthly_revenue"],
                 type=NotificationType.EMAIL,
-                priority=NotificationPriority.MEDIUM
+                priority=NotificationPriority.MEDIUM,
             ),
             "system_maintenance": NotificationTemplate(
                 id="system_maintenance",
@@ -125,20 +131,18 @@ class NotificationService:
                 body="YTEmpire will undergo scheduled maintenance on {maintenance_date} from {start_time} to {end_time}.\n\nDuring this time, video generation will be temporarily unavailable.",
                 variables=["maintenance_date", "start_time", "end_time"],
                 type=NotificationType.EMAIL,
-                priority=NotificationPriority.MEDIUM
-            )
+                priority=NotificationPriority.MEDIUM,
+            ),
         }
 
     async def send_notification(
-        self, 
-        payload: NotificationPayload,
-        db: Optional[AsyncSession] = None
+        self, payload: NotificationPayload, db: Optional[AsyncSession] = None
     ) -> Dict[str, Any]:
         """Send a notification"""
         try:
             # Store notification in database
             notification_id = await self._store_notification(payload, db)
-            
+
             # Send based on type
             if payload.type == NotificationType.EMAIL:
                 result = await self._send_email_notification(payload)
@@ -151,23 +155,28 @@ class NotificationService:
             elif payload.type == NotificationType.WEBHOOK:
                 result = await self._send_webhook_notification(payload)
             else:
-                result = {"success": False, "error": f"Unsupported notification type: {payload.type}"}
-            
+                result = {
+                    "success": False,
+                    "error": f"Unsupported notification type: {payload.type}",
+                }
+
             # Update notification status
             if db:
                 await self._update_notification_status(
-                    notification_id, 
-                    NotificationStatus.SENT if result.get("success") else NotificationStatus.FAILED,
-                    db
+                    notification_id,
+                    NotificationStatus.SENT
+                    if result.get("success")
+                    else NotificationStatus.FAILED,
+                    db,
                 )
-            
+
             return {
                 "notification_id": notification_id,
                 "success": result.get("success", False),
                 "message": result.get("message", ""),
-                "error": result.get("error")
+                "error": result.get("error"),
             }
-            
+
         except Exception as e:
             logger.error(f"Failed to send notification: {str(e)}")
             return {"success": False, "error": str(e)}
@@ -178,22 +187,22 @@ class NotificationService:
         template_id: str,
         variables: Dict[str, Any],
         notification_types: List[NotificationType] = None,
-        db: Optional[AsyncSession] = None
+        db: Optional[AsyncSession] = None,
     ) -> Dict[str, Any]:
         """Send notification using a template"""
         if template_id not in self.templates:
             return {"success": False, "error": f"Template '{template_id}' not found"}
-        
+
         template = self.templates[template_id]
-        
+
         # Replace variables in template
         subject = template.subject.format(**variables)
         body = template.body.format(**variables)
-        
+
         # Default to template type if not specified
         if not notification_types:
             notification_types = [template.type]
-        
+
         results = []
         for notif_type in notification_types:
             payload = NotificationPayload(
@@ -203,22 +212,21 @@ class NotificationService:
                 title=subject,
                 message=body,
                 data=variables,
-                priority=template.priority
+                priority=template.priority,
             )
-            
+
             result = await self.send_notification(payload, db)
-            results.append({
-                "type": notif_type,
-                "result": result
-            })
-        
+            results.append({"type": notif_type, "result": result})
+
         return {
             "template_id": template_id,
             "results": results,
-            "success": all(r["result"]["success"] for r in results)
+            "success": all(r["result"]["success"] for r in results),
         }
 
-    async def _send_email_notification(self, payload: NotificationPayload) -> Dict[str, Any]:
+    async def _send_email_notification(
+        self, payload: NotificationPayload
+    ) -> Dict[str, Any]:
         """Send email notification"""
         try:
             # Use existing email service
@@ -226,58 +234,79 @@ class NotificationService:
                 user_id=payload.user_id,
                 subject=payload.title,
                 body=payload.message,
-                priority=payload.priority.value
+                priority=payload.priority.value,
             )
             return result
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def _send_in_app_notification(self, payload: NotificationPayload) -> Dict[str, Any]:
+    async def _send_in_app_notification(
+        self, payload: NotificationPayload
+    ) -> Dict[str, Any]:
         """Send in-app notification via WebSocket"""
         try:
             await self.websocket_manager.send_personal_message(
-                json.dumps({
-                    "type": "notification",
-                    "title": payload.title,
-                    "message": payload.message,
-                    "priority": payload.priority.value,
-                    "data": payload.data,
-                    "timestamp": datetime.utcnow().isoformat()
-                }),
-                payload.user_id
+                json.dumps(
+                    {
+                        "type": "notification",
+                        "title": payload.title,
+                        "message": payload.message,
+                        "priority": payload.priority.value,
+                        "data": payload.data,
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }
+                ),
+                payload.user_id,
             )
             return {"success": True, "message": "In-app notification sent"}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def _send_push_notification(self, payload: NotificationPayload) -> Dict[str, Any]:
+    async def _send_push_notification(
+        self, payload: NotificationPayload
+    ) -> Dict[str, Any]:
         """Send push notification (placeholder for future implementation)"""
         # TODO: Implement push notification service (Firebase, OneSignal, etc.)
-        logger.info(f"Push notification placeholder for user {payload.user_id}: {payload.title}")
-        return {"success": True, "message": "Push notification queued (not implemented)"}
+        logger.info(
+            f"Push notification placeholder for user {payload.user_id}: {payload.title}"
+        )
+        return {
+            "success": True,
+            "message": "Push notification queued (not implemented)",
+        }
 
-    async def _send_sms_notification(self, payload: NotificationPayload) -> Dict[str, Any]:
+    async def _send_sms_notification(
+        self, payload: NotificationPayload
+    ) -> Dict[str, Any]:
         """Send SMS notification (placeholder for future implementation)"""
         # TODO: Implement SMS service (Twilio, etc.)
-        logger.info(f"SMS notification placeholder for user {payload.user_id}: {payload.message}")
+        logger.info(
+            f"SMS notification placeholder for user {payload.user_id}: {payload.message}"
+        )
         return {"success": True, "message": "SMS notification queued (not implemented)"}
 
-    async def _send_webhook_notification(self, payload: NotificationPayload) -> Dict[str, Any]:
+    async def _send_webhook_notification(
+        self, payload: NotificationPayload
+    ) -> Dict[str, Any]:
         """Send webhook notification"""
         try:
             # TODO: Implement webhook delivery
-            logger.info(f"Webhook notification for user {payload.user_id}: {payload.data}")
+            logger.info(
+                f"Webhook notification for user {payload.user_id}: {payload.data}"
+            )
             return {"success": True, "message": "Webhook delivered"}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def _store_notification(self, payload: NotificationPayload, db: Optional[AsyncSession]) -> str:
+    async def _store_notification(
+        self, payload: NotificationPayload, db: Optional[AsyncSession]
+    ) -> str:
         """Store notification in database"""
         if not db:
             async for session in get_db():
                 db = session
                 break
-        
+
         # TODO: Implement database storage
         # For now, return a mock ID
         notification_id = f"notif_{datetime.utcnow().timestamp()}"
@@ -285,10 +314,7 @@ class NotificationService:
         return notification_id
 
     async def _update_notification_status(
-        self, 
-        notification_id: str, 
-        status: NotificationStatus,
-        db: AsyncSession
+        self, notification_id: str, status: NotificationStatus, db: AsyncSession
     ):
         """Update notification status in database"""
         # TODO: Implement status update
@@ -300,16 +326,16 @@ class NotificationService:
         template_id: str,
         variables: Dict[str, Any],
         notification_types: List[NotificationType] = None,
-        batch_size: int = 50
+        batch_size: int = 50,
     ) -> Dict[str, Any]:
         """Send bulk notifications in batches"""
         results = []
-        
+
         # Process in batches to avoid overwhelming the system
         for i in range(0, len(user_ids), batch_size):
-            batch = user_ids[i:i + batch_size]
+            batch = user_ids[i : i + batch_size]
             batch_results = []
-            
+
             # Send notifications concurrently within batch
             tasks = []
             for user_id in batch:
@@ -317,23 +343,25 @@ class NotificationService:
                     user_id=user_id,
                     template_id=template_id,
                     variables=variables,
-                    notification_types=notification_types
+                    notification_types=notification_types,
                 )
                 tasks.append(task)
-            
+
             batch_results = await asyncio.gather(*tasks, return_exceptions=True)
             results.extend(batch_results)
-            
+
             # Small delay between batches
             await asyncio.sleep(0.1)
-        
-        success_count = sum(1 for r in results if isinstance(r, dict) and r.get("success"))
-        
+
+        success_count = sum(
+            1 for r in results if isinstance(r, dict) and r.get("success")
+        )
+
         return {
             "total_sent": len(user_ids),
             "successful": success_count,
             "failed": len(user_ids) - success_count,
-            "results": results
+            "results": results,
         }
 
     def get_templates(self) -> Dict[str, Dict[str, Any]]:
@@ -344,7 +372,7 @@ class NotificationService:
                 "subject": template.subject,
                 "variables": template.variables,
                 "type": template.type.value,
-                "priority": template.priority.value
+                "priority": template.priority.value,
             }
             for template_id, template in self.templates.items()
         }
@@ -353,27 +381,28 @@ class NotificationService:
         self,
         payload: NotificationPayload,
         delay_seconds: int = 0,
-        scheduled_time: Optional[datetime] = None
+        scheduled_time: Optional[datetime] = None,
     ) -> str:
         """Schedule a notification for later delivery"""
         if scheduled_time:
             delay_seconds = int((scheduled_time - datetime.utcnow()).total_seconds())
-        
+
         if delay_seconds <= 0:
             # Send immediately
             result = await self.send_notification(payload)
             return result.get("notification_id", "immediate")
-        
+
         # TODO: Implement proper task scheduling (Celery, etc.)
         # For now, use asyncio sleep (not recommended for production)
         asyncio.create_task(self._delayed_send(payload, delay_seconds))
-        
+
         return f"scheduled_{datetime.utcnow().timestamp()}"
 
     async def _delayed_send(self, payload: NotificationPayload, delay_seconds: int):
         """Send notification after delay"""
         await asyncio.sleep(delay_seconds)
         await self.send_notification(payload)
+
 
 # Global notification service instance
 notification_service = NotificationService()

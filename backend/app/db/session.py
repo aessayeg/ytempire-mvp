@@ -12,7 +12,7 @@ engine = create_async_engine(
     pool_size=20,
     max_overflow=40,
     pool_pre_ping=True,
-    pool_recycle=3600
+    pool_recycle=3600,
 )
 
 # Create async session factory
@@ -21,8 +21,9 @@ AsyncSessionLocal = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
     autocommit=False,
-    autoflush=False
+    autoflush=False,
 )
+
 
 # Dependency to get DB session
 async def get_db() -> AsyncSession:
@@ -38,6 +39,7 @@ async def get_db() -> AsyncSession:
             raise
         finally:
             await session.close()
+
 
 # Alias for compatibility
 get_async_db = get_db

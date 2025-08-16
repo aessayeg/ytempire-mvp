@@ -49,145 +49,134 @@ ENABLE_METRICS = os.getenv("ENABLE_METRICS", "true").lower() == "true"
 
 # Metrics
 request_counter = Counter(
-    'ytempire_http_requests_total',
-    'Total HTTP requests',
-    ['method', 'endpoint', 'status_code']
+    "ytempire_http_requests_total",
+    "Total HTTP requests",
+    ["method", "endpoint", "status_code"],
 )
 
 request_duration = Histogram(
-    'ytempire_http_request_duration_seconds',
-    'HTTP request duration in seconds',
-    ['method', 'endpoint'],
-    buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10)
+    "ytempire_http_request_duration_seconds",
+    "HTTP request duration in seconds",
+    ["method", "endpoint"],
+    buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10),
 )
 
 active_requests = Gauge(
-    'ytempire_http_requests_active',
-    'Active HTTP requests',
-    ['method', 'endpoint']
+    "ytempire_http_requests_active", "Active HTTP requests", ["method", "endpoint"]
 )
 
 database_queries = Counter(
-    'ytempire_database_queries_total',
-    'Total database queries',
-    ['operation', 'table']
+    "ytempire_database_queries_total", "Total database queries", ["operation", "table"]
 )
 
 cache_operations = Counter(
-    'ytempire_cache_operations_total',
-    'Total cache operations',
-    ['operation', 'status']
+    "ytempire_cache_operations_total", "Total cache operations", ["operation", "status"]
 )
 
 ai_service_calls = Counter(
-    'ytempire_ai_service_calls_total',
-    'Total AI service API calls',
-    ['service', 'model', 'status']
+    "ytempire_ai_service_calls_total",
+    "Total AI service API calls",
+    ["service", "model", "status"],
 )
 
 video_generation_duration = Histogram(
-    'ytempire_video_generation_duration_seconds',
-    'Video generation duration in seconds',
-    ['stage'],
-    buckets=(1, 5, 10, 30, 60, 120, 300, 600, 1200, 1800, 3600)
+    "ytempire_video_generation_duration_seconds",
+    "Video generation duration in seconds",
+    ["stage"],
+    buckets=(1, 5, 10, 30, 60, 120, 300, 600, 1200, 1800, 3600),
 )
 
-service_info = Info('ytempire_service', 'Service information')
-service_info.info({
-    'version': SERVICE_VERSION_ENV,
-    'environment': ENVIRONMENT,
-    'service': SERVICE_NAME_ENV
-})
+service_info = Info("ytempire_service", "Service information")
+service_info.info(
+    {
+        "version": SERVICE_VERSION_ENV,
+        "environment": ENVIRONMENT,
+        "service": SERVICE_NAME_ENV,
+    }
+)
 
 
 class TracingManager:
     """Manages distributed tracing configuration and initialization."""
-    
+
     def __init__(self):
         self.tracer_provider: Optional[TracerProvider] = None
         self.meter_provider: Optional[MeterProvider] = None
         self.tracer: Optional[Tracer] = None
         self.meter = None
         self.is_initialized = False
-    
+
     def initialize(self, app=None):
         """Initialize tracing and metrics collection."""
         if self.is_initialized:
             logger.info("Tracing already initialized")
             return
-        
+
         try:
             # Create resource
-            resource = Resource.create({
-                SERVICE_NAME: SERVICE_NAME_ENV,
-                SERVICE_VERSION: SERVICE_VERSION_ENV,
-                "environment": ENVIRONMENT,
-                "deployment.environment": ENVIRONMENT,
-                "service.namespace": "ytempire",
-                "telemetry.sdk.language": "python",
-                "telemetry.sdk.name": "opentelemetry",
-            })
-            
+            resource = Resource.create(
+                {
+                    SERVICE_NAME: SERVICE_NAME_ENV,
+                    SERVICE_VERSION: SERVICE_VERSION_ENV,
+                    "environment": ENVIRONMENT,
+                    "deployment.environment": ENVIRONMENT,
+                    "service.namespace": "ytempire",
+                    "telemetry.sdk.language": "python",
+                    "telemetry.sdk.name": "opentelemetry",
+                }
+            )
+
             if ENABLE_TRACING:
                 self._setup_tracing(resource)
-            
+
             if ENABLE_METRICS:
                 self._setup_metrics(resource)
-            
+
             # Instrument libraries
             self._instrument_libraries()
-            
+
             # Set propagator for distributed context
             set_global_textmap(B3MultiFormat())
-            
+
             self.is_initialized = True
             logger.info("Tracing and metrics initialized successfully")
-            
+
         except Exception as e:
             logger.error(f"Failed to initialize tracing: {e}")
-    
+
     def _setup_tracing(self, resource: Resource):
         """Setup distributed tracing with Jaeger and OTLP."""
         # Create sampler
-        sampler = ParentBased(
-            root=TraceIdRatioBased(TRACE_SAMPLING_RATE)
-        )
-        
+        sampler = ParentBased(root=TraceIdRatioBased(TRACE_SAMPLING_RATE))
+
         # Create tracer provider
-        self.tracer_provider = TracerProvider(
-            resource=resource,
-            sampler=sampler
-        )
-        
+        self.tracer_provider = TracerProvider(resource=resource, sampler=sampler)
+
         # Add Jaeger exporter
         jaeger_exporter = JaegerExporter(
             collector_endpoint=JAEGER_ENDPOINT,
             max_tag_value_length=2048,
         )
-        self.tracer_provider.add_span_processor(
-            BatchSpanProcessor(jaeger_exporter)
-        )
-        
+        self.tracer_provider.add_span_processor(BatchSpanProcessor(jaeger_exporter))
+
         # Add OTLP exporter
         otlp_exporter = OTLPSpanExporter(
             endpoint=OTLP_ENDPOINT,
             insecure=True,
         )
-        self.tracer_provider.add_span_processor(
-            BatchSpanProcessor(otlp_exporter)
-        )
-        
+        self.tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+
         # Add console exporter for debugging
         if ENVIRONMENT == "development":
             console_exporter = ConsoleSpanExporter()
             self.tracer_provider.add_span_processor(
                 BatchSpanProcessor(console_exporter)
             )
-        
+
         # Set global tracer provider
         trace.set_tracer_provider(self.tracer_provider)
         self.tracer = trace.get_tracer(__name__)
-    
+
     def _setup_metrics(self, resource: Resource):
         """Setup metrics collection with Prometheus and OTLP."""
         # Create meter provider
@@ -196,60 +185,51 @@ class TracingManager:
             endpoint=OTLP_ENDPOINT,
             insecure=True,
         )
-        
+
         self.meter_provider = MeterProvider(
             resource=resource,
             metric_readers=[prometheus_reader],
-            metric_exporters=[otlp_metric_exporter]
+            metric_exporters=[otlp_metric_exporter],
         )
-        
+
         # Set global meter provider
         metrics.set_meter_provider(self.meter_provider)
         self.meter = metrics.get_meter(__name__)
-    
+
     def _instrument_libraries(self):
         """Instrument various libraries for automatic tracing."""
         # FastAPI
         FastAPIInstrumentor.instrument(
             tracer_provider=self.tracer_provider,
-            excluded_urls="health,metrics,docs,openapi.json"
+            excluded_urls="health,metrics,docs,openapi.json",
         )
-        
+
         # HTTP requests
-        RequestsInstrumentor().instrument(
-            tracer_provider=self.tracer_provider
-        )
-        
+        RequestsInstrumentor().instrument(tracer_provider=self.tracer_provider)
+
         # SQLAlchemy
         SQLAlchemyInstrumentor().instrument(
             tracer_provider=self.tracer_provider,
             enable_commenter=True,
         )
-        
+
         # PostgreSQL
-        Psycopg2Instrumentor().instrument(
-            tracer_provider=self.tracer_provider
-        )
-        
+        Psycopg2Instrumentor().instrument(tracer_provider=self.tracer_provider)
+
         # Redis
-        RedisInstrumentor().instrument(
-            tracer_provider=self.tracer_provider
-        )
-        
+        RedisInstrumentor().instrument(tracer_provider=self.tracer_provider)
+
         # Celery
-        CeleryInstrumentor().instrument(
-            tracer_provider=self.tracer_provider
-        )
-        
+        CeleryInstrumentor().instrument(tracer_provider=self.tracer_provider)
+
         # Logging
         LoggingInstrumentor().instrument(
-            tracer_provider=self.tracer_provider,
-            set_logging_format=True
+            tracer_provider=self.tracer_provider, set_logging_format=True
         )
-        
+
         # System metrics
         SystemMetricsInstrumentor().instrument()
-    
+
     def shutdown(self):
         """Shutdown tracing and metrics providers."""
         if self.tracer_provider:
@@ -264,16 +244,17 @@ class TracingManager:
 tracing_manager = TracingManager()
 
 
-def trace_span(name: str, kind=trace.SpanKind.INTERNAL, attributes: Dict[str, Any] = None):
+def trace_span(
+    name: str, kind=trace.SpanKind.INTERNAL, attributes: Dict[str, Any] = None
+):
     """Decorator to create a traced span for a function."""
+
     def decorator(func):
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
             tracer = trace.get_tracer(__name__)
             with tracer.start_as_current_span(
-                name,
-                kind=kind,
-                attributes=attributes or {}
+                name, kind=kind, attributes=attributes or {}
             ) as span:
                 try:
                     result = await func(*args, **kwargs)
@@ -283,14 +264,12 @@ def trace_span(name: str, kind=trace.SpanKind.INTERNAL, attributes: Dict[str, An
                     span.set_status(Status(StatusCode.ERROR, str(e)))
                     span.record_exception(e)
                     raise
-        
+
         @wraps(func)
         def sync_wrapper(*args, **kwargs):
             tracer = trace.get_tracer(__name__)
             with tracer.start_as_current_span(
-                name,
-                kind=kind,
-                attributes=attributes or {}
+                name, kind=kind, attributes=attributes or {}
             ) as span:
                 try:
                     result = func(*args, **kwargs)
@@ -300,33 +279,34 @@ def trace_span(name: str, kind=trace.SpanKind.INTERNAL, attributes: Dict[str, An
                     span.set_status(Status(StatusCode.ERROR, str(e)))
                     span.record_exception(e)
                     raise
-        
+
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
         return sync_wrapper
+
     return decorator
 
 
 class TracingMiddleware:
     """Custom middleware for enhanced request tracing."""
-    
+
     def __init__(self, app):
         self.app = app
-    
+
     async def __call__(self, request: Request, call_next):
         # Start timing
         start_time = time.time()
-        
+
         # Get or create trace context
         tracer = trace.get_tracer(__name__)
-        
+
         # Extract trace context from headers
         context = {}
         if "traceparent" in request.headers:
             context["traceparent"] = request.headers["traceparent"]
         if "tracestate" in request.headers:
             context["tracestate"] = request.headers["tracestate"]
-        
+
         # Create span
         with tracer.start_as_current_span(
             f"{request.method} {request.url.path}",
@@ -341,84 +321,77 @@ class TracingMiddleware:
                 SpanAttributes.NET_HOST_NAME: request.url.hostname,
                 SpanAttributes.NET_HOST_PORT: request.url.port or 80,
                 "client.address": request.client.host if request.client else "unknown",
-            }
+            },
         ) as span:
             # Add baggage
-            baggage.set_baggage("user.id", request.headers.get("x-user-id", "anonymous"))
+            baggage.set_baggage(
+                "user.id", request.headers.get("x-user-id", "anonymous")
+            )
             baggage.set_baggage("request.id", request.headers.get("x-request-id", ""))
-            
+
             # Track active requests
             active_requests.labels(
-                method=request.method,
-                endpoint=request.url.path
+                method=request.method, endpoint=request.url.path
             ).inc()
-            
+
             try:
                 # Process request
                 response = await call_next(request)
-                
+
                 # Add response attributes
-                span.set_attribute(SpanAttributes.HTTP_STATUS_CODE, response.status_code)
-                
+                span.set_attribute(
+                    SpanAttributes.HTTP_STATUS_CODE, response.status_code
+                )
+
                 # Set span status based on HTTP status
                 if response.status_code >= 400:
                     span.set_status(Status(StatusCode.ERROR))
                 else:
                     span.set_status(Status(StatusCode.OK))
-                
+
                 # Record metrics
                 duration = time.time() - start_time
                 request_counter.labels(
                     method=request.method,
                     endpoint=request.url.path,
-                    status_code=response.status_code
+                    status_code=response.status_code,
                 ).inc()
                 request_duration.labels(
-                    method=request.method,
-                    endpoint=request.url.path
+                    method=request.method, endpoint=request.url.path
                 ).observe(duration)
-                
+
                 # Add trace ID to response headers
-                trace_id = format(span.get_span_context().trace_id, '032x')
+                trace_id = format(span.get_span_context().trace_id, "032x")
                 response.headers["X-Trace-Id"] = trace_id
-                
+
                 return response
-                
+
             except Exception as e:
                 span.set_status(Status(StatusCode.ERROR, str(e)))
                 span.record_exception(e)
                 raise
-            
+
             finally:
                 active_requests.labels(
-                    method=request.method,
-                    endpoint=request.url.path
+                    method=request.method, endpoint=request.url.path
                 ).dec()
 
 
 def record_ai_service_call(service: str, model: str, success: bool = True):
     """Record an AI service API call metric."""
     ai_service_calls.labels(
-        service=service,
-        model=model,
-        status="success" if success else "failure"
+        service=service, model=model, status="success" if success else "failure"
     ).inc()
 
 
 def record_database_query(operation: str, table: str):
     """Record a database query metric."""
-    database_queries.labels(
-        operation=operation,
-        table=table
-    ).inc()
+    database_queries.labels(operation=operation, table=table).inc()
 
 
 def record_cache_operation(operation: str, hit: bool = True):
     """Record a cache operation metric."""
-    cache_operations.labels(
-        operation=operation,
-        status="hit" if hit else "miss"
-    ).inc()
+    cache_operations.labels(operation=operation, status="hit" if hit else "miss").inc()
 
 
 def record_video_generation_stage(stage: str, duration: float):
@@ -428,15 +401,13 @@ def record_video_generation_stage(stage: str, duration: float):
 
 async def get_metrics():
     """Generate Prometheus metrics."""
-    return Response(
-        content=generate_latest(),
-        media_type="text/plain"
-    )
+    return Response(content=generate_latest(), media_type="text/plain")
 
 
 # Custom span attributes
 class CustomAttributes:
     """Custom span attributes for YTEmpire."""
+
     USER_ID = "ytempire.user.id"
     CHANNEL_ID = "ytempire.channel.id"
     VIDEO_ID = "ytempire.video.id"

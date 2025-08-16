@@ -22,41 +22,54 @@ email_service = EmailService()
 
 router = APIRouter(prefix="/beta", tags=["beta"])
 
+
 class BetaSignupRequest(BaseModel):
     """Beta user signup request"""
+
     full_name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
     company: Optional[str] = Field(None, max_length=100)
     use_case: str = Field(..., min_length=10, max_length=500)
     expected_volume: str = Field(..., description="Expected videos per month")
-    referral_source: Optional[str] = Field(None, description="How did you hear about us?")
+    referral_source: Optional[str] = Field(
+        None, description="How did you hear about us?"
+    )
+
 
 class BetaSignupResponse(BaseModel):
     """Beta signup response"""
+
     message: str
     user_id: int
     api_key: str
     dashboard_url: str
 
+
 class BetaUserStats(BaseModel):
     """Beta user statistics"""
+
     total_signups: int
     active_users: int
     total_videos_generated: int
     average_videos_per_user: float
     top_use_cases: List[str]
 
+
 class BetaFeedbackRequest(BaseModel):
     """Beta feedback request"""
+
     feedback: str = Field(..., min_length=1, max_length=1000)
     rating: int = Field(..., ge=1, le=5)
     user_id: Optional[int] = None
 
-@router.post("/signup", response_model=BetaSignupResponse, status_code=status.HTTP_201_CREATED)
+
+@router.post(
+    "/signup", response_model=BetaSignupResponse, status_code=status.HTTP_201_CREATED
+)
 async def beta_signup(
     request: BetaSignupRequest,
     background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Beta user signup endpoint
@@ -72,12 +85,12 @@ async def beta_signup(
         if existing_user.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                detail="Email already registered",
             )
-        
+
         # Generate temporary password
         temp_password = secrets.token_urlsafe(12)
-        
+
         # Create beta user
         new_user = User(
             email=request.email,
@@ -97,50 +110,49 @@ async def beta_signup(
             max_videos_per_day=100,  # Higher daily limit
             free_credits=50.0,  # $50 free credits
         )
-        
+
         db.add(new_user)
         await db.commit()
         await db.refresh(new_user)
-        
+
         # Generate API key
         api_key = f"beta_{secrets.token_urlsafe(32)}"
-        
+
         # Store API key (in production, store hashed version)
         new_user.api_key = api_key
         await db.commit()
-        
+
         # Send welcome email in background
         background_tasks.add_task(
             send_beta_welcome_email,
             email=request.email,
             full_name=request.full_name,
             temp_password=temp_password,
-            api_key=api_key
+            api_key=api_key,
         )
-        
+
         # Track signup event
         logger.info(f"New beta user signup: {request.email}")
-        
+
         return BetaSignupResponse(
             message="Beta access granted! Check your email for login credentials.",
             user_id=new_user.id,
             api_key=api_key,
-            dashboard_url=f"{settings.FRONTEND_URL}/dashboard?beta=true"
+            dashboard_url=f"{settings.FRONTEND_URL}/dashboard?beta=true",
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Beta signup error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to process beta signup"
+            detail="Failed to process beta signup",
         )
 
+
 @router.get("/stats", response_model=BetaUserStats)
-async def get_beta_stats(
-    db: AsyncSession = Depends(get_db)
-):
+async def get_beta_stats(db: AsyncSession = Depends(get_db)):
     """Get beta user statistics"""
     try:
         # Get total beta signups
@@ -148,77 +160,74 @@ async def get_beta_stats(
             select(func.count(User.id)).where(User.is_beta == True)
         )
         total = total_signups.scalar() or 0
-        
+
         # Get active beta users (logged in last 7 days)
         active_cutoff = datetime.utcnow() - timedelta(days=7)
         active_users = await db.execute(
             select(func.count(User.id)).where(
-                and_(
-                    User.is_beta == True,
-                    User.last_login > active_cutoff
-                )
+                and_(User.is_beta == True, User.last_login > active_cutoff)
             )
         )
         active = active_users.scalar() or 0
-        
+
         # Get video statistics (simplified for now)
         total_videos = 100  # Placeholder
         avg_videos = total_videos / max(total, 1)
-        
+
         # Get top use cases
         use_cases_result = await db.execute(
-            select(User.use_case, func.count(User.id).label('count'))
+            select(User.use_case, func.count(User.id).label("count"))
             .where(User.is_beta == True)
             .group_by(User.use_case)
             .order_by(func.count(User.id).desc())
             .limit(5)
         )
         top_use_cases = [row[0] for row in use_cases_result if row[0]]
-        
+
         return BetaUserStats(
             total_signups=total,
             active_users=active,
             total_videos_generated=total_videos,
             average_videos_per_user=avg_videos,
-            top_use_cases=top_use_cases
+            top_use_cases=top_use_cases,
         )
-        
+
     except Exception as e:
         logger.error(f"Failed to get beta stats: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve beta statistics"
+            detail="Failed to retrieve beta statistics",
         )
+
 
 @router.post("/feedback")
 async def submit_beta_feedback(
-    request: BetaFeedbackRequest,
-    db: AsyncSession = Depends(get_db)
+    request: BetaFeedbackRequest, db: AsyncSession = Depends(get_db)
 ):
     """Submit beta user feedback"""
     try:
         # Store feedback in database (simplified for now)
-        logger.info(f"Beta feedback received - Rating: {request.rating}, Feedback: {request.feedback}")
-        
+        logger.info(
+            f"Beta feedback received - Rating: {request.rating}, Feedback: {request.feedback}"
+        )
+
         return {"message": "Thank you for your feedback!", "status": "received"}
-        
+
     except Exception as e:
         logger.error(f"Failed to submit feedback: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to submit feedback"
+            detail="Failed to submit feedback",
         )
 
+
 async def send_beta_welcome_email(
-    email: str,
-    full_name: str,
-    temp_password: str,
-    api_key: str
+    email: str, full_name: str, temp_password: str, api_key: str
 ):
     """Send welcome email to beta user"""
     try:
         subject = "Welcome to YTEmpire Beta! 🚀"
-        
+
         body = f"""
         Hi {full_name},
         
@@ -265,17 +274,16 @@ async def send_beta_welcome_email(
         Best regards,
         The YTEmpire Team
         """
-        
+
         await email_service.send_email(
-            to_email=email,
-            subject=subject,
-            html_content=body
+            to_email=email, subject=subject, html_content=body
         )
-        
+
         logger.info(f"Welcome email sent to beta user: {email}")
-        
+
     except Exception as e:
         logger.error(f"Failed to send beta welcome email: {str(e)}")
+
 
 @router.get("/waitlist/count")
 async def get_waitlist_count(db: AsyncSession = Depends(get_db)):

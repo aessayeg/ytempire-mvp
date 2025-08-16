@@ -67,6 +67,7 @@ INFRASTRUCTURE_COSTS = {
 
 class CostMetrics(BaseModel):
     """Cost metrics data model"""
+
     total_cost: Decimal
     api_costs: Dict[str, Decimal]
     infrastructure_costs: Dict[str, Decimal]
@@ -78,51 +79,44 @@ class CostMetrics(BaseModel):
 
 class CostTracker:
     """Main cost tracking service"""
-    
+
     def __init__(self):
         self.redis_client: Optional[redis.Redis] = None
         self.cost_cache: Dict[str, Any] = {}
-        
+
         # Prometheus metrics
         self.cost_counter = Counter(
-            'ytempire_api_cost_total',
-            'Total API costs',
-            ['service', 'operation']
+            "ytempire_api_cost_total", "Total API costs", ["service", "operation"]
         )
         self.cost_histogram = Histogram(
-            'ytempire_operation_cost',
-            'Cost per operation',
-            ['operation_type']
+            "ytempire_operation_cost", "Cost per operation", ["operation_type"]
         )
-        self.cost_gauge = Gauge(
-            'ytempire_current_daily_cost',
-            'Current daily cost'
-        )
-        
+        self.cost_gauge = Gauge("ytempire_current_daily_cost", "Current daily cost")
+
     async def initialize(self):
         """Initialize Redis connection"""
         self.redis_client = await redis.from_url(
-            settings.REDIS_URL,
-            encoding="utf-8",
-            decode_responses=True
+            settings.REDIS_URL, encoding="utf-8", decode_responses=True
         )
-        
+
     async def track_api_call(
         self,
         service: str,
         operation: str,
         units: float,
         metadata: Optional[Dict] = None,
-        db: Optional[AsyncSession] = None
+        db: Optional[AsyncSession] = None,
     ) -> Decimal:
         """Track API call cost"""
         # Calculate cost
         cost = self._calculate_api_cost(service, operation, units)
-        
+
         # Update metrics
         self.cost_counter.labels(service=service, operation=operation).inc(float(cost))
-        self.cost_histogram.labels(operation_type=f"{service}_{operation}").observe(float(cost))
-        
+        self.cost_histogram.labels(operation_type=f"{service}_{operation}").observe(
+            float(cost)
+        )
+
         # Store in database
         if db:
             cost_record = CostRecord(
@@ -132,26 +126,26 @@ class CostTracker:
                 unit_cost=self._get_unit_cost(service, operation),
                 total_cost=cost,
                 metadata=metadata or {},
-                timestamp=datetime.utcnow()
+                timestamp=datetime.utcnow(),
             )
             db.add(cost_record)
             await db.commit()
-        
+
         # Update Redis cache
         await self._update_cache(service, operation, cost)
-        
+
         # Check thresholds
         await self._check_thresholds(service, cost, db)
-        
+
         return cost
-        
+
     async def track_infrastructure_usage(
         self,
         resource_type: str,
         resource_name: str,
         usage: float,
         duration_hours: float = 1.0,
-        db: Optional[AsyncSession] = None
+        db: Optional[AsyncSession] = None,
     ) -> Decimal:
         """Track infrastructure resource usage"""
         # Calculate cost
@@ -163,66 +157,60 @@ class CostTracker:
                 cost = Decimal("0")
         else:
             cost = Decimal("0")
-            
+
         # Store in database
         if db:
             cost_record = CostRecord(
                 service="infrastructure",
                 operation=f"{resource_type}_{resource_name}",
                 units=usage,
-                unit_cost=float(unit_cost) if 'unit_cost' in locals() else 0,
+                unit_cost=float(unit_cost) if "unit_cost" in locals() else 0,
                 total_cost=cost,
                 metadata={"duration_hours": duration_hours},
-                timestamp=datetime.utcnow()
+                timestamp=datetime.utcnow(),
             )
             db.add(cost_record)
             await db.commit()
-            
+
         # Update cache
         await self._update_cache("infrastructure", resource_type, cost)
-        
+
         return cost
-        
-    async def get_video_cost(
-        self,
-        video_id: str,
-        db: AsyncSession
-    ) -> Dict[str, Any]:
+
+    async def get_video_cost(self, video_id: str, db: AsyncSession) -> Dict[str, Any]:
         """Calculate total cost for a video"""
         # Get all costs associated with video
         result = await db.execute(
-            select(CostRecord).where(
-                CostRecord.metadata["video_id"].astext == video_id
-            )
+            select(CostRecord).where(CostRecord.metadata["video_id"].astext == video_id)
         )
         records = result.scalars().all()
-        
+
         # Aggregate costs
         total_cost = sum(record.total_cost for record in records)
         cost_breakdown = {}
-        
+
         for record in records:
             service_key = f"{record.service}_{record.operation}"
             if service_key not in cost_breakdown:
                 cost_breakdown[service_key] = Decimal("0")
             cost_breakdown[service_key] += record.total_cost
-            
+
         return {
             "video_id": video_id,
             "total_cost": float(total_cost),
             "breakdown": {k: float(v) for k, v in cost_breakdown.items()},
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
-        
+
     async def get_real_time_costs(self) -> CostMetrics:
         """Get real-time cost metrics"""
         if not self.redis_client:
             await self.initialize()
-            
+
         # Get cached values
         daily_cost = await self.redis_client.get("cost:daily:total")
         daily_cost = Decimal(daily_cost) if daily_cost else Decimal("0")
-        
+
         # Get API costs
         api_costs = {}
         api_keys = await self.redis_client.keys("cost:api:*")
@@ -230,7 +218,7 @@ class CostTracker:
             service = key.split(":")[2]
             cost = await self.redis_client.get(key)
             api_costs[service] = Decimal(cost) if cost else Decimal("0")
-            
+
         # Get infrastructure costs
         infra_costs = {}
         infra_keys = await self.redis_client.keys("cost:infrastructure:*")
@@ -238,12 +226,13 @@ class CostTracker:
             resource = key.split(":")[2]
             cost = await self.redis_client.get(key)
             infra_costs[resource] = Decimal(cost) if cost else Decimal("0")
-            
+
         # Calculate projections
-        hours_passed = (datetime.utcnow() - datetime.utcnow().replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )).total_seconds() / 3600
-        
+        hours_passed = (
+            datetime.utcnow()
+            - datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        ).total_seconds() / 3600
+
         if hours_passed > 0:
             hourly_rate = daily_cost / Decimal(str(hours_passed))
             daily_projection = hourly_rate * Decimal("24")
@@ -251,18 +240,20 @@ class CostTracker:
         else:
             daily_projection = Decimal("0")
             monthly_projection = Decimal("0")
-            
+
         # Get video count for per-video cost
         video_count = await self.redis_client.get("stats:videos:processed:today")
         video_count = int(video_count) if video_count else 1
-        per_video_cost = daily_cost / Decimal(str(video_count)) if video_count > 0 else None
-        
+        per_video_cost = (
+            daily_cost / Decimal(str(video_count)) if video_count > 0 else None
+        )
+
         # Check threshold status
         threshold_status = await self._get_threshold_status(daily_cost)
-        
+
         # Update Prometheus gauge
         self.cost_gauge.set(float(daily_cost))
-        
+
         return CostMetrics(
             total_cost=daily_cost,
             api_costs=api_costs,
@@ -270,63 +261,62 @@ class CostTracker:
             per_video_cost=per_video_cost,
             daily_cost=daily_cost,
             monthly_projection=monthly_projection,
-            threshold_status=threshold_status
+            threshold_status=threshold_status,
         )
-        
+
     async def get_cost_aggregations(
         self,
         start_date: datetime,
         end_date: datetime,
         granularity: str,  # 'hour', 'day', 'week', 'month'
-        db: AsyncSession
+        db: AsyncSession,
     ) -> List[Dict[str, Any]]:
         """Get aggregated cost data"""
         # Determine grouping
-        if granularity == 'hour':
-            date_trunc = func.date_trunc('hour', Cost.timestamp)
-        elif granularity == 'day':
-            date_trunc = func.date_trunc('day', Cost.timestamp)
-        elif granularity == 'week':
-            date_trunc = func.date_trunc('week', Cost.timestamp)
+        if granularity == "hour":
+            date_trunc = func.date_trunc("hour", Cost.timestamp)
+        elif granularity == "day":
+            date_trunc = func.date_trunc("day", Cost.timestamp)
+        elif granularity == "week":
+            date_trunc = func.date_trunc("week", Cost.timestamp)
         else:  # month
-            date_trunc = func.date_trunc('month', Cost.timestamp)
-            
+            date_trunc = func.date_trunc("month", Cost.timestamp)
+
         # Query aggregated data
         result = await db.execute(
             select(
-                date_trunc.label('period'),
+                date_trunc.label("period"),
                 Cost.service,
-                func.sum(Cost.total_cost).label('total_cost'),
-                func.count(Cost.id).label('operation_count'),
-                func.avg(Cost.total_cost).label('avg_cost')
-            ).where(
-                and_(
-                    Cost.timestamp >= start_date,
-                    Cost.timestamp <= end_date
-                )
-            ).group_by(date_trunc, Cost.service)
+                func.sum(Cost.total_cost).label("total_cost"),
+                func.count(Cost.id).label("operation_count"),
+                func.avg(Cost.total_cost).label("avg_cost"),
+            )
+            .where(and_(Cost.timestamp >= start_date, Cost.timestamp <= end_date))
+            .group_by(date_trunc, Cost.service)
             .order_by(date_trunc)
         )
-        
+
         aggregations = []
         for row in result:
-            aggregations.append({
-                "period": row.period.isoformat(),
-                "service": row.service,
-                "total_cost": float(row.total_cost),
-                "operation_count": row.operation_count,
-                "average_cost": float(row.avg_cost)
-            })
-            
+            aggregations.append(
+                {
+                    "period": row.period.isoformat(),
+                    "service": row.service,
+                    "total_cost": float(row.total_cost),
+                    "operation_count": row.operation_count,
+                    "average_cost": float(row.avg_cost),
+                }
+            )
+
         return aggregations
-        
+
     async def set_threshold(
         self,
         threshold_type: str,  # 'daily', 'monthly', 'per_video', 'service'
         value: Decimal,
         service: Optional[str] = None,
         alert_email: Optional[str] = None,
-        db: Optional[AsyncSession] = None
+        db: Optional[AsyncSession] = None,
     ):
         """Set cost threshold"""
         if db:
@@ -336,24 +326,26 @@ class CostTracker:
                 value=value,
                 alert_email=alert_email,
                 is_active=True,
-                created_at=datetime.utcnow()
+                created_at=datetime.utcnow(),
             )
             db.add(threshold)
             await db.commit()
-            
+
         # Cache threshold
         threshold_key = f"threshold:{threshold_type}"
         if service:
             threshold_key += f":{service}"
         await self.redis_client.set(threshold_key, str(value))
-        
-    def _calculate_api_cost(self, service: str, operation: str, units: float) -> Decimal:
+
+    def _calculate_api_cost(
+        self, service: str, operation: str, units: float
+    ) -> Decimal:
         """Calculate API cost based on service and operation"""
         if service not in API_COSTS:
             return Decimal("0")
-            
+
         service_costs = API_COSTS[service]
-        
+
         if service == "openai":
             if "gpt" in operation:
                 model = operation.split("_")[0]
@@ -363,33 +355,35 @@ class CostTracker:
                     return Decimal(str(units / 1000 * service_costs[model][token_type]))
             elif "dall-e" in operation:
                 quality = operation.split("_")[1] if "_" in operation else "standard"
-                return Decimal(str(units * service_costs.get("dall-e-3", {}).get(quality, 0)))
+                return Decimal(
+                    str(units * service_costs.get("dall-e-3", {}).get(quality, 0))
+                )
             elif "whisper" in operation:
                 return Decimal(str(units * service_costs.get("whisper", 0)))
-                
+
         elif service == "elevenlabs":
             tier = operation if operation in service_costs else "standard"
             # Convert characters to thousands
             return Decimal(str(units / 1000 * service_costs[tier]))
-            
+
         elif service == "google":
             if operation in service_costs:
                 # Convert to millions for Google services
                 return Decimal(str(units / 1000000 * service_costs[operation]))
-                
+
         elif service == "aws":
             if operation in service_costs:
                 return Decimal(str(units * service_costs[operation]))
-                
+
         return Decimal("0")
-        
+
     def _get_unit_cost(self, service: str, operation: str) -> float:
         """Get unit cost for service operation"""
         if service not in API_COSTS:
             return 0.0
-            
+
         service_costs = API_COSTS[service]
-        
+
         if isinstance(service_costs, dict):
             for key in service_costs:
                 if key in operation:
@@ -399,22 +393,22 @@ class CostTracker:
                                 return service_costs[key][subkey]
                     else:
                         return service_costs[key]
-                        
+
         return 0.0
-        
+
     async def _update_cache(self, service: str, operation: str, cost: Decimal):
         """Update Redis cache with cost data"""
         if not self.redis_client:
             return
-            
+
         # Update service total
         service_key = f"cost:api:{service}"
         await self.redis_client.incrbyfloat(service_key, float(cost))
-        
+
         # Update daily total
         daily_key = "cost:daily:total"
         await self.redis_client.incrbyfloat(daily_key, float(cost))
-        
+
         # Set expiry for daily key (reset at midnight)
         ttl = await self.redis_client.ttl(daily_key)
         if ttl == -1:  # No expiry set
@@ -423,17 +417,14 @@ class CostTracker:
             )
             seconds_until_midnight = (midnight - datetime.utcnow()).total_seconds()
             await self.redis_client.expire(daily_key, int(seconds_until_midnight))
-            
+
     async def _check_thresholds(
-        self,
-        service: str,
-        cost: Decimal,
-        db: Optional[AsyncSession]
+        self, service: str, cost: Decimal, db: Optional[AsyncSession]
     ):
         """Check if cost exceeds thresholds"""
         if not self.redis_client:
             return
-            
+
         # Check service threshold
         service_threshold = await self.redis_client.get(f"threshold:service:{service}")
         if service_threshold:
@@ -443,33 +434,30 @@ class CostTracker:
                     "service",
                     service,
                     Decimal(service_total),
-                    Decimal(service_threshold)
+                    Decimal(service_threshold),
                 )
-                
+
         # Check daily threshold
         daily_threshold = await self.redis_client.get("threshold:daily")
         if daily_threshold:
             daily_total = await self.redis_client.get("cost:daily:total")
             if daily_total and Decimal(daily_total) > Decimal(daily_threshold):
                 await self._trigger_threshold_alert(
-                    "daily",
-                    None,
-                    Decimal(daily_total),
-                    Decimal(daily_threshold)
+                    "daily", None, Decimal(daily_total), Decimal(daily_threshold)
                 )
-                
+
     async def _trigger_threshold_alert(
         self,
         threshold_type: str,
         service: Optional[str],
         current_value: Decimal,
-        threshold_value: Decimal
+        threshold_value: Decimal,
     ):
         """Trigger threshold exceeded alert"""
         alert_key = f"alert:{threshold_type}"
         if service:
             alert_key += f":{service}"
-            
+
         # Check if alert already sent today
         alert_sent = await self.redis_client.get(alert_key)
         if not alert_sent:
@@ -480,29 +468,29 @@ class CostTracker:
                 "current_value": float(current_value),
                 "threshold": float(threshold_value),
                 "exceeded_by": float(current_value - threshold_value),
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
-            
+
             # Mark alert as sent (expires at midnight)
             await self.redis_client.set(alert_key, "1", ex=86400)
-            
+
             # Log alert
             print(f"COST THRESHOLD ALERT: {json.dumps(alert_data, indent=2)}")
-            
+
     async def _get_threshold_status(self, current_cost: Decimal) -> Dict[str, Any]:
         """Get threshold status"""
         if not self.redis_client:
             return {}
-            
+
         status = {
             "daily": {
                 "current": float(current_cost),
                 "threshold": None,
                 "percentage": 0,
-                "status": "ok"
+                "status": "ok",
             }
         }
-        
+
         # Check daily threshold
         daily_threshold = await self.redis_client.get("threshold:daily")
         if daily_threshold:
@@ -510,14 +498,14 @@ class CostTracker:
             status["daily"]["threshold"] = float(threshold)
             percentage = (current_cost / threshold * 100) if threshold > 0 else 0
             status["daily"]["percentage"] = float(percentage)
-            
+
             if percentage >= 100:
                 status["daily"]["status"] = "exceeded"
             elif percentage >= 80:
                 status["daily"]["status"] = "warning"
             else:
                 status["daily"]["status"] = "ok"
-                
+
         return status
 
 

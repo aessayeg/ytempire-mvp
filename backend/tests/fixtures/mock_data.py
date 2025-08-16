@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 import uuid
 
+
 def get_mock_user() -> Dict[str, Any]:
     """Get mock user data"""
     return {
@@ -15,8 +16,9 @@ def get_mock_user() -> Dict[str, Any]:
         "is_active": True,
         "is_superuser": False,
         "created_at": datetime.now(),
-        "updated_at": datetime.now()
+        "updated_at": datetime.now(),
     }
+
 
 def get_mock_channel() -> Dict[str, Any]:
     """Get mock channel data"""
@@ -29,8 +31,9 @@ def get_mock_channel() -> Dict[str, Any]:
         "target_audience": "developers",
         "subscriber_count": 1000,
         "video_count": 50,
-        "created_at": datetime.now()
+        "created_at": datetime.now(),
     }
+
 
 def get_mock_video() -> Dict[str, Any]:
     """Get mock video data"""
@@ -46,8 +49,9 @@ def get_mock_video() -> Dict[str, Any]:
         "likes": 0,
         "comments": 0,
         "created_at": datetime.now(),
-        "published_at": datetime.now()
+        "published_at": datetime.now(),
     }
+
 
 def get_mock_script() -> Dict[str, Any]:
     """Get mock script data"""
@@ -59,8 +63,9 @@ def get_mock_script() -> Dict[str, Any]:
         "main_points": ["Point 1", "Point 2", "Point 3"],
         "call_to_action": "Subscribe for more content!",
         "word_count": 500,
-        "created_at": datetime.now()
+        "created_at": datetime.now(),
     }
+
 
 def get_mock_cost_record() -> Dict[str, Any]:
     """Get mock cost record"""
@@ -71,8 +76,9 @@ def get_mock_cost_record() -> Dict[str, Any]:
         "operation": "script_generation",
         "cost": 0.05,
         "tokens_used": 1500,
-        "created_at": datetime.now()
+        "created_at": datetime.now(),
     }
+
 
 def get_mock_payment() -> Dict[str, Any]:
     """Get mock payment data"""
@@ -83,8 +89,9 @@ def get_mock_payment() -> Dict[str, Any]:
         "currency": "USD",
         "status": "succeeded",
         "stripe_payment_id": f"pi_{uuid.uuid4().hex}",
-        "created_at": datetime.now()
+        "created_at": datetime.now(),
     }
+
 
 def get_mock_analytics() -> Dict[str, Any]:
     """Get mock analytics data"""
@@ -96,8 +103,9 @@ def get_mock_analytics() -> Dict[str, Any]:
         "subscribers_gained": 10,
         "revenue": 5.50,
         "ctr": 0.05,
-        "avg_view_duration": 50
+        "avg_view_duration": 50,
     }
+
 
 def get_mock_openai_response() -> Dict[str, Any]:
     """Get mock OpenAI API response"""
@@ -106,20 +114,19 @@ def get_mock_openai_response() -> Dict[str, Any]:
         "object": "chat.completion",
         "created": 1677652288,
         "model": "gpt-3.5-turbo",
-        "choices": [{
-            "index": 0,
-            "message": {
-                "role": "assistant",
-                "content": "This is a mock response from OpenAI"
-            },
-            "finish_reason": "stop"
-        }],
-        "usage": {
-            "prompt_tokens": 100,
-            "completion_tokens": 200,
-            "total_tokens": 300
-        }
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": "This is a mock response from OpenAI",
+                },
+                "finish_reason": "stop",
+            }
+        ],
+        "usage": {"prompt_tokens": 100, "completion_tokens": 200, "total_tokens": 300},
     }
+
 
 def get_mock_youtube_response() -> Dict[str, Any]:
     """Get mock YouTube API response"""
@@ -132,16 +139,11 @@ def get_mock_youtube_response() -> Dict[str, Any]:
             "channelId": "mock_channel_id",
             "title": "Mock Video Title",
             "description": "Mock video description",
-            "thumbnails": {
-                "default": {"url": "https://example.com/thumb.jpg"}
-            }
+            "thumbnails": {"default": {"url": "https://example.com/thumb.jpg"}},
         },
-        "statistics": {
-            "viewCount": "1000",
-            "likeCount": "50",
-            "commentCount": "10"
-        }
+        "statistics": {"viewCount": "1000", "likeCount": "50", "commentCount": "10"},
     }
+
 
 def get_mock_elevenlabs_response() -> Dict[str, Any]:
     """Get mock ElevenLabs API response"""
@@ -149,8 +151,9 @@ def get_mock_elevenlabs_response() -> Dict[str, Any]:
         "audio_url": "https://example.com/audio.mp3",
         "characters_used": 500,
         "voice_id": "mock_voice_id",
-        "model_id": "eleven_monolingual_v1"
+        "model_id": "eleven_monolingual_v1",
     }
+
 
 def get_mock_webhook_event() -> Dict[str, Any]:
     """Get mock webhook event"""
@@ -160,7 +163,7 @@ def get_mock_webhook_event() -> Dict[str, Any]:
         "payload": {
             "video_id": str(uuid.uuid4()),
             "status": "completed",
-            "url": "https://youtube.com/watch?v=mock"
+            "url": "https://youtube.com/watch?v=mock",
         },
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }

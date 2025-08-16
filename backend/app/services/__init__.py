@@ -22,7 +22,7 @@ from .cost_tracking import CostTracker as RevenueTracker
 
 # Export main services
 __all__ = [
-    'VideoGenerationPipeline',
-    'AnalyticsService',
-    'CostTracker',
+    "VideoGenerationPipeline",
+    "AnalyticsService",
+    "CostTracker",
 ]

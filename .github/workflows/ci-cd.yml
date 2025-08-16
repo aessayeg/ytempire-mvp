@@ -110,7 +110,7 @@ jobs:
     
     services:
       postgres:
-        image: postgres:${{ env.POSTGRES_VERSION }}
+        image: postgres:15-alpine
         env:
           POSTGRES_USER: ytempire
           POSTGRES_PASSWORD: admin
@@ -124,7 +124,7 @@ jobs:
           - 5432:5432
       
       redis:
-        image: redis:${{ env.REDIS_VERSION }}
+        image: redis:7-alpine
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -165,6 +165,18 @@ jobs:
           cp .env.test .env
         fi
     
+    - name: Install PostgreSQL client
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+    
+    - name: Wait for PostgreSQL
+      run: |
+        until pg_isready -h localhost -p 5432 -U ytempire; do
+          echo "Waiting for PostgreSQL..."
+          sleep 1
+        done
+    
     - name: Run Unit Tests
       env:
         DATABASE_URL: postgresql+asyncpg://ytempire:admin@localhost:5432/ytempire_db
@@ -176,6 +188,7 @@ jobs:
         REDIS_URL: redis://localhost:6379/0
         SECRET_KEY: test_secret_key_for_ci
         ENVIRONMENT: testing
+        PYTHONPATH: ${{ github.workspace }}/backend
       run: |
         cd backend
         pytest tests/unit/ -v --cov=app --cov-report=xml --cov-report=term-missing --junit-xml=test-results/junit.xml
@@ -191,6 +204,7 @@ jobs:
         REDIS_URL: redis://localhost:6379/0
         SECRET_KEY: test_secret_key_for_ci
         ENVIRONMENT: testing
+        PYTHONPATH: ${{ github.workspace }}/backend
       run: |
         cd backend
         pytest tests/integration/ -v --cov=app --cov-append --cov-report=xml --cov-report=term-missing
@@ -298,7 +312,7 @@ jobs:
     needs: [backend-test, frontend-test]
     services:
       postgres:
-        image: postgres:${{ env.POSTGRES_VERSION }}
+        image: postgres:15-alpine
         env:
           POSTGRES_USER: ytempire
           POSTGRES_PASSWORD: admin
@@ -312,7 +326,7 @@ jobs:
           - 5432:5432
       
       redis:
-        image: redis:${{ env.REDIS_VERSION }}
+        image: redis:7-alpine
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s

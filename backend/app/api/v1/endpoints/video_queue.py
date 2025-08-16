@@ -24,6 +24,7 @@ router = APIRouter()
 
 class QueueStatus(str, Enum):
     """Video queue status"""
+
     PENDING = "pending"
     SCHEDULED = "scheduled"
     PROCESSING = "processing"
@@ -35,6 +36,7 @@ class QueueStatus(str, Enum):
 
 class Priority(int, Enum):
     """Queue priority levels"""
+
     LOW = 0
     NORMAL = 1
     HIGH = 2
@@ -43,6 +45,7 @@ class Priority(int, Enum):
 
 class VideoQueueRequest(BaseModel):
     """Request to add video to queue"""
+
     channel_id: str
     title: str
     description: Optional[str] = None
@@ -61,6 +64,7 @@ class VideoQueueRequest(BaseModel):
 
 class VideoQueueUpdate(BaseModel):
     """Update queue item request"""
+
     scheduled_time: Optional[datetime] = None
     priority: Optional[Priority] = None
     status: Optional[QueueStatus] = None
@@ -70,6 +74,7 @@ class VideoQueueUpdate(BaseModel):
 
 class VideoQueueResponse(BaseModel):
     """Video queue item response"""
+
     queue_id: str
     channel_id: str
     user_id: str
@@ -94,6 +99,7 @@ class VideoQueueResponse(BaseModel):
 
 class QueueBatchRequest(BaseModel):
     """Batch queue request"""
+
     channel_id: str
     videos: List[VideoQueueRequest]
     stagger_minutes: int = Field(default=60, description="Minutes between each video")
@@ -101,6 +107,7 @@ class QueueBatchRequest(BaseModel):
 
 class QueueStatsResponse(BaseModel):
     """Queue statistics response"""
+
     total_items: int
     pending: int
     scheduled: int
@@ -113,7 +120,10 @@ class QueueStatsResponse(BaseModel):
 
 
 # Import the queue service
-from app.services.video_queue_service import VideoQueueService, QueueStatus as ServiceQueueStatus
+from app.services.video_queue_service import (
+    VideoQueueService,
+    QueueStatus as ServiceQueueStatus,
+)
 from app.models.video_queue import VideoQueue
 
 queue_service = VideoQueueService()
@@ -124,7 +134,7 @@ async def add_to_queue(
     request: VideoQueueRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_verified_user)
+    current_user: User = Depends(get_current_verified_user),
 ) -> VideoQueueResponse:
     """
     Add a video to the generation queue
@@ -136,9 +146,9 @@ async def add_to_queue(
             "keywords": request.keywords,
             "voice_style": request.voice_style,
             "thumbnail_style": request.thumbnail_style,
-            "auto_publish": request.auto_publish
+            "auto_publish": request.auto_publish,
         }
-        
+
         # Add to queue using service
         queue_item = await queue_service.add_to_queue(
             db=db,
@@ -152,9 +162,9 @@ async def add_to_queue(
             scheduled_time=request.scheduled_time,
             priority=request.priority.value,
             tags=request.tags,
-            metadata=metadata
+            metadata=metadata,
         )
-        
+
         # Convert to response model
         return VideoQueueResponse(
             queue_id=str(queue_item.id),
@@ -176,14 +186,14 @@ async def add_to_queue(
             completed_at=queue_item.completed_at,
             error_message=queue_item.error_message,
             retry_count=queue_item.retry_count,
-            metadata=queue_item.metadata or {}
+            metadata=queue_item.metadata or {},
         )
-        
+
     except Exception as e:
         logger.error(f"Failed to add to queue: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to queue video: {str(e)}"
+            detail=f"Failed to queue video: {str(e)}",
         )
 
 
@@ -192,7 +202,7 @@ async def add_batch_to_queue(
     request: QueueBatchRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_verified_user)
+    current_user: User = Depends(get_current_verified_user),
 ) -> List[VideoQueueResponse]:
     """
     Add multiple videos to queue with staggered scheduling
@@ -200,28 +210,27 @@ async def add_batch_to_queue(
     try:
         queued_items = []
         base_time = datetime.utcnow()
-        
+
         for i, video_request in enumerate(request.videos):
             # Set scheduled time with stagger
-            video_request.scheduled_time = base_time + timedelta(minutes=i * request.stagger_minutes)
+            video_request.scheduled_time = base_time + timedelta(
+                minutes=i * request.stagger_minutes
+            )
             video_request.channel_id = request.channel_id
-            
+
             # Add to queue
             queue_item = await add_to_queue(
-                video_request,
-                background_tasks,
-                db,
-                current_user
+                video_request, background_tasks, db, current_user
             )
             queued_items.append(queue_item)
-        
+
         return queued_items
-        
+
     except Exception as e:
         logger.error(f"Batch queue failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to queue batch: {str(e)}"
+            detail=f"Failed to queue batch: {str(e)}",
         )
 
 
@@ -232,7 +241,7 @@ async def get_queue(
     limit: int = 50,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_verified_user)
+    current_user: User = Depends(get_current_verified_user),
 ) -> List[VideoQueueResponse]:
     """
     Get video queue items
@@ -241,25 +250,25 @@ async def get_queue(
         # Filter queue items
         items = []
         for queue_id, item in video_queue_storage.items():
-            if item['user_id'] != str(current_user.id):
+            if item["user_id"] != str(current_user.id):
                 continue
-            if status and item['status'] != status:
+            if status and item["status"] != status:
                 continue
-            if channel_id and item['channel_id'] != channel_id:
+            if channel_id and item["channel_id"] != channel_id:
                 continue
             items.append(VideoQueueResponse(**item))
-        
+
         # Sort by priority and scheduled time
         items.sort(key=lambda x: (-x.priority, x.scheduled_time or datetime.max))
-        
+
         # Apply pagination
-        return items[offset:offset + limit]
-        
+        return items[offset : offset + limit]
+
     except Exception as e:
         logger.error(f"Failed to get queue: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to fetch queue"
+            detail="Failed to fetch queue",
         )
 
 
@@ -267,25 +276,23 @@ async def get_queue(
 async def get_queue_item(
     queue_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_verified_user)
+    current_user: User = Depends(get_current_verified_user),
 ) -> VideoQueueResponse:
     """
     Get specific queue item details
     """
     if queue_id not in video_queue_storage:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Queue item not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Queue item not found"
         )
-    
+
     item = video_queue_storage[queue_id]
-    
-    if item['user_id'] != str(current_user.id):
+
+    if item["user_id"] != str(current_user.id):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
         )
-    
+
     return VideoQueueResponse(**item)
 
 
@@ -294,60 +301,58 @@ async def update_queue_item(
     queue_id: str,
     update_request: VideoQueueUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_verified_user)
+    current_user: User = Depends(get_current_verified_user),
 ) -> VideoQueueResponse:
     """
     Update queue item (reschedule, change priority, etc.)
     """
     if queue_id not in video_queue_storage:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Queue item not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Queue item not found"
         )
-    
+
     item = video_queue_storage[queue_id]
-    
-    if item['user_id'] != str(current_user.id):
+
+    if item["user_id"] != str(current_user.id):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
         )
-    
+
     # Update fields
     if update_request.scheduled_time is not None:
-        item['scheduled_time'] = update_request.scheduled_time
-        item['status'] = QueueStatus.SCHEDULED
-    
+        item["scheduled_time"] = update_request.scheduled_time
+        item["status"] = QueueStatus.SCHEDULED
+
     if update_request.priority is not None:
-        item['priority'] = update_request.priority.value
-    
+        item["priority"] = update_request.priority.value
+
     if update_request.status is not None:
-        item['status'] = update_request.status
-    
+        item["status"] = update_request.status
+
     if update_request.title is not None:
-        item['title'] = update_request.title
-    
+        item["title"] = update_request.title
+
     if update_request.description is not None:
-        item['description'] = update_request.description
-    
-    item['updated_at'] = datetime.utcnow()
-    
+        item["description"] = update_request.description
+
+    item["updated_at"] = datetime.utcnow()
+
     # Reschedule Celery task if needed
     if update_request.scheduled_time or update_request.priority:
         # Cancel existing task
-        if 'task_id' in item['metadata']:
-            celery_app.control.revoke(item['metadata']['task_id'])
-        
+        if "task_id" in item["metadata"]:
+            celery_app.control.revoke(item["metadata"]["task_id"])
+
         # Create new task
-        eta = item['scheduled_time'] or datetime.utcnow()
+        eta = item["scheduled_time"] or datetime.utcnow()
         task = celery_app.send_task(
-            'app.tasks.video_generation.process_video',
+            "app.tasks.video_generation.process_video",
             args=[queue_id],
             eta=eta,
-            priority=item['priority']
+            priority=item["priority"],
         )
-        item['metadata']['task_id'] = task.id
-    
+        item["metadata"]["task_id"] = task.id
+
     return VideoQueueResponse(**item)
 
 
@@ -355,33 +360,31 @@ async def update_queue_item(
 async def cancel_queue_item(
     queue_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_verified_user)
+    current_user: User = Depends(get_current_verified_user),
 ) -> Dict[str, str]:
     """
     Cancel/remove item from queue
     """
     if queue_id not in video_queue_storage:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Queue item not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Queue item not found"
         )
-    
+
     item = video_queue_storage[queue_id]
-    
-    if item['user_id'] != str(current_user.id):
+
+    if item["user_id"] != str(current_user.id):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
         )
-    
+
     # Cancel Celery task
-    if 'task_id' in item['metadata']:
-        celery_app.control.revoke(item['metadata']['task_id'], terminate=True)
-    
+    if "task_id" in item["metadata"]:
+        celery_app.control.revoke(item["metadata"]["task_id"], terminate=True)
+
     # Update status
-    item['status'] = QueueStatus.CANCELLED
-    item['updated_at'] = datetime.utcnow()
-    
+    item["status"] = QueueStatus.CANCELLED
+    item["updated_at"] = datetime.utcnow()
+
     return {"status": "cancelled", "queue_id": queue_id}
 
 
@@ -389,52 +392,50 @@ async def cancel_queue_item(
 async def retry_failed_item(
     queue_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_verified_user)
+    current_user: User = Depends(get_current_verified_user),
 ) -> VideoQueueResponse:
     """
     Retry a failed queue item
     """
     if queue_id not in video_queue_storage:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Queue item not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Queue item not found"
         )
-    
+
     item = video_queue_storage[queue_id]
-    
-    if item['user_id'] != str(current_user.id):
+
+    if item["user_id"] != str(current_user.id):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
         )
-    
-    if item['status'] != QueueStatus.FAILED:
+
+    if item["status"] != QueueStatus.FAILED:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only failed items can be retried"
+            detail="Only failed items can be retried",
         )
-    
+
     # Update retry count and status
-    item['retry_count'] += 1
-    item['status'] = QueueStatus.PENDING
-    item['error_message'] = None
-    item['updated_at'] = datetime.utcnow()
-    
+    item["retry_count"] += 1
+    item["status"] = QueueStatus.PENDING
+    item["error_message"] = None
+    item["updated_at"] = datetime.utcnow()
+
     # Queue new task
     task = celery_app.send_task(
-        'app.tasks.video_generation.process_video',
+        "app.tasks.video_generation.process_video",
         args=[queue_id],
-        countdown=60  # Retry after 1 minute
+        countdown=60,  # Retry after 1 minute
     )
-    item['metadata']['task_id'] = task.id
-    
+    item["metadata"]["task_id"] = task.id
+
     return VideoQueueResponse(**item)
 
 
 @router.get("/stats/summary", response_model=QueueStatsResponse)
 async def get_queue_statistics(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_verified_user)
+    current_user: User = Depends(get_current_verified_user),
 ) -> QueueStatsResponse:
     """
     Get queue statistics and estimates
@@ -447,115 +448,117 @@ async def get_queue_statistics(
             "processing": 0,
             "completed": 0,
             "failed": 0,
-            "estimated_total_cost": 0.0
+            "estimated_total_cost": 0.0,
         }
-        
+
         processing_times = []
-        
+
         for item in video_queue_storage.values():
-            if item['user_id'] != str(current_user.id):
+            if item["user_id"] != str(current_user.id):
                 continue
-            
-            stats['total_items'] += 1
-            stats[item['status']] = stats.get(item['status'], 0) + 1
-            stats['estimated_total_cost'] += item['estimated_cost']
-            
-            if item['status'] in [QueueStatus.PENDING, QueueStatus.SCHEDULED]:
-                processing_times.append(item['processing_time_estimate'])
-        
+
+            stats["total_items"] += 1
+            stats[item["status"]] = stats.get(item["status"], 0) + 1
+            stats["estimated_total_cost"] += item["estimated_cost"]
+
+            if item["status"] in [QueueStatus.PENDING, QueueStatus.SCHEDULED]:
+                processing_times.append(item["processing_time_estimate"])
+
         # Calculate completion time
         total_processing_minutes = sum(processing_times)
         estimated_completion = None
         if total_processing_minutes > 0:
-            estimated_completion = datetime.utcnow() + timedelta(minutes=total_processing_minutes)
-        
+            estimated_completion = datetime.utcnow() + timedelta(
+                minutes=total_processing_minutes
+            )
+
         # Calculate processing rate
         completed_today = 0
-        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_start = datetime.utcnow().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
         for item in video_queue_storage.values():
-            if (item['user_id'] == str(current_user.id) and 
-                item['status'] == QueueStatus.COMPLETED and
-                item.get('completed_at') and 
-                item['completed_at'] >= today_start):
+            if (
+                item["user_id"] == str(current_user.id)
+                and item["status"] == QueueStatus.COMPLETED
+                and item.get("completed_at")
+                and item["completed_at"] >= today_start
+            ):
                 completed_today += 1
-        
+
         hours_elapsed = (datetime.utcnow() - today_start).total_seconds() / 3600
         processing_rate = completed_today / max(hours_elapsed, 1)
-        
+
         return QueueStatsResponse(
             **stats,
             estimated_completion_time=estimated_completion,
-            processing_rate=processing_rate
+            processing_rate=processing_rate,
         )
-        
+
     except Exception as e:
         logger.error(f"Failed to get queue stats: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to fetch queue statistics"
+            detail="Failed to fetch queue statistics",
         )
 
 
 @router.post("/pause-all")
 async def pause_all_queue_items(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_verified_user)
+    current_user: User = Depends(get_current_verified_user),
 ) -> Dict[str, Any]:
     """
     Pause all pending/scheduled items in queue
     """
     paused_count = 0
-    
+
     for queue_id, item in video_queue_storage.items():
-        if (item['user_id'] == str(current_user.id) and 
-            item['status'] in [QueueStatus.PENDING, QueueStatus.SCHEDULED]):
-            
-            item['status'] = QueueStatus.PAUSED
-            item['updated_at'] = datetime.utcnow()
-            
+        if item["user_id"] == str(current_user.id) and item["status"] in [
+            QueueStatus.PENDING,
+            QueueStatus.SCHEDULED,
+        ]:
+            item["status"] = QueueStatus.PAUSED
+            item["updated_at"] = datetime.utcnow()
+
             # Cancel Celery task
-            if 'task_id' in item['metadata']:
-                celery_app.control.revoke(item['metadata']['task_id'])
-            
+            if "task_id" in item["metadata"]:
+                celery_app.control.revoke(item["metadata"]["task_id"])
+
             paused_count += 1
-    
-    return {
-        "status": "success",
-        "paused_count": paused_count
-    }
+
+    return {"status": "success", "paused_count": paused_count}
 
 
 @router.post("/resume-all")
 async def resume_all_queue_items(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_verified_user)
+    current_user: User = Depends(get_current_verified_user),
 ) -> Dict[str, Any]:
     """
     Resume all paused items in queue
     """
     resumed_count = 0
-    
+
     for queue_id, item in video_queue_storage.items():
-        if (item['user_id'] == str(current_user.id) and 
-            item['status'] == QueueStatus.PAUSED):
-            
-            item['status'] = QueueStatus.PENDING
-            item['updated_at'] = datetime.utcnow()
-            
+        if (
+            item["user_id"] == str(current_user.id)
+            and item["status"] == QueueStatus.PAUSED
+        ):
+            item["status"] = QueueStatus.PENDING
+            item["updated_at"] = datetime.utcnow()
+
             # Queue new task
             task = celery_app.send_task(
-                'app.tasks.video_generation.process_video',
+                "app.tasks.video_generation.process_video",
                 args=[queue_id],
-                priority=item['priority']
+                priority=item["priority"],
             )
-            item['metadata']['task_id'] = task.id
-            
+            item["metadata"]["task_id"] = task.id
+
             resumed_count += 1
-    
-    return {
-        "status": "success",
-        "resumed_count": resumed_count
-    }
+
+    return {"status": "success", "resumed_count": resumed_count}
 
 
 # Helper functions
@@ -563,47 +566,43 @@ def calculate_estimated_cost(
     duration_minutes: int,
     style: str,
     voice_style: Optional[str],
-    thumbnail_style: Optional[str]
+    thumbnail_style: Optional[str],
 ) -> float:
     """Calculate estimated cost for video generation"""
     base_cost = 0.1  # Base cost
-    
+
     # Duration cost
     base_cost += duration_minutes * 0.05
-    
+
     # Style cost
     style_costs = {
         "informative": 0.1,
         "entertaining": 0.15,
         "tutorial": 0.12,
-        "review": 0.13
+        "review": 0.13,
     }
     base_cost += style_costs.get(style, 0.1)
-    
+
     # Voice cost
     if voice_style:
-        voice_costs = {
-            "elevenlabs": 0.2,
-            "google": 0.05,
-            "azure": 0.08
-        }
+        voice_costs = {"elevenlabs": 0.2, "google": 0.05, "azure": 0.08}
         base_cost += voice_costs.get(voice_style, 0.05)
-    
+
     # Thumbnail cost
     if thumbnail_style:
         base_cost += 0.05
-    
+
     return round(base_cost, 2)
 
 
 def estimate_processing_time(duration_minutes: int, priority: Priority) -> int:
     """Estimate processing time in minutes"""
     base_time = duration_minutes * 2  # 2x video duration
-    
+
     # Priority adjustment
     if priority == Priority.URGENT:
         base_time *= 0.8
     elif priority == Priority.LOW:
         base_time *= 1.2
-    
+
     return int(base_time)

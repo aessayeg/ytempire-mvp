@@ -30,12 +30,13 @@ redis_client = redis.Redis(
     host=os.getenv("REDIS_HOST", "localhost"),
     port=int(os.getenv("REDIS_PORT", "6379")),
     db=int(os.getenv("REDIS_DB", "2")),  # DB 2 for cost optimization
-    decode_responses=True
+    decode_responses=True,
 )
 
 
 class ModelTier(Enum):
     """AI Model tiers for cost optimization"""
+
     PREMIUM = "premium"  # GPT-4, Claude-3-opus
     STANDARD = "standard"  # GPT-3.5-turbo, Claude-3-sonnet
     ECONOMY = "economy"  # GPT-3.5, Claude-instant
@@ -44,6 +45,7 @@ class ModelTier(Enum):
 
 class ServiceType(Enum):
     """AI Service types"""
+
     SCRIPT_GENERATION = "script_generation"
     VOICE_SYNTHESIS = "voice_synthesis"
     IMAGE_GENERATION = "image_generation"
@@ -55,6 +57,7 @@ class ServiceType(Enum):
 @dataclass
 class CostProfile:
     """Cost profile for a service"""
+
     service: ServiceType
     tier: ModelTier
     cost_per_call: float
@@ -66,6 +69,7 @@ class CostProfile:
 @dataclass
 class OptimizationStrategy:
     """Cost optimization strategy"""
+
     name: str
     description: str
     savings_percentage: float
@@ -78,7 +82,7 @@ class CostOptimizer:
     AI/ML Cost Optimization Service
     Target: <$3 per video with quality thresholds
     """
-    
+
     # Cost limits per service (in USD)
     COST_LIMITS = {
         ServiceType.SCRIPT_GENERATION: 0.50,
@@ -86,18 +90,18 @@ class CostOptimizer:
         ServiceType.IMAGE_GENERATION: 0.80,
         ServiceType.VIDEO_PROCESSING: 0.50,
         ServiceType.QUALITY_CHECK: 0.10,
-        ServiceType.TREND_ANALYSIS: 0.10
+        ServiceType.TREND_ANALYSIS: 0.10,
     }
-    
+
     # Daily budget limits
     DAILY_BUDGET = {
         "openai": 50.00,
         "elevenlabs": 20.00,
         "anthropic": 30.00,
         "google": 10.00,
-        "total": 100.00
+        "total": 100.00,
     }
-    
+
     # Model costs per 1K tokens (approximate)
     MODEL_COSTS = {
         "gpt-4-turbo": 0.03,
@@ -106,7 +110,7 @@ class CostOptimizer:
         "claude-3-sonnet": 0.012,
         "claude-instant": 0.004,
     }
-    
+
     # Cache TTL settings (in seconds)
     CACHE_TTL = {
         ServiceType.TREND_ANALYSIS: 3600,  # 1 hour
@@ -114,13 +118,13 @@ class CostOptimizer:
         ServiceType.QUALITY_CHECK: 1800,  # 30 minutes
         ServiceType.IMAGE_GENERATION: 86400,  # 24 hours for same prompts
     }
-    
+
     def __init__(self):
         """Initialize cost optimizer"""
         self.redis = redis_client
         self.current_costs = {}
         self.optimization_strategies = self._load_strategies()
-        
+
     def _load_strategies(self) -> List[OptimizationStrategy]:
         """Load optimization strategies"""
         return [
@@ -129,80 +133,80 @@ class CostOptimizer:
                 description="Start with GPT-3.5, fallback to GPT-4 only when needed",
                 savings_percentage=70,
                 quality_impact=-5,
-                implementation_complexity="low"
+                implementation_complexity="low",
             ),
             OptimizationStrategy(
                 name="Aggressive Caching",
                 description="Cache all responses with smart key generation",
                 savings_percentage=40,
                 quality_impact=0,
-                implementation_complexity="medium"
+                implementation_complexity="medium",
             ),
             OptimizationStrategy(
                 name="Batch Processing",
                 description="Batch multiple requests to reduce API calls",
                 savings_percentage=25,
                 quality_impact=0,
-                implementation_complexity="medium"
+                implementation_complexity="medium",
             ),
             OptimizationStrategy(
                 name="Template Reuse",
                 description="Reuse successful templates with variations",
                 savings_percentage=35,
                 quality_impact=-10,
-                implementation_complexity="low"
+                implementation_complexity="low",
             ),
             OptimizationStrategy(
                 name="Smart Prompt Engineering",
                 description="Optimize prompts to reduce token usage",
                 savings_percentage=20,
                 quality_impact=5,
-                implementation_complexity="high"
+                implementation_complexity="high",
             ),
             OptimizationStrategy(
                 name="Local Model Hybrid",
                 description="Use local models for simple tasks",
                 savings_percentage=50,
                 quality_impact=-15,
-                implementation_complexity="high"
+                implementation_complexity="high",
             ),
             OptimizationStrategy(
                 name="Time-based Pricing",
                 description="Schedule non-urgent tasks during off-peak hours",
                 savings_percentage=15,
                 quality_impact=0,
-                implementation_complexity="low"
+                implementation_complexity="low",
             ),
             OptimizationStrategy(
                 name="Quality Threshold Adjustment",
                 description="Accept 85% quality for 50% cost reduction",
                 savings_percentage=50,
                 quality_impact=-15,
-                implementation_complexity="low"
-            )
+                implementation_complexity="low",
+            ),
         ]
-        
+
     async def get_optimal_model(
-        self, 
-        service: ServiceType, 
+        self,
+        service: ServiceType,
         quality_required: float = 85.0,
-        budget_remaining: float = None
+        budget_remaining: float = None,
     ) -> Tuple[str, ModelTier]:
         """Get optimal model based on budget and quality requirements"""
-        
+
         # Check cache first
         cache_key = f"optimal_model:{service.value}:{quality_required}"
         cached = self.redis.get(cache_key)
         if cached:
             data = json.loads(cached)
             return data["model"], ModelTier(data["tier"])
-            
+
         # Check daily budget
         daily_spent = await self.get_daily_spending()
         if daily_spent >= self.DAILY_BUDGET["total"]:
             logger.warning("Daily budget exceeded, using economy tier")
             return "gpt-3.5-turbo", ModelTier.ECONOMY
-            
+
         # Determine model based on quality requirements
         if quality_required >= 90:
             model = "gpt-4-turbo"
@@ -213,7 +217,7 @@ class CostOptimizer:
         else:
             model = "gpt-3.5-turbo"
             tier = ModelTier.ECONOMY
-            
+
         # Check service-specific budget
         if budget_remaining:
             service_limit = self.COST_LIMITS.get(service, 1.0)
@@ -221,152 +225,140 @@ class CostOptimizer:
                 # Low budget, downgrade model
                 model = "gpt-3.5-turbo"
                 tier = ModelTier.ECONOMY
-                
+
         # Cache decision
         self.redis.setex(
             cache_key,
             300,  # 5 minutes
-            json.dumps({"model": model, "tier": tier.value})
+            json.dumps({"model": model, "tier": tier.value}),
         )
-        
+
         return model, tier
-        
+
     async def estimate_cost(
         self,
         service: ServiceType,
         model: str,
         input_tokens: int,
-        output_tokens: int = None
+        output_tokens: int = None,
     ) -> float:
         """Estimate cost for an API call"""
-        
+
         if output_tokens is None:
             output_tokens = input_tokens * 2  # Rough estimate
-            
+
         model_cost = self.MODEL_COSTS.get(model, 0.002)
         total_tokens = (input_tokens + output_tokens) / 1000
-        
+
         estimated_cost = total_tokens * model_cost
-        
+
         # Add service-specific multipliers
         if service == ServiceType.VOICE_SYNTHESIS:
             estimated_cost *= 5  # Voice is more expensive
         elif service == ServiceType.IMAGE_GENERATION:
             estimated_cost = 0.02  # Fixed cost per image
-            
+
         return round(estimated_cost, 4)
-        
+
     async def check_budget_available(
-        self,
-        service: ServiceType,
-        estimated_cost: float
+        self, service: ServiceType, estimated_cost: float
     ) -> bool:
         """Check if budget is available for the operation"""
-        
+
         # Check daily total budget
         daily_spent = await self.get_daily_spending()
         if daily_spent + estimated_cost > self.DAILY_BUDGET["total"]:
             logger.warning(f"Would exceed daily budget: {daily_spent + estimated_cost}")
             return False
-            
+
         # Check service-specific limit
         service_limit = self.COST_LIMITS.get(service, 1.0)
         if estimated_cost > service_limit:
-            logger.warning(f"Would exceed service limit for {service.value}: {estimated_cost}")
+            logger.warning(
+                f"Would exceed service limit for {service.value}: {estimated_cost}"
+            )
             return False
-            
+
         return True
-        
+
     async def get_daily_spending(self) -> float:
         """Get total spending for today"""
-        
+
         cache_key = f"daily_spending:{datetime.utcnow().date()}"
         cached = self.redis.get(cache_key)
-        
+
         if cached:
             return float(cached)
-            
+
         # Query database for today's costs
         async for db in get_db():
             today = datetime.utcnow().date()
             result = await db.execute(
-                select(func.sum(Cost.amount)).where(
-                    func.date(Cost.created_at) == today
-                )
+                select(func.sum(Cost.amount)).where(func.date(Cost.created_at) == today)
             )
             total = result.scalar() or 0.0
-            
+
         # Cache for 5 minutes
         self.redis.setex(cache_key, 300, str(total))
-        
+
         return total
-        
+
     def get_cache_key(
-        self,
-        service: ServiceType,
-        prompt: str,
-        params: Dict[str, Any] = None
+        self, service: ServiceType, prompt: str, params: Dict[str, Any] = None
     ) -> str:
         """Generate cache key for a request"""
-        
+
         import hashlib
-        
+
         # Create a unique key based on service, prompt, and parameters
         key_parts = [service.value, prompt]
-        
+
         if params:
             # Sort params for consistent hashing
             sorted_params = json.dumps(params, sort_keys=True)
             key_parts.append(sorted_params)
-            
+
         key_string = "|".join(key_parts)
         key_hash = hashlib.md5(key_string.encode()).hexdigest()
-        
+
         return f"ai_cache:{service.value}:{key_hash}"
-        
+
     async def get_cached_response(
-        self,
-        service: ServiceType,
-        prompt: str,
-        params: Dict[str, Any] = None
+        self, service: ServiceType, prompt: str, params: Dict[str, Any] = None
     ) -> Optional[Dict[str, Any]]:
         """Get cached response if available"""
-        
+
         cache_key = self.get_cache_key(service, prompt, params)
         cached = self.redis.get(cache_key)
-        
+
         if cached:
             logger.info(f"Cache hit for {service.value}")
             return json.loads(cached)
-            
+
         return None
-        
+
     async def cache_response(
         self,
         service: ServiceType,
         prompt: str,
         response: Dict[str, Any],
-        params: Dict[str, Any] = None
+        params: Dict[str, Any] = None,
     ):
         """Cache a response"""
-        
+
         cache_key = self.get_cache_key(service, prompt, params)
         ttl = self.CACHE_TTL.get(service, 900)  # Default 15 minutes
-        
-        self.redis.setex(
-            cache_key,
-            ttl,
-            json.dumps(response)
-        )
-        
+
+        self.redis.setex(cache_key, ttl, json.dumps(response))
+
         logger.info(f"Cached response for {service.value} (TTL: {ttl}s)")
-        
+
     async def optimize_prompt(self, prompt: str, max_tokens: int = None) -> str:
         """Optimize prompt to reduce token usage"""
-        
+
         # Remove unnecessary whitespace
         optimized = " ".join(prompt.split())
-        
+
         # Use abbreviations where appropriate
         replacements = {
             "approximately": "~",
@@ -375,26 +367,24 @@ class CostOptimizer:
             "et cetera": "etc",
             "versus": "vs",
         }
-        
+
         for long_form, short_form in replacements.items():
             optimized = optimized.replace(long_form, short_form)
-            
+
         # Truncate if max_tokens specified
         if max_tokens:
             # Rough estimate: 1 token ≈ 4 characters
             max_chars = max_tokens * 4
             if len(optimized) > max_chars:
                 optimized = optimized[:max_chars] + "..."
-                
+
         return optimized
-        
+
     async def batch_requests(
-        self,
-        requests: List[Dict[str, Any]],
-        service: ServiceType
+        self, requests: List[Dict[str, Any]], service: ServiceType
     ) -> List[Dict[str, Any]]:
         """Batch multiple requests to reduce API calls"""
-        
+
         # Group similar requests
         batches = {}
         for req in requests:
@@ -402,9 +392,9 @@ class CostOptimizer:
             if key not in batches:
                 batches[key] = []
             batches[key].append(req)
-            
+
         results = []
-        
+
         for batch_key, batch_requests in batches.items():
             # Process batch
             if len(batch_requests) > 1:
@@ -412,14 +402,14 @@ class CostOptimizer:
                 combined_prompt = "\n---SEPARATOR---\n".join(
                     [r["prompt"] for r in batch_requests]
                 )
-                
+
                 # Make single API call
                 response = await self._make_batch_api_call(
                     combined_prompt,
                     batch_requests[0].get("model", "gpt-3.5-turbo"),
-                    service
+                    service,
                 )
-                
+
                 # Split responses
                 split_responses = response.split("---SEPARATOR---")
                 for i, resp in enumerate(split_responses):
@@ -428,55 +418,52 @@ class CostOptimizer:
             else:
                 # Single request, process normally
                 results.append(batch_requests[0])
-                
+
         return results
-        
+
     async def _make_batch_api_call(
-        self,
-        prompt: str,
-        model: str,
-        service: ServiceType
+        self, prompt: str, model: str, service: ServiceType
     ) -> str:
         """Make batched API call (placeholder for actual implementation)"""
-        
+
         # This would be replaced with actual API call
         logger.info(f"Batch API call to {model} for {service.value}")
-        
+
         # For now, return placeholder
         return "Batch response 1---SEPARATOR---Batch response 2"
-        
+
     async def apply_fallback_strategy(
         self,
         service: ServiceType,
         primary_model: str,
         fallback_models: List[str],
         prompt: str,
-        quality_threshold: float = 75.0
+        quality_threshold: float = 75.0,
     ) -> Tuple[str, str]:
         """Apply progressive fallback strategy"""
-        
+
         for model in [primary_model] + fallback_models:
             try:
                 # Try with current model
                 logger.info(f"Trying {model} for {service.value}")
-                
+
                 # Check if quality would be acceptable
                 estimated_quality = self._estimate_model_quality(model, service)
-                
+
                 if estimated_quality >= quality_threshold:
                     # Model is acceptable, use it
                     return model, f"Response from {model}"
-                    
+
             except Exception as e:
                 logger.warning(f"Failed with {model}: {e}")
                 continue
-                
+
         # All models failed
         raise Exception("All models failed or below quality threshold")
-        
+
     def _estimate_model_quality(self, model: str, service: ServiceType) -> float:
         """Estimate quality score for a model/service combination"""
-        
+
         base_scores = {
             "gpt-4-turbo": 95,
             "gpt-3.5-turbo": 80,
@@ -484,79 +471,81 @@ class CostOptimizer:
             "claude-3-sonnet": 85,
             "claude-instant": 75,
         }
-        
+
         service_modifiers = {
             ServiceType.SCRIPT_GENERATION: 1.0,
             ServiceType.QUALITY_CHECK: 0.9,
             ServiceType.TREND_ANALYSIS: 0.95,
             ServiceType.IMAGE_GENERATION: 1.0,
         }
-        
+
         base = base_scores.get(model, 70)
         modifier = service_modifiers.get(service, 1.0)
-        
+
         return base * modifier
-        
+
     async def get_cost_report(self, days: int = 7) -> Dict[str, Any]:
         """Generate cost optimization report"""
-        
+
         async for db in get_db():
             # Get costs for the period
             since = datetime.utcnow() - timedelta(days=days)
-            
+
             result = await db.execute(
                 select(
                     Cost.service,
                     func.sum(Cost.amount).label("total"),
                     func.count(Cost.id).label("count"),
-                    func.avg(Cost.amount).label("average")
-                ).where(
-                    Cost.created_at >= since
-                ).group_by(Cost.service)
+                    func.avg(Cost.amount).label("average"),
+                )
+                .where(Cost.created_at >= since)
+                .group_by(Cost.service)
             )
-            
+
             costs_by_service = {}
             total_cost = 0
             total_videos = 0
-            
+
             for row in result:
                 costs_by_service[row.service] = {
                     "total": float(row.total),
                     "count": row.count,
-                    "average": float(row.average)
+                    "average": float(row.average),
                 }
                 total_cost += float(row.total)
-                
+
             # Get video count
             video_result = await db.execute(
-                select(func.count(Video.id)).where(
-                    Video.created_at >= since
-                )
+                select(func.count(Video.id)).where(Video.created_at >= since)
             )
             total_videos = video_result.scalar() or 0
-            
+
         # Calculate metrics
         cost_per_video = total_cost / total_videos if total_videos > 0 else 0
-        
+
         # Identify optimization opportunities
         opportunities = []
-        
+
         if cost_per_video > 3.0:
-            opportunities.append({
-                "issue": "Cost per video exceeds $3 target",
-                "recommendation": "Enable aggressive caching and model fallback",
-                "potential_savings": f"${(cost_per_video - 3.0) * total_videos:.2f}"
-            })
-            
+            opportunities.append(
+                {
+                    "issue": "Cost per video exceeds $3 target",
+                    "recommendation": "Enable aggressive caching and model fallback",
+                    "potential_savings": f"${(cost_per_video - 3.0) * total_videos:.2f}",
+                }
+            )
+
         for service, data in costs_by_service.items():
             limit = self.COST_LIMITS.get(ServiceType(service), 1.0) if service else 1.0
             if data["average"] > limit:
-                opportunities.append({
-                    "issue": f"{service} exceeds cost limit",
-                    "recommendation": f"Optimize {service} prompts or use lower tier model",
-                    "potential_savings": f"${(data['average'] - limit) * data['count']:.2f}"
-                })
-                
+                opportunities.append(
+                    {
+                        "issue": f"{service} exceeds cost limit",
+                        "recommendation": f"Optimize {service} prompts or use lower tier model",
+                        "potential_savings": f"${(data['average'] - limit) * data['count']:.2f}",
+                    }
+                )
+
         return {
             "period_days": days,
             "total_cost": total_cost,
@@ -567,91 +556,88 @@ class CostOptimizer:
             "costs_by_service": costs_by_service,
             "optimization_opportunities": opportunities,
             "active_strategies": [s.name for s in self.optimization_strategies],
-            "estimated_savings": self._calculate_potential_savings(costs_by_service)
+            "estimated_savings": self._calculate_potential_savings(costs_by_service),
         }
-        
+
     def _calculate_potential_savings(self, costs_by_service: Dict[str, Any]) -> float:
         """Calculate potential savings from optimization"""
-        
+
         total_current = sum(data["total"] for data in costs_by_service.values())
-        
+
         # Apply strategy savings
         potential_savings = 0
         for strategy in self.optimization_strategies:
             potential_savings += total_current * (strategy.savings_percentage / 100)
-            
+
         # Cap at realistic 60% savings
         return min(potential_savings, total_current * 0.6)
-        
+
     async def validate_video_cost(self, video_id: int) -> Dict[str, Any]:
         """Validate if a video met the <$3 cost target"""
-        
+
         async for db in get_db():
             result = await db.execute(
-                select(func.sum(Cost.amount)).where(
-                    Cost.video_id == video_id
-                )
+                select(func.sum(Cost.amount)).where(Cost.video_id == video_id)
             )
             total_cost = result.scalar() or 0.0
-            
+
         is_valid = total_cost < 3.0
-        
+
         return {
             "video_id": video_id,
             "total_cost": total_cost,
             "target": 3.0,
             "within_target": is_valid,
             "overage": max(0, total_cost - 3.0),
-            "savings_achieved": max(0, 3.0 - total_cost)
+            "savings_achieved": max(0, 3.0 - total_cost),
         }
 
-
     async def predict_future_costs(
-        self,
-        days_ahead: int = 30,
-        include_confidence: bool = True
+        self, days_ahead: int = 30, include_confidence: bool = True
     ) -> Dict[str, Any]:
         """ML-based cost prediction for future periods"""
-        
+
         try:
             # Get historical cost data
             async for db in get_db():
                 # Get last 90 days of cost data
                 since = datetime.utcnow() - timedelta(days=90)
-                
+
                 result = await db.execute(
                     select(
                         func.date(Cost.created_at).label("date"),
                         func.sum(Cost.amount).label("total_cost"),
-                        func.count(Cost.id).label("transaction_count")
-                    ).where(
-                        Cost.created_at >= since
-                    ).group_by(func.date(Cost.created_at))
+                        func.count(Cost.id).label("transaction_count"),
+                    )
+                    .where(Cost.created_at >= since)
+                    .group_by(func.date(Cost.created_at))
                     .order_by(func.date(Cost.created_at))
                 )
-                
+
                 historical_data = []
                 for row in result:
-                    historical_data.append({
-                        "date": row.date.isoformat(),
-                        "cost": float(row.total_cost),
-                        "transactions": row.transaction_count
-                    })
-                
+                    historical_data.append(
+                        {
+                            "date": row.date.isoformat(),
+                            "cost": float(row.total_cost),
+                            "transactions": row.transaction_count,
+                        }
+                    )
+
                 break  # Exit the async generator
-            
+
             if len(historical_data) < 7:
                 return {
                     "error": "Insufficient historical data for prediction",
                     "min_required_days": 7,
-                    "available_days": len(historical_data)
+                    "available_days": len(historical_data),
                 }
-            
+
             # Simple trend analysis (in production, use proper ML models)
             costs = [d["cost"] for d in historical_data]
             recent_avg = sum(costs[-7:]) / 7  # Last 7 days average
             older_avg = sum(costs[:7]) / 7 if len(costs) >= 14 else recent_avg
-            
+
             # Calculate trend
             if recent_avg > older_avg * 1.1:
                 trend = "increasing"
@@ -662,68 +648,76 @@ class CostOptimizer:
             else:
                 trend = "stable"
                 trend_factor = 1.0
-            
+
             # Generate predictions
             base_daily_cost = recent_avg
             predictions = []
-            
+
             for day in range(1, days_ahead + 1):
                 # Apply trend factor with diminishing effect
-                trend_effect = 1 + (trend_factor - 1) * (0.95 ** day)
+                trend_effect = 1 + (trend_factor - 1) * (0.95**day)
                 predicted_cost = base_daily_cost * trend_effect
-                
+
                 # Add some realistic variance
                 variance = predicted_cost * 0.1  # 10% variance
-                
-                predictions.append({
-                    "day": day,
-                    "date": (datetime.utcnow() + timedelta(days=day)).date().isoformat(),
-                    "predicted_cost": round(predicted_cost, 2),
-                    "confidence_interval": {
-                        "lower": round(predicted_cost - variance, 2),
-                        "upper": round(predicted_cost + variance, 2)
-                    } if include_confidence else None
-                })
-            
+
+                predictions.append(
+                    {
+                        "day": day,
+                        "date": (datetime.utcnow() + timedelta(days=day))
+                        .date()
+                        .isoformat(),
+                        "predicted_cost": round(predicted_cost, 2),
+                        "confidence_interval": {
+                            "lower": round(predicted_cost - variance, 2),
+                            "upper": round(predicted_cost + variance, 2),
+                        }
+                        if include_confidence
+                        else None,
+                    }
+                )
+
             total_predicted = sum(p["predicted_cost"] for p in predictions)
-            
+
             return {
                 "prediction_period_days": days_ahead,
                 "historical_data_points": len(historical_data),
                 "trend_analysis": {
                     "trend": trend,
                     "recent_daily_avg": round(recent_avg, 2),
-                    "trend_factor": trend_factor
+                    "trend_factor": trend_factor,
                 },
                 "predictions": predictions,
                 "summary": {
                     "total_predicted_cost": round(total_predicted, 2),
                     "avg_daily_predicted": round(total_predicted / days_ahead, 2),
-                    "vs_current_avg": round(((total_predicted / days_ahead) / recent_avg - 1) * 100, 1)
+                    "vs_current_avg": round(
+                        ((total_predicted / days_ahead) / recent_avg - 1) * 100, 1
+                    ),
                 },
                 "risk_factors": self._identify_cost_risk_factors(historical_data),
-                "recommendations": self._generate_cost_recommendations(trend, recent_avg)
+                "recommendations": self._generate_cost_recommendations(
+                    trend, recent_avg
+                ),
             }
-            
+
         except Exception as e:
             logger.error(f"Cost prediction failed: {e}")
             return {"error": str(e)}
-    
+
     async def generate_optimization_recommendations(
-        self,
-        current_costs: Dict[str, Any],
-        target_reduction: float = 0.3
+        self, current_costs: Dict[str, Any], target_reduction: float = 0.3
     ) -> Dict[str, Any]:
         """Generate ML-driven optimization recommendations"""
-        
+
         recommendations = []
         total_potential_savings = 0
-        
+
         # Analyze each service
         for service, cost_data in current_costs.items():
             if isinstance(cost_data, dict) and "total" in cost_data:
                 service_cost = cost_data["total"]
-                
+
                 # Apply different strategies based on cost patterns
                 if service_cost > 20:  # High cost services
                     rec = {
@@ -733,11 +727,11 @@ class CostOptimizer:
                         "potential_savings": service_cost * 0.4,
                         "implementation": "Use GPT-3.5 instead of GPT-4 for routine tasks",
                         "quality_impact": "Low (-5%)",
-                        "priority": "High"
+                        "priority": "High",
                     }
                     recommendations.append(rec)
                     total_potential_savings += rec["potential_savings"]
-                
+
                 elif service_cost > 5:  # Medium cost services
                     rec = {
                         "service": service,
@@ -746,33 +740,33 @@ class CostOptimizer:
                         "potential_savings": service_cost * 0.25,
                         "implementation": "Cache responses for 1-4 hours based on content type",
                         "quality_impact": "None (0%)",
-                        "priority": "Medium"
+                        "priority": "Medium",
                     }
                     recommendations.append(rec)
                     total_potential_savings += rec["potential_savings"]
-        
+
         # Add general recommendations
         general_recommendations = [
             {
                 "strategy": "Batch Processing",
                 "description": "Process multiple requests together to reduce API overhead",
                 "estimated_savings_percent": 15,
-                "implementation_effort": "Medium"
+                "implementation_effort": "Medium",
             },
             {
-                "strategy": "Smart Prompt Optimization", 
+                "strategy": "Smart Prompt Optimization",
                 "description": "Reduce token usage through prompt engineering",
                 "estimated_savings_percent": 20,
-                "implementation_effort": "High"
+                "implementation_effort": "High",
             },
             {
                 "strategy": "Quality Threshold Adjustment",
                 "description": "Accept 85% quality for significant cost reduction",
                 "estimated_savings_percent": 30,
-                "implementation_effort": "Low"
-            }
+                "implementation_effort": "Low",
+            },
         ]
-        
+
         return {
             "target_reduction_percent": target_reduction * 100,
             "service_specific_recommendations": recommendations,
@@ -782,35 +776,35 @@ class CostOptimizer:
                 "immediate": "Enable caching and model fallback",
                 "short_term": "Implement batch processing",
                 "medium_term": "Optimize prompts and quality thresholds",
-                "long_term": "Implement local model hybrid approach"
+                "long_term": "Implement local model hybrid approach",
             },
             "monitoring_kpis": [
                 "Daily cost per video",
                 "Service-specific cost trends",
                 "Quality score maintenance",
                 "Cache hit rates",
-                "Model distribution ratios"
-            ]
+                "Model distribution ratios",
+            ],
         }
-    
+
     async def implement_budget_management(
-        self,
-        monthly_budget: float,
-        alert_thresholds: Dict[str, float] = None
+        self, monthly_budget: float, alert_thresholds: Dict[str, float] = None
     ) -> Dict[str, Any]:
         """Implement intelligent budget management with alerts"""
-        
+
         if alert_thresholds is None:
             alert_thresholds = {
                 "warning": 0.75,  # 75% of budget
                 "critical": 0.90,  # 90% of budget
-                "emergency": 0.95   # 95% of budget
+                "emergency": 0.95,  # 95% of budget
             }
-        
+
         try:
             # Get current month spending
-            current_month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            
+            current_month_start = datetime.utcnow().replace(
+                day=1, hour=0, minute=0, second=0, microsecond=0
+            )
+
             async for db in get_db():
                 result = await db.execute(
                     select(func.sum(Cost.amount)).where(
@@ -819,11 +813,11 @@ class CostOptimizer:
                 )
                 current_spending = result.scalar() or 0.0
                 break
-            
+
             # Calculate budget status
             budget_used_percent = (current_spending / monthly_budget) * 100
             remaining_budget = monthly_budget - current_spending
-            
+
             # Determine alert level
             alert_level = "normal"
             if budget_used_percent >= alert_thresholds["emergency"] * 100:
@@ -832,54 +826,66 @@ class CostOptimizer:
                 alert_level = "critical"
             elif budget_used_percent >= alert_thresholds["warning"] * 100:
                 alert_level = "warning"
-            
+
             # Calculate daily burn rate and projection
-            days_in_month = (datetime.utcnow().replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+            days_in_month = (
+                datetime.utcnow().replace(day=28) + timedelta(days=4)
+            ).replace(day=1) - timedelta(days=1)
             days_in_month = days_in_month.day
             current_day = datetime.utcnow().day
-            
+
             if current_day > 0:
                 daily_burn_rate = current_spending / current_day
                 projected_monthly_spend = daily_burn_rate * days_in_month
             else:
                 daily_burn_rate = 0
                 projected_monthly_spend = 0
-            
+
             # Generate recommendations based on budget status
             recommendations = []
-            
+
             if alert_level in ["critical", "emergency"]:
-                recommendations.extend([
-                    "Switch to economy tier models immediately",
-                    "Enable aggressive caching for all services",
-                    "Defer non-critical video generation",
-                    "Implement strict per-video cost limits"
-                ])
+                recommendations.extend(
+                    [
+                        "Switch to economy tier models immediately",
+                        "Enable aggressive caching for all services",
+                        "Defer non-critical video generation",
+                        "Implement strict per-video cost limits",
+                    ]
+                )
             elif alert_level == "warning":
-                recommendations.extend([
-                    "Increase cache TTL settings",
-                    "Review and optimize high-cost operations",
-                    "Consider model tier adjustments"
-                ])
+                recommendations.extend(
+                    [
+                        "Increase cache TTL settings",
+                        "Review and optimize high-cost operations",
+                        "Consider model tier adjustments",
+                    ]
+                )
             else:
-                recommendations.extend([
-                    "Monitor spending trends",
-                    "Continue current optimization strategies"
-                ])
-            
+                recommendations.extend(
+                    [
+                        "Monitor spending trends",
+                        "Continue current optimization strategies",
+                    ]
+                )
+
             return {
                 "budget_management": {
                     "monthly_budget": monthly_budget,
                     "current_spending": round(current_spending, 2),
                     "remaining_budget": round(remaining_budget, 2),
                     "budget_used_percent": round(budget_used_percent, 1),
-                    "alert_level": alert_level
+                    "alert_level": alert_level,
                 },
                 "projections": {
                     "daily_burn_rate": round(daily_burn_rate, 2),
                     "projected_monthly_spend": round(projected_monthly_spend, 2),
                     "over_budget_risk": projected_monthly_spend > monthly_budget,
-                    "days_until_budget_exhausted": int(remaining_budget / daily_burn_rate) if daily_burn_rate > 0 else None
+                    "days_until_budget_exhausted": int(
+                        remaining_budget / daily_burn_rate
+                    )
+                    if daily_burn_rate > 0
+                    else None,
                 },
                 "recommendations": recommendations,
                 "auto_actions": {
@@ -887,224 +893,261 @@ class CostOptimizer:
                     "actions": [
                         "Switch to economy models",
                         "Increase cache TTL to 4 hours",
-                        "Reject requests over $1 per video"
-                    ] if alert_level in ["critical", "emergency"] else []
-                }
+                        "Reject requests over $1 per video",
+                    ]
+                    if alert_level in ["critical", "emergency"]
+                    else [],
+                },
             }
-            
+
         except Exception as e:
             logger.error(f"Budget management failed: {e}")
             return {"error": str(e)}
-    
+
     def _identify_cost_risk_factors(self, historical_data: List[Dict]) -> List[str]:
         """Identify potential cost risk factors"""
         risk_factors = []
-        
+
         if len(historical_data) < 7:
             risk_factors.append("Insufficient historical data for reliable prediction")
             return risk_factors
-        
+
         costs = [d["cost"] for d in historical_data]
-        
+
         # Check for high volatility
         if len(costs) > 1:
             import statistics
+
             std_dev = statistics.stdev(costs)
             mean_cost = statistics.mean(costs)
-            
+
             if std_dev / mean_cost > 0.5:  # High coefficient of variation
                 risk_factors.append("High cost volatility detected")
-        
+
         # Check for recent spikes
         recent_costs = costs[-7:]
         older_costs = costs[:-7] if len(costs) > 7 else costs
-        
+
         if recent_costs and older_costs:
             recent_avg = sum(recent_costs) / len(recent_costs)
             older_avg = sum(older_costs) / len(older_costs)
-            
+
             if recent_avg > older_avg * 1.5:
                 risk_factors.append("Recent cost spike detected")
-        
+
         # Check for budget threshold proximity
         recent_daily_avg = sum(costs[-3:]) / min(3, len(costs))
         if recent_daily_avg > 30:  # High daily spend
             risk_factors.append("High daily spending may exceed monthly budget")
-        
+
         return risk_factors or ["No significant risk factors identified"]
-    
-    def _generate_cost_recommendations(self, trend: str, current_avg: float) -> List[str]:
+
+    def _generate_cost_recommendations(
+        self, trend: str, current_avg: float
+    ) -> List[str]:
         """Generate cost management recommendations based on trends"""
         recommendations = []
-        
+
         if trend == "increasing":
-            recommendations.extend([
-                "Implement cost controls to prevent further increases",
-                "Review recent changes in service usage",
-                "Consider switching to more cost-effective models",
-                "Increase caching to reduce API calls"
-            ])
+            recommendations.extend(
+                [
+                    "Implement cost controls to prevent further increases",
+                    "Review recent changes in service usage",
+                    "Consider switching to more cost-effective models",
+                    "Increase caching to reduce API calls",
+                ]
+            )
         elif trend == "decreasing":
-            recommendations.extend([
-                "Current optimizations are working well",
-                "Monitor to ensure quality is maintained",
-                "Consider applying similar strategies to other services"
-            ])
+            recommendations.extend(
+                [
+                    "Current optimizations are working well",
+                    "Monitor to ensure quality is maintained",
+                    "Consider applying similar strategies to other services",
+                ]
+            )
         else:  # stable
-            recommendations.extend([
-                "Costs are stable - good baseline for optimization",
-                "Experiment with new cost reduction strategies",
-                "Set up monitoring for early detection of changes"
-            ])
-        
+            recommendations.extend(
+                [
+                    "Costs are stable - good baseline for optimization",
+                    "Experiment with new cost reduction strategies",
+                    "Set up monitoring for early detection of changes",
+                ]
+            )
+
         # Add general recommendations based on cost level
         if current_avg > 50:
-            recommendations.append("Daily costs are high - prioritize aggressive optimization")
+            recommendations.append(
+                "Daily costs are high - prioritize aggressive optimization"
+            )
         elif current_avg > 20:
-            recommendations.append("Daily costs are moderate - implement gradual optimizations")
+            recommendations.append(
+                "Daily costs are moderate - implement gradual optimizations"
+            )
         else:
             recommendations.append("Daily costs are low - maintain current strategies")
-        
+
         return recommendations
-    
+
     async def optimize_model_selection(
         self,
         task_type: str,
         quality_requirements: Dict[str, Any],
-        budget_constraint: float = 1.0
+        budget_constraint: float = 1.0,
     ) -> Dict[str, Any]:
         """
         Optimize AI model selection based on task requirements and budget.
         Intelligently selects the most cost-effective model that meets quality thresholds.
-        
+
         Args:
             task_type: Type of task (e.g., 'script_generation', 'quality_check', 'summarization')
             quality_requirements: Requirements like min_quality_score, max_latency, etc.
             budget_constraint: Maximum cost allowed for this operation
-            
+
         Returns:
             Optimal model configuration and cost estimate
         """
-        
+
         # Define model capabilities and costs
         models = {
             "gpt-4-turbo": {
                 "cost_per_1k_tokens": 0.03,
                 "quality_score": 95,
                 "latency_ms": 2000,
-                "capabilities": ["complex_reasoning", "creative_writing", "code_generation"]
+                "capabilities": [
+                    "complex_reasoning",
+                    "creative_writing",
+                    "code_generation",
+                ],
             },
             "gpt-3.5-turbo": {
                 "cost_per_1k_tokens": 0.001,
                 "quality_score": 80,
                 "latency_ms": 800,
-                "capabilities": ["general_tasks", "summarization", "simple_writing"]
+                "capabilities": ["general_tasks", "summarization", "simple_writing"],
             },
             "claude-3-opus": {
                 "cost_per_1k_tokens": 0.015,
                 "quality_score": 93,
                 "latency_ms": 1800,
-                "capabilities": ["complex_reasoning", "analysis", "creative_writing"]
+                "capabilities": ["complex_reasoning", "analysis", "creative_writing"],
             },
             "claude-3-sonnet": {
                 "cost_per_1k_tokens": 0.003,
                 "quality_score": 85,
                 "latency_ms": 1000,
-                "capabilities": ["general_tasks", "analysis", "moderate_complexity"]
+                "capabilities": ["general_tasks", "analysis", "moderate_complexity"],
             },
             "claude-instant": {
                 "cost_per_1k_tokens": 0.0008,
                 "quality_score": 75,
                 "latency_ms": 400,
-                "capabilities": ["simple_tasks", "quick_responses", "basic_analysis"]
-            }
+                "capabilities": ["simple_tasks", "quick_responses", "basic_analysis"],
+            },
         }
-        
+
         # Task-specific model preferences
         task_preferences = {
             "script_generation": {
                 "min_quality": 85,
                 "preferred_models": ["gpt-4-turbo", "claude-3-opus", "gpt-3.5-turbo"],
-                "avg_tokens": 2000
+                "avg_tokens": 2000,
             },
             "quality_check": {
                 "min_quality": 75,
-                "preferred_models": ["claude-3-sonnet", "gpt-3.5-turbo", "claude-instant"],
-                "avg_tokens": 500
+                "preferred_models": [
+                    "claude-3-sonnet",
+                    "gpt-3.5-turbo",
+                    "claude-instant",
+                ],
+                "avg_tokens": 500,
             },
             "summarization": {
                 "min_quality": 70,
                 "preferred_models": ["gpt-3.5-turbo", "claude-instant"],
-                "avg_tokens": 800
+                "avg_tokens": 800,
             },
             "trend_analysis": {
                 "min_quality": 80,
                 "preferred_models": ["claude-3-sonnet", "gpt-3.5-turbo"],
-                "avg_tokens": 1500
-            }
+                "avg_tokens": 1500,
+            },
         }
-        
+
         # Get task-specific preferences
-        task_prefs = task_preferences.get(task_type, {
-            "min_quality": 75,
-            "preferred_models": list(models.keys()),
-            "avg_tokens": 1000
-        })
-        
+        task_prefs = task_preferences.get(
+            task_type,
+            {
+                "min_quality": 75,
+                "preferred_models": list(models.keys()),
+                "avg_tokens": 1000,
+            },
+        )
+
         # Override with user requirements
-        min_quality = quality_requirements.get("min_quality_score", task_prefs["min_quality"])
+        min_quality = quality_requirements.get(
+            "min_quality_score", task_prefs["min_quality"]
+        )
         max_latency = quality_requirements.get("max_latency_ms", 5000)
-        avg_tokens = quality_requirements.get("estimated_tokens", task_prefs["avg_tokens"])
-        
+        avg_tokens = quality_requirements.get(
+            "estimated_tokens", task_prefs["avg_tokens"]
+        )
+
         # Filter models based on requirements
         suitable_models = []
         for model_name, model_info in models.items():
             # Check quality threshold
             if model_info["quality_score"] < min_quality:
                 continue
-            
+
             # Check latency requirement
             if model_info["latency_ms"] > max_latency:
                 continue
-            
+
             # Check budget constraint
             estimated_cost = (avg_tokens / 1000) * model_info["cost_per_1k_tokens"]
             if estimated_cost > budget_constraint:
                 continue
-            
+
             # Check if model is preferred for this task
-            preference_bonus = 10 if model_name in task_prefs.get("preferred_models", []) else 0
-            
-            suitable_models.append({
-                "model": model_name,
-                "cost": estimated_cost,
-                "quality_score": model_info["quality_score"] + preference_bonus,
-                "latency": model_info["latency_ms"],
-                "cost_efficiency": model_info["quality_score"] / estimated_cost if estimated_cost > 0 else 0
-            })
-        
+            preference_bonus = (
+                10 if model_name in task_prefs.get("preferred_models", []) else 0
+            )
+
+            suitable_models.append(
+                {
+                    "model": model_name,
+                    "cost": estimated_cost,
+                    "quality_score": model_info["quality_score"] + preference_bonus,
+                    "latency": model_info["latency_ms"],
+                    "cost_efficiency": model_info["quality_score"] / estimated_cost
+                    if estimated_cost > 0
+                    else 0,
+                }
+            )
+
         if not suitable_models:
             # No models meet all requirements, relax constraints
             return {
                 "status": "no_suitable_model",
                 "recommendation": "Relax quality or budget constraints",
                 "fallback_model": "gpt-3.5-turbo",
-                "fallback_cost": (avg_tokens / 1000) * models["gpt-3.5-turbo"]["cost_per_1k_tokens"],
+                "fallback_cost": (avg_tokens / 1000)
+                * models["gpt-3.5-turbo"]["cost_per_1k_tokens"],
                 "constraints_not_met": {
                     "min_quality_required": min_quality,
                     "budget_constraint": budget_constraint,
-                    "max_latency": max_latency
-                }
+                    "max_latency": max_latency,
+                },
             }
-        
+
         # Sort by cost efficiency (quality per dollar)
         suitable_models.sort(key=lambda x: x["cost_efficiency"], reverse=True)
         optimal_model = suitable_models[0]
-        
+
         # Calculate potential savings
         most_expensive = max(suitable_models, key=lambda x: x["cost"])
         savings = most_expensive["cost"] - optimal_model["cost"]
-        
+
         return {
             "status": "success",
             "selected_model": optimal_model["model"],
@@ -1120,14 +1163,16 @@ class CostOptimizer:
                 "temperature": 0.7 if "creative" in task_type else 0.3,
                 "max_tokens": min(avg_tokens * 2, 4000),
                 "cache_enabled": True,
-                "cache_ttl": 3600 if task_type in ["trend_analysis", "summarization"] else 900
+                "cache_ttl": 3600
+                if task_type in ["trend_analysis", "summarization"]
+                else 900,
             },
             "optimization_notes": [
                 f"Selected {optimal_model['model']} for optimal cost-efficiency",
                 f"Estimated cost: ${optimal_model['cost']:.4f} per request",
                 f"Quality score: {optimal_model['quality_score']}/100",
-                f"Saves ${savings:.4f} vs most expensive option"
-            ]
+                f"Saves ${savings:.4f} vs most expensive option",
+            ],
         }
 
 

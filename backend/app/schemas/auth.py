@@ -15,15 +15,15 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8)
-    
-    @validator('password')
+
+    @validator("password")
     def validate_password(cls, v):
         if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
+            raise ValueError("Password must be at least 8 characters long")
         if not any(char.isdigit() for char in v):
-            raise ValueError('Password must contain at least one digit')
+            raise ValueError("Password must contain at least one digit")
         if not any(char.isupper() for char in v):
-            raise ValueError('Password must contain at least one uppercase letter')
+            raise ValueError("Password must contain at least one uppercase letter")
         return v
 
 
@@ -48,7 +48,7 @@ class UserResponse(UserBase):
     total_videos_generated: int
     created_at: datetime
     last_login: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
 
