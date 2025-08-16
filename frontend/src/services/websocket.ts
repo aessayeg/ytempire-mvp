@@ -40,55 +40,41 @@ export enum WSEventType {
 
 export interface WSMessage<T = unknown> {
   event: string;
-  timestamp: string;,
-
+  timestamp: string;
   data: T;
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>;
 }
 
 export interface VideoGenerationUpdate {
-  
-videoId: string;
-channelId: string;;
-
-status: 'started' | 'processing' | 'completed' | 'failed';
-progress: number;
-currentStep?: string;
-estimatedCompletion?: string;
-error?: string;
-metadata?: Record<string, unknown>;
-
-
+  videoId: string;
+  channelId: string;
+  status: 'started' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  currentStep?: string;
+  estimatedCompletion?: string;
+  error?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ChannelMetricsUpdate {
-  
-channelId: string;
-subscribers: number;;
-
-viewsToday: number;
-revenueToday: number;;
-
-videosPublished: number;
-healthScore: number;;
-
-quotaUsed: number;
-quotaLimit: number;
-
+  channelId: string;
+  subscribers: number;
+  viewsToday: number;
+  revenueToday: number;
+  videosPublished: number;
+  healthScore: number;
+  quotaUsed: number;
+  quotaLimit: number;
 }
 
 export interface SystemMetrics {
-  
-activeGenerations: number;
-queueDepth: number;;
-
-avgGenerationTime: number;
-successRate: number;;
-
-costToday: number;
-apiHealth: Record<string, string>;
-performanceMetrics: Record<string, number>;
-
+  activeGenerations: number;
+  queueDepth: number;
+  avgGenerationTime: number;
+  successRate: number;
+  costToday: number;
+  apiHealth: Record<string, string>;
+  performanceMetrics: Record<string, number>;
 }
 
 class WebSocketClient extends EventEmitter {
@@ -105,63 +91,76 @@ class WebSocketClient extends EventEmitter {
   constructor(url: string) {
     super();
     this.url = url;
-    this.clientId = this.generateClientId()}
+    this.clientId = this.generateClientId();
+  }
   
   connect(token?: string): void {
     if (this.socket?.connected) {
       console.log('WebSocket already connected');
-      return
+      return;
     }
     
     const socketUrl = `${this.url}/ws/${this.clientId}`;
     
     this.socket = io(socketUrl, {
-      transports: ['websocket'];
+      transports: ['websocket'],
       auth: token ? { token } : undefined,
-      reconnection: true;
-      reconnectionAttempts: this.maxReconnectAttempts;
-      reconnectionDelay: this.reconnectDelay;
-      reconnectionDelayMax: 10000});
+      reconnection: true,
+      reconnectionAttempts: this.maxReconnectAttempts,
+      reconnectionDelay: this.reconnectDelay,
+      reconnectionDelayMax: 10000
+    });
     
-    this.setupEventListeners()}
+    this.setupEventListeners();
+  }
   
   disconnect(): void {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
       this.isConnected = false;
-      this.emit(WSEventType.DISCONNECT)}}
+      this.emit(WSEventType.DISCONNECT);
+    }
+  }
   
   private setupEventListeners(): void {
     if (!this.socket) return;
     
-    this.socket.on(_'connect', () => {
+    this.socket.on('connect', () => {
       console.log('WebSocket connected');
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this.emit(WSEventType.CONNECT);
-      this.flushMessageQueue()});
+      this.flushMessageQueue();
+    });
     
-    this.socket.on(_'disconnect', _(reason) => {
-      console.log('WebSocket, disconnected:', reason);
+    this.socket.on('disconnect', (reason) => {
+      console.log('WebSocket disconnected:', reason);
       this.isConnected = false;
-      this.emit(WSEventType.DISCONNECT, reason)});
+      this.emit(WSEventType.DISCONNECT, reason);
+    });
     
-    this.socket.on(_'error', _(error) => {
-      console.error('WebSocket, error:', error);
-      this.emit(WSEventType.ERROR, error)});
+    this.socket.on('error', (error) => {
+      console.error('WebSocket error:', error);
+      this.emit(WSEventType.ERROR, error);
+    });
     
-    this.socket.on(_'reconnect', _(attemptNumber) => {
+    this.socket.on('reconnect', (attemptNumber) => {
       console.log(`WebSocket reconnected after ${attemptNumber} attempts`);
-      this.emit(WSEventType.RECONNECT, attemptNumber)});
+      this.emit(WSEventType.RECONNECT, attemptNumber);
+    });
     
     // Listen for all custom events
     Object.values(WSEventType).forEach(eventType => {
       if (!['connect', 'disconnect', 'error', 'reconnect'].includes(eventType)) {
-        this.socket?.on(eventType, _(data: React.ChangeEvent<HTMLInputElement>) => {
-          this.handleMessage({ event: eventType, data, timestamp: new Date().toISOString() })})})}
+        this.socket?.on(eventType, (data: any) => {
+          this.handleMessage({ event: eventType, data, timestamp: new Date().toISOString() });
+        });
+      }
+    });
+  })}
   private handleMessage(message: WSMessage<unknown>): void {
-    console.log('WebSocket message, received:', message.event);
+    console.log('WebSocket message received:', message.event);
     
     // Emit to global listeners
     this.emit(message.event, message.data);
@@ -169,19 +168,23 @@ class WebSocketClient extends EventEmitter {
     // Emit to specific subscribers
     const subscribers = this.subscriptions.get(message.event);
     if (subscribers) {
-      subscribers.forEach(callback => callback(message.data))}
+      subscribers.forEach(callback => callback(message.data));
+    }
   }
   
-  subscribe(event: WSEventType, callback: (...args: React.ChangeEvent<HTMLInputElement>[]) => void): () => void {
+  subscribe(event: WSEventType, callback: (...args: any[]) => void): () => void {
     if (!this.subscriptions.has(event)) {
-      this.subscriptions.set(event, new Set())}
+      this.subscriptions.set(event, new Set());
+    }
     
     this.subscriptions.get(event)?.add(callback);
     
     // Return unsubscribe function
     return () => {
     
-      this.subscriptions.get(event)?.delete(callback)}
+      this.subscriptions.get(event)?.delete(callback);
+    };
+  }
   
   send(event: string, data: unknown): void {
     const message: WSMessage<unknown>  = {
@@ -191,31 +194,38 @@ class WebSocketClient extends EventEmitter {
 
     };
     if (this.isConnected && this.socket) {
-      this.socket.emit(event, message)} else {
+      this.socket.emit(event, message);
+    } else {
       // Queue message for later
-      this.messageQueue.push(message)}
+      this.messageQueue.push(message);
+    }
   }
   
   joinRoom(roomId: string): void {
-    this.send('subscribe', { roomId })}
+    this.send('subscribe', { roomId });
+  }
   leaveRoom(roomId: string): void {
-    this.send('unsubscribe', { roomId })}
+    this.send('unsubscribe', { roomId });
+  }
   private flushMessageQueue(): void {
     while (this.messageQueue.length > 0 && this.isConnected) {
       const message = this.messageQueue.shift();
       if (message) {
-        this.socket?.emit(message.event, message)}}}
+        this.socket?.emit(message.event, message);
+      }
+    }
+  }
   
   private generateClientId(): string {
-    return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}
+    return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
   
   getConnectionStatus(): boolean {
-    return this.isConnected
+    return this.isConnected;
   }
   
   getSocket(): Socket | null {
-    return this.socket
+    return this.socket;
   }
 }
 
@@ -283,7 +293,8 @@ export function useVideoGenerationUpdates(videoId?: string) {
     
     const unsubscribes = [
       subscribe(WSEventType.VIDEO_GENERATION_STARTED, (data: VideoGenerationUpdate) => {
-        if (data.videoId === videoId) setStatus(data)}),
+        if (data.videoId === videoId) setStatus(data);
+      }),
       subscribe(_WSEventType.VIDEO_GENERATION_PROGRESS, (data: VideoGenerationUpdate) => {
         if (data.videoId === videoId) setStatus(data)}),
       subscribe(_WSEventType.VIDEO_GENERATION_COMPLETED, (data: VideoGenerationUpdate) => {

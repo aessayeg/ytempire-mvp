@@ -49,6 +49,7 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
     
     - name: Build and push Backend Docker image
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: ./backend
@@ -62,6 +63,24 @@ jobs:
           BUILD_DATE=${{ github.event.repository.updated_at }}
           VCS_REF=${{ github.sha }}
           VERSION=${{ steps.meta.outputs.version }}
+    
+    - name: Install Cosign
+      if: github.event_name != 'pull_request'
+      uses: sigstore/cosign-installer@v3
+      with:
+        cosign-release: 'v2.2.0'
+    
+    - name: Sign container image
+      if: github.event_name != 'pull_request'
+      env:
+        DIGEST: ${{ steps.build.outputs.digest }}
+        TAGS: ${{ steps.meta.outputs.tags }}
+      run: |
+        echo "Signing image with digest: $DIGEST"
+        for tag in $TAGS; do
+          echo "Signing $tag@$DIGEST"
+          cosign sign --yes "$tag@$DIGEST"
+        done
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -98,6 +117,7 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
     
     - name: Build and push Frontend Docker image
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: ./frontend
@@ -111,6 +131,24 @@ jobs:
           BUILD_DATE=${{ github.event.repository.updated_at }}
           VCS_REF=${{ github.sha }}
           VERSION=${{ steps.meta.outputs.version }}
+    
+    - name: Install Cosign
+      if: github.event_name != 'pull_request'
+      uses: sigstore/cosign-installer@v3
+      with:
+        cosign-release: 'v2.2.0'
+    
+    - name: Sign container image
+      if: github.event_name != 'pull_request'
+      env:
+        DIGEST: ${{ steps.build.outputs.digest }}
+        TAGS: ${{ steps.meta.outputs.tags }}
+      run: |
+        echo "Signing image with digest: $DIGEST"
+        for tag in $TAGS; do
+          echo "Signing $tag@$DIGEST"
+          cosign sign --yes "$tag@$DIGEST"
+        done
 
   build-ml-pipeline:
     runs-on: ubuntu-latest
@@ -147,6 +185,7 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
     
     - name: Build and push ML Pipeline Docker image
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: ./ml-pipeline
@@ -160,6 +199,24 @@ jobs:
           BUILD_DATE=${{ github.event.repository.updated_at }}
           VCS_REF=${{ github.sha }}
           VERSION=${{ steps.meta.outputs.version }}
+    
+    - name: Install Cosign
+      if: github.event_name != 'pull_request'
+      uses: sigstore/cosign-installer@v3
+      with:
+        cosign-release: 'v2.2.0'
+    
+    - name: Sign container image
+      if: github.event_name != 'pull_request'
+      env:
+        DIGEST: ${{ steps.build.outputs.digest }}
+        TAGS: ${{ steps.meta.outputs.tags }}
+      run: |
+        echo "Signing image with digest: $DIGEST"
+        for tag in $TAGS; do
+          echo "Signing $tag@$DIGEST"
+          cosign sign --yes "$tag@$DIGEST"
+        done
 
   vulnerability-scan:
     needs: [build-backend, build-frontend, build-ml-pipeline]

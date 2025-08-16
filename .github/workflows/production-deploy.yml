@@ -2,25 +2,6 @@ name: Deploy to Production
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to deploy (git tag or SHA)'
-        required: true
-        type: string
-      deployment_strategy:
-        description: 'Deployment strategy'
-        required: true
-        default: 'blue-green'
-        type: choice
-        options:
-          - blue-green
-          - canary
-          - rolling
-      dry_run:
-        description: 'Perform dry run only'
-        required: false
-        default: false
-        type: boolean
   release:
     types: [published]
 
@@ -267,8 +248,9 @@ jobs:
     - name: Run smoke tests on Green
       run: |
         # Test the green environment before switching
-        curl -f http://${{ secrets.PRODUCTION_HOST }}:8001/api/v1/health
-        curl -f http://${{ secrets.PRODUCTION_HOST }}:3001
+        PRODUCTION_HOST="${{ secrets.PRODUCTION_HOST }}"
+        curl -f "http://${PRODUCTION_HOST}:8001/api/v1/health"
+        curl -f "http://${PRODUCTION_HOST}:3001"
     
     - name: Switch traffic to Green
       run: |
@@ -518,7 +500,7 @@ jobs:
         EOF
     
     - name: Notify rollback
-      uses: 8398a7/action-slack@v4
+      uses: 8398a7/action-slack@v3
       with:
         status: custom
         custom_payload: |
@@ -551,7 +533,7 @@ jobs:
     steps:
     - name: Send success notification
       if: success()
-      uses: 8398a7/action-slack@v4
+      uses: 8398a7/action-slack@v3
       with:
         status: custom
         custom_payload: |

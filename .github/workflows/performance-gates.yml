@@ -6,15 +6,6 @@ on:
   push:
     branches: [develop]
   workflow_dispatch:
-    inputs:
-      target_env:
-        description: 'Target environment'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
 
 env:
   # Performance thresholds
@@ -475,7 +466,7 @@ jobs:
     
     - name: Notify Success
       if: success()
-      uses: 8398a7/action-slack@v4
+      uses: 8398a7/action-slack@v3
       with:
         status: custom
         custom_payload: |

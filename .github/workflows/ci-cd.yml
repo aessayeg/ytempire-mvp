@@ -6,15 +6,6 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy'
-        required: false
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
 
 env:
   PYTHON_VERSION: '3.11'
@@ -543,7 +534,7 @@ jobs:
         ./scripts/smoke_tests.sh staging
     
     - name: Notify Deployment
-      uses: 8398a7/action-slack@v4
+      uses: 8398a7/action-slack@v3
       with:
         status: ${{ job.status }}
         text: 'Staging deployment completed for ${{ github.sha }}'

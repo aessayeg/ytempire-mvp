@@ -164,7 +164,8 @@ export const useBehaviorAnalytics = ({ userId,
       // Fetch overview
       const overviewResponse = await apiClient.get('/api/v1/analytics/behavior/overview', {
         params,
-        headers: { Authorization: `Bearer ${token}` }});
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setOverview(overviewResponse.data);
 
       // Fetch funnel data if steps provided
@@ -192,7 +193,8 @@ export const useBehaviorAnalytics = ({ userId,
       // Fetch heatmap data
       const heatmapResponse = await apiClient.get('/api/v1/analytics/heatmaps', {
         params,
-        headers: { Authorization: `Bearer ${token}` }});
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setHeatmapData(heatmapResponse.data);
 
       // Fetch user segments (admin, only)

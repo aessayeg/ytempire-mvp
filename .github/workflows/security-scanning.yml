@@ -31,7 +31,7 @@ jobs:
     
     # Semgrep SAST
     - name: Run Semgrep
-      uses: returntocorp/semgrep-action@v2
+      uses: returntocorp/semgrep-action@v1
       with:
         config: >-
           p/security-audit
@@ -95,7 +95,7 @@ jobs:
         pip install safety pip-audit
         cd backend
         echo "::group::Safety Check"
-        safety check --json --output safety-report.json
+        safety check --output json > safety-report.json
         safety check
         echo "::endgroup::"
         echo "::group::Pip Audit"
@@ -125,6 +125,13 @@ jobs:
           --enableRetired
           --enableExperimental
           --failOnCVSS 7
+    
+    - name: Upload Safety Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: safety-report
+        path: backend/safety-report.json
     
     - name: Upload Dependency Check Results
       uses: actions/upload-artifact@v4
@@ -218,12 +225,38 @@ jobs:
         fetch-depth: 0
     
     # TruffleHog
+    - name: Check if TruffleHog should run
+      id: check_commits
+      run: |
+        base_commit=""
+        head_commit=""
+        
+        if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+          base_commit="${{ github.event.before }}"
+          head_commit="${{ github.sha }}"
+        elif [ "${{ github.event_name }}" == "pull_request" ]; then
+          base_commit="${{ github.event.pull_request.base.sha }}"
+          head_commit="${{ github.event.pull_request.head.sha }}"
+        fi
+        
+        # Check if we have valid commits and they're different
+        if [ -n "$base_commit" ] && [ -n "$head_commit" ] && [ "$base_commit" != "$head_commit" ]; then
+          echo "base_commit=$base_commit" >> $GITHUB_OUTPUT
+          echo "head_commit=$head_commit" >> $GITHUB_OUTPUT
+          echo "should_run=true" >> $GITHUB_OUTPUT
+          echo "TruffleHog will scan from $base_commit to $head_commit"
+        else
+          echo "should_run=false" >> $GITHUB_OUTPUT
+          echo "Skipping TruffleHog: BASE and HEAD commits are the same or invalid ($base_commit -> $head_commit)"
+        fi
+    
     - name: TruffleHog OSS
+      if: steps.check_commits.outputs.should_run == 'true'
       uses: trufflesecurity/trufflehog@main
       with:
         path: ./
-        base: ${{ github.event.repository.default_branch }}
-        head: HEAD
+        base: ${{ steps.check_commits.outputs.base_commit }}
+        head: ${{ steps.check_commits.outputs.head_commit }}
         extra_args: --debug --only-verified
     
     # GitLeaks
@@ -350,10 +383,17 @@ jobs:
     
     # License Compliance
     - name: License Compliance Check
+      if: ${{ secrets.FOSSA_API_KEY != '' }}
       uses: fossa-contrib/fossa-action@v3
       with:
         api-key: ${{ secrets.FOSSA_API_KEY }}
         run-tests: true
+    
+    - name: Skip FOSSA scan (no API key)
+      if: ${{ secrets.FOSSA_API_KEY == '' }}
+      run: |
+        echo "⚠️ FOSSA API key not configured - skipping license compliance check"
+        echo "To enable FOSSA scanning, add FOSSA_API_KEY to repository secrets"
     
     # PCI DSS Compliance Check
     - name: PCI DSS Compliance Check
@@ -445,7 +485,7 @@ jobs:
     
     - name: Send Security Alert
       if: failure()
-      uses: 8398a7/action-slack@v4
+      uses: 8398a7/action-slack@v3
       with:
         status: ${{ job.status }}
         text: '⚠️ Security vulnerabilities detected in ${{ github.repository }}'

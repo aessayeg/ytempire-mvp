@@ -11,15 +11,6 @@ on:
     branches: [ main ]
     types: [opened, synchronize, reopened]
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy to'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
 
 env:
   PYTHON_VERSION: '3.11'
@@ -313,7 +304,7 @@ jobs:
         # aws ecs update-service --cluster ytempire-prod --service ytempire-api --force-new-deployment
     
     - name: Notify deployment
-      uses: 8398a7/action-slack@v4
+      uses: 8398a7/action-slack@v3
       with:
         status: ${{ job.status }}
         text: 'Production deployment completed'

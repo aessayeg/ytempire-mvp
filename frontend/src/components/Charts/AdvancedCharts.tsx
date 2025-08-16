@@ -31,7 +31,7 @@ import {
   CartesianGrid,
   Legend
  } from 'recharts';
-import {  HeatMapGrid  } from 'react-grid-heatmap';
+import { HeatMapGrid } from './HeatmapGrid';
 import {  MoreVert, Download, Refresh  } from '@mui/icons-material';
 
 interface ChartProps {

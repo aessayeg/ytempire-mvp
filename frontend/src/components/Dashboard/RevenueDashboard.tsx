@@ -141,8 +141,8 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
           />
           <YAxis tickFormatter={(value) => `$${value}`} />
           <RechartsTooltip
-            formatter={(value: number) => formatCurrency(value}
-            labelFormatter={label) => format(new Date(label), 'PPP'}
+            formatter={(value: number) => formatCurrency(value)}
+            labelFormatter={(label) => format(new Date(label), 'PPP')}
           />
           <Legend />
           <DataComponent
@@ -205,8 +205,8 @@ export const RevenueDashboard: React.FC<RevenueDashboardProps> = ({
           />
           <YAxis tickFormatter={(value) => `$${value}`} />
           <RechartsTooltip
-            formatter={(value: number) => formatCurrency(value}
-            labelFormatter={label) => format(new Date(label), 'PPP'}
+            formatter={(value: number) => formatCurrency(value)}
+            labelFormatter={(label) => format(new Date(label), 'PPP')}
           />
           <Area
             type="monotone"

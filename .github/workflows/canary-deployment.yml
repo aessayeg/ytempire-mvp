@@ -2,32 +2,10 @@ name: Canary Deployment Pipeline
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Target environment'
-        required: true
-        type: choice
-        options:
-          - staging
-          - production
-      image_tag:
-        description: 'Docker image tag to deploy'
-        required: true
-        default: 'latest'
-      canary_percentage:
-        description: 'Initial canary traffic percentage'
-        required: false
-        default: '10'
-        type: choice
-        options:
-          - '5'
-          - '10'
-          - '25'
-          - '50'
 
 env:
   # Canary deployment configuration
-  INITIAL_CANARY_WEIGHT: ${{ github.event.inputs.canary_percentage }}
+  INITIAL_CANARY_WEIGHT: 10
   CANARY_ANALYSIS_TIME: 300  # 5 minutes per stage
   SUCCESS_RATE_THRESHOLD: 99.5
   P95_LATENCY_THRESHOLD_MS: 500
@@ -551,7 +529,8 @@ jobs:
         kubectl delete deployment ytempire-backend-canary
         
         # Send alert
-        curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+        WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK }}"
+        curl -X POST "$WEBHOOK_URL" \
           -H 'Content-Type: application/json' \
           -d '{
             "text": "🔴 Canary deployment failed and was rolled back",
@@ -669,7 +648,7 @@ jobs:
     
     - name: Send Success Notification
       if: env.ENABLE_NOTIFICATIONS == 'true'
-      uses: 8398a7/action-slack@v4
+      uses: 8398a7/action-slack@v3
       with:
         status: custom
         custom_payload: |

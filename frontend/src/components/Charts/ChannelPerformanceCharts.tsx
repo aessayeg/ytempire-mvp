@@ -216,7 +216,9 @@ const data: ChannelMetrics[] = [];
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
         </Box>
-      )}
+      </>
+      );
+    }
 
     return (
     <Card sx={{ mb: 3 }}>

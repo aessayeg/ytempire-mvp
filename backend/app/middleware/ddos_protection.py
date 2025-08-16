@@ -277,7 +277,7 @@ class DDoSDetector:
                     # Check if value is suspiciously large
                     try:
                         import re
-                        pattern = f"{param}=(\d+)"
+                        pattern = f"{param}=(\\d+)"
                         match = re.search(pattern, query_params)
                         if match:
                             value = int(match.group(1))

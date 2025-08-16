@@ -4,11 +4,6 @@ on:
   push:
     branches: [develop]
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to deploy'
-        required: false
-        default: 'latest'
   workflow_call:
     inputs:
       version:
@@ -328,7 +323,8 @@ jobs:
     - name: Run performance baseline
       run: |
         # Quick performance check
-        curl -w "@-" -o /dev/null -s "${{ secrets.STAGING_URL }}/api/v1/health" << 'EOF'
+        STAGING_URL="${{ secrets.STAGING_URL }}"
+        curl -w "@-" -o /dev/null -s "${STAGING_URL}/api/v1/health" << 'EOF'
         Response Time: %{time_total}s
         HTTP Code: %{http_code}
         EOF
@@ -401,7 +397,7 @@ jobs:
         EOF
     
     - name: Notify rollback
-      uses: 8398a7/action-slack@v4
+      uses: 8398a7/action-slack@v3
       with:
         status: custom
         custom_payload: |
@@ -425,7 +421,7 @@ jobs:
     
     steps:
     - name: Notify Slack
-      uses: 8398a7/action-slack@v4
+      uses: 8398a7/action-slack@v3
       with:
         status: ${{ job.status }}
         text: |

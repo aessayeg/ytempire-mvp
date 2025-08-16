@@ -11,36 +11,47 @@ from enum import Enum
 from fastapi import APIRouter, HTTPException, Query, Depends, BackgroundTasks
 from pydantic import BaseModel, Field
 
-from app.services.analytics_service import (
-    metrics_collector,
-    quality_dashboard, 
-    quality_monitor,
-    MetricType,
-    MetricCategory,
-    QUALITY_METRICS
-)
-# Removed defect_tracking (unrelated) import defect_tracker, DefectSeverity, DefectStatus
-from app.services.automated_reporting import setup_automated_reporting
-from app.core.deps import get_current_user
+# Import available analytics components
+try:
+    from app.services.analytics_service import analytics_service
+except ImportError:
+    analytics_service = None
+
+# Define quality metrics enums for dashboard
+from enum import Enum
+
+class MetricType(str, Enum):
+    COUNTER = "counter"
+    GAUGE = "gauge"
+    HISTOGRAM = "histogram"
+    TIMER = "timer"
+
+class MetricCategory(str, Enum):
+    PERFORMANCE = "performance"
+    QUALITY = "quality"
+    BUSINESS = "business"
+    SYSTEM = "system"
+
+# Quality metrics constants
+QUALITY_METRICS = {
+    "defect_density": {"type": MetricType.GAUGE, "category": MetricCategory.QUALITY},
+    "test_coverage": {"type": MetricType.GAUGE, "category": MetricCategory.QUALITY},
+    "mean_time_to_resolution": {"type": MetricType.TIMER, "category": MetricCategory.PERFORMANCE},
+    "defect_escape_rate": {"type": MetricType.GAUGE, "category": MetricCategory.QUALITY}
+}
+from app.services.defect_tracking import defect_tracker, DefectSeverity, DefectStatus
+
+# Import automated reporting if available
+try:
+    from app.services.automated_reporting import setup_automated_reporting
+except ImportError:
+    setup_automated_reporting = None
+
+from app.api.v1.endpoints.auth import get_current_verified_user
 
 router = APIRouter()
 
-# Define missing enums
-class DefectSeverity(str, Enum):
-    """Defect severity levels"""
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-    TRIVIAL = "trivial"
-
-class DefectStatus(str, Enum):
-    """Defect status"""
-    OPEN = "open"
-    IN_PROGRESS = "in_progress"
-    RESOLVED = "resolved"
-    CLOSED = "closed"
-    REOPENED = "reopened"
+# Enums are now imported from defect_tracking service
 
 # ============================================================================
 # Request/Response Models
@@ -77,7 +88,7 @@ class DefectFilters(BaseModel):
 
 @router.get("/overview", summary="Get quality overview")
 async def get_quality_overview(
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Get overall quality dashboard overview"""
     try:
@@ -93,7 +104,7 @@ async def get_quality_overview(
 async def get_latest_metrics(
     metric_types: Optional[List[MetricType]] = Query(None),
     categories: Optional[List[MetricCategory]] = Query(None),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Get latest metric values with optional filtering"""
     try:
@@ -137,7 +148,7 @@ async def get_latest_metrics(
 @router.post("/metrics", summary="Record metric value")
 async def record_metric(
     metric_request: MetricValueRequest,
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Record a new metric value"""
     try:
@@ -172,7 +183,7 @@ async def get_metric_history(
     start_time: datetime = Query(..., description="Start time for history"),
     end_time: datetime = Query(..., description="End time for history"),
     aggregation: str = Query("raw", description="Aggregation type: raw, hourly, daily"),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Get historical data for a specific metric"""
     try:
@@ -218,7 +229,7 @@ async def get_metric_history(
 @router.get("/trends", summary="Get metric trends")
 async def get_metric_trends(
     days: int = Query(7, ge=1, le=90, description="Number of days for trend analysis"),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Get trend analysis for all metrics"""
     try:
@@ -244,7 +255,7 @@ async def get_defects(
     created_before: Optional[datetime] = Query(None),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Get defects with filtering and pagination"""
     try:
@@ -304,7 +315,7 @@ async def get_defects(
 
 @router.get("/defects/statistics", summary="Get defect statistics")
 async def get_defect_statistics(
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Get comprehensive defect statistics"""
     try:
@@ -319,7 +330,7 @@ async def get_defect_statistics(
 @router.get("/defects/{defect_id}", summary="Get defect details")
 async def get_defect(
     defect_id: str,
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Get detailed information about a specific defect"""
     try:
@@ -369,7 +380,7 @@ async def get_quality_dashboard(
     time_range: str = Query("24h", description="Time range: 1h, 24h, 7d, 30d"),
     include_trends: bool = Query(True),
     include_charts: bool = Query(False),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Get comprehensive quality dashboard"""
     try:
@@ -415,7 +426,7 @@ async def get_quality_dashboard(
 
 @router.get("/reports", summary="Get available reports")
 async def get_available_reports(
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Get list of available quality reports"""
     try:
@@ -455,7 +466,7 @@ async def generate_report(
     report_type: str,
     format: str = Query("json", description="Report format: json, html, pdf"),
     background_tasks: BackgroundTasks = None,
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Generate a quality report on-demand"""
     try:
@@ -549,7 +560,7 @@ async def quality_health_check():
 
 @router.post("/monitoring/start", summary="Start quality monitoring")
 async def start_monitoring(
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Start automated quality monitoring"""
     try:
@@ -563,7 +574,7 @@ async def start_monitoring(
 
 @router.post("/monitoring/stop", summary="Stop quality monitoring")
 async def stop_monitoring(
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_verified_user)
 ):
     """Stop automated quality monitoring"""
     try:
